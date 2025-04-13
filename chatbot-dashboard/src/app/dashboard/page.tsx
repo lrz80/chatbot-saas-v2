@@ -98,6 +98,11 @@ export default function DashboardHome() {
     return () => unsub();
   }, [monthlyView]);
 
+  const mockMessages = [
+    { id: 1, sender: "user", content: "¿Cuáles son los precios?", timestamp: Date.now() - 30000 },
+    { id: 2, sender: "bot", content: "Nuestros precios dependen del servicio. ¿Qué deseas saber?", timestamp: Date.now() - 20000 },
+  ];
+  
   return (
     <div className="relative min-h-screen text-white font-sans">
       {/* Fondo visual */}
@@ -193,7 +198,10 @@ export default function DashboardHome() {
             {loading ? (
               <p className="text-center text-white/70">Cargando datos...</p>
             ) : (
-              <ChartWidget title="📊 Estadísticas del Chatbot" chartData={chartData} />
+              <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-6 text-white">
+                <h2 className="text-xl font-bold mb-2">📊 Estadísticas del Chatbot</h2>
+                <p className="text-white/70">Aquí se mostrarán las estadísticas del bot una vez conectes el backend.</p>
+              </div>
             )}
           </div>
 
@@ -202,19 +210,35 @@ export default function DashboardHome() {
               <h3 className="text-xl font-bold mb-2 text-white">🕓 Historial de Conversaciones</h3>
               <p className="text-white/70">Consulta las últimas interacciones en tiempo real.</p>
               <div className="mt-4 flex flex-col gap-3 text-sm max-h-40 overflow-y-auto pr-1">
-                {lastMessages.map((msg) => (
-                  <div key={msg.id} className={`flex flex-col p-3 rounded-md shadow-sm ${msg.sender === "user" ? "bg-indigo-500/10 border border-indigo-400/30" : "bg-green-500/10 border border-green-400/30"}`}>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className={`text-xs font-semibold ${msg.sender === "user" ? "text-indigo-200" : "text-green-200"}`}>
-                        {msg.sender === "user" ? "👤 Cliente" : "🤖 Bot"}
-                      </span>
-                      <span className="text-[11px] text-white/60">
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                    </div>
-                    <p className="text-white/90 text-sm line-clamp-2 hover:line-clamp-none">{msg.content}</p>
+              {mockMessages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex flex-col p-3 rounded-md shadow-sm ${
+                    msg.sender === "user"
+                      ? "bg-indigo-500/10 border border-indigo-400/30"
+                      : "bg-green-500/10 border border-green-400/30"
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-1">
+                    <span
+                      className={`text-xs font-semibold ${
+                        msg.sender === "user" ? "text-indigo-200" : "text-green-200"
+                      }`}
+                    >
+                      {msg.sender === "user" ? "👤 Cliente" : "🤖 Bot"}
+                    </span>
+                    <span className="text-[11px] text-white/60">
+                      {new Date(msg.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                          minute: "2-digit",
+                      })}
+                    </span>
                   </div>
-                ))}
+                  <p className="text-white/90 text-sm line-clamp-2 hover:line-clamp-none">
+                    {msg.content}
+                  </p>
+                </div>
+              ))}
               </div>
             </div>
             <div className="mt-4 text-right">

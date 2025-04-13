@@ -280,6 +280,7 @@ export default function TrainingPage() {
         </select>
 
         {/* Generador automático de prompt con OpenAI */}
+        {/* 
         <PromptGenerator
           informacion={settings.informacion_negocio}
           idioma={settings.idioma}
@@ -287,7 +288,8 @@ export default function TrainingPage() {
           onPromptGenerated={(prompt) =>
             setSettings((prev) => ({ ...prev, prompt }))
           }
-        />
+        />   
+        */}
 
         <label className="block font-medium mb-1 flex items-center gap-2">
           <BotMessageSquare size={18} />
