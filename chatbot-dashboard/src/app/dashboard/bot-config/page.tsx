@@ -5,7 +5,6 @@ import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { promptTemplates } from "../../../utils/promptTemplates";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 
 export default function BotConfigPage() {
@@ -25,7 +24,7 @@ export default function BotConfigPage() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
-        const res = await fetchWithAuth("/api/settings");
+        const res = await fetch("/api/settings");
         if (!res.ok) return;
         const data = await res.json();
 
@@ -64,7 +63,7 @@ export default function BotConfigPage() {
     }
 
     setSaving(true);
-    const res = await fetchWithAuth("/api/settings", {
+    const res = await fetch("/api/settings", {
       method: "POST",
       body: JSON.stringify({ ...settings }),
     });    

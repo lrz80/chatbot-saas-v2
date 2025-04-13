@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useTenant } from "@/context/TenantContext";
 import { toast } from "react-toastify";
 import { FiMic, FiMessageCircle, FiSettings, FiVolume2, FiHash } from "react-icons/fi";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import TrainingHelp from "@/components/TrainingHelp";
 
 type VoiceOption = {
@@ -59,7 +58,7 @@ export default function VoiceConfigPage() {
     const formData = new FormData(form);
 
     try {
-      const res = await fetchWithAuth("/api/voice-config", {
+      const res = await fetch("/api/voice-config", {
         method: "POST",
         body: formData,
       });      

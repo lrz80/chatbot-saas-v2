@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 export default function CallsPage() {
   const [calls, setCalls] = useState<any[]>([]);
@@ -13,7 +12,7 @@ export default function CallsPage() {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
-        const res = await fetchWithAuth(`/api/calls`);
+        const res = await fetch(`/api/calls`);
         const data = await res.json();
         setCalls(data);
       }

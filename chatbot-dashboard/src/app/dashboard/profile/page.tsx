@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -19,7 +18,7 @@ export default function BusinessProfilePage() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
-        const res = await fetchWithAuth("/api/settings");
+        const res = await fetch("/api/settings");
         if (!res.ok) {
           console.error("❌ Error al cargar settings:", res.status);
           setLoading(false);
