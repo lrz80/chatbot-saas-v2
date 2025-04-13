@@ -41,7 +41,7 @@ export default function HeroSection() {
 
         {/* CTA */}
         <a
-          href="/login"
+          href="/register"
           className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-xl hover:scale-105 hover:brightness-110 transition-all duration-300"
         >
           Comenzar con Amy AI
