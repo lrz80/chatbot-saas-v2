@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import TrainingHelp from "@/components/TrainingHelp";
-import { getIdToken } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { FaWhatsapp } from "react-icons/fa";
 import {
   MessageSquareText,
   Sparkles,
@@ -43,50 +39,44 @@ export default function TrainingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        console.log("✅ Usuario logueado:", user.email);
-        const res = await fetch("/api/settings");
-
-        if (!res.ok) return;
-        const data = await res.json();
-        console.log("📦 Respuesta API settings:", data);
-
-        if (user) {
-          const usageRes = await fetch("/api/usage");
-          const usageData = await usageRes.json();
-          setUsage(usageData);
-
-        }
-        
-        setSettings({
-          name: data.name || "",
-          categoria: data.categoria || "",
-          prompt: data.prompt || "Eres un asistente útil.",
-          bienvenida: data.bienvenida || "¡Hola! ¿En qué puedo ayudarte hoy?",
-          membresia_activa: data.membresia_activa,
-          informacion_negocio: data.informacion_negocio || "",
-          idioma: data.idioma || "es",
-        });
-
-        const faqRes = await fetch("/api/faq");
-        if (faqRes.ok) {
-          const faqData = await faqRes.json();
-          setFaq(faqData);
-        }
-
-        const intentsRes = await fetch("/api/intents");
-        if (intentsRes.ok) {
-          const intentData = await intentsRes.json();
-          setIntents(intentData);
-        }
-
-        setLoading(false);
+    const fetchData = async () => {
+      const res = await fetch("/api/settings");
+      if (!res.ok) return;
+      const data = await res.json();
+  
+      setSettings({
+        name: data.name || "",
+        categoria: data.categoria || "",
+        prompt: data.prompt || "Eres un asistente útil.",
+        bienvenida: data.bienvenida || "¡Hola! ¿En qué puedo ayudarte hoy?",
+        membresia_activa: data.membresia_activa,
+        informacion_negocio: data.informacion_negocio || "",
+        idioma: data.idioma || "es",
+      });
+  
+      const faqRes = await fetch("/api/faq");
+      if (faqRes.ok) {
+        const faqData = await faqRes.json();
+        setFaq(faqData);
       }
-    });
-    return () => unsubscribe();
-  }, [router]);
+  
+      const intentsRes = await fetch("/api/intents");
+      if (intentsRes.ok) {
+        const intentData = await intentsRes.json();
+        setIntents(intentData);
+      }
+  
+      const usageRes = await fetch("/api/usage");
+      if (usageRes.ok) {
+        const usageData = await usageRes.json();
+        setUsage(usageData);
+      }
+  
+      setLoading(false);
+    };
+  
+    fetchData();
+  }, []);  
 
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
