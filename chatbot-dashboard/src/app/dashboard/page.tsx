@@ -10,7 +10,6 @@ export default function DashboardHome() {
   const [kpis, setKpis] = useState({ total: 0, usuarios: 0, hora_pico: null });
   const [chartData, setChartData] = useState<any>(null);
   const [monthlyView, setMonthlyView] = useState<"year" | "current">("year");
-  const { messages: lastMessages } = useLastMessages(3);
   const [user, setUser] = useState<any>(null);
 
   const [usage, setUsage] = useState({

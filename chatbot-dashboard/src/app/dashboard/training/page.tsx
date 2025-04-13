@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import TrainingHelp from "@/components/TrainingHelp";
 import { getIdToken } from "firebase/auth";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
-import PromptGenerator from "@/components/PromptGenerator";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -49,14 +47,14 @@ export default function TrainingPage() {
       if (user) {
         setUser(user);
         console.log("✅ Usuario logueado:", user.email);
-        const res = await fetchWithAuth("/api/settings");
+        const res = await fetch("/api/settings");
 
         if (!res.ok) return;
         const data = await res.json();
         console.log("📦 Respuesta API settings:", data);
 
         if (user) {
-          const usageRes = await fetchWithAuth("/api/usage");
+          const usageRes = await fetch("/api/usage");
           const usageData = await usageRes.json();
           setUsage(usageData);
 
@@ -72,13 +70,13 @@ export default function TrainingPage() {
           idioma: data.idioma || "es",
         });
 
-        const faqRes = await fetchWithAuth("/api/faq");
+        const faqRes = await fetch("/api/faq");
         if (faqRes.ok) {
           const faqData = await faqRes.json();
           setFaq(faqData);
         }
 
-        const intentsRes = await fetchWithAuth("/api/intents");
+        const intentsRes = await fetch("/api/intents");
         if (intentsRes.ok) {
           const intentData = await intentsRes.json();
           setIntents(intentData);
@@ -101,7 +99,7 @@ export default function TrainingPage() {
     }
     
     setSaving(true);
-    const res = await fetchWithAuth("/api/settings", {
+    const res = await fetch("/api/settings", {
       method: "POST",
       body: JSON.stringify(settings),
     });
@@ -132,7 +130,7 @@ export default function TrainingPage() {
       return;
     }
     
-    await fetchWithAuth("/api/faq", {
+    await fetch("/api/faq", {
       method: "POST",
       body: JSON.stringify({ faqs: faq }),
     });
@@ -150,7 +148,7 @@ export default function TrainingPage() {
     setLoading(true);
     setInput("");
   
-    const res = await fetchWithAuth("/api/preview", {
+    const res = await fetch("/api/preview", {
       method: "POST",
       body: JSON.stringify({ message: input }),
     });
@@ -186,7 +184,7 @@ export default function TrainingPage() {
       return;
     }
     
-    await fetchWithAuth("/api/intents", {
+    await fetch("/api/intents", {
       method: "POST",
       body: JSON.stringify({ intents }),
     });
@@ -209,7 +207,7 @@ export default function TrainingPage() {
   
     setLoading(true);
   
-    const res = await fetchWithAuth("/chatbot", {
+    const res = await fetch("/chatbot", {
       method: "POST",
       body: JSON.stringify({ mensaje: lastUserMsg.content }),
     });

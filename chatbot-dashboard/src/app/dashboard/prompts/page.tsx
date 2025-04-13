@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { fetchWithAuth } from "@/lib/fetchWithAuth"; // 👈 IMPORTANTE
 
 export default function PromptsPage() {
   const [user, setUser] = useState<any>(null);
@@ -16,7 +15,7 @@ export default function PromptsPage() {
       if (user) {
         setUser(user);
 
-        const res = await fetchWithAuth("/api/prompt");
+        const res = await fetch("/api/prompt");
         const data = await res.json();
         setPrompt(data?.system_prompt || "");
         setLoading(false);
@@ -30,7 +29,7 @@ export default function PromptsPage() {
     if (!user) return;
     setSaving(true);
 
-    await fetchWithAuth("/api/prompt", {
+    await fetch("/api/prompt", {
       method: "POST",
       body: JSON.stringify({
         system_prompt: prompt,
