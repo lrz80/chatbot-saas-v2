@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { SiGmail } from "react-icons/si";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import TrainingHelp from "@/components/TrainingHelp";
 
 const SEGMENTOS = [
@@ -55,7 +54,7 @@ export default function CampaignsClient() {
       alert("Por favor completa todos los campos requeridos.");
       return;
     }
-
+  
     const data = new FormData();
     Object.entries(form).forEach(([key, val]) => {
       if (key === "segmentos") {
@@ -66,12 +65,13 @@ export default function CampaignsClient() {
         data.append(key, val as string);
       }
     });
-
-    const res = await fetchWithAuth("/api/campaigns", {
+  
+    // Usamos fetch normal (asegúrate que la ruta sea pública desde frontend o ajusta con proxy/API gateway)
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/campaigns`, {
       method: "POST",
       body: data,
     });
-
+  
     if (res.ok) {
       const nueva = await res.json();
       setCampaigns((prev) => [nueva, ...prev]);
@@ -87,7 +87,7 @@ export default function CampaignsClient() {
     } else {
       alert("❌ Error al guardar");
     }
-  };
+  };  
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
