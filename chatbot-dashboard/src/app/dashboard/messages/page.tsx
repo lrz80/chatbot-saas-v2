@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
-
 
 interface Message {
   id: string;
@@ -20,7 +18,12 @@ export default function MessagesPage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const res = await fetchWithAuth("/api/messages");
+        const token = await user.getIdToken();
+        const res = await fetch("/api/messages", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = await res.json();
         setMessages(data);
         setLoading(false);

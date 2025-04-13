@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 export default function OnboardingPage() {
   const [user, setUser] = useState<any>(null);
@@ -25,16 +24,7 @@ export default function OnboardingPage() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
-        const res = await fetchWithAuth("/api/settings");
-        const data = await res.json();
-
-        setForm({
-          name: data.name || "",
-          categoria: data.categoria || "",
-          idioma: data.idioma || "es",
-          prompt: data.prompt || "Eres un asistente útil.",
-        });
-
+        // Eliminado fetchWithAuth
         setLoading(false);
       } else {
         router.push("/login");
@@ -49,10 +39,8 @@ export default function OnboardingPage() {
 
   const handleSubmit = async () => {
     setSaving(true);
-    await fetchWithAuth("/api/settings", {
-      method: "POST",
-      body: JSON.stringify({ ...form, uid: user.uid, onboarding_completado: true }),
-    });
+    // Simular envío o ajustar con API real de backend
+    console.log("Formulario enviado:", { ...form, uid: user.uid });
     setSaving(false);
     setFinished(true);
     setTimeout(() => {
