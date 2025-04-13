@@ -1,46 +1,37 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { useRouter } from "next/navigation";
-import { BriefcaseIcon } from "@heroicons/react/24/outline"; // ✅ NUEVO ÍCONO PRO
+import { BriefcaseIcon } from "@heroicons/react/24/outline";
 
 export default function BusinessProfilePage() {
-  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
+    const getTenant = async () => {
+      try {
         const res = await fetch("/api/settings");
-        if (!res.ok) {
-          console.error("❌ Error al cargar settings:", res.status);
-          setLoading(false);
-          return;
-        }
+        if (!res.ok) throw new Error("Error al cargar settings");
+
         const data = await res.json();
         setTenant(data);
-        setLoading(false);
         setFormData({
           ...data,
           tenant_id: data.id,
         });
-      } else {
-        // 🔐 Redirige si no está logueado
-        router.push("/login");
+      } catch (err) {
+        console.error("❌", err);
+      } finally {
+        setLoading(false);
       }
-    });    
+    };
 
-    return () => unsubscribe();
+    getTenant();
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -89,16 +80,6 @@ export default function BusinessProfilePage() {
             />
           </div>
         ))}
-
-        {/* Email del Admin */}
-        <div>
-          <label className="text-sm text-indigo-200 font-semibold">Correo del Administrador</label>
-          <input
-            value={user?.email}
-            disabled
-            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-gray-400"
-          />
-        </div>
 
         {/* Twilio Info */}
         {[
@@ -161,17 +142,17 @@ export default function BusinessProfilePage() {
 
       {/* Botón */}
       <div className="mt-6 text-right">
-      <button
-        onClick={handleSave}
-        disabled={saving || !tenant?.membresia_activa}
-        className={`px-6 py-2 rounded-md shadow-lg transition text-white
-          ${saving || !tenant?.membresia_activa
-            ? "bg-gray-600 cursor-not-allowed"
-            : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"}
-  `     }
-      >
-        {saving ? "Guardando..." : "Guardar Cambios"}
-      </button>
+        <button
+          onClick={handleSave}
+          disabled={saving || !tenant?.membresia_activa}
+          className={`px-6 py-2 rounded-md shadow-lg transition text-white
+            ${saving || !tenant?.membresia_activa
+              ? "bg-gray-600 cursor-not-allowed"
+              : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"}
+        `}
+        >
+          {saving ? "Guardando..." : "Guardar Cambios"}
+        </button>
       </div>
     </div>
   );

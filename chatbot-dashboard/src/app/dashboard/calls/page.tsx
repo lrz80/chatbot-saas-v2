@@ -1,23 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 
 export default function CallsPage() {
   const [calls, setCalls] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        const res = await fetch(`/api/calls`);
-        const data = await res.json();
-        setCalls(data);
-      }
-    });
-  }, []);
+    const fetchCalls = async () => {
+      const res = await fetch(`/api/calls`);
+      const data = await res.json();
+      setCalls(data);
+    };
+    fetchCalls();
+  }, []);  
 
   return (
     <div className="max-w-4xl mx-auto p-6">

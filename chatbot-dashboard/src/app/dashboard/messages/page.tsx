@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
 
 interface Message {
   id: string;
@@ -16,21 +14,19 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const token = await user.getIdToken();
-        const res = await fetch("/api/messages", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch("/api/messages");
         const data = await res.json();
         setMessages(data);
+      } catch (err) {
+        console.error("Error fetching messages:", err);
+      } finally {
         setLoading(false);
       }
-    });
+    };
 
-    return () => unsubscribe();
+    fetchMessages();
   }, []);
 
   if (loading) return <p>Cargando mensajes...</p>;

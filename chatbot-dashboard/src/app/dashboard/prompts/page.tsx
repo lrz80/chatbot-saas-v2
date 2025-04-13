@@ -1,41 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
 
 export default function PromptsPage() {
-  const [user, setUser] = useState<any>(null);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
+    // Obtener prompt directamente sin validar auth
+    const fetchPrompt = async () => {
+      const res = await fetch("/api/prompt");
+      const data = await res.json();
+      setPrompt(data?.system_prompt || "");
+      setLoading(false);
+    };
 
-        const res = await fetch("/api/prompt");
-        const data = await res.json();
-        setPrompt(data?.system_prompt || "");
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
+    fetchPrompt();
   }, []);
 
   const handleSave = async () => {
-    if (!user) return;
     setSaving(true);
-
     await fetch("/api/prompt", {
       method: "POST",
-      body: JSON.stringify({
-        system_prompt: prompt,
-      }),
+      body: JSON.stringify({ system_prompt: prompt }),
     });
-
     setSaving(false);
     alert("Prompt actualizado ✅");
   };

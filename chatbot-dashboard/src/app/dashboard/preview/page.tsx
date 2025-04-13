@@ -1,24 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function PreviewPage() {
-  const [user, setUser] = useState<any>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      if (!user) return router.push("/login");
-      setUser(user);
-    });
-    return () => unsub();
-  }, [router]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -36,24 +23,24 @@ export default function PreviewPage() {
     setMessages((prev) => [...prev, { role: "assistant", content: data.respuesta }]);
     setLoading(false);
   };
+
   const handleRegenerate = async () => {
     const lastUserMsg = messages
       .slice()
       .reverse()
       .find((msg) => msg.role === "user");
-  
+
     if (!lastUserMsg) return;
-  
+
     setLoading(true);
-  
+
     const res = await fetch("/chatbot", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mensaje: lastUserMsg.content }),
     });
-  
+
     const data = await res.json();
-  
     setMessages((prev) => [...prev, { role: "assistant", content: data.respuesta }]);
     setLoading(false);
   };

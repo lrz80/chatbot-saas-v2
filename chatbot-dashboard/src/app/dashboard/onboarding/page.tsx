@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
 export default function OnboardingPage() {
@@ -21,34 +19,40 @@ export default function OnboardingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        // Eliminado fetchWithAuth
-        setLoading(false);
-      } else {
+    const checkSession = async () => {
+      try {
+        const res = await fetch("/api/me"); // Asegúrate de tener este endpoint en tu backend
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user); // Ajusta según la estructura de tu respuesta
+          setLoading(false);
+        } else {
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Error verificando sesión:", error);
         router.push("/login");
       }
-    });
-    return () => unsubscribe();
+    };
+  
+    checkSession();
   }, [router]);
-
+  
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
+  
   const handleSubmit = async () => {
     setSaving(true);
-    // Simular envío o ajustar con API real de backend
-    console.log("Formulario enviado:", { ...form, uid: user.uid });
+    console.log("Formulario enviado:", { ...form, uid: user?.uid }); // Ajusta esto si ya no necesitas el UID
     setSaving(false);
     setFinished(true);
     setTimeout(() => {
       router.push("/dashboard");
     }, 2500);
   };
-
-  if (loading) return <p className="text-center p-6">Cargando...</p>;
+  
+  if (loading) return <p className="text-center p-6">Cargando...</p>;  
 
   return (
     <div className="max-w-xl mx-auto bg-white p-8 shadow rounded-xl">
