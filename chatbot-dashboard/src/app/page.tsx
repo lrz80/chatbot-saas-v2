@@ -83,7 +83,7 @@ export default function LandingPage() {
         <p className="mb-6 text-white/80 max-w-xl mx-auto">
           Activa tu membresía y desbloquea el potencial completo de tu Asistente Virtual para optimizar la atención al cliente de tu negocio.
         </p>
-        <a href="/register">
+        <a href="/login">
           <button className="bg-white text-black font-semibold px-6 py-3 rounded-full hover:bg-gray-200 transition">
             Accede al Panel
           </button>
