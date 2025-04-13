@@ -1,11 +1,8 @@
 "use client";
 
-import ChartWidget from "@/components/ChartWidget";
-import useLastMessages from "@/hooks/useLastMessages";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 export default function DashboardHome() {
   const [keywords, setKeywords] = useState<[string, number][]>([]);
@@ -31,7 +28,7 @@ export default function DashboardHome() {
       }    
 
       try {
-        const res = await fetchWithAuth("/api/keywords");
+        const res = await fetch("/api/keywords");
         const text = await res.text();
 
         try {
@@ -42,13 +39,13 @@ export default function DashboardHome() {
           console.error("❌ No es JSON válido (puede ser HTML de error):", text);
         }
 
-        const resUsage = await fetchWithAuth(`/api/usage`);
+        const resUsage = await fetch(`/api/usage`);
         if (resUsage.ok) {
           const usageData = await resUsage.json();
           setUsage(usageData);
         }
 
-        const resChart = await fetchWithAuth(`/api/stats/monthly?month=${monthlyView}`);
+        const resChart = await fetch(`/api/stats/monthly?month=${monthlyView}`);
 
         if (!resChart.ok) {
           console.error("❌ Error al obtener stats/monthly");
@@ -83,7 +80,7 @@ export default function DashboardHome() {
           ]
         });        
 
-        const resKpi = await fetchWithAuth(`/api/stats/kpis`);
+        const resKpi = await fetch(`/api/stats/kpis`);
 
         if (!resKpi.ok) {
           console.error("❌ Error en stats/kpis:", await resKpi.text());
