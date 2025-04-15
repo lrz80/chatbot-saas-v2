@@ -12,17 +12,28 @@ export default function DashboardHome() {
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0, plan: "free" });
 
   const router = useRouter();
+  const BACKEND_URL = "https://chatbot-backend-production-5c39.up.railway.app";
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
     const fetchData = async () => {
       try {
-        const resAuth = await fetch("/api/settings");
+        const resAuth = await fetch(`${BACKEND_URL}/api/settings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!resAuth.ok) {
           router.push("/login");
           return;
         }
 
-        const resKeywords = await fetch("/api/keywords");
+        const resKeywords = await fetch(`${BACKEND_URL}/api/keywords`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const text = await resKeywords.text();
         try {
           const data = JSON.parse(text);
@@ -31,13 +42,17 @@ export default function DashboardHome() {
           console.error("Error al parsear keywords:", text);
         }
 
-        const resUsage = await fetch("/api/usage");
+        const resUsage = await fetch(`${BACKEND_URL}/api/usage`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (resUsage.ok) {
           const data = await resUsage.json();
           setUsage(data);
         }
 
-        const resChart = await fetch(`/api/stats/monthly?month=${monthlyView}`);
+        const resChart = await fetch(`${BACKEND_URL}/api/stats/monthly?month=${monthlyView}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (resChart.ok) {
           const data = await resChart.json();
           if (Array.isArray(data)) {
@@ -57,7 +72,9 @@ export default function DashboardHome() {
           }
         }
 
-        const resKpi = await fetch("/api/stats/kpis");
+        const resKpi = await fetch(`${BACKEND_URL}/api/stats/kpis`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (resKpi.ok) {
           const kpiData = await resKpi.json();
           setKpis(kpiData);
@@ -73,13 +90,29 @@ export default function DashboardHome() {
     fetchData();
   }, [monthlyView, router]);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("uid");
+    document.cookie = "user=; Max-Age=0";
+    document.cookie = "firebaseUid=; Max-Age=0";
+    router.push("/login");
+  };
+
   const mockMessages = [
     { id: 1, sender: "user", content: "¿Cuáles son los precios?", timestamp: Date.now() - 30000 },
     { id: 2, sender: "bot", content: "Nuestros precios dependen del servicio. ¿Qué deseas saber?", timestamp: Date.now() - 20000 },
   ];
 
   return (
-    <div className="p-6 text-white">
+    <div className="p-6 text-white relative">
+      {/* Botón logout */}
+      <button
+        onClick={handleLogout}
+        className="absolute top-6 right-6 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow"
+      >
+        Cerrar sesión
+      </button>
+
       <h1 className="text-3xl font-bold mb-4">Amy AI Dashboard</h1>
 
       {usage.plan === "free" && (

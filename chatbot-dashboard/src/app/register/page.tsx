@@ -13,13 +13,13 @@ import {
 } from "react-icons/fa";
 
 const nodos = [
-  { icon: <FaRobot size={36} style={{ color: '#a855f7' }} />, title: 'Atenci\u00f3n 24/7', desc: 'Siempre online para tu negocio.', posClass: 'top-[5%] left-[10%]', x: 10, y: 5 },
-  { icon: <FaChartBar size={36} style={{ color: '#6366f1' }} />, title: 'Estad\u00edsticas', desc: 'Panel con rendimiento en tiempo real.', posClass: 'top-[5%] right-[10%]', x: 90, y: 5 },
-  { icon: <FaWhatsapp size={36} style={{ color: '#25D366' }} />, title: 'WhatsApp', desc: 'Responde mensajes autom\u00e1ticamente.', posClass: 'top-[50%] left-[2%]', x: 2, y: 50 },
+  { icon: <FaRobot size={36} style={{ color: '#a855f7' }} />, title: 'Atención 24/7', desc: 'Siempre online para tu negocio.', posClass: 'top-[5%] left-[10%]', x: 10, y: 5 },
+  { icon: <FaChartBar size={36} style={{ color: '#6366f1' }} />, title: 'Estadísticas', desc: 'Panel con rendimiento en tiempo real.', posClass: 'top-[5%] right-[10%]', x: 90, y: 5 },
+  { icon: <FaWhatsapp size={36} style={{ color: '#25D366' }} />, title: 'WhatsApp', desc: 'Responde mensajes automáticamente.', posClass: 'top-[50%] left-[2%]', x: 2, y: 50 },
   { icon: <FaFacebookMessenger size={36} style={{ color: '#0084FF' }} />, title: 'Facebook', desc: 'Chatbot conectado a tu fanpage.', posClass: 'top-[50%] right-[2%]', x: 98, y: 50 },
   { icon: <FaInstagram size={36} style={{ color: '#E1306C' }} />, title: 'Instagram DM', desc: 'Atiende tus DMs con IA.', posClass: 'bottom-[20%] left-[15%]', x: 15, y: 80 },
   { icon: <FaMicrophoneAlt size={36} style={{ color: '#6366f1' }} />, title: 'Voz AI', desc: 'Responde llamadas como un humano.', posClass: 'bottom-[20%] right-[15%]', x: 85, y: 80 },
-  { icon: <FaBullhorn size={36} style={{ color: '#facc15' }} />, title: 'Campa\u00f1as', desc: 'Marketing automatizado y efectivo.', posClass: 'bottom-[5%] left-[40%]', x: 40, y: 95 },
+  { icon: <FaBullhorn size={36} style={{ color: '#facc15' }} />, title: 'Campañas', desc: 'Marketing automatizado y efectivo.', posClass: 'bottom-[5%] left-[40%]', x: 40, y: 95 },
 ];
 
 export default function RegisterPage() {
@@ -44,22 +44,18 @@ export default function RegisterPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const text = await res.text();
-      if (!res.ok) throw new Error(text || "Error del servidor");
+      const data = await res.json();
 
-      const data = JSON.parse(text);
-      if (!data.token) throw new Error("Token no recibido");
+      if (!res.ok || !data.token) throw new Error("Registro fallido");
 
       localStorage.setItem("token", data.token);
       router.push("/dashboard");
-    } catch (error: any) {
-      console.error("\u274c Error al registrar:", error);
+    } catch (error) {
+      console.error("❌ Error al registrar:", error);
       setError("Error al crear la cuenta. Verifica los datos.");
     }
   };

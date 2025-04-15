@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { setCookie } from 'cookies-next';
-import Cookies from 'js-cookie';
 import {
   FaRobot,
   FaChartBar,
@@ -35,7 +33,7 @@ export default function LoginPage() {
     setMounted(true);
   }, []);
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -50,8 +48,8 @@ export default function LoginPage() {
 
       if (!res.ok || !data.token) throw new Error('Credenciales incorrectas');
 
-      Cookies.set('firebaseUid', data.uid);
-      setCookie('user', data.uid, { maxAge: 60 * 60 * 24 });
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('uid', data.uid);
 
       router.push('/dashboard');
     } catch (err) {
@@ -136,7 +134,7 @@ export default function LoginPage() {
         <p className="mt-6 text-sm text-center text-white/60">
           ¿Aún no tienes cuenta?{' '}
           <a href="/register" className="text-purple-400 underline hover:text-purple-300 transition">
-            Registrate
+            Regístrate
           </a>
         </p>
       </div>
