@@ -146,6 +146,7 @@ export default function BusinessProfilePage() {
         </div>
       </div>
 
+      {/* ⚠️ Aviso de membresía vencida */}
       {!formData.negocio?.membresia_activa && (
         <div className="mt-4 mb-2 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
           🚫 Tu membresía está inactiva.{' '}
@@ -155,12 +156,13 @@ export default function BusinessProfilePage() {
         </div>
       )}
 
+      {/* Botón Guardar */}
       <div className="mt-6 text-right">
         <button
           onClick={handleSave}
           disabled={saving || !formData.negocio?.membresia_activa}
           className={`px-6 py-2 rounded-md shadow-lg transition text-white ${
-            saving || !formData.membresia_activa
+            saving || !formData.negocio?.membresia_activa
               ? 'bg-gray-600 cursor-not-allowed'
               : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
           }`}
