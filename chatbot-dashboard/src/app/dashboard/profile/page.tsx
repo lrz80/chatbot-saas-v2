@@ -122,7 +122,16 @@ export default function BusinessProfilePage() {
 
         <div>
           <p className="text-sm text-indigo-200 font-semibold">Fecha de Registro</p>
-          <p className="text-lg text-white">{new Date(tenant.fecha_registro).toLocaleDateString()}</p>
+          <p>
+            {tenant?.fecha_registro
+              ? new Date(tenant.fecha_registro).toLocaleDateString('es-ES', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                })
+              : 'Fecha no disponible'}
+          </p>
+
         </div>
 
         {/* Membresía */}
