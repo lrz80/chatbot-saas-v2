@@ -2,7 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import NeonChart from '@/components/NeonChart';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function DashboardHome() {
   const [keywords, setKeywords] = useState<[string, number][]>([]);
@@ -75,6 +86,7 @@ export default function DashboardHome() {
                 {
                   label: 'Interacciones del Chatbot',
                   data: data.map((d: any) => parseInt(d.count)),
+                  backgroundColor: '#a855f7',
                 },
               ],
             });
@@ -132,26 +144,18 @@ export default function DashboardHome() {
         </div>
       )}
 
-      {chartData && (
-        <div className="mb-6">
-          <NeonChart data={chartData} />
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white/10 p-4 rounded">Interacciones Totales: {kpis.total}</div>
         <div className="bg-white/10 p-4 rounded">Usuarios Únicos: {kpis.usuarios}</div>
         <div className="bg-white/10 p-4 rounded">Hora Pico: {kpis.hora_pico ? `${kpis.hora_pico}:00` : '—'}</div>
       </div>
 
-      <div className="mb-4">
-        <button onClick={() => setMonthlyView('year')} className="px-4 py-1 mr-2 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white rounded-full shadow hover:scale-105 transition">
-          Año
-        </button>
-        <button onClick={() => setMonthlyView('current')} className="px-4 py-1 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white rounded-full shadow hover:scale-105 transition">
-          Mes
-        </button>
-      </div>
+      {chartData && (
+        <div className="bg-white/10 p-6 rounded mb-6">
+          <h2 className="text-xl mb-4">Interacciones del Chatbot</h2>
+          <Bar data={chartData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
+        </div>
+      )}
 
       <div className="bg-white/10 p-4 rounded mb-6">
         <h2 className="text-xl mb-2">Historial de Conversaciones</h2>
@@ -160,6 +164,14 @@ export default function DashboardHome() {
             <strong>{msg.sender === 'user' ? '👤 Cliente' : '🤖 Bot'}:</strong> {msg.content}
           </div>
         ))}
+        <div className="mt-4 text-center">
+          <a
+            href="/dashboard/history"
+            className="inline-block px-4 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-md"
+          >
+            Ver historial completo
+          </a>
+        </div>
       </div>
 
       <div className="bg-white/10 p-4 rounded mb-6">
