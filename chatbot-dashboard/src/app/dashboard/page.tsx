@@ -30,10 +30,7 @@ export default function DashboardHome() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resAuth = await fetch(`${BACKEND_URL}/api/settings`, {
-          credentials: 'include',
-        });
-
+        const resAuth = await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include' });
         const raw = await resAuth.text();
         let data: any = {};
         try {
@@ -47,13 +44,9 @@ export default function DashboardHome() {
           return;
         }
 
-        if (resAuth.ok && data && data.id) {
-          setNegocioCargado(true);
-        }
+        if (resAuth.ok && data && data.id) setNegocioCargado(true);
 
-        const resKeywords = await fetch(`${BACKEND_URL}/api/keywords`, {
-          credentials: 'include',
-        });
+        const resKeywords = await fetch(`${BACKEND_URL}/api/keywords`, { credentials: 'include' });
         const text = await resKeywords.text();
         try {
           const data = JSON.parse(text);
@@ -62,9 +55,7 @@ export default function DashboardHome() {
           console.error('Error al parsear keywords:', text);
         }
 
-        const resUsage = await fetch(`${BACKEND_URL}/api/usage`, {
-          credentials: 'include',
-        });
+        const resUsage = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
         if (resUsage.ok) {
           const data = await resUsage.json();
           setUsage(data);
@@ -86,21 +77,19 @@ export default function DashboardHome() {
                 {
                   label: 'Interacciones del Chatbot',
                   data: data.map((d: any) => parseInt(d.count)),
-                  backgroundColor: '#a855f7',
+                  backgroundColor: 'rgba(168, 85, 247, 0.5)',
+                  borderRadius: 8,
                 },
               ],
             });
           }
         }
 
-        const resKpi = await fetch(`${BACKEND_URL}/api/stats/kpis`, {
-          credentials: 'include',
-        });
+        const resKpi = await fetch(`${BACKEND_URL}/api/stats/kpis`, { credentials: 'include' });
         if (resKpi.ok) {
           const kpiData = await resKpi.json();
           setKpis(kpiData);
         }
-
       } catch (err) {
         console.error('❌ Error cargando dashboard:', err);
         router.push('/login');
@@ -150,12 +139,47 @@ export default function DashboardHome() {
         <div className="bg-white/10 p-4 rounded">Hora Pico: {kpis.hora_pico ? `${kpis.hora_pico}:00` : '—'}</div>
       </div>
 
-      {chartData && (
-        <div className="bg-white/10 p-6 rounded mb-6">
-          <h2 className="text-xl mb-4">Interacciones del Chatbot</h2>
-          <Bar data={chartData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-xl font-semibold">Interacciones Mensuales</h2>
+          <div>
+            <button onClick={() => setMonthlyView('year')} className="px-3 py-1 mr-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full">
+              Año
+            </button>
+            <button onClick={() => setMonthlyView('current')} className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-full">
+              Mes
+            </button>
+          </div>
         </div>
-      )}
+        {chartData ? (
+          <div className="bg-white/10 p-4 rounded">
+            <Bar
+              data={chartData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    display: true,
+                    labels: {
+                      color: '#fff',
+                    },
+                  },
+                  title: {
+                    display: true,
+                    text: 'Interacciones por período',
+                    color: '#fff',
+                    font: {
+                      size: 18,
+                    },
+                  },
+                },
+              }}
+            />
+          </div>
+        ) : (
+          <p className="text-white/50">No hay datos suficientes para mostrar.</p>
+        )}
+      </div>
 
       <div className="bg-white/10 p-4 rounded mb-6">
         <h2 className="text-xl mb-2">Historial de Conversaciones</h2>
@@ -165,10 +189,7 @@ export default function DashboardHome() {
           </div>
         ))}
         <div className="mt-4 text-center">
-          <a
-            href="/dashboard/history"
-            className="inline-block px-4 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-md"
-          >
+          <a href="/dashboard/history" className="inline-block bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-4 py-2 rounded-full shadow">
             Ver historial completo
           </a>
         </div>
