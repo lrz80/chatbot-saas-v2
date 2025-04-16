@@ -16,7 +16,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log("🌐 BACKEND_URL:", BACKEND_URL);
         const res = await fetch(`${BACKEND_URL}/api/settings`, {
           method: 'GET',
           credentials: 'include',
@@ -29,7 +28,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
 
         const data = await res.json();
-        setTenant(data); // ✅ Sea que tenga o no membresía, lo seteamos
+        console.log('✅ Datos recibidos desde /api/settings:', data);
+
+        // Combinar negocio + membresía en el estado tenant
+        setTenant({
+          ...data.negocio,
+          membresia_activa: data.membresia_activa,
+          membresia_vigencia: data.membresia_vigencia,
+        });
+
+        if (!data.membresia_activa) {
+          console.warn('⛔ Membresía inactiva');
+          router.push('/upgrade');
+          return;
+        }
+
         setLoading(false);
       } catch (err) {
         console.error('❌ Error al verificar sesión:', err);
@@ -63,16 +76,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <MobileMenuButton onClick={() => setSidebarOpen(true)} />
             <p className="text-white text-lg font-semibold">Panel AI</p>
           </div>
-
-          {!tenant?.membresia_activa && (
-            <div className="bg-red-600/10 text-red-400 p-4 text-center mb-4">
-              ⚠️ Estás explorando el panel en modo gratuito.{' '}
-              <a href="/dashboard/profile?upgrade=1" className="underline hover:text-red-200">
-                Activa tu membresía
-              </a>{' '}
-              para desbloquear funciones.
-            </div>
-          )}
 
           <main className="p-6">{children}</main>
         </div>
