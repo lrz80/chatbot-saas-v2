@@ -76,13 +76,17 @@ export default function LoginPage() {
       console.log('✅ Login exitoso con UID:', data.uid);
   
       localStorage.setItem('uid', data.uid);
+      await new Promise((r) => setTimeout(r, 100)); // Pequeño delay para asegurar cookie set
       router.push('/dashboard');
+
     } catch (err: any) {
       console.error('❌ Error total en login:', err);
       setError(err.message || 'Error desconocido al iniciar sesión');
     }
   };  
-  
+  console.log('🔐 Cookie debería estar seteada. Redirigiendo al dashboard...');
+
+
   if (!mounted) return null;
 
   return (

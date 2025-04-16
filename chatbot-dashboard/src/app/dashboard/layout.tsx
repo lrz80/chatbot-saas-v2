@@ -29,14 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
 
         const data = await res.json();
-
-        if (!data?.membresia_activa) {
-          console.warn('⛔ Membresía inactiva. Redirigiendo a /upgrade...');
-          router.push('/upgrade');
-          return;
-        }
-
-        setTenant(data);
+        setTenant(data); // ✅ Sea que tenga o no membresía, lo seteamos
         setLoading(false);
       } catch (err) {
         console.error('❌ Error al verificar sesión:', err);
@@ -70,6 +63,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <MobileMenuButton onClick={() => setSidebarOpen(true)} />
             <p className="text-white text-lg font-semibold">Panel AI</p>
           </div>
+
+          {!tenant?.membresia_activa && (
+            <div className="bg-red-600/10 text-red-400 p-4 text-center mb-4">
+              ⚠️ Estás explorando el panel en modo gratuito.{' '}
+              <a href="/dashboard/profile?upgrade=1" className="underline hover:text-red-200">
+                Activa tu membresía
+              </a>{' '}
+              para desbloquear funciones.
+            </div>
+          )}
+
           <main className="p-6">{children}</main>
         </div>
       </TenantContext.Provider>
