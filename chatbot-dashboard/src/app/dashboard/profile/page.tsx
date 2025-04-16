@@ -1,40 +1,41 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { BriefcaseIcon } from "@heroicons/react/24/outline";
-import { BACKEND_URL } from "@/utils/api"; // ✅ Importa la variable del backend
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { BriefcaseIcon } from '@heroicons/react/24/outline';
+import { BACKEND_URL } from '@/utils/api';
 
 export default function BusinessProfilePage() {
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    const getTenant = async () => {
+    const fetchSettings = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/settings`, {
-          credentials: "include", // ✅ necesaria para enviar la cookie
+          credentials: 'include',
         });
-        if (!res.ok) throw new Error("Error al cargar settings");
-
+        if (!res.ok) throw new Error('Error al obtener settings');
         const data = await res.json();
-        setTenant(data);
+        setTenant(data.negocio);
         setFormData({
-          ...data,
-          tenant_id: data.id,
+          ...data.negocio,
+          owner_name: data.owner_name,
+          email: data.email,
         });
-      } catch (err) {
-        console.error("❌", err);
+      } catch (error) {
+        console.error('❌ Error al obtener settings:', error);
       } finally {
         setLoading(false);
       }
     };
-
-    getTenant();
+    fetchSettings();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -42,16 +43,16 @@ export default function BusinessProfilePage() {
     setSaving(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // ✅ también necesario aquí
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
-      if (res.ok) alert("✅ Cambios guardados correctamente");
-      else alert("❌ Error al guardar cambios");
+      if (res.ok) alert('✅ Cambios guardados correctamente');
+      else alert('❌ Error al guardar cambios');
     } catch (err) {
       console.error(err);
-      alert("❌ Error en la conexión");
+      alert('❌ Error en la conexión');
     } finally {
       setSaving(false);
     }
@@ -67,45 +68,50 @@ export default function BusinessProfilePage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
-        {/* Campos principales */}
         {[
-          { label: "Nombre del Negocio", name: "name", type: "text" },
-          { label: "Horario de Atención", name: "horario_atencion", type: "text" },
-          { label: "Categoría del Negocio", name: "categoria", type: "text" }
-        ].map(({ label, name, type }) => (
+          { label: 'Nombre del Negocio', name: 'nombre_negocio' },
+          { label: 'Horario de Atención', name: 'horario_atencion' },
+          { label: 'Categoría del Negocio', name: 'categoria' },
+        ].map(({ label, name }) => (
           <div key={name}>
             <label className="text-sm text-indigo-200 font-semibold">{label}</label>
             <input
-              type={type}
               name={name}
-              value={formData[name] || ""}
+              type="text"
+              value={formData[name] || ''}
               onChange={handleChange}
               className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
         ))}
 
-        {/* Twilio Info */}
-        {[
-          { label: "Número de Twilio", value: tenant.twilio_number },
-          { label: "Número SMS de Twilio", value: tenant.twilio_sms_number || "No asignado" }
-        ].map(({ label, value }, i) => (
+        <div>
+          <label className="text-sm text-indigo-200 font-semibold">Correo del Administrador</label>
+          <input
+            value={formData.email}
+            disabled
+            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-gray-400"
+          />
+        </div>
+
+        {[formData.twilio_number, formData.twilio_sms_number].map((value, i) => (
           <div key={i}>
-            <label className="text-sm text-indigo-200 font-semibold">{label}</label>
+            <label className="text-sm text-indigo-200 font-semibold">
+              {i === 0 ? 'Número de Twilio' : 'Número SMS de Twilio'}
+            </label>
             <input
-              value={value}
+              value={value || 'No asignado'}
               readOnly
               className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-gray-400"
             />
           </div>
         ))}
 
-        {/* Selector de idioma */}
         <div>
           <label className="text-sm text-indigo-200 font-semibold">Idioma del Asistente</label>
           <select
-            name="voice_language"
-            value={formData.voice_language || ""}
+            name="idioma"
+            value={formData.idioma || ''}
             onChange={handleChange}
             className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-white"
           >
@@ -114,32 +120,25 @@ export default function BusinessProfilePage() {
           </select>
         </div>
 
-        {/* Datos solo lectura */}
         <div>
           <p className="text-sm text-indigo-200 font-semibold">Plan Activo</p>
-          <p className="text-lg text-white">{tenant.plan}</p>
+          <p className="text-lg text-white">{formData.plan}</p>
         </div>
 
         <div>
           <p className="text-sm text-indigo-200 font-semibold">Fecha de Registro</p>
-          <p>
-            {tenant?.fecha_registro
-              ? new Date(tenant.fecha_registro).toLocaleDateString('es-ES', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })
+          <p className="text-lg text-white">
+            {formData.fecha_registro
+              ? new Date(formData.fecha_registro).toLocaleDateString()
               : 'Fecha no disponible'}
           </p>
-
         </div>
 
-        {/* Membresía */}
         <div className="md:col-span-2">
           <p className="text-sm text-indigo-200 font-semibold">Estado de la Membresía</p>
-          {tenant.membresia_activa ? (
+          {formData.membresia_activa ? (
             <p className="text-green-400 font-semibold">
-              ✅ Activa hasta {new Date(tenant.membresia_vigencia).toLocaleDateString()}
+              ✅ Activa hasta {new Date(formData.membresia_vigencia).toLocaleDateString()}
             </p>
           ) : (
             <p className="text-red-400 font-semibold">❌ Vencida</p>
@@ -147,24 +146,26 @@ export default function BusinessProfilePage() {
         </div>
       </div>
 
-      {!tenant?.membresia_activa && (
+      {!formData.membresia_activa && (
         <div className="mt-4 mb-2 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
-          🚫 Tu membresía está inactiva. <a href="/dashboard/profile?upgrade=1" className="underline">Actívala para editar tus datos.</a>
+          🚫 Tu membresía está inactiva.{' '}
+          <a href="/dashboard/profile?upgrade=1" className="underline">
+            Actívala para editar tus datos.
+          </a>
         </div>
       )}
 
-      {/* Botón */}
       <div className="mt-6 text-right">
         <button
           onClick={handleSave}
-          disabled={saving || !tenant?.membresia_activa}
-          className={`px-6 py-2 rounded-md shadow-lg transition text-white
-            ${saving || !tenant?.membresia_activa
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"}
-        `}
+          disabled={saving || !formData.membresia_activa}
+          className={`px-6 py-2 rounded-md shadow-lg transition text-white ${
+            saving || !formData.membresia_activa
+              ? 'bg-gray-600 cursor-not-allowed'
+              : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
+          }`}
         >
-          {saving ? "Guardando..." : "Guardar Cambios"}
+          {saving ? 'Guardando...' : 'Guardar Cambios'}
         </button>
       </div>
     </div>
