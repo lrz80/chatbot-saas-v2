@@ -92,11 +92,13 @@ export default function BusinessProfilePage() {
           />
         </div>
 
-        {[formData.twilio_number, formData.twilio_sms_number].map((value, i) => (
+        {[
+          { label: 'Número de Twilio (WhatsApp)', value: formData.twilio_number },
+          { label: 'Número de Twilio (SMS)', value: formData.twilio_sms_number },
+          { label: 'Número de Twilio (Voz)', value: formData.twilio_voice_number }
+        ].map(({ label, value }, i) => (
           <div key={i}>
-            <label className="text-sm text-indigo-200 font-semibold">
-              {i === 0 ? 'Número de Twilio' : 'Número SMS de Twilio'}
-            </label>
+            <label className="text-sm text-indigo-200 font-semibold">{label}</label>
             <input
               value={value || 'No asignado'}
               readOnly
@@ -144,7 +146,6 @@ export default function BusinessProfilePage() {
         </div>
       </div>
 
-      {/* ⚠️ Aviso de membresía vencida */}
       {!formData.membresia_activa && (
         <div className="mt-4 mb-2 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
           🚫 Tu membresía está inactiva.{' '}
@@ -154,7 +155,6 @@ export default function BusinessProfilePage() {
         </div>
       )}
 
-      {/* Botón Guardar */}
       <div className="mt-6 text-right">
         <button
           onClick={handleSave}
