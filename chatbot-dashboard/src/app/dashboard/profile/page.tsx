@@ -7,7 +7,6 @@ import { BACKEND_URL } from '@/utils/api';
 
 export default function BusinessProfilePage() {
   const [loading, setLoading] = useState(true);
-  const [tenant, setTenant] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const router = useRouter();
@@ -20,11 +19,12 @@ export default function BusinessProfilePage() {
         });
         if (!res.ok) throw new Error('Error al obtener settings');
         const data = await res.json();
-        setTenant(data.negocio);
         setFormData({
           ...data.negocio,
           owner_name: data.owner_name,
           email: data.email,
+          membresia_activa: data.membresia_activa,
+          membresia_vigencia: data.membresia_vigencia,
         });
       } catch (error) {
         console.error('❌ Error al obtener settings:', error);
@@ -68,11 +68,9 @@ export default function BusinessProfilePage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
-        {[
-          { label: 'Nombre del Negocio', name: 'nombre_negocio' },
+        {[{ label: 'Nombre del Negocio', name: 'nombre_negocio' },
           { label: 'Horario de Atención', name: 'horario_atencion' },
-          { label: 'Categoría del Negocio', name: 'categoria' },
-        ].map(({ label, name }) => (
+          { label: 'Categoría del Negocio', name: 'categoria' }].map(({ label, name }) => (
           <div key={name}>
             <label className="text-sm text-indigo-200 font-semibold">{label}</label>
             <input
@@ -147,7 +145,7 @@ export default function BusinessProfilePage() {
       </div>
 
       {/* ⚠️ Aviso de membresía vencida */}
-      {!formData.negocio?.membresia_activa && (
+      {!formData.membresia_activa && (
         <div className="mt-4 mb-2 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
           🚫 Tu membresía está inactiva.{' '}
           <a href="/dashboard/profile?upgrade=1" className="underline">
@@ -160,9 +158,9 @@ export default function BusinessProfilePage() {
       <div className="mt-6 text-right">
         <button
           onClick={handleSave}
-          disabled={saving || !formData.negocio?.membresia_activa}
+          disabled={saving || !formData.membresia_activa}
           className={`px-6 py-2 rounded-md shadow-lg transition text-white ${
-            saving || !formData.negocio?.membresia_activa
+            saving || !formData.membresia_activa
               ? 'bg-gray-600 cursor-not-allowed'
               : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
           }`}
