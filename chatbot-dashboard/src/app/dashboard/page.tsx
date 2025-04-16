@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import NeonChart from '@/components/NeonChart';
 
 export default function DashboardHome() {
   const [keywords, setKeywords] = useState<[string, number][]>([]);
@@ -108,17 +109,16 @@ export default function DashboardHome() {
 
   return (
     <div className="p-6 text-white relative">
-
-      <div className="flex items-center gap-4 mb-6">
-        <div className="relative w-14 h-14">
+      <div className="flex items-center gap-4 mb-6 bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 p-4 rounded-xl shadow-lg border border-purple-600/30 backdrop-blur-md">
+        <div className="relative w-16 h-16">
           <img
             src="/avatar-amy.png"
-            alt="Avatar de Amy AI"
-            className="w-14 h-14 rounded-full border-2 border-purple-500 shadow-xl animate-pulse-glow"
+            alt="Avatar de Amy"
+            className="w-full h-full rounded-full border-2 border-purple-500 shadow-xl animate-pulse-glow"
           />
           <div className="absolute inset-0 rounded-full border-2 border-purple-500 blur-md opacity-70 animate-glow" />
         </div>
-        <h1 className="text-4xl font-extrabold text-purple-300 drop-shadow-[0_0_10px_rgba(168,85,247,0.7)] tracking-wider">
+        <h1 className="text-4xl font-extrabold text-purple-300 drop-shadow-[0_0_12px_rgba(168,85,247,0.9)] tracking-wider">
           Amy AI Dashboard
         </h1>
       </div>
@@ -132,6 +132,12 @@ export default function DashboardHome() {
         </div>
       )}
 
+      {chartData && (
+        <div className="mb-6">
+          <NeonChart data={chartData} />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white/10 p-4 rounded">Interacciones Totales: {kpis.total}</div>
         <div className="bg-white/10 p-4 rounded">Usuarios Únicos: {kpis.usuarios}</div>
@@ -139,10 +145,10 @@ export default function DashboardHome() {
       </div>
 
       <div className="mb-4">
-        <button onClick={() => setMonthlyView('year')} className="px-3 py-1 mr-2 bg-indigo-600 text-white rounded">
+        <button onClick={() => setMonthlyView('year')} className="px-4 py-1 mr-2 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white rounded-full shadow hover:scale-105 transition">
           Año
         </button>
-        <button onClick={() => setMonthlyView('current')} className="px-3 py-1 bg-indigo-600 text-white rounded">
+        <button onClick={() => setMonthlyView('current')} className="px-4 py-1 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white rounded-full shadow hover:scale-105 transition">
           Mes
         </button>
       </div>
