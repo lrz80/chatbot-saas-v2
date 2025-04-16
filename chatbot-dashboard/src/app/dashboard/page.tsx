@@ -10,6 +10,7 @@ export default function DashboardHome() {
   const [chartData, setChartData] = useState<any>(null);
   const [monthlyView, setMonthlyView] = useState<'year' | 'current'>('year');
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0, plan: 'free' });
+  const [negocioCargado, setNegocioCargado] = useState<boolean>(false);
 
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
@@ -22,12 +23,21 @@ export default function DashboardHome() {
           credentials: 'include',
         });
 
-        const rawAuth = await resAuth.text();
-        console.log('🔐 Validación de sesión:', resAuth.status, rawAuth);
+        const raw = await resAuth.text();
+        let data: any = {};
+        try {
+          data = JSON.parse(raw);
+        } catch (e) {
+          console.error('Error parsing settings response:', raw);
+        }
 
-        if (resAuth.status !== 200) {
+        if (resAuth.status === 401) {
           router.push('/login');
           return;
+        }
+
+        if (resAuth.ok && data && data.id) {
+          setNegocioCargado(true); // tiene datos del negocio
         }
 
         // ✅ Palabras clave
@@ -116,6 +126,15 @@ export default function DashboardHome() {
       </button>
 
       <h1 className="text-3xl font-bold mb-4">Amy AI Dashboard</h1>
+
+      {!negocioCargado && (
+        <div className="bg-yellow-300/10 p-4 rounded text-yellow-300 text-center mb-4">
+          Aún no has configurado tu negocio.{' '}
+          <a href="/dashboard/profile" className="underline hover:text-yellow-200">
+            Hazlo aquí
+          </a>
+        </div>
+      )}
 
       {usage.plan === 'free' && (
         <div className="bg-yellow-500/10 text-yellow-300 p-4 rounded mb-6">

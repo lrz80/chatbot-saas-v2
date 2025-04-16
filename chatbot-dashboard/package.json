@@ -15,7 +15,6 @@
     "chart.js": "^4.4.8",
     "cookies-next": "^5.1.0",
     "date-fns": "^4.1.0",
-    "firebase": "^11.5.0",
     "jose": "^6.0.10",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.487.0",
