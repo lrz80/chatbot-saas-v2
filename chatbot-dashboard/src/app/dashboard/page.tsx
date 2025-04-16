@@ -125,7 +125,16 @@ export default function DashboardHome() {
         Cerrar sesión
       </button>
 
-      <h1 className="text-3xl font-bold mb-4">Amy AI Dashboard</h1>
+      <div className="flex items-center gap-4 mb-6">
+        <img
+          src="/avatar-amy.png"
+          alt="Avatar de Amy AI"
+          className="w-14 h-14 rounded-full border-2 border-purple-500 shadow-md"
+        />
+        <h1 className="text-4xl font-extrabold text-purple-300 drop-shadow-lg tracking-wide">
+          Amy AI Dashboard
+        </h1>
+      </div>
 
       {!negocioCargado && (
         <div className="bg-yellow-300/10 p-4 rounded text-yellow-300 text-center mb-4">
