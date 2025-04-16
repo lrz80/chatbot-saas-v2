@@ -18,7 +18,6 @@ export default function DashboardHome() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 🔐 Validar sesión
         const resAuth = await fetch(`${BACKEND_URL}/api/settings`, {
           credentials: 'include',
         });
@@ -37,10 +36,9 @@ export default function DashboardHome() {
         }
 
         if (resAuth.ok && data && data.id) {
-          setNegocioCargado(true); // tiene datos del negocio
+          setNegocioCargado(true);
         }
 
-        // ✅ Palabras clave
         const resKeywords = await fetch(`${BACKEND_URL}/api/keywords`, {
           credentials: 'include',
         });
@@ -52,7 +50,6 @@ export default function DashboardHome() {
           console.error('Error al parsear keywords:', text);
         }
 
-        // ✅ Uso de plan
         const resUsage = await fetch(`${BACKEND_URL}/api/usage`, {
           credentials: 'include',
         });
@@ -61,7 +58,6 @@ export default function DashboardHome() {
           setUsage(data);
         }
 
-        // ✅ Estadísticas
         const resChart = await fetch(`${BACKEND_URL}/api/stats/monthly?month=${monthlyView}`, {
           credentials: 'include',
         });
@@ -84,7 +80,6 @@ export default function DashboardHome() {
           }
         }
 
-        // ✅ KPIs generales
         const resKpi = await fetch(`${BACKEND_URL}/api/stats/kpis`, {
           credentials: 'include',
         });
@@ -104,11 +99,6 @@ export default function DashboardHome() {
     fetchData();
   }, [monthlyView]);
 
-  const handleLogout = () => {
-    document.cookie = 'token=; Max-Age=0; path=/';
-    router.push('/login');
-  };
-
   const mockMessages = [
     { id: 1, sender: 'user', content: '¿Cuáles son los precios?', timestamp: Date.now() - 30000 },
     { id: 2, sender: 'bot', content: 'Nuestros precios dependen del servicio. ¿Qué deseas saber?', timestamp: Date.now() - 20000 },
@@ -118,20 +108,17 @@ export default function DashboardHome() {
 
   return (
     <div className="p-6 text-white relative">
-      <button
-        onClick={handleLogout}
-        className="absolute top-6 right-6 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow"
-      >
-        Cerrar sesión
-      </button>
 
       <div className="flex items-center gap-4 mb-6">
-        <img
-          src="/avatar-amy.png"
-          alt="Avatar de Amy AI"
-          className="w-14 h-14 rounded-full border-2 border-purple-500 shadow-md"
-        />
-        <h1 className="text-4xl font-extrabold text-purple-300 drop-shadow-lg tracking-wide">
+        <div className="relative w-14 h-14">
+          <img
+            src="/avatar-amy.png"
+            alt="Avatar de Amy AI"
+            className="w-14 h-14 rounded-full border-2 border-purple-500 shadow-xl animate-pulse-glow"
+          />
+          <div className="absolute inset-0 rounded-full border-2 border-purple-500 blur-md opacity-70 animate-glow" />
+        </div>
+        <h1 className="text-4xl font-extrabold text-purple-300 drop-shadow-[0_0_10px_rgba(168,85,247,0.7)] tracking-wider">
           Amy AI Dashboard
         </h1>
       </div>
@@ -142,16 +129,6 @@ export default function DashboardHome() {
           <a href="/dashboard/profile" className="underline hover:text-yellow-200">
             Hazlo aquí
           </a>
-        </div>
-      )}
-
-      {usage.plan === 'free' && (
-        <div className="bg-yellow-500/10 text-yellow-300 p-4 rounded mb-6">
-          Estás en el plan gratuito.{' '}
-          <a href="/dashboard/profile?upgrade=1" className="underline">
-            Activa tu membresía
-          </a>{' '}
-          para desbloquear funciones.
         </div>
       )}
 
