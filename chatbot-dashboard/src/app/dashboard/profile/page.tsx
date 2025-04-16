@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BriefcaseIcon } from "@heroicons/react/24/outline";
+import { BACKEND_URL } from "@/utils/api"; // ✅ Importa la variable del backend
 
 export default function BusinessProfilePage() {
   const [loading, setLoading] = useState(true);
@@ -12,7 +13,9 @@ export default function BusinessProfilePage() {
   useEffect(() => {
     const getTenant = async () => {
       try {
-        const res = await fetch("/api/settings");
+        const res = await fetch(`${BACKEND_URL}/api/settings`, {
+          credentials: "include", // ✅ necesaria para enviar la cookie
+        });
         if (!res.ok) throw new Error("Error al cargar settings");
 
         const data = await res.json();
@@ -38,9 +41,10 @@ export default function BusinessProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch("/api/settings", {
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ también necesario aquí
         body: JSON.stringify(formData),
       });
       if (res.ok) alert("✅ Cambios guardados correctamente");

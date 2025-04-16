@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { BACKEND_URL } from '@/utils/api';
 
 export default function OnboardingPage() {
   const [user, setUser] = useState<any>(null);
@@ -9,50 +10,73 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [finished, setFinished] = useState(false);
+
   const [form, setForm] = useState({
-    name: "",
-    categoria: "",
-    idioma: "es",
-    prompt: "Eres un asistente útil.",
+    name: '',
+    categoria: '',
+    idioma: 'es',
+    prompt: 'Eres un asistente útil.',
   });
 
   const router = useRouter();
 
   useEffect(() => {
-    const checkSession = async () => {
+    const fetchUser = async () => {
       try {
-        const res = await fetch("/api/me"); // Asegúrate de tener este endpoint en tu backend
+        const res = await fetch(`${BACKEND_URL}/api/settings`, {
+          credentials: 'include',
+        });
         if (res.ok) {
           const data = await res.json();
-          setUser(data.user); // Ajusta según la estructura de tu respuesta
+          setUser(data);
           setLoading(false);
         } else {
-          router.push("/login");
+          router.push('/login');
         }
       } catch (error) {
-        console.error("Error verificando sesión:", error);
-        router.push("/login");
+        console.error('❌ Error cargando usuario:', error);
+        router.push('/login');
       }
     };
-  
-    checkSession();
+
+    fetchUser();
   }, [router]);
-  
+
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-  
+
   const handleSubmit = async () => {
     setSaving(true);
-    console.log("Formulario enviado:", { ...form, uid: user?.uid }); // Ajusta esto si ya no necesitas el UID
-    setSaving(false);
-    setFinished(true);
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 2500);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/tenants`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...form,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error('❌ Error guardando negocio:', await res.text());
+        alert('Hubo un error guardando los datos.');
+        setSaving(false);
+        return;
+      }
+
+      setFinished(true);
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 2000);
+    } catch (error) {
+      console.error('❌ Error al enviar:', error);
+    } finally {
+      setSaving(false);
+    }
   };
-  
-  if (loading) return <p className="text-center p-6">Cargando...</p>;  
+
+  if (loading) return <p className="text-center p-6">Cargando...</p>;
 
   return (
     <div className="max-w-xl mx-auto bg-white p-8 shadow rounded-xl">
@@ -125,7 +149,7 @@ export default function OnboardingPage() {
               disabled={saving}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
-              {saving ? "Guardando..." : "Finalizar"}
+              {saving ? 'Guardando...' : 'Finalizar'}
             </button>
           </div>
         </div>

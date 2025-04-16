@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BACKEND_URL } from "@/utils/api";
 
 export default function PreviewPage() {
   const [input, setInput] = useState("");
@@ -13,9 +14,10 @@ export default function PreviewPage() {
     setLoading(true);
     setInput("");
 
-    const res = await fetch("/chatbot", {
+    const res = await fetch(`${BACKEND_URL}/chatbot`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ mensaje: input }),
     });
 
@@ -34,9 +36,10 @@ export default function PreviewPage() {
 
     setLoading(true);
 
-    const res = await fetch("/chatbot", {
+    const res = await fetch(`${BACKEND_URL}/chatbot`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ mensaje: lastUserMsg.content }),
     });
 
@@ -44,13 +47,15 @@ export default function PreviewPage() {
     setMessages((prev) => [...prev, { role: "assistant", content: data.respuesta }]);
     setLoading(false);
   };
-  
+
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-md">
       <h2 className="text-2xl font-bold text-indigo-600 mb-4">💬 Vista previa del Asistente</h2>
 
       <div className="bg-gray-50 p-4 rounded h-80 overflow-y-auto flex flex-col gap-3 mb-4">
-        {messages.length === 0 && <p className="text-gray-400 text-sm">Escribe un mensaje para iniciar la prueba.</p>}
+        {messages.length === 0 && (
+          <p className="text-gray-400 text-sm">Escribe un mensaje para iniciar la prueba.</p>
+        )}
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -86,7 +91,7 @@ export default function PreviewPage() {
           disabled={loading || messages.length === 0}
           className="ml-2 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
         >
-          🔁 
+          🔁
         </button>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { BACKEND_URL } from "@/utils/api"; // ✅ importa la constante
 
 export default function MessageHistory() {
   const [messages, setMessages] = useState<any[]>([]);
@@ -16,7 +17,12 @@ export default function MessageHistory() {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const res = await fetch(`/api/messages?canal=${canal}`);
+        const res = await fetch(`${BACKEND_URL}/api/messages?canal=${canal}`, {
+          credentials: "include", // ✅ necesario para cookies httpOnly
+        });
+
+        if (!res.ok) throw new Error("Error al obtener mensajes");
+
         const data = await res.json();
         setMessages(data);
         setLoading(false);
@@ -27,7 +33,7 @@ export default function MessageHistory() {
 
         setConteo({ whatsapp: whatsappCount, facebook: facebookCount, voice: voiceCount });
       } catch (error) {
-        console.error("Error fetching messages:", error);
+        console.error("❌ Error al obtener mensajes:", error);
         setLoading(false);
       }
     };
@@ -90,4 +96,3 @@ export default function MessageHistory() {
     </div>
   );
 }
-

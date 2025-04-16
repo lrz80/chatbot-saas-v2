@@ -11,6 +11,7 @@ import {
   FaMicrophoneAlt,
   FaBullhorn,
 } from "react-icons/fa";
+import { BACKEND_URL } from "@/utils/api";
 
 const nodos = [
   { icon: <FaRobot size={36} style={{ color: '#a855f7' }} />, title: 'Atención 24/7', desc: 'Siempre online para tu negocio.', posClass: 'top-[5%] left-[10%]', x: 10, y: 5 },
@@ -40,25 +41,39 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
+  
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register`, {
+      const res = await fetch(`${BACKEND_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.token) throw new Error("Registro fallido");
-
-      localStorage.setItem("token", data.token);
+  
+      const contentType = res.headers.get("Content-Type") || "";
+      let data: any = null;
+  
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      }
+  
+      if (!res.ok) {
+        const msg = data?.error || "Registro fallido";
+        throw new Error(msg);
+      }
+  
+      if (!data?.uid) {
+        throw new Error("Token no recibido");
+      }
+  
+      // ✅ Redirige al dashboard si todo está bien
       router.push("/dashboard");
-    } catch (error) {
+  
+    } catch (error: any) {
       console.error("❌ Error al registrar:", error);
-      setError("Error al crear la cuenta. Verifica los datos.");
+      setError(error.message || "Error desconocido al registrar");
     }
-  };
+  };  
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-black text-white px-4 overflow-hidden">
@@ -123,7 +138,7 @@ export default function RegisterPage() {
         <input
           name="email"
           type="email"
-          placeholder="Correo electr\u00f3nico"
+          placeholder="Correo electrónico"
           value={formData.email}
           onChange={handleChange}
           required
@@ -133,7 +148,7 @@ export default function RegisterPage() {
         <input
           name="telefono"
           type="tel"
-          placeholder="Tel\u00e9fono (ej: +14120000000)"
+          placeholder="Teléfono (ej: +14120000000)"
           value={formData.telefono}
           onChange={handleChange}
           required
@@ -143,7 +158,7 @@ export default function RegisterPage() {
         <input
           name="password"
           type="password"
-          placeholder="Contrase\u00f1a segura"
+          placeholder="Contraseña segura"
           value={formData.password}
           onChange={handleChange}
           required
@@ -155,9 +170,9 @@ export default function RegisterPage() {
         </button>
 
         <p className="text-center text-sm text-white/60 mt-2">
-          \u00bfYa tienes cuenta?{' '}
+          ¿Ya tienes cuenta?{' '}
           <a href="/login" className="text-purple-400 hover:text-purple-300 underline">
-            Inicia sesi\u00f3n
+            Inicia sesión
           </a>
         </p>
       </form>

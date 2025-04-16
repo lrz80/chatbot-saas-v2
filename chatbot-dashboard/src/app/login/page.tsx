@@ -1,5 +1,6 @@
 'use client';
 
+import { BACKEND_URL } from '@/utils/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -36,27 +37,52 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
+  
+    console.log('🟣 Iniciando login...');
+  
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
+      const res = await fetch(`${BACKEND_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
       });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.token) throw new Error('Credenciales incorrectas');
-
-      localStorage.setItem('token', data.token);
+  
+      console.log('🟢 Status:', res.status);
+  
+      const text = await res.text();
+      console.log('📦 RAW Response:', text);
+  
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+        console.log('✅ Parsed JSON:', data);
+      } catch (err) {
+        console.error('❌ Error al parsear JSON:', err);
+        setError('Error al interpretar la respuesta del servidor');
+        return;
+      }
+  
+      if (!res.ok) {
+        setError(`Error HTTP: ${res.status}`);
+        return;
+      }
+  
+      if (!data.uid) {
+        setError('UID no recibido del servidor');
+        return;
+      }
+  
+      console.log('✅ Login exitoso con UID:', data.uid);
+  
       localStorage.setItem('uid', data.uid);
-
       router.push('/dashboard');
-    } catch (err) {
-      setError('Error al iniciar sesión. Verifica tus credenciales.');
+    } catch (err: any) {
+      console.error('❌ Error total en login:', err);
+      setError(err.message || 'Error desconocido al iniciar sesión');
     }
-  };
-
+  };  
+  
   if (!mounted) return null;
 
   return (

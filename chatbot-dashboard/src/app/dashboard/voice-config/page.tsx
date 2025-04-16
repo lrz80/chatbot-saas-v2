@@ -5,6 +5,7 @@ import { useTenant } from "@/context/TenantContext";
 import { toast } from "react-toastify";
 import { FiMic, FiMessageCircle, FiSettings, FiVolume2, FiHash } from "react-icons/fi";
 import TrainingHelp from "@/components/TrainingHelp";
+import { BACKEND_URL } from "@/utils/api"; // ✅ CORRECTO
 
 type VoiceOption = {
   label: string;
@@ -53,20 +54,18 @@ export default function VoiceConfigPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData(form);
 
     try {
-      const res = await fetch("/api/voice-config", {
+      const res = await fetch(`${BACKEND_URL}/api/voice-config`, {
         method: "POST",
         body: formData,
-      });      
+        credentials: "include",
+      });
 
       if (res.ok) {
         toast.success("✅ ¡Configuración guardada!");
-        // Opcional: redirigir a otro lugar después del guardado
-        // router.push("/dashboard/profile");
       } else {
         toast.error("❌ Algo salió mal.");
       }
@@ -81,8 +80,9 @@ export default function VoiceConfigPage() {
       <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
         <FiMic className="text-purple-400" />
         Asistente de Voz por Idioma
-    </h1>
-    <TrainingHelp context="voice" />
+      </h1>
+      <TrainingHelp context="voice" />
+
       <div className="flex space-x-4 mb-6">
         {idiomasDisponibles.map((lang) => (
           <button
@@ -106,8 +106,7 @@ export default function VoiceConfigPage() {
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <FiSettings className="text-purple-400" />
             Prompt del sistema ({idioma})
-        </label>
-
+          </label>
           <textarea name="system_prompt" className="w-full border px-4 py-2 rounded" rows={4} />
         </div>
 
@@ -115,7 +114,7 @@ export default function VoiceConfigPage() {
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <FiMessageCircle className="text-green-400" />
             Mensaje de bienvenida ({idioma})
-        </label>
+          </label>
           <input type="text" name="welcome_message" className="w-full border px-4 py-2 rounded" />
         </div>
 
@@ -123,7 +122,7 @@ export default function VoiceConfigPage() {
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <FiVolume2 className="text-indigo-400" />
             Voz de Twilio
-        </label>
+          </label>
           <div className="flex gap-3 items-center">
             <select name="voice_name" className="w-full border px-4 py-2 rounded">
               {voiceOptions.map((voice) => (
@@ -142,11 +141,12 @@ export default function VoiceConfigPage() {
 
                 const previewForm = new FormData();
                 previewForm.append("voice", voice);
-                previewForm.append("language", idioma); // idioma ya está en tu state
+                previewForm.append("language", idioma);
 
-                await fetch("/api/voice-preview", {
+                await fetch(`${BACKEND_URL}/api/voice-preview`, {
                   method: "POST",
                   body: previewForm,
+                  credentials: "include",
                 });
 
                 toast.info("📞 Voz enviada. Llamá al número de prueba para escuchar.");
@@ -154,15 +154,14 @@ export default function VoiceConfigPage() {
             >
               Escuchar voz
             </button>
-        </div>
-
+          </div>
         </div>
 
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <FiHash className="text-yellow-400" />
             Hints (palabras clave)
-        </label>
+          </label>
           <input
             type="text"
             name="voice_hints"
@@ -171,7 +170,10 @@ export default function VoiceConfigPage() {
           />
         </div>
 
-        <button type="submit" className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700">
+        <button
+          type="submit"
+          className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700"
+        >
           Guardar Configuración
         </button>
       </form>

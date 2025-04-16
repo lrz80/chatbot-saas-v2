@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BACKEND_URL } from "@/utils/api";
 
 export default function PromptsPage() {
   const [prompt, setPrompt] = useState("");
@@ -8,12 +9,24 @@ export default function PromptsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    // Obtener prompt directamente sin validar auth
     const fetchPrompt = async () => {
-      const res = await fetch("/api/prompt");
-      const data = await res.json();
-      setPrompt(data?.system_prompt || "");
-      setLoading(false);
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/prompt`, {
+          credentials: "include", // 🔐 importante para cookies
+        });
+
+        if (!res.ok) {
+          throw new Error("No se pudo obtener el prompt.");
+        }
+
+        const data = await res.json();
+        setPrompt(data?.system_prompt || "");
+      } catch (err) {
+        console.error("❌ Error al cargar prompt:", err);
+        setPrompt("");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchPrompt();
@@ -21,15 +34,28 @@ export default function PromptsPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    await fetch("/api/prompt", {
-      method: "POST",
-      body: JSON.stringify({ system_prompt: prompt }),
-    });
-    setSaving(false);
-    alert("Prompt actualizado ✅");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/prompt`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ system_prompt: prompt }),
+      });
+
+      if (!res.ok) throw new Error("Error al guardar");
+
+      alert("✅ Prompt actualizado correctamente");
+    } catch (err) {
+      console.error("❌ Error guardando prompt:", err);
+      alert("❌ Error al guardar el prompt");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  if (loading) return <p>Cargando prompt...</p>;
+  if (loading) return <p className="text-white">Cargando prompt...</p>;
 
   return (
     <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-6 text-white">

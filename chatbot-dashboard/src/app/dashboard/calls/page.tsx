@@ -1,19 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BACKEND_URL } from "@/utils/api";
 
 export default function CallsPage() {
   const [calls, setCalls] = useState<any[]>([]);
-  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const fetchCalls = async () => {
-      const res = await fetch(`/api/calls`);
-      const data = await res.json();
-      setCalls(data);
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/calls`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        setCalls(data);
+      } catch (err) {
+        console.error("❌ Error cargando llamadas:", err);
+      }
     };
     fetchCalls();
-  }, []);  
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto p-6">

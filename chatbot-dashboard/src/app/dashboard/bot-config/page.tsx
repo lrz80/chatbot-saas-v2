@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BACKEND_URL } from "@/utils/api";
 import { promptTemplates } from "../../../utils/promptTemplates";
 
 export default function BotConfigPage() {
@@ -19,7 +20,9 @@ export default function BotConfigPage() {
 
   useEffect(() => {
     const fetchSettings = async () => {
-      const res = await fetch("/api/settings");
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
+        credentials: "include",
+      });
       if (!res.ok) return;
       const data = await res.json();
 
@@ -58,8 +61,12 @@ export default function BotConfigPage() {
     }
 
     setSaving(true);
-    const res = await fetch("/api/settings", {
+    const res = await fetch(`${BACKEND_URL}/api/settings`, {
       method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ ...settings }),
     });
 

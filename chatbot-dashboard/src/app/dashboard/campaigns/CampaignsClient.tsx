@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { SiGmail } from "react-icons/si";
 import TrainingHelp from "@/components/TrainingHelp";
+import { BACKEND_URL } from "@/utils/api"; // ✅ Importa el backend
 
 const SEGMENTOS = [
   { id: "cliente", label: "Cliente" },
@@ -12,20 +13,13 @@ const SEGMENTOS = [
 ];
 
 export default function CampaignsClient() {
-  const [form, setForm] = useState<{
-    nombre: string;
-    canal: string;
-    contenido: string;
-    fecha_envio: string;
-    imagen: File | null;
-    segmentos: string[];
-  }>({
+  const [form, setForm] = useState({
     nombre: "",
     canal: "whatsapp",
     contenido: "",
     fecha_envio: "",
-    imagen: null,
-    segmentos: [],
+    imagen: null as File | null,
+    segmentos: [] as string[],
   });
 
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -54,7 +48,7 @@ export default function CampaignsClient() {
       alert("Por favor completa todos los campos requeridos.");
       return;
     }
-  
+
     const data = new FormData();
     Object.entries(form).forEach(([key, val]) => {
       if (key === "segmentos") {
@@ -65,29 +59,35 @@ export default function CampaignsClient() {
         data.append(key, val as string);
       }
     });
-  
-    // Usamos fetch normal (asegúrate que la ruta sea pública desde frontend o ajusta con proxy/API gateway)
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/campaigns`, {
-      method: "POST",
-      body: data,
-    });
-  
-    if (res.ok) {
-      const nueva = await res.json();
-      setCampaigns((prev) => [nueva, ...prev]);
-      setForm({
-        nombre: "",
-        canal: "whatsapp",
-        contenido: "",
-        fecha_envio: "",
-        imagen: null,
-        segmentos: [],
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/campaigns`, {
+        method: "POST",
+        body: data,
+        credentials: "include", // ✅ incluir cookies para multi-tenant
       });
-      alert("✅ Campaña guardada");
-    } else {
-      alert("❌ Error al guardar");
+
+      if (res.ok) {
+        const nueva = await res.json();
+        setCampaigns((prev) => [nueva, ...prev]);
+        setForm({
+          nombre: "",
+          canal: "whatsapp",
+          contenido: "",
+          fecha_envio: "",
+          imagen: null,
+          segmentos: [],
+        });
+        alert("✅ Campaña guardada");
+      } else {
+        console.error("❌ Error HTTP:", res.status);
+        alert("❌ Error al guardar campaña.");
+      }
+    } catch (err) {
+      console.error("❌ Error de red:", err);
+      alert("❌ Error al conectar con el servidor.");
     }
-  };  
+  };
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
@@ -197,7 +197,9 @@ export default function CampaignsClient() {
                 <tr key={c.id} className="border-t border-white/10 hover:bg-white/10">
                   <td className="p-3">{c.nombre}</td>
                   <td className="p-3 capitalize">{c.canal}</td>
-                  <td className="p-3">{new Date(c.fecha_envio).toLocaleString()}</td>
+                  <td className="p-3">
+                    {new Date(c.fecha_envio).toLocaleString()}
+                  </td>
                   <td className="p-3">{c.segmentos?.join(", ") || "—"}</td>
                 </tr>
               ))}
