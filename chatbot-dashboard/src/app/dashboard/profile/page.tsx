@@ -146,7 +146,7 @@ export default function BusinessProfilePage() {
         </div>
       </div>
 
-      {!formData.membresia_activa && (
+      {!formData.negocio?.membresia_activa && (
         <div className="mt-4 mb-2 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
           🚫 Tu membresía está inactiva.{' '}
           <a href="/dashboard/profile?upgrade=1" className="underline">
@@ -158,7 +158,7 @@ export default function BusinessProfilePage() {
       <div className="mt-6 text-right">
         <button
           onClick={handleSave}
-          disabled={saving || !formData.membresia_activa}
+          disabled={saving || !formData.negocio?.membresia_activa}
           className={`px-6 py-2 rounded-md shadow-lg transition text-white ${
             saving || !formData.membresia_activa
               ? 'bg-gray-600 cursor-not-allowed'
