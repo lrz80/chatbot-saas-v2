@@ -222,15 +222,6 @@ export default function TrainingPage() {
           }
         />
 
-        <textarea
-          name="informacion_negocio"
-          value={settings.informacion_negocio}
-          onChange={handleChange}
-          rows={4}
-          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          placeholder="Información clave del negocio (servicios, links, precios...)"
-        />
-
         <input
           name="bienvenida"
           value={settings.bienvenida}
