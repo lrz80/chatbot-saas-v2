@@ -221,6 +221,15 @@ export default function TrainingPage() {
           }
         />
 
+        <textarea
+          name="informacion_negocio"
+          value={settings.informacion_negocio}
+          onChange={handleChange}
+          rows={4}
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          placeholder="Información clave del negocio (servicios, links, precios...)"
+        />
+
         <input
           name="bienvenida"
           value={settings.bienvenida}
@@ -238,21 +247,53 @@ export default function TrainingPage() {
           placeholder="Prompt del sistema"
         />
 
-        <textarea
-          name="informacion_negocio"
-          value={settings.informacion_negocio}
-          onChange={handleChange}
-          rows={5}
-          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          placeholder="Información clave del negocio (servicios, links, precios...)"
-        />
-
         <button
           onClick={handleSave}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mb-10"
         >
           <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
         </button>
+
+        {/* Vista previa */}
+        <div className="mt-10 bg-white/10 backdrop-blur p-6 rounded-xl border border-white/20">
+          <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+            <MessageSquareText /> Vista previa del Asistente
+          </h3>
+          <div className="bg-white/5 p-4 rounded h-80 overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10">
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`max-w-[80%] p-3 rounded-lg text-sm ${
+                  msg.role === "user" ? "bg-indigo-400/30 self-end text-right" : "bg-green-400/30 self-start text-left"
+                }`}
+              >
+                {msg.content}
+              </div>
+            ))}
+            {loading && <p className="text-white/50 text-sm">⏳ Generando respuesta...</p>}
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Escribe algo..."
+              className="flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
+            />
+            <button onClick={handleSend} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+              Enviar
+            </button>
+            <button
+              onClick={handleRegenerate}
+              disabled={loading || messages.length === 0}
+              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded"
+            >
+              🔁
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
