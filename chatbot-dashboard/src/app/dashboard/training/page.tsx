@@ -176,12 +176,6 @@ export default function TrainingPage() {
 
         <TrainingHelp context="training" />
 
-        {!settings.membresia_activa && (
-          <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded-lg text-center font-medium">
-            🚫 Tu membresía está inactiva. Ve a <a href="/dashboard/profile" className="underline">activar tu plan</a> para habilitar el asistente.
-          </div>
-        )}
-
         <input
           name="name"
           value={settings.name}
@@ -227,6 +221,14 @@ export default function TrainingPage() {
           }
         />
 
+        <input
+          name="bienvenida"
+          value={settings.bienvenida}
+          onChange={handleChange}
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          placeholder="Mensaje de bienvenida"
+        />
+
         <textarea
           name="prompt"
           value={settings.prompt}
@@ -234,14 +236,6 @@ export default function TrainingPage() {
           rows={3}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Prompt del sistema"
-        />
-
-        <input
-          name="bienvenida"
-          value={settings.bienvenida}
-          onChange={handleChange}
-          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          placeholder="Mensaje de bienvenida"
         />
 
         <textarea
@@ -259,105 +253,6 @@ export default function TrainingPage() {
         >
           <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
         </button>
-
-        {/* Sección FAQ */}
-        <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
-          <NotebookText /> Preguntas Frecuentes
-        </h3>
-        {faq.map((item, i) => (
-          <div key={i} className="mb-4">
-            <input
-              type="text"
-              value={item.pregunta}
-              onChange={(e) => handleFaqChange(i, "pregunta", e.target.value)}
-              className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
-              placeholder="Pregunta"
-            />
-            <textarea
-              value={item.respuesta}
-              onChange={(e) => handleFaqChange(i, "respuesta", e.target.value)}
-              rows={2}
-              className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-              placeholder="Respuesta"
-            />
-          </div>
-        ))}
-        <button onClick={addFaq} className="text-white/70 mb-2">+ Agregar</button>
-        <button onClick={saveFaq} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white">Guardar FAQs</button>
-
-        <hr className="my-10 border-white/20" />
-
-        {/* Sección Intents */}
-        <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2">
-          <BotMessageSquare /> Entrenamiento por Intención
-        </h3>
-        {intents.map((item, i) => (
-          <div key={i} className="mb-6 p-4 bg-white/10 border border-white/20 rounded-lg">
-            <input
-              value={item.nombre}
-              onChange={(e) => handleIntentChange(i, "nombre", e.target.value)}
-              placeholder="Nombre de la intención"
-              className="w-full mb-2 p-2 bg-white/10 text-white border border-white/20 rounded"
-            />
-            <textarea
-              value={item.ejemplos.join("\n")}
-              onChange={(e) => handleIntentChange(i, "ejemplos", e.target.value)}
-              rows={3}
-              className="w-full mb-2 p-2 bg-white/10 text-white border border-white/20 rounded"
-              placeholder="Ejemplos (una por línea)"
-            />
-            <textarea
-              value={item.respuesta}
-              onChange={(e) => handleIntentChange(i, "respuesta", e.target.value)}
-              rows={2}
-              className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-              placeholder="Respuesta del asistente"
-            />
-          </div>
-        ))}
-        <button onClick={addIntent} className="text-white/70 mb-2">+ Agregar intención</button>
-        <button onClick={saveIntents} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white">Guardar Intenciones</button>
-
-        {/* Vista previa */}
-        <div className="mt-10 bg-white/10 backdrop-blur p-6 rounded-xl border border-white/20">
-          <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-            <MessageSquareText /> Vista previa del Asistente
-          </h3>
-          <div className="bg-white/5 p-4 rounded h-80 overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10">
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`max-w-[80%] p-3 rounded-lg text-sm ${
-                  msg.role === "user" ? "bg-indigo-400/30 self-end text-right" : "bg-green-400/30 self-start text-left"
-                }`}
-              >
-                {msg.content}
-              </div>
-            ))}
-            {loading && <p className="text-white/50 text-sm">⏳ Generando respuesta...</p>}
-          </div>
-
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Escribe algo..."
-              className="flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
-            />
-            <button onClick={handleSend} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
-              Enviar
-            </button>
-            <button
-              onClick={handleRegenerate}
-              disabled={loading || messages.length === 0}
-              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded"
-            >
-              🔁
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
