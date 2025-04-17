@@ -1,9 +1,9 @@
 "use client";
 
-import { Settings } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import TrainingHelp from "@/components/TrainingHelp";
+import PromptGenerator from "@/components/PromptGenerator";
+import { useRouter } from "next/navigation";
 import {
   MessageSquareText,
   Sparkles,
@@ -12,6 +12,7 @@ import {
   BotMessageSquare,
   Info,
   Save,
+  Settings,
 } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
 
@@ -19,16 +20,12 @@ export default function TrainingPage() {
   const router = useRouter();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
-  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
   const [faq, setFaq] = useState<{ pregunta: string; respuesta: string }[]>([]);
-  const [usage, setUsage] = useState<{ used: number; limit: number | null; porcentaje: number }>({
-    used: 0,
-    limit: null,
-    porcentaje: 0,
-  });
+  const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
+  const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
+
   const [settings, setSettings] = useState({
     name: "",
     categoria: "",
@@ -36,55 +33,36 @@ export default function TrainingPage() {
     bienvenida: "¡Hola! ¿En qué puedo ayudarte hoy?",
     membresia_activa: true,
     informacion_negocio: "",
-    funciones_asistente: "",
-    info_clave: "",
     idioma: "es",
   });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAll = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/settings`, {
-          credentials: "include",
-        });
-        if (!res.ok) return;
-        const data = await res.json();
+        const [settingsRes, usageRes, faqRes, intentsRes] = await Promise.all([
+          fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/faq`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/intents`, { credentials: "include" }),
+        ]);
 
-        setSettings({
-          name: data.name || "",
-          categoria: data.categoria || "",
-          prompt: data.prompt || "Eres un asistente útil.",
-          bienvenida: data.bienvenida || "¡Hola! ¿En qué puedo ayudarte hoy?",
-          membresia_activa: data.membresia_activa,
-          informacion_negocio: data.informacion_negocio || "",
-          funciones_asistente: data.funciones_asistente || "",
-          info_clave: data.info_clave || "",
-          idioma: data.idioma || "es",
-        });
-
-        const usageRes = await fetch(`${BACKEND_URL}/api/usage`, {
-          credentials: "include",
-        });
-        if (usageRes.ok) {
-          const usageData = await usageRes.json();
-          setUsage(usageData);
+        if (settingsRes.ok) {
+          const data = await settingsRes.json();
+          setSettings({
+            name: data.name || "",
+            categoria: data.categoria || "",
+            prompt: data.prompt || "Eres un asistente útil.",
+            bienvenida: data.bienvenida || "¡Hola! ¿En qué puedo ayudarte hoy?",
+            membresia_activa: data.membresia_activa,
+            informacion_negocio: data.informacion_negocio || "",
+            idioma: data.idioma || "es",
+          });
         }
 
-        const faqRes = await fetch(`${BACKEND_URL}/api/faq`, {
-          credentials: "include",
-        });
-        if (faqRes.ok) {
-          const faqData = await faqRes.json();
-          setFaq(faqData);
-        }
+        if (usageRes.ok) setUsage(await usageRes.json());
+        if (faqRes.ok) setFaq(await faqRes.json());
+        if (intentsRes.ok) setIntents(await intentsRes.json());
 
-        const intentsRes = await fetch(`${BACKEND_URL}/api/intents`, {
-          credentials: "include",
-        });
-        if (intentsRes.ok) {
-          const intentData = await intentsRes.json();
-          setIntents(intentData);
-        }
       } catch (err) {
         console.error("❌ Error cargando configuración:", err);
       } finally {
@@ -92,8 +70,8 @@ export default function TrainingPage() {
       }
     };
 
-    fetchData();
-  }, []);
+    fetchAll();
+  }, [router]);
 
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
@@ -111,122 +89,268 @@ export default function TrainingPage() {
     alert("Configuración del bot guardada ✅");
   };
 
+  const handleSend = async () => {
+    if (!settings.membresia_activa || !input.trim()) return;
+    setMessages((prev) => [...prev, { role: "user", content: input }]);
+    setInput("");
+    setLoading(true);
+    const res = await fetch(`${BACKEND_URL}/api/preview`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: input }),
+    });
+    const data = await res.json();
+    setMessages((prev) => [...prev, { role: "assistant", content: data.response || "..." }]);
+    setLoading(false);
+  };
+
+  const handleRegenerate = async () => {
+    const lastUserMsg = messages.slice().reverse().find((m) => m.role === "user");
+    if (!lastUserMsg) return;
+    setLoading(true);
+    const res = await fetch(`${BACKEND_URL}/chatbot`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mensaje: lastUserMsg.content }),
+    });
+    const data = await res.json();
+    setMessages((prev) => [...prev, { role: "assistant", content: data.respuesta }]);
+    setLoading(false);
+  };
+
+  const handleFaqChange = (index: number, field: string, value: string) => {
+    const newFaq = [...faq];
+    newFaq[index][field] = value;
+    setFaq(newFaq);
+  };
+
+  const addFaq = () => setFaq([...faq, { pregunta: "", respuesta: "" }]);
+
+  const saveFaq = async () => {
+    await fetch(`${BACKEND_URL}/api/faq`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ faqs: faq }),
+    });
+    alert("Preguntas frecuentes guardadas ✅");
+  };
+
+  const handleIntentChange = (i: number, field: string, value: string) => {
+    const updated = [...intents];
+    updated[i][field] = field === "ejemplos" ? value.split("\n") : value;
+    setIntents(updated);
+  };
+
+  const addIntent = () => setIntents([...intents, { nombre: "", ejemplos: [], respuesta: "" }]);
+
+  const saveIntents = async () => {
+    await fetch(`${BACKEND_URL}/api/intents`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ intents }),
+    });
+    alert("Intenciones guardadas ✅");
+  };
+
   if (loading) return <p className="text-center">Cargando configuración...</p>;
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 space-y-10">
-      <h2 className="text-2xl font-bold flex items-center gap-3">
-        <Settings className="text-indigo-400" size={28} /> Configuración del Asistente AI
-      </h2>
+    <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white p-6">
+      <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
+        <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+          <Settings className="text-indigo-400" size={32} />
+          Configuración del Asistente AI
+        </h2>
 
-      <TrainingHelp context="training" />
+        <TrainingHelp context="training" />
 
-      {/* Nombre del negocio */}
-      <input
-        name="name"
-        value={settings.name}
-        onChange={handleChange}
-        className="w-full p-3 border rounded bg-white/10 border-white/20 text-white placeholder-gray-300"
-        placeholder="Nombre del negocio"
-      />
+        {!settings.membresia_activa && (
+          <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded-lg text-center font-medium">
+            🚫 Tu membresía está inactiva. Ve a <a href="/dashboard/profile" className="underline">activar tu plan</a> para habilitar el asistente.
+          </div>
+        )}
 
-      {/* ¿Qué debe hacer tu asistente? */}
-      <section>
-        <h3 className="text-xl font-semibold text-indigo-300 mb-2">🧠 ¿Qué debe hacer tu Asistente?</h3>
-        <textarea
-          name="funciones_asistente"
-          value={settings.funciones_asistente}
+        <input
+          name="name"
+          value={settings.name}
           onChange={handleChange}
-          rows={3}
-          className="w-full p-3 border rounded bg-white/10 border-white/20 text-white"
-          placeholder="Ejemplo: Agendar citas, responder dudas, enviar promociones..."
+          placeholder="Nombre del negocio"
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
         />
-      </section>
 
-      {/* Información que el Asistente debe conocer */}
-      <section>
-        <h3 className="text-xl font-semibold text-indigo-300 mb-2">📚 Información clave para el Asistente</h3>
-        <textarea
-          name="info_clave"
-          value={settings.info_clave}
+        <select
+          name="categoria"
+          value={settings.categoria}
           onChange={handleChange}
-          rows={3}
-          className="w-full p-3 border rounded bg-white/10 border-white/20 text-white"
-          placeholder="Ejemplo: Servicios, precios, promociones, links, etc."
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+        >
+          <option value="">Selecciona una categoría</option>
+          <option value="spa">Spa</option>
+          <option value="barberia">Barbería</option>
+          <option value="clinica">Clínica estética</option>
+          <option value="restaurante">Restaurante</option>
+          <option value="fitness">Fitness</option>
+          <option value="petgrooming">Pet Grooming</option>
+          <option value="otra">Otra</option>
+        </select>
+
+        <select
+          name="idioma"
+          value={settings.idioma}
+          onChange={handleChange}
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+        >
+          <option value="es">Español</option>
+          <option value="en">Inglés</option>
+          <option value="pt">Portugués</option>
+          <option value="fr">Francés</option>
+        </select>
+
+        <PromptGenerator
+          informacion={settings.informacion_negocio}
+          idioma={settings.idioma}
+          membresiaActiva={settings.membresia_activa}
+          onPromptGenerated={(prompt) =>
+            setSettings((prev) => ({ ...prev, prompt }))
+          }
         />
-      </section>
 
-      {/* Generador de Prompts */}
-      <section>
-        <h3 className="text-xl font-semibold text-indigo-300 mb-2">🛠️ Generador de Prompts</h3>
-        <p className="text-white/70 text-sm mb-2">
-          Usa plantillas predefinidas según la categoría de tu negocio.
-        </p>
-        <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
-          Ver plantillas por categoría
-        </button>
-      </section>
-
-      {/* Prompt del sistema */}
-      <section>
-        <label className="block text-sm mb-1 mt-6">🧾 Prompt del sistema</label>
         <textarea
           name="prompt"
           value={settings.prompt}
           onChange={handleChange}
-          rows={4}
-          className="w-full p-3 border rounded bg-white/10 border-white/20 text-white"
+          rows={3}
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          placeholder="Prompt del sistema"
         />
-      </section>
 
-      {/* Mensaje de bienvenida */}
-      <section>
-        <label className="block text-sm mb-1">👋 Mensaje de bienvenida</label>
         <input
           name="bienvenida"
           value={settings.bienvenida}
           onChange={handleChange}
-          className="w-full p-3 border rounded bg-white/10 border-white/20 text-white"
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          placeholder="Mensaje de bienvenida"
         />
-      </section>
 
-      {/* Información del negocio */}
-      <section>
-        <h3 className="text-xl font-semibold text-indigo-300 mb-2">🏢 Información del negocio</h3>
         <textarea
           name="informacion_negocio"
           value={settings.informacion_negocio}
           onChange={handleChange}
-          rows={3}
-          className="w-full p-3 border rounded bg-white/10 border-white/20 text-white"
-          placeholder="Dirección, horario, redes sociales..."
+          rows={5}
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          placeholder="Información clave del negocio (servicios, links, precios...)"
         />
-      </section>
 
-      {/* Preguntas frecuentes */}
-      <section>
-        <h3 className="text-xl font-semibold text-indigo-300 mb-2">❓ Preguntas frecuentes</h3>
-        {/* Aquí iría tu componente de edición de FAQ */}
-      </section>
+        <button
+          onClick={handleSave}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mb-10"
+        >
+          <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
+        </button>
 
-      {/* Entrenamiento por intención */}
-      <section>
-        <h3 className="text-xl font-semibold text-indigo-300 mb-2">🎯 Entrenamiento por intención</h3>
-        {/* Aquí iría tu componente de intents */}
-      </section>
+        {/* Sección FAQ */}
+        <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
+          <NotebookText /> Preguntas Frecuentes
+        </h3>
+        {faq.map((item, i) => (
+          <div key={i} className="mb-4">
+            <input
+              type="text"
+              value={item.pregunta}
+              onChange={(e) => handleFaqChange(i, "pregunta", e.target.value)}
+              className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
+              placeholder="Pregunta"
+            />
+            <textarea
+              value={item.respuesta}
+              onChange={(e) => handleFaqChange(i, "respuesta", e.target.value)}
+              rows={2}
+              className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
+              placeholder="Respuesta"
+            />
+          </div>
+        ))}
+        <button onClick={addFaq} className="text-white/70 mb-2">+ Agregar</button>
+        <button onClick={saveFaq} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white">Guardar FAQs</button>
 
-      {/* Vista previa */}
-      <section>
-        <h3 className="text-xl font-semibold text-indigo-300 mb-2">🔍 Vista previa del Asistente</h3>
-        {/* Aquí puedes integrar tu componente PreviewBot */}
-      </section>
+        <hr className="my-10 border-white/20" />
 
-      <button
-        onClick={handleSave}
-        className="bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded text-white font-semibold flex items-center gap-2"
-      >
-        <Save size={18} /> {saving ? "Guardando..." : "Guardar Configuración"}
-      </button>
+        {/* Sección Intents */}
+        <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2">
+          <BotMessageSquare /> Entrenamiento por Intención
+        </h3>
+        {intents.map((item, i) => (
+          <div key={i} className="mb-6 p-4 bg-white/10 border border-white/20 rounded-lg">
+            <input
+              value={item.nombre}
+              onChange={(e) => handleIntentChange(i, "nombre", e.target.value)}
+              placeholder="Nombre de la intención"
+              className="w-full mb-2 p-2 bg-white/10 text-white border border-white/20 rounded"
+            />
+            <textarea
+              value={item.ejemplos.join("\n")}
+              onChange={(e) => handleIntentChange(i, "ejemplos", e.target.value)}
+              rows={3}
+              className="w-full mb-2 p-2 bg-white/10 text-white border border-white/20 rounded"
+              placeholder="Ejemplos (una por línea)"
+            />
+            <textarea
+              value={item.respuesta}
+              onChange={(e) => handleIntentChange(i, "respuesta", e.target.value)}
+              rows={2}
+              className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
+              placeholder="Respuesta del asistente"
+            />
+          </div>
+        ))}
+        <button onClick={addIntent} className="text-white/70 mb-2">+ Agregar intención</button>
+        <button onClick={saveIntents} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white">Guardar Intenciones</button>
+
+        {/* Vista previa */}
+        <div className="mt-10 bg-white/10 backdrop-blur p-6 rounded-xl border border-white/20">
+          <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+            <MessageSquareText /> Vista previa del Asistente
+          </h3>
+          <div className="bg-white/5 p-4 rounded h-80 overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10">
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`max-w-[80%] p-3 rounded-lg text-sm ${
+                  msg.role === "user" ? "bg-indigo-400/30 self-end text-right" : "bg-green-400/30 self-start text-left"
+                }`}
+              >
+                {msg.content}
+              </div>
+            ))}
+            {loading && <p className="text-white/50 text-sm">⏳ Generando respuesta...</p>}
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Escribe algo..."
+              className="flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
+            />
+            <button onClick={handleSend} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+              Enviar
+            </button>
+            <button
+              onClick={handleRegenerate}
+              disabled={loading || messages.length === 0}
+              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded"
+            >
+              🔁
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
