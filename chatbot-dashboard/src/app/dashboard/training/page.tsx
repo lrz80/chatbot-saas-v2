@@ -166,6 +166,14 @@ export default function TrainingPage() {
           Configuración del Asistente AI
         </h2>
 
+        {usage.porcentaje >= 80 && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
+            ⚠ Estás utilizando el <strong>{usage.porcentaje}%</strong> de tu límite mensual ({usage.used}/{usage.limit} mensajes).
+            <br />
+            Considera actualizar tu plan para evitar interrupciones.
+          </div>
+        )}
+
         <TrainingHelp context="training" />
 
         {!settings.membresia_activa && (
