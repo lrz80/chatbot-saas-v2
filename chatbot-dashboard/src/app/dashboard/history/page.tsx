@@ -2,43 +2,67 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { BACKEND_URL } from "@/utils/api"; // ✅ importa la constante
+import { BACKEND_URL } from "@/utils/api";
+
+const PAGE_SIZE = 10;
 
 export default function MessageHistory() {
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [canal, setCanal] = useState("");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
   const [conteo, setConteo] = useState({
     whatsapp: 0,
     facebook: 0,
     voice: 0,
   });
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/messages?canal=${canal}`, {
-          credentials: "include", // ✅ necesario para cookies httpOnly
-        });
+  const fetchMessages = async (reset = false) => {
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/messages?canal=${canal}&page=${reset ? 1 : page}&limit=${PAGE_SIZE}`,
+        {
+          credentials: "include",
+        }
+      );
 
-        if (!res.ok) throw new Error("Error al obtener mensajes");
+      if (!res.ok) throw new Error("Error al obtener mensajes");
 
-        const data = await res.json();
-        setMessages(data.mensajes);
-        setLoading(false);
+      const data = await res.json();
+      const nuevosMensajes = data.mensajes.sort(
+        (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
 
-        const whatsappCount = data.filter((m: any) => m.canal === "whatsapp").length;
-        const facebookCount = data.filter((m: any) => m.canal === "facebook").length;
-        const voiceCount = data.filter((m: any) => m.canal === "voice").length;
-
-        setConteo({ whatsapp: whatsappCount, facebook: facebookCount, voice: voiceCount });
-      } catch (error) {
-        console.error("❌ Error al obtener mensajes:", error);
-        setLoading(false);
+      if (reset) {
+        setMessages(nuevosMensajes);
+        setPage(2);
+      } else {
+        setMessages((prev) => [...prev, ...nuevosMensajes]);
+        setPage((prev) => prev + 1);
       }
-    };
 
-    fetchMessages();
+      setHasMore(nuevosMensajes.length === PAGE_SIZE);
+
+      // Conteo por canal global
+      const allMessages = reset ? nuevosMensajes : [...messages, ...nuevosMensajes];
+      setConteo({
+        whatsapp: allMessages.filter((m) => m.canal === "whatsapp").length,
+        facebook: allMessages.filter((m) => m.canal === "facebook").length,
+        voice: allMessages.filter((m) => m.canal === "voice").length,
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error("❌ Error al obtener mensajes:", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchMessages(true); // resetear paginación al cambiar de canal
   }, [canal]);
 
   return (
@@ -70,28 +94,48 @@ export default function MessageHistory() {
       ) : messages.length === 0 ? (
         <p className="text-center text-white/50">No hay mensajes recientes.</p>
       ) : (
-        <div className="space-y-4">
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${msg.sender === "user" ? "justify-start" : "justify-end"}`}
-            >
+        <>
+          <div className="space-y-4">
+            {messages.map((msg, index) => (
               <div
-                className={`max-w-xs p-3 rounded-xl shadow text-sm ${
-                  msg.sender === "user"
-                    ? "bg-white/20 text-white"
-                    : "bg-indigo-500/70 text-white"
-                }`}
+                key={index}
+                className={`flex ${msg.sender === "user" ? "justify-start" : "justify-end"}`}
               >
-                <p className="whitespace-pre-wrap">{msg.content}</p>
-                <p className="text-xs mt-1 text-right text-white/70">
-                  {msg.canal?.toUpperCase() || "WHATSAPP"} •{" "}
-                  {format(new Date(msg.timestamp), "dd/MM/yyyy HH:mm")}
-                </p>
+                <div
+                  className={`max-w-xs p-3 rounded-xl shadow text-sm ${
+                    msg.sender === "user"
+                      ? "bg-white/20 text-white"
+                      : "bg-indigo-500/70 text-white"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  
+                  {msg.sender === "user" && msg.from_number && (
+                    <p className="text-xs text-white/50 mt-1">
+                      📞 {msg.from_number}
+                    </p>
+                  )}
+
+                  <p className="text-xs mt-1 text-right text-white/70">
+                    {msg.canal?.toUpperCase() || "WHATSAPP"} •{" "}
+                    {format(new Date(msg.timestamp), "dd/MM/yyyy HH:mm")}
+                  </p>
+                </div>
               </div>
+            ))}
+          </div>
+
+          {hasMore && (
+            <div className="text-center mt-6">
+              <button
+                onClick={() => fetchMessages()}
+                className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm"
+              >
+                Ver más
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
