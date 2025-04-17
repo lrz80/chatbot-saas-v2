@@ -214,6 +214,7 @@ export default function TrainingPage() {
 
         <PromptGenerator
           informacion={settings.informacion_negocio}
+          setInformacion={(value) => setSettings((prev) => ({ ...prev, informacion_negocio: value }))}
           idioma={settings.idioma}
           membresiaActiva={settings.membresia_activa}
           onPromptGenerated={(prompt) =>

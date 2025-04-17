@@ -6,6 +6,7 @@ import { BACKEND_URL } from "@/utils/api";
 
 interface PromptGeneratorProps {
   informacion: string;
+  setInformacion: (value: string) => void;
   idioma: string;
   membresiaActiva: boolean;
   onPromptGenerated: (prompt: string) => void;
@@ -13,6 +14,7 @@ interface PromptGeneratorProps {
 
 export default function PromptGenerator({
   informacion,
+  setInformacion,
   idioma,
   membresiaActiva,
   onPromptGenerated,
@@ -77,10 +79,10 @@ export default function PromptGenerator({
       </label>
       <textarea
         value={informacion}
-        readOnly
+        onChange={(e) => setInformacion(e.target.value)}
         rows={5}
-        className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white opacity-60 cursor-not-allowed"
-        placeholder="Información del negocio cargada desde configuración..."
+        className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+        placeholder="Ej: Servicios, links, ubicación, precios..."
       />
 
       <button
