@@ -24,7 +24,7 @@ export default function MessageHistory() {
         if (!res.ok) throw new Error("Error al obtener mensajes");
 
         const data = await res.json();
-        setMessages(data);
+        setMessages(data.mensajes);
         setLoading(false);
 
         const whatsappCount = data.filter((m: any) => m.canal === "whatsapp").length;
