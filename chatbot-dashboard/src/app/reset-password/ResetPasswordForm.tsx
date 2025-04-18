@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { BACKEND_URL } from "@/utils/api";
 
-// ⚠️ Usa este nombre ahora: ResetPasswordForm
 export default function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
