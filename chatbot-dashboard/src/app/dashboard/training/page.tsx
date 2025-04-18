@@ -28,9 +28,14 @@ export default function TrainingPage() {
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const chatDiv = chatContainerRef.current;
+    if (chatDiv) {
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+    }
   }, [messages, isTyping]);
   
 
@@ -381,7 +386,10 @@ export default function TrainingPage() {
           <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
             <MessageSquareText /> Vista previa del Asistente
           </h3>
-          <div className="bg-white/5 p-4 rounded h-80 overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10">
+          <div
+            ref={chatContainerRef}
+            className="bg-white/5 p-4 rounded h-80 overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10"
+          >
             {messages.map((msg, i) => (
               <div
                 key={i}
