@@ -29,8 +29,24 @@ export default function TrainingPage() {
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const [plantillas, setPlantillas] = useState<any[]>([]);
 
-
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/twilio-templates`, {
+          credentials: 'include',
+        });
+        const data = await res.json();
+        setPlantillas(data);
+      } catch (err) {
+        console.error('❌ Error cargando plantillas:', err);
+      }
+    };
+  
+    fetchTemplates();
+  }, []);
+  
   useEffect(() => {
     const chatDiv = chatContainerRef.current;
     if (chatDiv) {
@@ -239,22 +255,6 @@ export default function TrainingPage() {
         />
   
         <select
-          name="categoria"
-          value={settings.categoria}
-          onChange={handleChange}
-          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-        >
-          <option value="">Selecciona una categoría</option>
-          <option value="spa">Spa</option>
-          <option value="barberia">Barbería</option>
-          <option value="clinica">Clínica estética</option>
-          <option value="restaurante">Restaurante</option>
-          <option value="fitness">Fitness</option>
-          <option value="petgrooming">Pet Grooming</option>
-          <option value="otra">Otra</option>
-        </select>
-  
-        <select
           name="idioma"
           value={settings.idioma}
           onChange={handleChange}
@@ -266,6 +266,21 @@ export default function TrainingPage() {
           <option value="fr">Francés</option>
         </select>
   
+        <div className="mt-10">
+          <h3 className="text-lg font-bold text-white mb-2">📑 Plantillas de WhatsApp</h3>
+          <select
+            onChange={(e) => setInput(e.target.value)}
+            className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          >
+            <option>Selecciona una plantilla para usar como mensaje</option>
+            {plantillas.map((tpl, i) => (
+              <option key={i} value={tpl.content}>
+                {tpl.friendlyName}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <PromptGenerator
           informacion={settings.informacion_negocio}
           setInformacion={(value) => setSettings((prev) => ({ ...prev, informacion_negocio: value }))}

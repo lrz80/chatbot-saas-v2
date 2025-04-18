@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { BriefcaseIcon } from '@heroicons/react/24/outline';
 import { BACKEND_URL } from '@/utils/api';
 
@@ -9,7 +8,6 @@ export default function BusinessProfilePage() {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -20,12 +18,21 @@ export default function BusinessProfilePage() {
         if (!res.ok) throw new Error('Error al obtener settings');
         const data = await res.json();
         setFormData({
-          ...data.negocio,
+          nombre_negocio: data.name,
+          horario_atencion: data.horario_atencion,
+          categoria: data.categoria,
+          idioma: data.idioma,
+          twilio_number: data.twilio_number,
+          twilio_sms_number: data.twilio_sms_number,
+          twilio_voice_number: data.twilio_voice_number,
+          plan: data.plan,
+          fecha_registro: data.fecha_registro,
           owner_name: data.owner_name,
           email: data.email,
           membresia_activa: data.membresia_activa,
           membresia_vigencia: data.membresia_vigencia,
         });
+
       } catch (error) {
         console.error('❌ Error al obtener settings:', error);
       } finally {
@@ -68,20 +75,46 @@ export default function BusinessProfilePage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
-        {[{ label: 'Nombre del Negocio', name: 'nombre_negocio' },
-          { label: 'Horario de Atención', name: 'horario_atencion' },
-          { label: 'Categoría del Negocio', name: 'categoria' }].map(({ label, name }) => (
-          <div key={name}>
-            <label className="text-sm text-indigo-200 font-semibold">{label}</label>
-            <input
-              name={name}
-              type="text"
-              value={formData[name] || ''}
-              onChange={handleChange}
-              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-            />
-          </div>
-        ))}
+        <div>
+          <label className="text-sm text-indigo-200 font-semibold">Nombre del Negocio</label>
+          <input
+            name="nombre_negocio"
+            type="text"
+            value={formData.nombre_negocio || ''}
+            onChange={handleChange}
+            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-indigo-200 font-semibold">Horario de Atención</label>
+          <input
+            name="horario_atencion"
+            type="text"
+            value={formData.horario_atencion || ''}
+            onChange={handleChange}
+            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-indigo-200 font-semibold">Categoría del Negocio</label>
+          <select
+            name="categoria"
+            value={formData.categoria || ''}
+            onChange={handleChange}
+            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-white"
+          >
+            <option value="">Selecciona una categoría</option>
+            <option value="spa">Spa</option>
+            <option value="barberia">Barbería</option>
+            <option value="clinica">Clínica estética</option>
+            <option value="restaurante">Restaurante</option>
+            <option value="fitness">Fitness</option>
+            <option value="petgrooming">Pet Grooming</option>
+            <option value="otra">Otra</option>
+          </select>
+        </div>
 
         <div>
           <label className="text-sm text-indigo-200 font-semibold">Correo del Administrador</label>
