@@ -27,6 +27,12 @@ export default function TrainingPage() {
   const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
   const [isTyping, setIsTyping] = useState(false);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+  
 
   const [settings, setSettings] = useState({
     name: "",
@@ -157,6 +163,10 @@ export default function TrainingPage() {
     const data = await res.json();
     setMessages((prev) => [...prev, { role: "assistant", content: data.respuesta }]);
     setLoading(false);
+
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);    
   };
 
   const handleFaqChange = (index: number, field: string, value: string) => {
@@ -376,7 +386,9 @@ export default function TrainingPage() {
               <div
                 key={i}
                 className={`max-w-[80%] p-3 rounded-lg text-sm ${
-                  msg.role === "user" ? "bg-indigo-400/30 self-end text-right" : "bg-green-400/30 self-start text-left"
+                  msg.role === "user"
+                    ? "bg-indigo-400/30 self-end text-right"
+                    : "bg-green-400/30 self-start text-left"
                 }`}
               >
                 {msg.content}
@@ -387,6 +399,7 @@ export default function TrainingPage() {
                 El asistente está escribiendo...
               </div>
             )}
+            <div ref={bottomRef} />
           </div>
   
           <div className="flex gap-2">
