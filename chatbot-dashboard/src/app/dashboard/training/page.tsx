@@ -249,7 +249,7 @@ export default function TrainingPage() {
         <input
           name="name"
           value={settings.name}
-          onChange={handleChange}
+          readOnly
           placeholder="Nombre del negocio"
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
         />
@@ -265,21 +265,6 @@ export default function TrainingPage() {
           <option value="pt">Portugués</option>
           <option value="fr">Francés</option>
         </select>
-  
-        <div className="mt-10">
-          <h3 className="text-lg font-bold text-white mb-2">📑 Plantillas de WhatsApp</h3>
-          <select
-            onChange={(e) => setInput(e.target.value)}
-            className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          >
-            <option>Selecciona una plantilla para usar como mensaje</option>
-            {plantillas.map((tpl, i) => (
-              <option key={i} value={tpl.content}>
-                {tpl.friendlyName}
-              </option>
-            ))}
-          </select>
-        </div>
 
         <PromptGenerator
           informacion={settings.informacion_negocio}
@@ -305,7 +290,18 @@ export default function TrainingPage() {
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Prompt del sistema"
         />
-  
+
+        <div className="mt-10">
+          <h3 className="text-lg font-bold text-white mb-2">📑 Plantillas de WhatsApp</h3>
+          <select
+            disabled
+            className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white/50 cursor-not-allowed"
+          >
+            <option>📣 Plantillas de WhatsApp — Próximamente</option>
+          </select>
+
+        </div>
+
         <button
           onClick={handleSave}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mb-10"
