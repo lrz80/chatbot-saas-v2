@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TrainingHelp from "@/components/TrainingHelp";
 import PromptGenerator from "@/components/PromptGenerator";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ import { BACKEND_URL } from "@/utils/api";
 
 export default function TrainingPage() {
   const router = useRouter();
+  const previewRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,19 +118,24 @@ export default function TrainingPage() {
 
   const handleSend = async () => {
     if (!settings.membresia_activa || !input.trim()) return;
+  
     setMessages((prev) => [...prev, { role: "user", content: input }]);
     setInput("");
-    setLoading(true);
+  
+    setTimeout(() => {
+      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 100);
+  
     const res = await fetch(`${BACKEND_URL}/api/preview`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: input }),
     });
+  
     const data = await res.json();
     setMessages((prev) => [...prev, { role: "assistant", content: data.response || "..." }]);
-    setLoading(false);
-  };
+  };  
 
   const handleRegenerate = async () => {
     const lastUserMsg = messages.slice().reverse().find((m) => m.role === "user");
@@ -298,7 +304,7 @@ export default function TrainingPage() {
         <button onClick={saveFaq} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white">Guardar FAQs</button>
 
         {/* Vista previa */}
-        <div className="mt-10 bg-white/10 backdrop-blur p-6 rounded-xl border border-white/20">
+        <div ref={previewRef} className="mt-10 bg-white/10 backdrop-blur p-6 rounded-xl border border-white/20">
           <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
             <MessageSquareText /> Vista previa del Asistente
           </h3>
