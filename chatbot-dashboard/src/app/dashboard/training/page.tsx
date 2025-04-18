@@ -26,6 +26,7 @@ export default function TrainingPage() {
   const [faq, setFaq] = useState<{ pregunta: string; respuesta: string }[]>([]);
   const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
+  const [isTyping, setIsTyping] = useState(false);
 
   const [settings, setSettings] = useState({
     name: "",
@@ -121,6 +122,7 @@ export default function TrainingPage() {
   
     setMessages((prev) => [...prev, { role: "user", content: input }]);
     setInput("");
+    setIsTyping(true);
   
     setTimeout(() => {
       previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -135,7 +137,8 @@ export default function TrainingPage() {
   
     const data = await res.json();
     setMessages((prev) => [...prev, { role: "assistant", content: data.response || "..." }]);
-  };  
+    setIsTyping(false);
+  };   
 
   const handleRegenerate = async () => {
     const lastUserMsg = messages.slice().reverse().find((m) => m.role === "user");
@@ -197,7 +200,7 @@ export default function TrainingPage() {
           <Settings className="text-indigo-400" size={32} />
           Configuración del Asistente AI
         </h2>
-
+  
         {usage.porcentaje >= 80 && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
             ⚠ Estás utilizando el <strong>{usage.porcentaje}%</strong> de tu límite mensual ({usage.used}/{usage.limit} mensajes).
@@ -205,9 +208,9 @@ export default function TrainingPage() {
             Considera actualizar tu plan para evitar interrupciones.
           </div>
         )}
-
+  
         <TrainingHelp context="training" />
-
+  
         <input
           name="name"
           value={settings.name}
@@ -215,7 +218,7 @@ export default function TrainingPage() {
           placeholder="Nombre del negocio"
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
         />
-
+  
         <select
           name="categoria"
           value={settings.categoria}
@@ -231,7 +234,7 @@ export default function TrainingPage() {
           <option value="petgrooming">Pet Grooming</option>
           <option value="otra">Otra</option>
         </select>
-
+  
         <select
           name="idioma"
           value={settings.idioma}
@@ -243,17 +246,15 @@ export default function TrainingPage() {
           <option value="pt">Portugués</option>
           <option value="fr">Francés</option>
         </select>
-
+  
         <PromptGenerator
           informacion={settings.informacion_negocio}
           setInformacion={(value) => setSettings((prev) => ({ ...prev, informacion_negocio: value }))}
           idioma={settings.idioma}
           membresiaActiva={settings.membresia_activa}
-          onPromptGenerated={(prompt) =>
-            setSettings((prev) => ({ ...prev, prompt }))
-          }
+          onPromptGenerated={(prompt) => setSettings((prev) => ({ ...prev, prompt }))}
         />
-
+  
         <input
           name="bienvenida"
           value={settings.bienvenida}
@@ -261,7 +262,7 @@ export default function TrainingPage() {
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Mensaje de bienvenida"
         />
-
+  
         <textarea
           name="prompt"
           value={settings.prompt}
@@ -270,14 +271,14 @@ export default function TrainingPage() {
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Prompt del sistema"
         />
-
+  
         <button
           onClick={handleSave}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mb-10"
         >
           <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
         </button>
-
+  
         {/* Preguntas Frecuentes */}
         <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
           <NotebookText /> Preguntas Frecuentes
@@ -302,7 +303,65 @@ export default function TrainingPage() {
         ))}
         <button onClick={addFaq} className="text-white/70 mb-2">+ Agregar</button>
         <button onClick={saveFaq} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white">Guardar FAQs</button>
-
+  
+        {/* ENTRENAMIENTO POR INTENCIÓN */}
+        <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
+          <BotMessageSquare /> Entrenamiento por Intención
+        </h3>
+        <p className="text-sm text-white/70 mb-4">
+          Define intenciones específicas para que el asistente pueda reconocer patrones en los mensajes del usuario y responder con mayor precisión. <br />
+          <strong>Ejemplo:</strong> Intención: Reservar cita | Ejemplos: “Quiero agendar”, “Reserva para hoy” | Respuesta: “¡Claro! ¿Qué día prefieres?”
+        </p>
+  
+        {intents.map((item, i) => (
+          <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
+            <label className="block text-sm font-semibold mb-1">🎯 Intención</label>
+            <input
+              type="text"
+              className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
+              value={item.nombre}
+              onChange={(e) => handleIntentChange(i, "nombre", e.target.value)}
+            />
+  
+            <label className="block text-sm font-semibold mb-1">✍️ Frases de ejemplo (una por línea)</label>
+            <textarea
+              className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
+              value={item.ejemplos.join("\n")}
+              onChange={(e) => handleIntentChange(i, "ejemplos", e.target.value)}
+              rows={3}
+            />
+  
+            <label className="block text-sm font-semibold mb-1">💬 Respuesta del Asistente</label>
+            <textarea
+              className="w-full p-2 border rounded bg-white/10 border-white/20 text-white"
+              value={item.respuesta}
+              onChange={(e) => handleIntentChange(i, "respuesta", e.target.value)}
+              rows={2}
+            />
+          </div>
+        ))}
+  
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={addIntent}
+            className="bg-white/10 text-white px-4 py-2 rounded hover:bg-white/20"
+          >
+            ➕ Agregar intención
+          </button>
+  
+          <button
+            onClick={saveIntents}
+            disabled={!settings.membresia_activa}
+            className={`px-4 py-2 rounded ${
+              settings.membresia_activa
+                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                : "bg-gray-600 text-white/50 cursor-not-allowed"
+            }`}
+          >
+            Guardar Intenciones
+          </button>
+        </div>
+  
         {/* Vista previa */}
         <div ref={previewRef} className="mt-10 bg-white/10 backdrop-blur p-6 rounded-xl border border-white/20">
           <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
@@ -319,9 +378,13 @@ export default function TrainingPage() {
                 {msg.content}
               </div>
             ))}
-            {loading && <p className="text-white/50 text-sm">⏳ Generando respuesta...</p>}
+            {isTyping && (
+              <div className="max-w-[80%] bg-green-400/20 self-start text-left text-sm text-white px-4 py-2 rounded-lg italic animate-pulse">
+                El asistente está escribiendo...
+              </div>
+            )}
           </div>
-
+  
           <div className="flex gap-2">
             <input
               type="text"
@@ -345,5 +408,5 @@ export default function TrainingPage() {
         </div>
       </div>
     </div>
-  );
-}
+  );  
+}  
