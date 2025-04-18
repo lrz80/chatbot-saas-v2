@@ -31,6 +31,18 @@ export default function TrainingPage() {
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const [plantillas, setPlantillas] = useState<any[]>([]);
 
+  const [settings, setSettings] = useState({
+    name: "",
+    categoria: "",
+    prompt: "Eres un asistente útil.",
+    bienvenida: "¡Hola! ¿En qué puedo ayudarte hoy?",
+    membresia_activa: true,
+    informacion_negocio: "",
+    idioma: "es",
+  });
+
+  const isMembershipActive = settings.membresia_activa;
+
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
@@ -43,27 +55,16 @@ export default function TrainingPage() {
         console.error('❌ Error cargando plantillas:', err);
       }
     };
-  
+
     fetchTemplates();
   }, []);
-  
+
   useEffect(() => {
     const chatDiv = chatContainerRef.current;
     if (chatDiv) {
       chatDiv.scrollTop = chatDiv.scrollHeight;
     }
   }, [messages, isTyping]);
-  
-
-  const [settings, setSettings] = useState({
-    name: "",
-    categoria: "",
-    prompt: "Eres un asistente útil.",
-    bienvenida: "¡Hola! ¿En qué puedo ayudarte hoy?",
-    membresia_activa: true,
-    informacion_negocio: "",
-    idioma: "es",
-  });
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -107,6 +108,7 @@ export default function TrainingPage() {
   };
 
   const handleSave = async () => {
+    if (!isMembershipActive) return;
     setSaving(true);
 
     const payload = {
@@ -145,23 +147,23 @@ export default function TrainingPage() {
   };
 
   const handleSend = async () => {
-    if (!settings.membresia_activa || !input.trim()) return;
-  
+    if (!isMembershipActive || !input.trim()) return;
+
     setMessages((prev) => [...prev, { role: "user", content: input }]);
     setInput("");
     setIsTyping(true);
-  
+
     setTimeout(() => {
       previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }, 100);
-  
+
     const res = await fetch(`${BACKEND_URL}/api/preview`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: input }),
     });
-  
+
     const data = await res.json();
     setMessages((prev) => [...prev, { role: "assistant", content: data.response || "..." }]);
     setIsTyping(false);
@@ -169,9 +171,10 @@ export default function TrainingPage() {
     setTimeout(() => {
       previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }, 100);
-  };   
+  };
 
   const handleRegenerate = async () => {
+    if (!isMembershipActive) return;
     const lastUserMsg = messages.slice().reverse().find((m) => m.role === "user");
     if (!lastUserMsg) return;
     setLoading(true);
@@ -187,7 +190,7 @@ export default function TrainingPage() {
 
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 100);    
+    }, 100);
   };
 
   const handleFaqChange = (index: number, field: string, value: string) => {
@@ -199,6 +202,7 @@ export default function TrainingPage() {
   const addFaq = () => setFaq([...faq, { pregunta: "", respuesta: "" }]);
 
   const saveFaq = async () => {
+    if (!isMembershipActive) return;
     await fetch(`${BACKEND_URL}/api/faq`, {
       method: "POST",
       credentials: "include",
@@ -217,6 +221,7 @@ export default function TrainingPage() {
   const addIntent = () => setIntents([...intents, { nombre: "", ejemplos: [], respuesta: "" }]);
 
   const saveIntents = async () => {
+    if (!isMembershipActive) return;
     await fetch(`${BACKEND_URL}/api/intents`, {
       method: "POST",
       credentials: "include",
@@ -231,6 +236,12 @@ export default function TrainingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white p-6">
       <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
+        {!settings.membresia_activa && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
+            ⚠ Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.
+          </div>
+        )}
+  
         <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
           <Settings className="text-indigo-400" size={32} />
           Configuración del Asistente AI
@@ -259,13 +270,14 @@ export default function TrainingPage() {
           value={settings.idioma}
           onChange={handleChange}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          disabled={!settings.membresia_activa}
         >
           <option value="es">Español</option>
           <option value="en">Inglés</option>
           <option value="pt">Portugués</option>
           <option value="fr">Francés</option>
         </select>
-
+  
         <PromptGenerator
           informacion={settings.informacion_negocio}
           setInformacion={(value) => setSettings((prev) => ({ ...prev, informacion_negocio: value }))}
@@ -280,6 +292,7 @@ export default function TrainingPage() {
           onChange={handleChange}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Mensaje de bienvenida"
+          disabled={!settings.membresia_activa}
         />
   
         <textarea
@@ -289,8 +302,9 @@ export default function TrainingPage() {
           rows={3}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Prompt del sistema"
+          disabled={!settings.membresia_activa}
         />
-
+  
         <div className="mt-10">
           <h3 className="text-lg font-bold text-white mb-2">📑 Plantillas de WhatsApp</h3>
           <select
@@ -299,12 +313,16 @@ export default function TrainingPage() {
           >
             <option>📣 Plantillas de WhatsApp — Próximamente</option>
           </select>
-
         </div>
-
+  
         <button
           onClick={handleSave}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mb-10"
+          disabled={!settings.membresia_activa}
+          className={`px-6 py-2 rounded-lg flex items-center gap-2 mb-10 ${
+            settings.membresia_activa
+              ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+              : "bg-gray-600 text-white/50 cursor-not-allowed"
+          }`}
         >
           <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
         </button>
@@ -321,6 +339,7 @@ export default function TrainingPage() {
               onChange={(e) => handleFaqChange(i, "pregunta", e.target.value)}
               className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
               placeholder="Pregunta"
+              disabled={!settings.membresia_activa}
             />
             <textarea
               value={item.respuesta}
@@ -328,11 +347,28 @@ export default function TrainingPage() {
               rows={2}
               className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
               placeholder="Respuesta"
+              disabled={!settings.membresia_activa}
             />
           </div>
         ))}
-        <button onClick={addFaq} className="text-white/70 mb-2">+ Agregar</button>
-        <button onClick={saveFaq} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white">Guardar FAQs</button>
+        <button
+          onClick={addFaq}
+          disabled={!settings.membresia_activa}
+          className={`text-white/70 mb-2 ${!settings.membresia_activa && "cursor-not-allowed opacity-50"}`}
+        >
+          + Agregar
+        </button>
+        <button
+          onClick={saveFaq}
+          disabled={!settings.membresia_activa}
+          className={`px-4 py-2 rounded text-white ${
+            settings.membresia_activa
+              ? "bg-green-600 hover:bg-green-700"
+              : "bg-gray-600 text-white/50 cursor-not-allowed"
+          }`}
+        >
+          Guardar FAQs
+        </button>
   
         {/* ENTRENAMIENTO POR INTENCIÓN */}
         <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
@@ -351,6 +387,7 @@ export default function TrainingPage() {
               className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
               value={item.nombre}
               onChange={(e) => handleIntentChange(i, "nombre", e.target.value)}
+              disabled={!settings.membresia_activa}
             />
   
             <label className="block text-sm font-semibold mb-1">✍️ Frases de ejemplo (una por línea)</label>
@@ -359,6 +396,7 @@ export default function TrainingPage() {
               value={item.ejemplos.join("\n")}
               onChange={(e) => handleIntentChange(i, "ejemplos", e.target.value)}
               rows={3}
+              disabled={!settings.membresia_activa}
             />
   
             <label className="block text-sm font-semibold mb-1">💬 Respuesta del Asistente</label>
@@ -367,6 +405,7 @@ export default function TrainingPage() {
               value={item.respuesta}
               onChange={(e) => handleIntentChange(i, "respuesta", e.target.value)}
               rows={2}
+              disabled={!settings.membresia_activa}
             />
           </div>
         ))}
@@ -374,7 +413,12 @@ export default function TrainingPage() {
         <div className="flex gap-2 mt-2">
           <button
             onClick={addIntent}
-            className="bg-white/10 text-white px-4 py-2 rounded hover:bg-white/20"
+            disabled={!settings.membresia_activa}
+            className={`px-4 py-2 rounded ${
+              settings.membresia_activa
+                ? "bg-white/10 text-white hover:bg-white/20"
+                : "bg-gray-600 text-white/50 cursor-not-allowed"
+            }`}
           >
             ➕ Agregar intención
           </button>
@@ -428,15 +472,28 @@ export default function TrainingPage() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Escribe algo..."
+              disabled={!settings.membresia_activa}
               className="flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
             />
-            <button onClick={handleSend} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+            <button
+              onClick={handleSend}
+              disabled={!settings.membresia_activa}
+              className={`px-4 py-2 rounded ${
+                settings.membresia_activa
+                  ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                  : "bg-gray-600 text-white/50 cursor-not-allowed"
+              }`}
+            >
               Enviar
             </button>
             <button
               onClick={handleRegenerate}
-              disabled={loading || messages.length === 0}
-              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded"
+              disabled={!settings.membresia_activa || loading || messages.length === 0}
+              className={`px-4 py-2 rounded ${
+                settings.membresia_activa
+                  ? "bg-white/10 hover:bg-white/20 text-white"
+                  : "bg-gray-600 text-white/50 cursor-not-allowed"
+              }`}
             >
               🔁
             </button>
@@ -444,5 +501,5 @@ export default function TrainingPage() {
         </div>
       </div>
     </div>
-  );  
+  );
 }  

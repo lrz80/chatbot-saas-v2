@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { BriefcaseIcon } from '@heroicons/react/24/outline';
 import { BACKEND_URL } from '@/utils/api';
 
@@ -8,6 +9,7 @@ export default function BusinessProfilePage() {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -47,6 +49,11 @@ export default function BusinessProfilePage() {
   };
 
   const handleSave = async () => {
+    if (!formData.membresia_activa) {
+      router.push('/dashboard/profile?upgrade=1');
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
@@ -191,14 +198,13 @@ export default function BusinessProfilePage() {
       <div className="mt-6 text-right">
         <button
           onClick={handleSave}
-          disabled={saving || !formData.membresia_activa}
           className={`px-6 py-2 rounded-md shadow-lg transition text-white ${
             saving || !formData.membresia_activa
-              ? 'bg-gray-600 cursor-not-allowed'
+              ? 'bg-gray-600 hover:bg-yellow-600 cursor-pointer'
               : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
           }`}
         >
-          {saving ? 'Guardando...' : 'Guardar Cambios'}
+          {saving ? 'Guardando...' : formData.membresia_activa ? 'Guardar Cambios' : 'Actualizar Membresía'}
         </button>
       </div>
     </div>

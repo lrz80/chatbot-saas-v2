@@ -41,7 +41,7 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-  
+
     try {
       const res = await fetch(`${BACKEND_URL}/auth/register`, {
         method: "POST",
@@ -49,31 +49,26 @@ export default function RegisterPage() {
         credentials: "include",
         body: JSON.stringify(formData),
       });
-  
+
       const contentType = res.headers.get("Content-Type") || "";
       let data: any = null;
-  
+
       if (contentType.includes("application/json")) {
         data = await res.json();
       }
-  
+
       if (!res.ok) {
         const msg = data?.error || "Registro fallido";
         throw new Error(msg);
       }
-  
-      if (!data?.uid) {
-        throw new Error("Token no recibido");
-      }
-  
-      // ✅ Redirige al dashboard si todo está bien
+
+      // ✅ Redirige al dashboard al registrarse
       router.push("/dashboard");
-  
     } catch (error: any) {
       console.error("❌ Error al registrar:", error);
       setError(error.message || "Error desconocido al registrar");
     }
-  };  
+  };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-black text-white px-4 overflow-hidden">
