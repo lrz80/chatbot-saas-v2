@@ -138,6 +138,10 @@ export default function TrainingPage() {
     const data = await res.json();
     setMessages((prev) => [...prev, { role: "assistant", content: data.response || "..." }]);
     setIsTyping(false);
+
+    setTimeout(() => {
+      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 100);
   };   
 
   const handleRegenerate = async () => {
