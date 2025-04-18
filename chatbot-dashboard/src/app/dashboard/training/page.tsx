@@ -79,14 +79,40 @@ export default function TrainingPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    await fetch(`${BACKEND_URL}/api/settings`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(settings),
-    });
-    setSaving(false);
-    alert("Configuración del bot guardada ✅");
+
+    const payload = {
+      nombre_negocio: settings.name,
+      categoria: settings.categoria,
+      idioma: settings.idioma,
+      prompt: settings.prompt,
+      bienvenida: settings.bienvenida,
+      informacion_negocio: settings.informacion_negocio,
+    };
+
+    console.log("📤 Enviando payload a /api/settings:", payload);
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      console.log("✅ Respuesta del servidor:", data);
+
+      if (!res.ok) {
+        alert("❌ Error al guardar: " + data?.error || "Error desconocido");
+      } else {
+        alert("Configuración del bot guardada ✅");
+      }
+    } catch (err) {
+      console.error("❌ Error en handleSave:", err);
+      alert("Error al guardar la configuración.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSend = async () => {
@@ -245,6 +271,31 @@ export default function TrainingPage() {
         >
           <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
         </button>
+
+        {/* Preguntas Frecuentes */}
+        <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
+          <NotebookText /> Preguntas Frecuentes
+        </h3>
+        {faq.map((item, i) => (
+          <div key={i} className="mb-4">
+            <input
+              type="text"
+              value={item.pregunta}
+              onChange={(e) => handleFaqChange(i, "pregunta", e.target.value)}
+              className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
+              placeholder="Pregunta"
+            />
+            <textarea
+              value={item.respuesta}
+              onChange={(e) => handleFaqChange(i, "respuesta", e.target.value)}
+              rows={2}
+              className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
+              placeholder="Respuesta"
+            />
+          </div>
+        ))}
+        <button onClick={addFaq} className="text-white/70 mb-2">+ Agregar</button>
+        <button onClick={saveFaq} className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white">Guardar FAQs</button>
 
         {/* Vista previa */}
         <div className="mt-10 bg-white/10 backdrop-blur p-6 rounded-xl border border-white/20">
