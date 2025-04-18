@@ -1,27 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BACKEND_URL } from "@/utils/api";
 
 export default function VerifyEmailPage() {
   const [code, setCode] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("pending_email");
+    if (!storedEmail) {
+      router.push("/login");
+    } else {
+      setEmail(storedEmail);
+    }
+  }, [router]);
 
   const handleVerify = async () => {
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/verify`, {
+      const res = await fetch(`${BACKEND_URL}/auth/verify`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ email, codigo: code }),
       });
 
       const data = await res.json();
@@ -29,6 +38,7 @@ export default function VerifyEmailPage() {
       if (!res.ok) throw new Error(data.error || "Verificación fallida");
 
       alert("✅ Correo verificado correctamente");
+      localStorage.removeItem("pending_email");
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message);
@@ -69,6 +79,26 @@ export default function VerifyEmailPage() {
           className="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded font-semibold disabled:opacity-50"
         >
           {loading ? "Verificando..." : "Verificar"}
+        </button>
+
+        <button
+          onClick={async () => {
+            const res = await fetch(`${BACKEND_URL}/auth/resend-code`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+              alert("✅ Código reenviado a tu correo");
+            } else {
+              alert(data.error || "No se pudo reenviar el código");
+            }
+          }}
+          className="w-full mt-4 text-sm text-purple-300 hover:underline text-center"
+        >
+          ¿No recibiste el código? Reenviar
         </button>
       </div>
     </div>
