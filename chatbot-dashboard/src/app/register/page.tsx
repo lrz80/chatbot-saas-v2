@@ -33,6 +33,7 @@ export default function RegisterPage() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -41,6 +42,7 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess(false);
 
     try {
       const res = await fetch(`${BACKEND_URL}/auth/register`, {
@@ -62,8 +64,7 @@ export default function RegisterPage() {
         throw new Error(msg);
       }
 
-      // ✅ Redirige al dashboard al registrarse
-      router.push("/dashboard");
+      setSuccess(true);
     } catch (error: any) {
       console.error("❌ Error al registrar:", error);
       setError(error.message || "Error desconocido al registrar");
@@ -89,25 +90,11 @@ export default function RegisterPage() {
         ))}
       </svg>
 
-      <div className="absolute inset-0 z-10">
-        {nodos.map((nodo, index) => (
-          <div
-            key={index}
-            className={`absolute ${nodo.posClass} bg-white/5 border border-white/10 p-4 rounded-xl w-60 backdrop-blur-md shadow-lg hover:scale-105 transition-transform`}
-          >
-            <div className="flex items-center gap-3 mb-2">
-              {nodo.icon}
-              <span className="text-white text-base font-semibold">{nodo.title}</span>
-            </div>
-            <p className="text-sm text-white/60">{nodo.desc}</p>
-          </div>
-        ))}
-      </div>
-
       <form onSubmit={handleRegister} className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl space-y-4">
         <h2 className="text-2xl font-bold text-center text-purple-300">Crear cuenta</h2>
 
         {error && <p className="bg-red-100 text-red-700 p-2 rounded text-sm text-center">{error}</p>}
+        {success && <p className="bg-green-100 text-green-700 p-2 rounded text-sm text-center">✅ Registro exitoso. Revisa tu correo para activar tu cuenta.</p>}
 
         <div className="flex gap-4">
           <input

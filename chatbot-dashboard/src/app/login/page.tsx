@@ -29,17 +29,28 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showResend, setShowResend] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setInterval(() => {
+        setCooldown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [cooldown]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-  
-    console.log('🟣 Iniciando login...');
-  
+    setResendSuccess(false);
+
     try {
       const res = await fetch(`${BACKEND_URL}/auth/login`, {
         method: 'POST',
@@ -47,45 +58,66 @@ export default function LoginPage() {
         credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
-  
-      console.log('🟢 Status:', res.status);
-  
+
       const text = await res.text();
-      console.log('📦 RAW Response:', text);
-  
       let data: any = {};
       try {
         data = JSON.parse(text);
-        console.log('✅ Parsed JSON:', data);
       } catch (err) {
-        console.error('❌ Error al parsear JSON:', err);
         setError('Error al interpretar la respuesta del servidor');
         return;
       }
-  
+
+      if (res.status === 403) {
+        setError("Tu cuenta aún no está verificada. Revisa tu correo.");
+        setShowResend(true);
+        return;
+      }
+
       if (!res.ok) {
         setError(`Error HTTP: ${res.status}`);
         return;
       }
-  
+
       if (!data.uid) {
         setError('UID no recibido del servidor');
         return;
       }
-  
-      console.log('✅ Login exitoso con UID:', data.uid);
-  
+
       localStorage.setItem('uid', data.uid);
-      await new Promise((r) => setTimeout(r, 100)); // Pequeño delay para asegurar cookie set
+      await new Promise((r) => setTimeout(r, 100));
       router.push('/dashboard');
 
     } catch (err: any) {
-      console.error('❌ Error total en login:', err);
       setError(err.message || 'Error desconocido al iniciar sesión');
     }
-  };  
-  console.log('🔐 Cookie debería estar seteada. Redirigiendo al dashboard...');
+  };
 
+  const reenviarLink = async () => {
+    if (cooldown > 0) return;
+    setError('');
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/auth/resend-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'No se pudo reenviar el enlace');
+        return;
+      }
+
+      setResendSuccess(true);
+      setShowResend(false);
+      setCooldown(60);
+    } catch (err) {
+      setError('Error al reenviar el correo de verificación');
+    }
+  };
 
   if (!mounted) return null;
 
@@ -129,6 +161,26 @@ export default function LoginPage() {
         </h1>
 
         {error && <p className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center">{error}</p>}
+
+        {showResend && (
+          <div className="text-center mb-4">
+            <button
+              onClick={reenviarLink}
+              disabled={cooldown > 0}
+              className="text-purple-300 hover:underline text-sm disabled:opacity-50"
+            >
+              {cooldown > 0
+                ? `Espera ${cooldown}s para reenviar`
+                : '¿No recibiste el correo? Reenviar link de activación'}
+            </button>
+          </div>
+        )}
+
+        {resendSuccess && (
+          <p className="text-green-400 text-sm mt-2 text-center">
+            ✅ Enlace de verificación reenviado a tu correo.
+          </p>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
