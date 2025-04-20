@@ -90,74 +90,80 @@ export default function RegisterPage() {
         ))}
       </svg>
 
-      <form onSubmit={handleRegister} className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl space-y-4">
-        <h2 className="text-2xl font-bold text-center text-purple-300">Crear cuenta</h2>
+      {!success ? (
+        <form onSubmit={handleRegister} className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl space-y-4">
+          <h2 className="text-2xl font-bold text-center text-purple-300">Crear cuenta</h2>
 
-        {error && <p className="bg-red-100 text-red-700 p-2 rounded text-sm text-center">{error}</p>}
-        {success && <p className="bg-green-100 text-green-700 p-2 rounded text-sm text-center">✅ Registro exitoso. Revisa tu correo para activar tu cuenta.</p>}
+          {error && <p className="bg-red-100 text-red-700 p-2 rounded text-sm text-center">{error}</p>}
 
-        <div className="flex gap-4">
+          <div className="flex gap-4">
+            <input
+              name="nombre"
+              type="text"
+              placeholder="Nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
+            />
+            <input
+              name="apellido"
+              type="text"
+              placeholder="Apellido"
+              value={formData.apellido}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
+            />
+          </div>
+
           <input
-            name="nombre"
-            type="text"
-            placeholder="Nombre"
-            value={formData.nombre}
+            name="email"
+            type="email"
+            placeholder="Correo electrónico"
+            value={formData.email}
             onChange={handleChange}
             required
             className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
           />
+
           <input
-            name="apellido"
-            type="text"
-            placeholder="Apellido"
-            value={formData.apellido}
+            name="telefono"
+            type="tel"
+            placeholder="Teléfono (ej: +14120000000)"
+            value={formData.telefono}
             onChange={handleChange}
             required
             className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
           />
+
+          <input
+            name="password"
+            type="password"
+            placeholder="Contraseña segura"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
+          />
+
+          <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold transition duration-200">
+            Registrarse
+          </button>
+
+          <p className="text-center text-sm text-white/60 mt-2">
+            ¿Ya tienes cuenta?{' '}
+            <a href="/login" className="text-purple-400 hover:text-purple-300 underline">
+              Inicia sesión
+            </a>
+          </p>
+        </form>
+      ) : (
+        <div className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl text-center">
+          <h2 className="text-2xl font-bold text-purple-300 mb-4">✅ Registro exitoso</h2>
+          <p className="text-white/80 text-sm">Hemos enviado un enlace de verificación a tu correo. Por favor revísalo para activar tu cuenta.</p>
         </div>
-
-        <input
-          name="email"
-          type="email"
-          placeholder="Correo electrónico"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
-        />
-
-        <input
-          name="telefono"
-          type="tel"
-          placeholder="Teléfono (ej: +14120000000)"
-          value={formData.telefono}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
-        />
-
-        <input
-          name="password"
-          type="password"
-          placeholder="Contraseña segura"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
-        />
-
-        <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold transition duration-200">
-          Registrarse
-        </button>
-
-        <p className="text-center text-sm text-white/60 mt-2">
-          ¿Ya tienes cuenta?{' '}
-          <a href="/login" className="text-purple-400 hover:text-purple-300 underline">
-            Inicia sesión
-          </a>
-        </p>
-      </form>
+      )}
     </div>
   );
 }
