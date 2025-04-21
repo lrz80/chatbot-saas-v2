@@ -22,11 +22,10 @@ export default function DashboardHome() {
   const [chartData, setChartData] = useState<any>(null);
   const [monthlyView, setMonthlyView] = useState<'year' | 'current'>('year');
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0, plan: 'free' });
-  const [negocioCargado, setNegocioCargado] = useState<boolean>(false);
+  const [onboardingCompletado, setOnboardingCompletado] = useState<boolean>(true);
 
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
-  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
@@ -46,7 +45,9 @@ export default function DashboardHome() {
           return;
         }
   
-        if (resAuth.ok && data && data.id) setNegocioCargado(true);
+        if (resAuth.ok && data) {
+          setOnboardingCompletado(data.onboarding_completado ?? true); // fallback true para evitar errores
+        }        
   
         const resKeywords = await fetch(`${BACKEND_URL}/api/keywords`, { credentials: 'include' });
         const text = await resKeywords.text();
@@ -149,7 +150,7 @@ export default function DashboardHome() {
         </h1>
       </div>
 
-      {!negocioCargado && (
+      {!onboardingCompletado && (
         <div className="bg-yellow-300/10 p-4 rounded text-yellow-300 text-center mb-4">
           Aún no has configurado tu negocio.{' '}
           <a href="/dashboard/profile" className="underline hover:text-yellow-200">
