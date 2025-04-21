@@ -1,10 +1,10 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { BACKEND_URL } from "@/utils/api";
 
-export default function VerifyEmailPage() {
+function VerificacionContenido() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const router = useRouter();
@@ -53,3 +53,10 @@ export default function VerifyEmailPage() {
   );
 }
 
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div className="text-white text-center mt-10">Cargando...</div>}>
+      <VerificacionContenido />
+    </Suspense>
+  );
+}
