@@ -366,16 +366,6 @@ export default function TrainingPage() {
           disabled={!settings.membresia_activa}
         />
   
-        <div className="mt-10">
-          <h3 className="text-lg font-bold text-white mb-2">📑 Plantillas de WhatsApp</h3>
-          <select
-            disabled
-            className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white/50 cursor-not-allowed"
-          >
-            <option>📣 Plantillas de WhatsApp — Próximamente</option>
-          </select>
-        </div>
-  
         <button
           onClick={handleSave}
           disabled={!settings.membresia_activa}
