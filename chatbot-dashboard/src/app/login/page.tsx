@@ -69,10 +69,15 @@ export default function LoginPage() {
       }
 
       if (res.status === 403) {
-        setError("Tu cuenta aún no está verificada. Revisa tu correo.");
-        setShowResend(true);
+        if (!email) {
+          setError("Tu cuenta no está verificada. Ingresa tu correo para reenviar el enlace.");
+          setShowResend(false);
+        } else {
+          setError("Tu cuenta aún no está verificada. Revisa tu correo o reenvía el enlace.");
+          setShowResend(true);
+        }
         return;
-      }
+      }      
 
       if (!res.ok) {
         setError(`Error HTTP: ${res.status}`);
@@ -97,6 +102,11 @@ export default function LoginPage() {
     if (cooldown > 0) return;
     setError('');
 
+    if (!email) {
+      setError("Por favor, ingresa tu correo para reenviar el enlace.");
+      return;
+    }
+    
     try {
       const res = await fetch(`${BACKEND_URL}/auth/resend-code`, {
         method: 'POST',
