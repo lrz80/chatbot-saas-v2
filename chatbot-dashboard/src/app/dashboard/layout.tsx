@@ -30,18 +30,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const data = await res.json();
         console.log('✅ Datos recibidos desde /api/settings:', data);
 
-        // Combinar negocio + membresía en el estado tenant
+        // Bloquear acceso solo si no está verificado
+        if (!data.verificado) {
+          console.warn('⛔ Usuario no verificado');
+          router.push('/auth/verify');
+          return;
+        }
+
+        // Guardar estado del negocio + membresía
         setTenant({
           ...data.negocio,
           membresia_activa: data.membresia_activa,
           membresia_vigencia: data.membresia_vigencia,
         });
-
-        if (!data.membresia_activa) {
-          console.warn('⛔ Membresía inactiva');
-          router.push('/upgrade');
-          return;
-        }
 
         setLoading(false);
       } catch (err) {
