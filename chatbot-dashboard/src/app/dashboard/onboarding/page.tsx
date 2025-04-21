@@ -28,14 +28,19 @@ export default function OnboardingPage() {
         });
         if (res.ok) {
           const data = await res.json();
+          if (data.onboarding_completado) {
+            router.push('/dashboard');
+            return;
+          }
           setUser(data);
-          setLoading(false);
         } else {
           router.push('/login');
         }
       } catch (error) {
         console.error('❌ Error cargando usuario:', error);
         router.push('/login');
+      } finally {
+        setLoading(false);
       }
     };
 
