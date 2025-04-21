@@ -50,7 +50,7 @@ export default function BusinessProfilePage() {
 
   const handleSave = async () => {
     if (!formData.membresia_activa) {
-      router.push('/dashboard/profile?upgrade=1');
+      router.push('/upgrade');
       return;
     }
 
@@ -189,7 +189,7 @@ export default function BusinessProfilePage() {
       {!formData.membresia_activa && (
         <div className="mt-4 mb-2 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
           🚫 Tu membresía está inactiva.{' '}
-          <a href="/dashboard/profile?upgrade=1" className="underline">
+          <a onClick={() => router.push('/upgrade')} className="underline cursor-pointer">
             Actívala para editar tus datos.
           </a>
         </div>
