@@ -26,6 +26,8 @@ export default function DashboardHome() {
 
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,14 +40,14 @@ export default function DashboardHome() {
         } catch (e) {
           console.error('Error parsing settings response:', raw);
         }
-
+  
         if (resAuth.status === 401) {
           router.push('/login');
           return;
         }
-
+  
         if (resAuth.ok && data && data.id) setNegocioCargado(true);
-
+  
         const resKeywords = await fetch(`${BACKEND_URL}/api/keywords`, { credentials: 'include' });
         const text = await resKeywords.text();
         try {
@@ -54,13 +56,13 @@ export default function DashboardHome() {
         } catch (err) {
           console.error('Error al parsear keywords:', text);
         }
-
+  
         const resUsage = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
         if (resUsage.ok) {
           const data = await resUsage.json();
           setUsage(data);
         }
-
+  
         const resChart = await fetch(`${BACKEND_URL}/api/stats/monthly?month=${monthlyView}`, {
           credentials: 'include',
         });
@@ -84,7 +86,7 @@ export default function DashboardHome() {
             });
           }
         }
-
+  
         const resKpi = await fetch(`${BACKEND_URL}/api/stats/kpis`, { credentials: 'include' });
         if (resKpi.ok) {
           const kpiData = await resKpi.json();
@@ -97,19 +99,42 @@ export default function DashboardHome() {
         setLoading(false);
       }
     };
-
+  
+    // 👇 Detectar ?success=1 y mostrar banner temporal
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("success") === "1") {
+      setShowSuccess(true);
+      fetchData(); // 🔄 Actualiza datos del dashboard
+  
+      // ✅ Elimina el parámetro de la URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete("success");
+      window.history.replaceState({}, "", url.toString());
+  
+      // ⏱ Oculta el banner después de 5 segundos
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
+    }
+  
     fetchData();
   }, [monthlyView]);
+  
+
+  if (loading) return <div className="text-white p-10">Cargando...</div>;
 
   const mockMessages = [
     { id: 1, sender: 'user', content: '¿Cuáles son los precios?', timestamp: Date.now() - 30000 },
     { id: 2, sender: 'bot', content: 'Nuestros precios dependen del servicio. ¿Qué deseas saber?', timestamp: Date.now() - 20000 },
   ];
-
-  if (loading) return <div className="text-white p-10">Cargando...</div>;
-
+  
   return (
     <div className="p-6 text-white relative">
+      {showSuccess && (
+        <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded mb-6 shadow-lg text-center font-medium">
+          ✅ ¡Tu membresía fue activada correctamente!
+        </div>
+      )}
       <div className="flex items-center gap-4 mb-6 bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 p-4 rounded-xl shadow-lg border border-purple-600/30 backdrop-blur-md">
         <div className="relative w-16 h-16">
           <img

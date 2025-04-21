@@ -1,16 +1,39 @@
-// src/app/upgrade/page.tsx
-
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { BACKEND_URL } from "@/utils/api";
 
 export default function UpgradePage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     document.title = "Acceso restringido - Amy AI";
   }, []);
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/stripe/checkout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("❌ No se pudo iniciar el pago.");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("❌ Error al conectar con Stripe:", error);
+      alert("Error al conectar con el sistema de pagos.");
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0a0a] via-[#1f1f1f] to-[#0a0a0a] text-white px-4">
@@ -21,10 +44,11 @@ export default function UpgradePage() {
           Para usar el panel necesitas tener una <strong>membresía activa</strong>.
         </p>
         <button
-          onClick={() => router.push("/api/stripe/checkout")}
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300"
+          onClick={handleCheckout}
+          disabled={loading}
+          className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50"
         >
-          Ir al pago con Stripe
+          {loading ? "Redirigiendo a Stripe..." : "Activar Membresía"}
         </button>
       </div>
     </div>
