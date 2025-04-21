@@ -1,5 +1,5 @@
 "use client";
-
+import { useCallback } from "react";
 import { useEffect, useRef, useState } from "react";
 import TrainingHelp from "@/components/TrainingHelp";
 import PromptGenerator from "@/components/PromptGenerator";
@@ -16,6 +16,20 @@ import {
 } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
 
+type FlowOption = {
+  texto: string;
+  respuesta?: string;
+  submenu?: {
+    mensaje: string;
+    opciones: FlowOption[];
+  };
+};
+
+type Flow = {
+  mensaje: string;
+  opciones: FlowOption[];
+};
+
 export default function TrainingPage() {
   const router = useRouter();
   const previewRef = useRef<HTMLDivElement | null>(null);
@@ -30,6 +44,7 @@ export default function TrainingPage() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const [plantillas, setPlantillas] = useState<any[]>([]);
+
 
   const [settings, setSettings] = useState({
     name: "",
@@ -229,6 +244,52 @@ export default function TrainingPage() {
       body: JSON.stringify({ intents }),
     });
     alert("Intenciones guardadas ✅");
+  };
+
+  const [flows, setFlows] = useState<Flow[]>([
+    {
+      mensaje: "¿Qué deseas hacer?",
+      opciones: [
+        { texto: "Reservar", submenu: { mensaje: "¿Qué deseas reservar?", opciones: [
+          { texto: "Facial", respuesta: "Agenda tu facial aquí: [link]" },
+          { texto: "Masaje", respuesta: "Perfecto, masaje disponible aquí: [link]" }
+        ]}},
+        { texto: "Ver precios", respuesta: "Nuestros precios están en este link: [link]" }
+      ]
+    }
+  ]);
+  
+  const handleFlowChange = (
+    nivel: number,
+    key: keyof FlowOption | keyof Flow,
+    value: any,
+    path: number[] = []
+  ) => {
+  
+    const copy = JSON.parse(JSON.stringify(flows));
+    let ref = copy;
+    path.forEach((i) => ref = (ref[i].submenu?.opciones ?? ref[i].opciones) as FlowOption[]);
+    (ref[nivel] as any)[key] = value;
+    setFlows(copy);
+  };
+  
+  const addOpcion = (nivel: number = 0, path: number[] = []) => {
+    const copy = JSON.parse(JSON.stringify(flows));
+    let ref = copy;
+    path.forEach((i) => ref = (ref[i].submenu?.opciones ?? ref[i].opciones) as FlowOption[]);
+    ref[nivel].opciones.push({ texto: "", respuesta: "" });
+    setFlows(copy);
+  };
+  
+  const saveFlows = async () => {
+    if (!settings.membresia_activa) return;
+    await fetch(`${BACKEND_URL}/api/flows`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ flows }),
+    });
+    alert("Flujos guardados ✅");
   };
 
   if (loading) return <p className="text-center">Cargando configuración...</p>;
@@ -435,7 +496,79 @@ export default function TrainingPage() {
             Guardar Intenciones
           </button>
         </div>
-  
+        
+        <div className="mt-12">
+          <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
+            🧭 Flujos Guiados Interactivos
+          </h3>
+          <p className="text-sm text-white/70 mb-4">
+            Define botones con posibles subniveles. Si el usuario elige una opción, se responde automáticamente. Si no, el asistente usará IA.
+          </p>
+
+          {flows.map((flow, i) => (
+            <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
+              <input
+                type="text"
+                value={flow.mensaje}
+                onChange={(e) => handleFlowChange(i, "mensaje", e.target.value)}
+                className="w-full p-2 border rounded mb-3 bg-white/10 border-white/20 text-white"
+                placeholder="Mensaje del bot (nivel principal)"
+                disabled={!settings.membresia_activa}
+              />
+
+              {flow.opciones.map((opcion, j) => (
+                <div key={j} className="mb-4">
+                  <input
+                    type="text"
+                    value={opcion.texto}
+                    onChange={(e) => handleFlowChange(j, "texto", e.target.value, [i])}
+                    className="w-full p-2 mb-1 bg-white/10 text-white border border-white/20 rounded"
+                    placeholder="Texto del botón"
+                    disabled={!settings.membresia_activa}
+                  />
+
+                  {opcion.submenu ? (
+                    <textarea
+                      className="w-full p-2 bg-white/10 text-white border border-white/20 rounded mb-2"
+                      disabled
+                      value={`Submenú → ${opcion.submenu?.mensaje || "..."}`}
+                    />
+                  ) : (
+                    <textarea
+                      value={opcion.respuesta || ""}
+                      onChange={(e) => handleFlowChange(j, "respuesta", e.target.value, [i])}
+                      rows={2}
+                      className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
+                      placeholder="Respuesta directa del asistente"
+                      disabled={!settings.membresia_activa}
+                    />
+                  )}
+                </div>
+              ))}
+
+              <button
+                onClick={() => addOpcion(i)}
+                className="text-white/70 text-sm hover:underline"
+                disabled={!settings.membresia_activa}
+              >
+                + Agregar opción
+              </button>
+            </div>
+          ))}
+
+          <button
+            onClick={saveFlows}
+            disabled={!settings.membresia_activa}
+            className={`px-4 py-2 rounded mt-2 ${
+              settings.membresia_activa
+                ? "bg-pink-600 hover:bg-pink-700 text-white"
+                : "bg-gray-600 text-white/50 cursor-not-allowed"
+            }`}
+          >
+            Guardar Flujos
+          </button>
+        </div>
+
         {/* Vista previa */}
         <div ref={previewRef} className="mt-10 bg-white/10 backdrop-blur p-6 rounded-xl border border-white/20">
           <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
