@@ -43,7 +43,6 @@ export default function TrainingPage() {
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
-  const [plantillas, setPlantillas] = useState<any[]>([]);
 
 
   const [settings, setSettings] = useState({
@@ -57,22 +56,6 @@ export default function TrainingPage() {
   });
 
   const isMembershipActive = settings.membresia_activa;
-
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/twilio-templates`, {
-          credentials: 'include',
-        });
-        const data = await res.json();
-        setPlantillas(data);
-      } catch (err) {
-        console.error('❌ Error cargando plantillas:', err);
-      }
-    };
-
-    fetchTemplates();
-  }, []);
 
   useEffect(() => {
     const chatDiv = chatContainerRef.current;
