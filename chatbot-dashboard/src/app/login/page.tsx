@@ -89,7 +89,6 @@ export default function LoginPage() {
         return;
       }
 
-      localStorage.setItem('uid', data.uid);
       await new Promise((r) => setTimeout(r, 100));
       router.push('/dashboard');
 
