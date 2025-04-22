@@ -92,6 +92,11 @@ export default function LoginPage() {
       await new Promise((r) => setTimeout(r, 100));
       router.push('/dashboard');
 
+      // 👇 Solo para debug, puedes quitarlo después
+      setTimeout(() => {
+        console.log('📦 Cookies actuales (no incluye httpOnly):', document.cookie);
+      }, 1000);
+
     } catch (err: any) {
       setError(err.message || 'Error desconocido al iniciar sesión');
     }
