@@ -53,15 +53,24 @@ export default function BusinessProfilePage() {
       router.push('/upgrade');
       return;
     }
-
+  
     setSaving(true);
     try {
+      // 🛡️ Eliminar campos protegidos antes de enviar
+      const {
+        twilio_number,
+        twilio_sms_number,
+        twilio_voice_number,
+        ...payloadSeguro
+      } = formData;
+  
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payloadSeguro),
       });
+  
       if (res.ok) alert('✅ Cambios guardados correctamente');
       else alert('❌ Error al guardar cambios');
     } catch (err) {
@@ -70,7 +79,7 @@ export default function BusinessProfilePage() {
     } finally {
       setSaving(false);
     }
-  };
+  };  
 
   if (loading) return <p className="text-center text-white">Cargando información del negocio...</p>;
 
