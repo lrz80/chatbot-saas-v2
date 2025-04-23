@@ -23,6 +23,7 @@ export default function DashboardHome() {
   const [monthlyView, setMonthlyView] = useState<'year' | 'current'>('year');
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0, plan: 'free' });
   const [onboardingCompletado, setOnboardingCompletado] = useState<boolean>(true);
+  const [canal, setCanal] = useState<string>('todos');
 
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
@@ -88,7 +89,9 @@ export default function DashboardHome() {
           }
         }
   
-        const resKpi = await fetch(`${BACKEND_URL}/api/stats/kpis`, { credentials: 'include' });
+        const resKpi = await fetch(`${BACKEND_URL}/api/stats/kpis${canal !== 'todos' ? `?canal=${canal}` : ''}`, {
+          credentials: 'include',
+        });        
         if (resKpi.ok) {
           const kpiData = await resKpi.json();
           console.log("📊 KPI Data recibida:", kpiData);
@@ -123,7 +126,7 @@ export default function DashboardHome() {
     }
   
     fetchData();
-  }, [monthlyView]);
+  }, [monthlyView, canal]);
   
 
   if (loading) return <div className="text-white p-10">Cargando...</div>;
@@ -162,6 +165,20 @@ export default function DashboardHome() {
           </a>
         </div>
       )}
+
+      <div className="mb-4 flex gap-2">
+        {['todos', 'whatsapp', 'voice', 'instagram', 'facebook'].map((c) => (
+          <button
+            key={c}
+            onClick={() => setCanal(c)}
+            className={`px-3 py-1 rounded-full text-sm font-semibold ${
+              canal === c ? 'bg-purple-700 text-white' : 'bg-white/10 text-white/70'
+            }`}
+          >
+            {c === 'todos' ? 'Todos los canales' : c.charAt(0).toUpperCase() + c.slice(1)}
+          </button>
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white/10 p-4 rounded">Interacciones Totales: {kpis.total}</div>
