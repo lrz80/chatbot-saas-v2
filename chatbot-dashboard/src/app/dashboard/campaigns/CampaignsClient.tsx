@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SiGmail } from "react-icons/si";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
@@ -25,6 +25,14 @@ export default function CampaignsClient() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [showSegmentos, setShowSegmentos] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // 🔁 Obtener campañas previas al cargar
+    fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => setCampaigns(data))
+      .catch((err) => console.error("❌ Error al cargar campañas:", err));
+  }, []);
 
   const handleChange = (e: any) => {
     const { name, value, files } = e.target;
@@ -214,10 +222,10 @@ export default function CampaignsClient() {
             <tbody>
               {campaigns.map((c) => (
                 <tr key={c.id} className="border-t border-white/10 hover:bg-white/10">
-                  <td className="p-3">{c.nombre}</td>
+                  <td className="p-3">{c.titulo || c.nombre}</td>
                   <td className="p-3 capitalize">{c.canal}</td>
-                  <td className="p-3">{new Date(c.fecha_envio).toLocaleString()}</td>
-                  <td className="p-3">{c.segmentos?.join(", ") || "—"}</td>
+                  <td className="p-3">{new Date(c.programada_para).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" })}</td>
+                  <td className="p-3">{Array.isArray(c.destinatarios) ? c.destinatarios.join(", ") : JSON.parse(c.destinatarios || "[]").join(", ")}</td>
                   <td className="p-3 truncate max-w-xs">{c.contenido}</td>
                 </tr>
               ))}
