@@ -90,6 +90,16 @@ export default function BusinessProfilePage() {
         <h2 className="text-2xl font-bold text-indigo-300">Perfil del Negocio</h2>
       </div>
 
+      {formData.logo_url && (
+        <div className="flex justify-center mb-6">
+          <img
+            src={formData.logo_url}
+            alt="Logo del negocio"
+            className="h-24 w-24 rounded-full border border-white/30 shadow-md object-cover"
+          />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
         <div>
           <label className="text-sm text-indigo-200 font-semibold">Nombre del Negocio</label>
@@ -133,14 +143,40 @@ export default function BusinessProfilePage() {
         </div>
 
         <div>
-          <label className="text-sm text-indigo-200 font-semibold">Logo del Negocio (URL)</label>
+          <label className="text-sm text-indigo-200 font-semibold">Logo del Negocio</label>
           <input
-            name="logo_url"
-            type="text"
-            value={formData.logo_url || ''}
-            onChange={handleChange}
-            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-white"
-            placeholder="https://..."
+            type="file"
+            accept="image/*"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+
+              const formData = new FormData();
+              formData.append("logo", file);
+
+              try {
+                const res = await fetch(`${BACKEND_URL}/api/upload-logo`, {
+                  method: "POST",
+                  credentials: "include",
+                  body: formData,
+                });
+
+                const data = await res.json();
+                if (data.logo_url) {
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    logo_url: data.logo_url,
+                  }));
+                  alert("✅ Logo actualizado con éxito");
+                } else {
+                  alert("❌ Error al subir el logo");
+                }
+              } catch (err) {
+                console.error("❌ Error al subir logo:", err);
+                alert("Error al cargar el logo");
+              }
+            }}
+            className="w-full text-white/70 bg-white/10 border border-white/20 px-3 py-2 rounded-md file:mr-3 file:py-1 file:px-2 file:border-0 file:rounded file:bg-indigo-600 file:text-white"
           />
         </div>
 
