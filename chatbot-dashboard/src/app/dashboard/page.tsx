@@ -18,7 +18,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 export default function DashboardHome() {
   const [keywords, setKeywords] = useState<[string, number][]>([]);
   const [loading, setLoading] = useState(true);
-  const [kpis, setKpis] = useState({ total: 0, usuarios: 0, hora_pico: null });
+  const [kpis, setKpis] = useState({ total: 0, unicos: 0, hora_pico: null });
   const [chartData, setChartData] = useState<any>(null);
   const [monthlyView, setMonthlyView] = useState<'year' | 'current'>('year');
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0, plan: 'free' });
@@ -161,7 +161,7 @@ export default function DashboardHome() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white/10 p-4 rounded">Interacciones Totales: {kpis.total}</div>
-        <div className="bg-white/10 p-4 rounded">Usuarios Únicos: {kpis.usuarios}</div>
+        <div className="bg-white/10 p-4 rounded">Usuarios Únicos: {kpis.unicos}</div>
         <div className="bg-white/10 p-4 rounded">Hora Pico: {kpis.hora_pico ? `${kpis.hora_pico}:00` : '—'}</div>
       </div>
 
@@ -178,7 +178,7 @@ export default function DashboardHome() {
           </div>
         </div>
         {chartData ? (
-          <div className="bg-white/10 p-4 rounded">
+          <div className="bg-white/10 p-4 rounded" style={{ height: 350 }}>
             <Bar
               data={chartData}
               options={{
