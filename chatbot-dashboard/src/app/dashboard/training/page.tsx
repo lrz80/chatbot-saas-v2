@@ -213,35 +213,54 @@ export default function TrainingPage() {
 
   const handleIntentChange = (i: number, field: string, value: string) => {
     const updated = [...intents];
-    updated[i][field] = field === "ejemplos" ? value.split("\n") : value;
+    updated[i][field] = field === "ejemplos" ? value.split("\n").filter(Boolean) : value;
     setIntents(updated);
   };
-
-  const addIntent = () => setIntents([...intents, { nombre: "", ejemplos: [], respuesta: "" }]);
-
+  
+  const addIntent = () =>
+    setIntents([...intents, { nombre: "", ejemplos: [], respuesta: "" }]);
+  
   const saveIntents = async () => {
     if (!isMembershipActive) return;
+  
+    const sanitizedIntents = intents.map((intent) => ({
+      ...intent,
+      ejemplos: Array.isArray(intent.ejemplos)
+        ? intent.ejemplos
+        : [intent.ejemplos].filter(Boolean),
+    }));
+  
     await fetch(`${BACKEND_URL}/api/intents`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ intents }),
+      body: JSON.stringify({ intents: sanitizedIntents }),
     });
+  
     alert("Intenciones guardadas ✅");
   };
-
+  
   const [flows, setFlows] = useState<Flow[]>([
     {
       mensaje: "¿Qué deseas hacer?",
       opciones: [
-        { texto: "Reservar", submenu: { mensaje: "¿Qué deseas reservar?", opciones: [
-          { texto: "Facial", respuesta: "Agenda tu facial aquí: [link]" },
-          { texto: "Masaje", respuesta: "Perfecto, masaje disponible aquí: [link]" }
-        ]}},
-        { texto: "Ver precios", respuesta: "Nuestros precios están en este link: [link]" }
-      ]
-    }
-  ]);
+        {
+          texto: "Reservar",
+          submenu: {
+            mensaje: "¿Qué deseas reservar?",
+            opciones: [
+              { texto: "Facial", respuesta: "Agenda tu facial aquí: [link]" },
+              { texto: "Masaje", respuesta: "Perfecto, masaje disponible aquí: [link]" },
+            ],
+          },
+        },
+        {
+          texto: "Ver precios",
+          respuesta: "Nuestros precios están en este link: [link]",
+        },
+      ],
+    },
+  ]);  
   
   const handleFlowChange = (
     nivel: number,
