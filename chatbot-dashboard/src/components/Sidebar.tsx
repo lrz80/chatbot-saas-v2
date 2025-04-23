@@ -10,21 +10,37 @@ import {
 } from 'react-icons/fi';
 import { FaFacebookF } from 'react-icons/fa';
 import ClientOnly from './ClientOnly';
+import { useEffect, useState } from 'react';
+import { BACKEND_URL } from '@/utils/api';
 
-export default function Sidebar({ user, tenant, onLogout, isOpen, onClose }: any) {
+export default function Sidebar({ user, onLogout, isOpen, onClose }: any) {
+  const [tenant, setTenant] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchTenant = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/settings`, {
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error('Error al cargar datos del tenant');
+        const data = await res.json();
+        setTenant(data);
+      } catch (err) {
+        console.error('❌ Error al cargar tenant:', err);
+      }
+    };
+
+    fetchTenant();
+  }, []);
+
   return (
     <>
-      {/* Fondo oscuro al abrir en móvil */}
-      {isOpen && (
-        <div onClick={onClose} className="fixed inset-0 bg-black/60 z-40 lg:hidden" />
-      )}
+      {isOpen && <div onClick={onClose} className="fixed inset-0 bg-black/60 z-40 lg:hidden" />}
 
-      {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-screen w-72 bg-gradient-to-b from-[#5b21b6]/40 to-[#9333ea]/30 backdrop-blur-xl border-r border-white/10 shadow-[0_0_20px_2px_rgba(147,51,234,0.3)] text-white p-6 z-50 flex flex-col justify-between transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       >
-        {/* Usuario y branding */}
         <div>
           <div className="flex items-center gap-4 mb-10">
             {tenant?.logo_url ? (
@@ -73,7 +89,6 @@ export default function Sidebar({ user, tenant, onLogout, isOpen, onClose }: any
           </nav>
         </div>
 
-        {/* Botón de cierre de sesión */}
         <div className="mt-8">
           <ClientOnly>
             <button
