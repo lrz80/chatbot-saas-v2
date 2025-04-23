@@ -371,6 +371,32 @@ export default function TrainingPage() {
           disabled={!settings.membresia_activa}
         />
   
+        <label className="text-sm font-semibold mb-1 text-green-400">
+          📌 Información que el Asistente debe conocer
+        </label>
+        <textarea
+          name="info_clave"
+          value={settings.info_clave}
+          onChange={handleChange}
+          rows={4}
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          placeholder="Escribe aquí la información clave del negocio..."
+          disabled={!settings.membresia_activa}
+        />
+
+        <label className="text-sm font-semibold mb-1 text-green-400">
+          🧠 ¿Qué debe hacer tu Asistente?
+        </label>
+        <textarea
+          name="funciones_asistente"
+          value={settings.funciones_asistente}
+          onChange={handleChange}
+          rows={3}
+          className="w-full p-3 border rounded mb-6 bg-white/10 border-white/20 text-white"
+          placeholder="Ej: Atender reservas, responder precios, brindar dirección, etc."
+          disabled={!settings.membresia_activa}
+        />
+
         <button
           onClick={handleSave}
           disabled={!settings.membresia_activa}
