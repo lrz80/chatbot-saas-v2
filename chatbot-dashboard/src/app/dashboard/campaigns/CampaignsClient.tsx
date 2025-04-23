@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { SiGmail } from "react-icons/si";
 import TrainingHelp from "@/components/TrainingHelp";
-import { BACKEND_URL } from "@/utils/api"; // ✅ Importa el backend
+import { BACKEND_URL } from "@/utils/api";
 
 const SEGMENTOS = [
   { id: "cliente", label: "Cliente" },
@@ -24,6 +24,7 @@ export default function CampaignsClient() {
 
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [showSegmentos, setShowSegmentos] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: any) => {
     const { name, value, files } = e.target;
@@ -49,6 +50,11 @@ export default function CampaignsClient() {
       return;
     }
 
+    if (new Date(form.fecha_envio) <= new Date()) {
+      alert("La fecha de envío debe ser futura.");
+      return;
+    }
+
     const data = new FormData();
     Object.entries(form).forEach(([key, val]) => {
       if (key === "segmentos") {
@@ -61,11 +67,13 @@ export default function CampaignsClient() {
     });
 
     try {
+      setLoading(true);
       const res = await fetch(`${BACKEND_URL}/api/campaigns`, {
         method: "POST",
         body: data,
-        credentials: "include", // ✅ incluir cookies para multi-tenant
+        credentials: "include",
       });
+      setLoading(false);
 
       if (res.ok) {
         const nueva = await res.json();
@@ -84,6 +92,7 @@ export default function CampaignsClient() {
         alert("❌ Error al guardar campaña.");
       }
     } catch (err) {
+      setLoading(false);
       console.error("❌ Error de red:", err);
       alert("❌ Error al conectar con el servidor.");
     }
@@ -136,6 +145,14 @@ export default function CampaignsClient() {
         className="mb-4"
       />
 
+      {form.imagen && (
+        <img
+          src={URL.createObjectURL(form.imagen)}
+          alt="Preview"
+          className="mb-4 rounded border border-white/20 max-h-48"
+        />
+      )}
+
       <label className="block mb-2 font-medium">📅 Fecha y hora de envío</label>
       <input
         name="fecha_envio"
@@ -170,9 +187,10 @@ export default function CampaignsClient() {
 
       <button
         onClick={handleSubmit}
-        className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold"
+        disabled={loading}
+        className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Programar campaña
+        {loading ? "Enviando..." : "Programar campaña"}
       </button>
 
       <hr className="my-10 border-white/20" />
@@ -190,6 +208,7 @@ export default function CampaignsClient() {
                 <th className="p-3">📲 Canal</th>
                 <th className="p-3">📅 Fecha</th>
                 <th className="p-3">👥 Segmentos</th>
+                <th className="p-3">💬 Contenido</th>
               </tr>
             </thead>
             <tbody>
@@ -197,10 +216,9 @@ export default function CampaignsClient() {
                 <tr key={c.id} className="border-t border-white/10 hover:bg-white/10">
                   <td className="p-3">{c.nombre}</td>
                   <td className="p-3 capitalize">{c.canal}</td>
-                  <td className="p-3">
-                    {new Date(c.fecha_envio).toLocaleString()}
-                  </td>
+                  <td className="p-3">{new Date(c.fecha_envio).toLocaleString()}</td>
                   <td className="p-3">{c.segmentos?.join(", ") || "—"}</td>
+                  <td className="p-3 truncate max-w-xs">{c.contenido}</td>
                 </tr>
               ))}
             </tbody>
