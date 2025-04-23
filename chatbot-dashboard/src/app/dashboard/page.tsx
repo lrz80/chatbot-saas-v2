@@ -24,6 +24,7 @@ export default function DashboardHome() {
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0, plan: 'free' });
   const [onboardingCompletado, setOnboardingCompletado] = useState<boolean>(true);
   const [canal, setCanal] = useState<string>('todos');
+  const [latestMessages, setLatestMessages] = useState<any[]>([]);
 
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
@@ -59,6 +60,14 @@ export default function DashboardHome() {
           console.error('Error al parsear keywords:', text);
         }
   
+        const resMessages = await fetch(`${BACKEND_URL}/api/messages?limit=5`, {
+          credentials: 'include',
+        });
+        if (resMessages.ok) {
+          const data = await resMessages.json();
+          setLatestMessages(data);
+        }        
+
         const resUsage = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
         if (resUsage.ok) {
           const data = await resUsage.json();
@@ -130,11 +139,6 @@ export default function DashboardHome() {
   
 
   if (loading) return <div className="text-white p-10">Cargando...</div>;
-
-  const mockMessages = [
-    { id: 1, sender: 'user', content: '¿Cuáles son los precios?', timestamp: Date.now() - 30000 },
-    { id: 2, sender: 'bot', content: 'Nuestros precios dependen del servicio. ¿Qué deseas saber?', timestamp: Date.now() - 20000 },
-  ];
   
   return (
     <div className="p-6 text-white relative">
@@ -230,11 +234,12 @@ export default function DashboardHome() {
 
       <div className="bg-white/10 p-4 rounded mb-6">
         <h2 className="text-xl mb-2">Historial de Conversaciones</h2>
-        {mockMessages.map((msg) => (
-          <div key={msg.id} className="mb-2 p-2 border rounded bg-white/5">
+        {latestMessages.map((msg, i) => (
+          <div key={i} className="mb-2 p-2 border rounded bg-white/5">
             <strong>{msg.sender === 'user' ? '👤 Cliente' : '🤖 Bot'}:</strong> {msg.content}
           </div>
         ))}
+
         <div className="mt-4 text-center">
           <a href="/dashboard/history" className="inline-block bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-4 py-2 rounded-full shadow">
             Ver historial completo
