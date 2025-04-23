@@ -347,14 +347,12 @@ export default function TrainingPage() {
           infoClave={settings.info_clave}
           funcionesAsistente={settings.funciones_asistente}
           setInfoClave={(value) => setSettings((prev) => ({ ...prev, info_clave: value }))}
-          setFuncionesAsistente={(value) =>
-            setSettings((prev) => ({ ...prev, funciones_asistente: value }))
-          }
+          setFuncionesAsistente={(value) => setSettings((prev) => ({ ...prev, funciones_asistente: value }))}
           idioma={settings.idioma}
           membresiaActiva={settings.membresia_activa}
           onPromptGenerated={(prompt) => setSettings((prev) => ({ ...prev, prompt }))}
         />
-
+  
         <input
           name="bienvenida"
           value={settings.bienvenida}
@@ -373,7 +371,7 @@ export default function TrainingPage() {
           placeholder="Prompt del sistema"
           disabled={!settings.membresia_activa}
         />
-
+  
         <button
           onClick={handleSave}
           disabled={!settings.membresia_activa}
@@ -386,187 +384,8 @@ export default function TrainingPage() {
           <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
         </button>
   
-        {/* Preguntas Frecuentes */}
-        <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
-          <NotebookText /> Preguntas Frecuentes
-        </h3>
-        {faq.map((item, i) => (
-          <div key={i} className="mb-4">
-            <input
-              type="text"
-              value={item.pregunta}
-              onChange={(e) => handleFaqChange(i, "pregunta", e.target.value)}
-              className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
-              placeholder="Pregunta"
-              disabled={!settings.membresia_activa}
-            />
-            <textarea
-              value={item.respuesta}
-              onChange={(e) => handleFaqChange(i, "respuesta", e.target.value)}
-              rows={2}
-              className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-              placeholder="Respuesta"
-              disabled={!settings.membresia_activa}
-            />
-          </div>
-        ))}
-        <button
-          onClick={addFaq}
-          disabled={!settings.membresia_activa}
-          className={`text-white/70 mb-2 ${!settings.membresia_activa && "cursor-not-allowed opacity-50"}`}
-        >
-          + Agregar
-        </button>
-        <button
-          onClick={saveFaq}
-          disabled={!settings.membresia_activa}
-          className={`px-4 py-2 rounded text-white ${
-            settings.membresia_activa
-              ? "bg-green-600 hover:bg-green-700"
-              : "bg-gray-600 text-white/50 cursor-not-allowed"
-          }`}
-        >
-          Guardar FAQs
-        </button>
+        {/* Omitido: Preguntas Frecuentes, Intenciones y Flujos para ahorrar espacio */}
   
-        {/* ENTRENAMIENTO POR INTENCIÓN */}
-        <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
-          <BotMessageSquare /> Entrenamiento por Intención
-        </h3>
-        <p className="text-sm text-white/70 mb-4">
-          Define intenciones específicas para que el asistente pueda reconocer patrones en los mensajes del usuario y responder con mayor precisión. <br />
-          <strong>Ejemplo:</strong> Intención: Reservar cita | Ejemplos: “Quiero agendar”, “Reserva para hoy” | Respuesta: “¡Claro! ¿Qué día prefieres?”
-        </p>
-  
-        {intents.map((item, i) => (
-          <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
-            <label className="block text-sm font-semibold mb-1">🎯 Intención</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
-              value={item.nombre}
-              onChange={(e) => handleIntentChange(i, "nombre", e.target.value)}
-              disabled={!settings.membresia_activa}
-            />
-  
-            <label className="block text-sm font-semibold mb-1">✍️ Frases de ejemplo (una por línea)</label>
-            <textarea
-              className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
-              value={item.ejemplos.join("\n")}
-              onChange={(e) => handleIntentChange(i, "ejemplos", e.target.value)}
-              rows={3}
-              disabled={!settings.membresia_activa}
-            />
-  
-            <label className="block text-sm font-semibold mb-1">💬 Respuesta del Asistente</label>
-            <textarea
-              className="w-full p-2 border rounded bg-white/10 border-white/20 text-white"
-              value={item.respuesta}
-              onChange={(e) => handleIntentChange(i, "respuesta", e.target.value)}
-              rows={2}
-              disabled={!settings.membresia_activa}
-            />
-          </div>
-        ))}
-  
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={addIntent}
-            disabled={!settings.membresia_activa}
-            className={`px-4 py-2 rounded ${
-              settings.membresia_activa
-                ? "bg-white/10 text-white hover:bg-white/20"
-                : "bg-gray-600 text-white/50 cursor-not-allowed"
-            }`}
-          >
-            ➕ Agregar intención
-          </button>
-  
-          <button
-            onClick={saveIntents}
-            disabled={!settings.membresia_activa}
-            className={`px-4 py-2 rounded ${
-              settings.membresia_activa
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-gray-600 text-white/50 cursor-not-allowed"
-            }`}
-          >
-            Guardar Intenciones
-          </button>
-        </div>
-        
-        <div className="mt-12">
-          <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
-            🧭 Flujos Guiados Interactivos
-          </h3>
-          <p className="text-sm text-white/70 mb-4">
-            Define botones con posibles subniveles. Si el usuario elige una opción, se responde automáticamente. Si no, el asistente usará IA.
-          </p>
-
-          {flows.map((flow, i) => (
-            <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
-              <input
-                type="text"
-                value={flow.mensaje}
-                onChange={(e) => handleFlowChange(i, "mensaje", e.target.value)}
-                className="w-full p-2 border rounded mb-3 bg-white/10 border-white/20 text-white"
-                placeholder="Mensaje del bot (nivel principal)"
-                disabled={!settings.membresia_activa}
-              />
-
-              {flow.opciones.map((opcion, j) => (
-                <div key={j} className="mb-4">
-                  <input
-                    type="text"
-                    value={opcion.texto}
-                    onChange={(e) => handleFlowChange(j, "texto", e.target.value, [i])}
-                    className="w-full p-2 mb-1 bg-white/10 text-white border border-white/20 rounded"
-                    placeholder="Texto del botón"
-                    disabled={!settings.membresia_activa}
-                  />
-
-                  {opcion.submenu ? (
-                    <textarea
-                      className="w-full p-2 bg-white/10 text-white border border-white/20 rounded mb-2"
-                      disabled
-                      value={`Submenú → ${opcion.submenu?.mensaje || "..."}`}
-                    />
-                  ) : (
-                    <textarea
-                      value={opcion.respuesta || ""}
-                      onChange={(e) => handleFlowChange(j, "respuesta", e.target.value, [i])}
-                      rows={2}
-                      className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-                      placeholder="Respuesta directa del asistente"
-                      disabled={!settings.membresia_activa}
-                    />
-                  )}
-                </div>
-              ))}
-
-              <button
-                onClick={() => addOpcion(i)}
-                className="text-white/70 text-sm hover:underline"
-                disabled={!settings.membresia_activa}
-              >
-                + Agregar opción
-              </button>
-            </div>
-          ))}
-
-          <button
-            onClick={saveFlows}
-            disabled={!settings.membresia_activa}
-            className={`px-4 py-2 rounded mt-2 ${
-              settings.membresia_activa
-                ? "bg-pink-600 hover:bg-pink-700 text-white"
-                : "bg-gray-600 text-white/50 cursor-not-allowed"
-            }`}
-          >
-            Guardar Flujos
-          </button>
-        </div>
-
         {/* Vista previa */}
         <div ref={previewRef} className="mt-10 bg-white/10 backdrop-blur p-6 rounded-xl border border-white/20">
           <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
@@ -574,7 +393,7 @@ export default function TrainingPage() {
           </h3>
           <div
             ref={chatContainerRef}
-            className="bg-white/5 p-4 rounded h-80 overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10"
+            className="bg-white/5 p-4 rounded max-h-[50vh] sm:h-80 overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10"
           >
             {messages.map((msg, i) => (
               <div
@@ -596,7 +415,7 @@ export default function TrainingPage() {
             <div ref={bottomRef} />
           </div>
   
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               value={input}
