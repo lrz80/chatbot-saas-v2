@@ -345,13 +345,17 @@ export default function TrainingPage() {
         </select>
   
         <PromptGenerator
-          informacion={settings.informacion_negocio}
-          setInformacion={(value) => setSettings((prev) => ({ ...prev, informacion_negocio: value }))}
+          infoClave={settings.info_clave}
+          funcionesAsistente={settings.funciones_asistente}
+          setInfoClave={(value) => setSettings((prev) => ({ ...prev, info_clave: value }))}
+          setFuncionesAsistente={(value) =>
+            setSettings((prev) => ({ ...prev, funciones_asistente: value }))
+          }
           idioma={settings.idioma}
           membresiaActiva={settings.membresia_activa}
           onPromptGenerated={(prompt) => setSettings((prev) => ({ ...prev, prompt }))}
         />
-  
+
         <input
           name="bienvenida"
           value={settings.bienvenida}
@@ -368,32 +372,6 @@ export default function TrainingPage() {
           rows={3}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Prompt del sistema"
-          disabled={!settings.membresia_activa}
-        />
-  
-        <label className="text-sm font-semibold mb-1 text-green-400">
-          📌 Información que el Asistente debe conocer
-        </label>
-        <textarea
-          name="info_clave"
-          value={settings.info_clave}
-          onChange={handleChange}
-          rows={4}
-          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          placeholder="Escribe aquí la información clave del negocio..."
-          disabled={!settings.membresia_activa}
-        />
-
-        <label className="text-sm font-semibold mb-1 text-green-400">
-          🧠 ¿Qué debe hacer tu Asistente?
-        </label>
-        <textarea
-          name="funciones_asistente"
-          value={settings.funciones_asistente}
-          onChange={handleChange}
-          rows={3}
-          className="w-full p-3 border rounded mb-6 bg-white/10 border-white/20 text-white"
-          placeholder="Ej: Atender reservas, responder precios, brindar dirección, etc."
           disabled={!settings.membresia_activa}
         />
 

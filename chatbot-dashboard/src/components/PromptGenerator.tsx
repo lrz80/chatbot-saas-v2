@@ -5,21 +5,24 @@ import { Sparkles, Info } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
 
 interface PromptGeneratorProps {
-  informacion: string;
-  setInformacion: (value: string) => void;
+  infoClave: string;
+  funcionesAsistente: string;
+  setInfoClave: (value: string) => void;
+  setFuncionesAsistente: (value: string) => void;
   idioma: string;
   membresiaActiva: boolean;
   onPromptGenerated: (prompt: string) => void;
 }
 
 export default function PromptGenerator({
-  informacion,
-  setInformacion,
+  infoClave,
+  funcionesAsistente,
+  setInfoClave,
+  setFuncionesAsistente,
   idioma,
   membresiaActiva,
   onPromptGenerated,
 }: PromptGeneratorProps) {
-  const [descripcion, setDescripcion] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleGenerate = async () => {
@@ -28,7 +31,7 @@ export default function PromptGenerator({
       return;
     }
 
-    if (!descripcion.trim()) {
+    if (!funcionesAsistente.trim()) {
       alert("Por favor describe qué debe hacer el asistente.");
       return;
     }
@@ -42,7 +45,11 @@ export default function PromptGenerator({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ descripcion, informacion, idioma }),
+        body: JSON.stringify({
+          descripcion: funcionesAsistente,
+          informacion: infoClave,
+          idioma,
+        }),
       });
 
       const data = await res.json();
@@ -61,28 +68,30 @@ export default function PromptGenerator({
 
   return (
     <div className="mb-6">
-      <label className="block font-medium mb-1 flex items-center gap-2">
-        <Sparkles size={18} className="text-purple-300" />
+      <label className="block font-medium mb-1 flex items-center gap-2 text-pink-300">
+        <Sparkles size={18} />
         ¿Qué debe hacer tu asistente?
       </label>
       <textarea
         placeholder="Ej: Atiende clientes, agenda citas, responde dudas sobre mis servicios..."
-        value={descripcion}
-        onChange={(e) => setDescripcion(e.target.value)}
+        value={funcionesAsistente}
+        onChange={(e) => setFuncionesAsistente(e.target.value)}
         rows={3}
         className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white placeholder-white/50"
+        disabled={!membresiaActiva}
       />
 
-      <label className="block font-medium mb-1 flex items-center gap-2">
-        <Info size={18} className="text-teal-300" />
+      <label className="block font-medium mb-1 flex items-center gap-2 text-teal-300">
+        <Info size={18} />
         Información que el Asistente debe conocer
       </label>
       <textarea
-        value={informacion}
-        onChange={(e) => setInformacion(e.target.value)}
+        value={infoClave}
+        onChange={(e) => setInfoClave(e.target.value)}
         rows={5}
         className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
         placeholder="Ej: Servicios, links, ubicación, precios..."
+        disabled={!membresiaActiva}
       />
 
       <button
