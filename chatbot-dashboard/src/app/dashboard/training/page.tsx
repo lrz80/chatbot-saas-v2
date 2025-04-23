@@ -1,16 +1,13 @@
 "use client";
-import { useCallback } from "react";
+
 import { useEffect, useRef, useState } from "react";
 import TrainingHelp from "@/components/TrainingHelp";
 import PromptGenerator from "@/components/PromptGenerator";
 import { useRouter } from "next/navigation";
 import {
   MessageSquareText,
-  Sparkles,
-  Flame,
   NotebookText,
   BotMessageSquare,
-  Info,
   Save,
   Settings,
 } from "lucide-react";
@@ -44,7 +41,6 @@ export default function TrainingPage() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
-
   const [settings, setSettings] = useState({
     name: "",
     categoria: "",
@@ -52,6 +48,8 @@ export default function TrainingPage() {
     bienvenida: "¡Hola! ¿En qué puedo ayudarte hoy?",
     membresia_activa: true,
     informacion_negocio: "",
+    funciones_asistente: "",
+    info_clave: "",
     idioma: "es",
   });
 
@@ -76,22 +74,24 @@ export default function TrainingPage() {
 
         if (settingsRes.ok) {
           const data = await settingsRes.json();
-          setSettings({
-            name: data.name || "",
-            categoria: data.categoria || "",
-            prompt: data.prompt || "Eres un asistente útil.",
-            bienvenida: data.bienvenida || "¡Hola! ¿En qué puedo ayudarte hoy?",
+          setSettings((prev) => ({
+            ...prev,
+            name: data.name || prev.name,
+            categoria: data.categoria || prev.categoria,
+            prompt: data.prompt || prev.prompt,
+            bienvenida: data.bienvenida || prev.bienvenida,
+            informacion_negocio: data.informacion_negocio || prev.informacion_negocio,
+            funciones_asistente: data.funciones_asistente || prev.funciones_asistente,
+            info_clave: data.info_clave || prev.info_clave,
             membresia_activa: data.membresia_activa,
-            informacion_negocio: data.informacion_negocio || "",
-            idioma: data.idioma || "es",
-          });
+            idioma: data.idioma || prev.idioma,
+          }));
           setMessages([{ role: "assistant", content: data.bienvenida || "¡Hola! ¿Cómo puedo ayudarte?" }]);
         }
 
         if (usageRes.ok) setUsage(await usageRes.json());
         if (faqRes.ok) setFaq(await faqRes.json());
         if (intentsRes.ok) setIntents(await intentsRes.json());
-
       } catch (err) {
         console.error("❌ Error cargando configuración:", err);
       } finally {
@@ -117,7 +117,9 @@ export default function TrainingPage() {
       prompt: settings.prompt,
       bienvenida: settings.bienvenida,
       informacion_negocio: settings.informacion_negocio,
-    };
+      funciones_asistente: settings.funciones_asistente?.trim() || undefined,
+      info_clave: settings.info_clave?.trim() || undefined,
+    };    
 
     console.log("📤 Enviando payload a /api/settings:", payload);
 
