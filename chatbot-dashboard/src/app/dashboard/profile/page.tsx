@@ -92,11 +92,13 @@ export default function BusinessProfilePage() {
 
       {formData.logo_url && (
         <div className="flex justify-center mb-6">
-          <img
-            src={formData.logo_url}
-            alt="Logo del negocio"
-            className="h-24 w-24 rounded-full border border-white/30 shadow-md object-cover"
-          />
+          <div className="h-24 w-24 rounded-full border border-white/30 shadow-md bg-white overflow-hidden">
+            <img
+              src={formData.logo_url}
+              alt="Logo del negocio"
+              className="h-full w-full object-cover"
+            />
+          </div>
         </div>
       )}
 

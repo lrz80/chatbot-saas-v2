@@ -31,11 +31,13 @@ export default function Sidebar({ user, tenant, onLogout, isOpen, onClose }: any
         <div>
           <div className="flex items-center gap-4 mb-10">
             {tenant?.logo_url ? (
-              <img
-                src={tenant.logo_url}
-                alt="Logo del negocio"
-                className="w-12 h-12 rounded-full object-cover border border-purple-400 shadow-lg"
-              />
+              <div className="w-12 h-12 rounded-full overflow-hidden border border-purple-400 bg-white">
+                <img
+                  src={tenant.logo_url}
+                  alt="Logo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             ) : (
               <div className="w-12 h-12 bg-white/20 text-white font-bold flex items-center justify-center rounded-full text-xl shadow-inner">
                 {user?.email?.charAt(0).toUpperCase() || "U"}
