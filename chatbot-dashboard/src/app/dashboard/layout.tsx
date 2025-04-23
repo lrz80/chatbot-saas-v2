@@ -68,7 +68,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex-1 lg:ml-72">
           <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-white/10">
             <MobileMenuButton onClick={() => setSidebarOpen(true)} />
-            <p className="text-white text-lg font-semibold">Panel AI</p>
+            <span className="w-8" /> {/* espacio vacío */}
           </div>
 
           <main className="p-6">{children}</main>
