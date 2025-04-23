@@ -617,17 +617,6 @@ export default function TrainingPage() {
             >
               Enviar
             </button>
-            <button
-              onClick={handleRegenerate}
-              disabled={!settings.membresia_activa || loading || messages.length === 0}
-              className={`px-4 py-2 rounded ${
-                settings.membresia_activa
-                  ? "bg-white/10 hover:bg-white/20 text-white"
-                  : "bg-gray-600 text-white/50 cursor-not-allowed"
-              }`}
-            >
-              🔁
-            </button>
           </div>
         </div>
       </div>
