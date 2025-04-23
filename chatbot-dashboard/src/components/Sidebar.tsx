@@ -64,7 +64,7 @@ export default function Sidebar({ user, onLogout, isOpen, onClose }: any) {
             </div>
           </div>
 
-          <h2 className="hidden md:block text-xl font-bold mb-6 text-purple-300">Panel AI</h2>
+          <h2 className="text-xl font-bold mb-6 text-purple-300 block lg:block hidden">Panel AI</h2>
 
           <nav className="space-y-2 text-sm font-medium">
             {[
