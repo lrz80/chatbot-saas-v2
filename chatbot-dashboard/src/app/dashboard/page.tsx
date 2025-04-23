@@ -41,16 +41,16 @@ export default function DashboardHome() {
         } catch (e) {
           console.error('Error parsing settings response:', raw);
         }
-  
+
         if (resAuth.status === 401) {
           router.push('/login');
           return;
         }
-  
+
         if (resAuth.ok && data) {
-          setOnboardingCompletado(data.onboarding_completado ?? true); // fallback true para evitar errores
-        }        
-  
+          setOnboardingCompletado(data.onboarding_completado ?? true);
+        }
+
         const resKeywords = await fetch(`${BACKEND_URL}/api/keywords`, { credentials: 'include' });
         const text = await resKeywords.text();
         try {
@@ -59,21 +59,21 @@ export default function DashboardHome() {
         } catch (err) {
           console.error('Error al parsear keywords:', text);
         }
-  
+
         const resMessages = await fetch(`${BACKEND_URL}/api/messages?limit=5`, {
           credentials: 'include',
         });
         if (resMessages.ok) {
           const data = await resMessages.json();
-          setLatestMessages(data);
-        }        
+          setLatestMessages(data.mensajes || []);
+        }
 
         const resUsage = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
         if (resUsage.ok) {
           const data = await resUsage.json();
           setUsage(data);
         }
-  
+
         const resChart = await fetch(`${BACKEND_URL}/api/stats/monthly?month=${monthlyView}`, {
           credentials: 'include',
         });
@@ -97,13 +97,12 @@ export default function DashboardHome() {
             });
           }
         }
-  
+
         const resKpi = await fetch(`${BACKEND_URL}/api/stats/kpis${canal !== 'todos' ? `?canal=${canal}` : ''}`, {
           credentials: 'include',
-        });        
+        });
         if (resKpi.ok) {
           const kpiData = await resKpi.json();
-          console.log("📊 KPI Data recibida:", kpiData);
           setKpis(kpiData);
         } else {
           console.error("❌ Error al obtener KPIs:", resKpi.status);
@@ -116,68 +115,53 @@ export default function DashboardHome() {
         setLoading(false);
       }
     };
-  
-    // 👇 Detectar ?success=1 y mostrar banner temporal
+
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get("success") === "1") {
       setShowSuccess(true);
-      fetchData(); // 🔄 Actualiza datos del dashboard
-  
-      // ✅ Elimina el parámetro de la URL
+      fetchData();
+
       const url = new URL(window.location.href);
       url.searchParams.delete("success");
       window.history.replaceState({}, "", url.toString());
-  
-      // ⏱ Oculta el banner después de 5 segundos
+
       setTimeout(() => {
         setShowSuccess(false);
       }, 5000);
     }
-  
+
     fetchData();
   }, [monthlyView, canal]);
-  
 
   if (loading) return <div className="text-white p-10">Cargando...</div>;
-  
+
   return (
-    <div className="p-6 text-white relative">
+    <div className="p-4 md:p-6 text-white">
       {showSuccess && (
-        <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded mb-6 shadow-lg text-center font-medium">
+        <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded mb-6 text-center font-medium">
           ✅ ¡Tu membresía fue activada correctamente!
         </div>
       )}
-      <div className="flex items-center gap-4 mb-6 bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 p-4 rounded-xl shadow-lg border border-purple-600/30 backdrop-blur-md">
-        <div className="relative w-16 h-16">
-          <img
-            src="/avatar-amy.png"
-            alt="Avatar de Amy"
-            className="w-full h-full rounded-full border-2 border-purple-500 shadow-xl animate-pulse-glow"
-          />
-          <div className="absolute inset-0 rounded-full border-2 border-purple-500 blur-md opacity-70 animate-glow" />
+
+      <div className="flex items-center gap-4 mb-6 p-4 rounded-xl bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30">
+        <div className="relative w-12 h-12 md:w-16 md:h-16">
+          <img src="/avatar-amy.png" alt="Avatar de Amy" className="w-full h-full rounded-full border-2 border-purple-500" />
         </div>
-        <h1 className="text-4xl font-extrabold text-purple-300 drop-shadow-[0_0_12px_rgba(168,85,247,0.9)] tracking-wider">
-          Amy AI Dashboard
-        </h1>
+        <h1 className="text-2xl md:text-4xl font-extrabold text-purple-300">Amy AI Dashboard</h1>
       </div>
 
       {!onboardingCompletado && (
-        <div className="bg-yellow-300/10 p-4 rounded text-yellow-300 text-center mb-4">
-          Aún no has configurado tu negocio.{' '}
-          <a href="/dashboard/profile" className="underline hover:text-yellow-200">
-            Hazlo aquí
-          </a>
+        <div className="bg-yellow-300/10 p-3 rounded text-yellow-300 text-center mb-4 text-sm">
+          Aún no has configurado tu negocio. <a href="/dashboard/profile" className="underline hover:text-yellow-200">Hazlo aquí</a>
         </div>
       )}
 
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex flex-wrap gap-2">
         {['todos', 'whatsapp', 'voice', 'instagram', 'facebook'].map((c) => (
           <button
             key={c}
             onClick={() => setCanal(c)}
-            className={`px-3 py-1 rounded-full text-sm font-semibold ${
-              canal === c ? 'bg-purple-700 text-white' : 'bg-white/10 text-white/70'
-            }`}
+            className={`px-3 py-1 text-xs md:text-sm rounded-full ${canal === c ? 'bg-purple-700 text-white' : 'bg-white/10 text-white/70'}`}
           >
             {c === 'todos' ? 'Todos los canales' : c.charAt(0).toUpperCase() + c.slice(1)}
           </button>
@@ -185,43 +169,32 @@ export default function DashboardHome() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white/10 p-4 rounded">Interacciones Totales: {kpis.total}</div>
-        <div className="bg-white/10 p-4 rounded">Usuarios Únicos: {kpis.unicos}</div>
-        <div className="bg-white/10 p-4 rounded">Hora Pico: {kpis.hora_pico ? `${kpis.hora_pico}:00` : '—'}</div>
+        <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">Interacciones Totales: {kpis.total}</div>
+        <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">Usuarios Únicos: {kpis.unicos}</div>
+        <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">Hora Pico: {kpis.hora_pico ? `${kpis.hora_pico}:00` : '—'}</div>
       </div>
 
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
-          <h2 className="text-xl font-semibold">Interacciones Mensuales</h2>
-          <div>
-            <button onClick={() => setMonthlyView('year')} className="px-3 py-1 mr-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full">
-              Año
-            </button>
-            <button onClick={() => setMonthlyView('current')} className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-full">
-              Mes
-            </button>
+          <h2 className="text-lg md:text-xl font-semibold">Interacciones Mensuales</h2>
+          <div className="flex gap-2">
+            <button onClick={() => setMonthlyView('year')} className="px-2 py-1 text-xs md:text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-full">Año</button>
+            <button onClick={() => setMonthlyView('current')} className="px-2 py-1 text-xs md:text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-full">Mes</button>
           </div>
         </div>
         {chartData ? (
-          <div className="bg-white/10 p-4 rounded" style={{ height: 350 }}>
+          <div className="bg-white/10 p-4 rounded h-[300px] md:h-[350px]">
             <Bar
               data={chartData}
               options={{
                 responsive: true,
                 plugins: {
-                  legend: {
-                    display: true,
-                    labels: {
-                      color: '#fff',
-                    },
-                  },
+                  legend: { display: true, labels: { color: '#fff' } },
                   title: {
                     display: true,
                     text: 'Interacciones por período',
                     color: '#fff',
-                    font: {
-                      size: 18,
-                    },
+                    font: { size: 18 },
                   },
                 },
               }}
@@ -233,13 +206,12 @@ export default function DashboardHome() {
       </div>
 
       <div className="bg-white/10 p-4 rounded mb-6">
-        <h2 className="text-xl mb-2">Historial de Conversaciones</h2>
+        <h2 className="text-lg md:text-xl mb-2">Historial de Conversaciones</h2>
         {latestMessages.map((msg, i) => (
-          <div key={i} className="mb-2 p-2 border rounded bg-white/5">
+          <div key={i} className="mb-2 p-2 border rounded bg-white/5 text-sm">
             <strong>{msg.sender === 'user' ? '👤 Cliente' : '🤖 Bot'}:</strong> {msg.content}
           </div>
         ))}
-
         <div className="mt-4 text-center">
           <a href="/dashboard/history" className="inline-block bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-4 py-2 rounded-full shadow">
             Ver historial completo
@@ -248,17 +220,17 @@ export default function DashboardHome() {
       </div>
 
       <div className="bg-white/10 p-4 rounded mb-6">
-        <h2 className="text-xl mb-2">Palabras clave más frecuentes</h2>
+        <h2 className="text-lg md:text-xl mb-2">Palabras clave más frecuentes</h2>
         {keywords.length > 0 ? (
           <ul className="flex flex-wrap gap-3">
             {keywords.map(([word, count]) => (
-              <li key={word} className="bg-white/20 px-3 py-1 rounded-full">
+              <li key={word} className="bg-white/20 px-3 py-1 rounded-full text-sm">
                 {word} ({count})
               </li>
             ))}
           </ul>
         ) : (
-          <p>No hay datos aún.</p>
+          <p className="text-white/50 text-sm">No hay datos aún.</p>
         )}
       </div>
     </div>
