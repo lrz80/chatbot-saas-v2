@@ -300,24 +300,23 @@ export default function TrainingPage() {
   if (loading) return <p className="text-center">Cargando configuración...</p>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white p-6">
-      <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
+      <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
+  
         {!settings.membresia_activa && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
             ⚠ Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.
           </div>
         )}
   
-        <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-          <Settings className="text-indigo-400" size={32} />
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 flex items-center gap-3">
+          <Settings className="text-indigo-400" size={28} />
           Configuración del Asistente AI
         </h2>
   
         {usage.porcentaje >= 80 && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
-            ⚠ Estás utilizando el <strong>{usage.porcentaje}%</strong> de tu límite mensual ({usage.used}/{usage.limit} mensajes).
-            <br />
-            Considera actualizar tu plan para evitar interrupciones.
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
+            ⚠ Estás utilizando el <strong>{usage.porcentaje}%</strong> de tu límite mensual ({usage.used}/{usage.limit} mensajes).<br />Considera actualizar tu plan para evitar interrupciones.
           </div>
         )}
   
