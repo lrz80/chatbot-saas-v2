@@ -1,4 +1,5 @@
 "use client";
+
 import {
   FiHome,
   FiUser,
@@ -29,18 +30,26 @@ export default function Sidebar({ user, tenant, onLogout, isOpen, onClose }: any
         {/* Usuario y branding */}
         <div>
           <div className="flex items-center gap-4 mb-10">
-            <div className="w-12 h-12 bg-white/20 text-white font-bold flex items-center justify-center rounded-full text-xl shadow-inner">
-              {user?.email?.charAt(0).toUpperCase() || "U"}
-            </div>
+            {tenant?.logo_url ? (
+              <img
+                src={tenant.logo_url}
+                alt="Logo del negocio"
+                className="w-12 h-12 rounded-full object-cover border border-purple-400 shadow-lg"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-white/20 text-white font-bold flex items-center justify-center rounded-full text-xl shadow-inner">
+                {user?.email?.charAt(0).toUpperCase() || "U"}
+              </div>
+            )}
             <div>
               <p className="text-sm text-white/70">Bienvenido</p>
-              <p className="font-semibold text-lg leading-tight">
-                {tenant?.owner_name || "Usuario"}
+              <p className="font-semibold text-lg leading-tight truncate max-w-[160px]">
+                {tenant?.name || "Negocio"}
               </p>
             </div>
           </div>
 
-          <h2 className="text-xl font-bold mb-6 text-purple-300">Panel AI</h2>
+          <h2 className="hidden md:block text-xl font-bold mb-6 text-purple-300">Panel AI</h2>
 
           <nav className="space-y-2 text-sm font-medium">
             {[

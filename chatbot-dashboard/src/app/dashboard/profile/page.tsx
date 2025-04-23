@@ -24,6 +24,7 @@ export default function BusinessProfilePage() {
           horario_atencion: data.horario_atencion,
           categoria: data.categoria,
           idioma: data.idioma,
+          logo_url: data.logo_url,
           twilio_number: data.twilio_number,
           twilio_sms_number: data.twilio_sms_number,
           twilio_voice_number: data.twilio_voice_number,
@@ -33,8 +34,7 @@ export default function BusinessProfilePage() {
           email: data.email,
           membresia_activa: data.membresia_activa,
           membresia_vigencia: data.membresia_vigencia,
-        });        
-
+        });
       } catch (error) {
         console.error('❌ Error al obtener settings:', error);
       } finally {
@@ -53,25 +53,24 @@ export default function BusinessProfilePage() {
       router.push('/upgrade');
       return;
     }
-  
+
     setSaving(true);
     try {
-      // 🛡️ Construir payload seguro manualmente excluyendo campos de solo lectura
       const payload = {
         nombre_negocio: formData.nombre_negocio,
         horario_atencion: formData.horario_atencion,
         categoria: formData.categoria,
         idioma: formData.idioma,
-        // ❌ NO incluir twilio_number, twilio_sms_number, twilio_voice_number
+        logo_url: formData.logo_url,
       };
-  
+
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload),
       });
-  
+
       if (res.ok) alert('✅ Cambios guardados correctamente');
       else alert('❌ Error al guardar cambios');
     } catch (err) {
@@ -81,7 +80,7 @@ export default function BusinessProfilePage() {
       setSaving(false);
     }
   };
-  
+
   if (loading) return <p className="text-center text-white">Cargando información del negocio...</p>;
 
   return (
@@ -134,6 +133,18 @@ export default function BusinessProfilePage() {
         </div>
 
         <div>
+          <label className="text-sm text-indigo-200 font-semibold">Logo del Negocio (URL)</label>
+          <input
+            name="logo_url"
+            type="text"
+            value={formData.logo_url || ''}
+            onChange={handleChange}
+            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-white"
+            placeholder="https://..."
+          />
+        </div>
+
+        <div>
           <label className="text-sm text-indigo-200 font-semibold">Correo del Administrador</label>
           <input
             value={formData.email}
@@ -142,11 +153,16 @@ export default function BusinessProfilePage() {
           />
         </div>
 
-        {[
-          { label: 'Número de Twilio (WhatsApp)', value: formData.twilio_number },
-          { label: 'Número de Twilio (SMS)', value: formData.twilio_sms_number },
-          { label: 'Número de Twilio (Voz)', value: formData.twilio_voice_number }
-        ].map(({ label, value }, i) => (
+        {[{
+          label: 'Número de Twilio (WhatsApp)',
+          value: formData.twilio_number
+        }, {
+          label: 'Número de Twilio (SMS)',
+          value: formData.twilio_sms_number
+        }, {
+          label: 'Número de Twilio (Voz)',
+          value: formData.twilio_voice_number
+        }].map(({ label, value }, i) => (
           <div key={i}>
             <label className="text-sm text-indigo-200 font-semibold">{label}</label>
             <input
