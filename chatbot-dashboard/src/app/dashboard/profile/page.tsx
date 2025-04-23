@@ -33,7 +33,7 @@ export default function BusinessProfilePage() {
           email: data.email,
           membresia_activa: data.membresia_activa,
           membresia_vigencia: data.membresia_vigencia,
-        });
+        });        
 
       } catch (error) {
         console.error('❌ Error al obtener settings:', error);
