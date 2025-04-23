@@ -56,19 +56,20 @@ export default function BusinessProfilePage() {
   
     setSaving(true);
     try {
-      // 🛡️ Eliminar campos protegidos antes de enviar
-      const {
-        twilio_number,
-        twilio_sms_number,
-        twilio_voice_number,
-        ...payloadSeguro
-      } = formData;
+      // 🛡️ Construir payload seguro manualmente excluyendo campos de solo lectura
+      const payload = {
+        nombre_negocio: formData.nombre_negocio,
+        horario_atencion: formData.horario_atencion,
+        categoria: formData.categoria,
+        idioma: formData.idioma,
+        // ❌ NO incluir twilio_number, twilio_sms_number, twilio_voice_number
+      };
   
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(payloadSeguro),
+        body: JSON.stringify(payload),
       });
   
       if (res.ok) alert('✅ Cambios guardados correctamente');
@@ -79,8 +80,8 @@ export default function BusinessProfilePage() {
     } finally {
       setSaving(false);
     }
-  };  
-
+  };
+  
   if (loading) return <p className="text-center text-white">Cargando información del negocio...</p>;
 
   return (
