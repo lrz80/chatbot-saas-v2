@@ -91,8 +91,12 @@ export default function DashboardHome() {
         const resKpi = await fetch(`${BACKEND_URL}/api/stats/kpis`, { credentials: 'include' });
         if (resKpi.ok) {
           const kpiData = await resKpi.json();
+          console.log("📊 KPI Data recibida:", kpiData);
           setKpis(kpiData);
+        } else {
+          console.error("❌ Error al obtener KPIs:", resKpi.status);
         }
+
       } catch (err) {
         console.error('❌ Error cargando dashboard:', err);
         router.push('/login');
