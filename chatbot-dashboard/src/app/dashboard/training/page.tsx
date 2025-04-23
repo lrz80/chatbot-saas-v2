@@ -85,6 +85,7 @@ export default function TrainingPage() {
             informacion_negocio: data.informacion_negocio || "",
             idioma: data.idioma || "es",
           });
+          setMessages([{ role: "assistant", content: data.bienvenida || "¡Hola! ¿Cómo puedo ayudarte?" }]);
         }
 
         if (usageRes.ok) setUsage(await usageRes.json());
