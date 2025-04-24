@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { BACKEND_URL } from "@/utils/api";
 
 interface Props {
   idioma: string;
@@ -14,11 +15,13 @@ export default function VoicePromptGenerator({ idioma, categoria, onGenerate }: 
   const handleGenerate = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/prompt-generator/voice", {
+      const res = await fetch(`${BACKEND_URL}/api/voice-prompt`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ idioma, categoria }),
       });
+      
       const data = await res.json();
       if (res.ok) {
         onGenerate(data.prompt, data.bienvenida);
