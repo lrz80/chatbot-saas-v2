@@ -112,9 +112,9 @@ export default function CampaignsClient() {
         <SiGmail className="text-[#D14836]" size={28} />
         Crear nueva campaña
       </h2>
-
+  
       <TrainingHelp context="campaign" />
-
+  
       <label className="block mb-2 font-medium">📝 Nombre de la campaña</label>
       <input
         name="nombre"
@@ -122,7 +122,7 @@ export default function CampaignsClient() {
         onChange={handleChange}
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
-
+  
       <label className="block mb-2 font-medium">📲 Canal</label>
       <select
         name="canal"
@@ -134,7 +134,7 @@ export default function CampaignsClient() {
         <option value="sms">SMS</option>
         <option value="email">Correo Electrónico</option>
       </select>
-
+  
       <label className="block mb-2 font-medium">💬 Contenido del mensaje</label>
       <textarea
         name="contenido"
@@ -143,7 +143,7 @@ export default function CampaignsClient() {
         rows={4}
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
-
+  
       <label className="block mb-2 font-medium">🖼️ Imagen (opcional)</label>
       <input
         name="imagen"
@@ -152,7 +152,7 @@ export default function CampaignsClient() {
         onChange={handleChange}
         className="mb-4"
       />
-
+  
       {form.imagen && (
         <img
           src={URL.createObjectURL(form.imagen)}
@@ -160,7 +160,7 @@ export default function CampaignsClient() {
           className="mb-4 rounded border border-white/20 max-h-48"
         />
       )}
-
+  
       <label className="block mb-2 font-medium">📅 Fecha y hora de envío</label>
       <input
         name="fecha_envio"
@@ -169,7 +169,7 @@ export default function CampaignsClient() {
         onChange={handleChange}
         className="w-full mb-6 p-2 rounded bg-white/10 border border-white/20"
       />
-
+  
       <div className="mb-6">
         <button
           onClick={() => setShowSegmentos((s) => !s)}
@@ -192,7 +192,7 @@ export default function CampaignsClient() {
           </div>
         )}
       </div>
-
+  
       <button
         onClick={handleSubmit}
         disabled={loading}
@@ -200,11 +200,11 @@ export default function CampaignsClient() {
       >
         {loading ? "Enviando..." : "Programar campaña"}
       </button>
-
+  
       <hr className="my-10 border-white/20" />
-
+  
       <h2 className="text-xl font-bold mb-4">📊 Estadísticas de campañas enviadas</h2>
-
+  
       {campaigns.length === 0 ? (
         <p className="text-white/70">Aún no se han enviado campañas.</p>
       ) : (
@@ -215,8 +215,10 @@ export default function CampaignsClient() {
                 <th className="p-3">📝 Nombre</th>
                 <th className="p-3">📲 Canal</th>
                 <th className="p-3">📅 Fecha</th>
+                <th className="p-3">📤 Estado</th>
                 <th className="p-3">👥 Segmentos</th>
                 <th className="p-3">💬 Contenido</th>
+                <th className="p-3">🗑️</th>
               </tr>
             </thead>
             <tbody>
@@ -225,8 +227,34 @@ export default function CampaignsClient() {
                   <td className="p-3">{c.titulo || c.nombre}</td>
                   <td className="p-3 capitalize">{c.canal}</td>
                   <td className="p-3">{new Date(c.programada_para).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" })}</td>
+                  <td className="p-3">{new Date(c.programada_para) > new Date() ? "⏳ Programada" : "✅ Enviada"}</td>
                   <td className="p-3">{Array.isArray(c.destinatarios) ? c.destinatarios.join(", ") : JSON.parse(c.destinatarios || "[]").join(", ")}</td>
                   <td className="p-3 truncate max-w-xs">{c.contenido}</td>
+                  <td className="p-3">
+                    <button
+                      onClick={async () => {
+                        const confirmar = confirm("¿Seguro que deseas eliminar esta campaña?");
+                        if (!confirmar) return;
+                        try {
+                          const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}`, {
+                            method: "DELETE",
+                            credentials: "include",
+                          });
+                          if (res.ok) {
+                            setCampaigns((prev) => prev.filter((x) => x.id !== c.id));
+                            alert("✅ Campaña eliminada.");
+                          } else {
+                            alert("❌ No se pudo eliminar.");
+                          }
+                        } catch (err) {
+                          console.error("❌ Error eliminando campaña:", err);
+                        }
+                      }}
+                      className="text-red-400 hover:text-red-600 text-sm underline"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -235,4 +263,4 @@ export default function CampaignsClient() {
       )}
     </div>
   );
-}
+}  
