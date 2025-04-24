@@ -5,7 +5,7 @@ import { useTenant } from "@/context/TenantContext";
 import { toast } from "react-toastify";
 import { FiMic, FiMessageCircle, FiSettings, FiVolume2, FiHash } from "react-icons/fi";
 import TrainingHelp from "@/components/TrainingHelp";
-import { BACKEND_URL } from "@/utils/api"; // ✅ CORRECTO
+import { BACKEND_URL } from "@/utils/api";
 
 type VoiceOption = {
   label: string;
@@ -42,7 +42,7 @@ export default function VoiceConfigPage() {
     { label: "English", value: "en-US" },
   ];
 
-  if (!tenantId) {
+  if (!tenant) {
     return (
       <div className="flex justify-center items-center h-40 text-gray-400 animate-pulse">
         Cargando configuración del negocio...
