@@ -156,7 +156,7 @@ export default function CampaignsClient() {
       )}
 
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-        <h3 className="font-bold text-white text-lg mb-2">📁 Contactos cargados ({cantidadContactos}/300)</h3>
+        <h3 className="font-bold text-white text-lg mb-2">📁 Contactos cargados ({cantidadContactos}/1500)</h3>
         <input
           type="file"
           accept=".csv"
