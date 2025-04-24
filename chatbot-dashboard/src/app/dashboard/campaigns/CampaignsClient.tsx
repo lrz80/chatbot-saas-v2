@@ -23,15 +23,29 @@ export default function CampaignsClient() {
   });
 
   const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [usage, setUsage] = useState<{ [canal: string]: number }>({});
+  const [cantidadContactos, setCantidadContactos] = useState(0);
   const [showSegmentos, setShowSegmentos] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // 🔁 Obtener campañas previas al cargar
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setCampaigns(data))
       .catch((err) => console.error("❌ Error al cargar campañas:", err));
+
+    fetch(`${BACKEND_URL}/api/campaigns/usage`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        const map = Object.fromEntries(data.map((d: any) => [d.canal, Number(d.total)]));
+        setUsage(map);
+      })
+      .catch((err) => console.error("❌ Error al cargar uso de campañas:", err));
+
+    fetch(`${BACKEND_URL}/api/contactos/count`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => setCantidadContactos(data.total || 0))
+      .catch((err) => console.error("❌ Error al contar contactos:", err));
   }, []);
 
   const handleChange = (e: any) => {
@@ -50,6 +64,31 @@ export default function CampaignsClient() {
         ? prev.segmentos.filter((s) => s !== id)
         : [...prev.segmentos, id],
     }));
+  };
+
+  const handleUploadContactos = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/contactos/upload`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert(`✅ Contactos subidos: ${data.nuevos}`);
+        setCantidadContactos((prev) => prev + data.nuevos);
+      } else {
+        alert(`❌ ${data.error}`);
+      }
+    } catch (err) {
+      console.error("❌ Error al subir contactos:", err);
+    }
   };
 
   const handleSubmit = async () => {
@@ -86,18 +125,11 @@ export default function CampaignsClient() {
       if (res.ok) {
         const nueva = await res.json();
         setCampaigns((prev) => [nueva, ...prev]);
-        setForm({
-          nombre: "",
-          canal: "whatsapp",
-          contenido: "",
-          fecha_envio: "",
-          imagen: null,
-          segmentos: [],
-        });
+        setForm({ nombre: "", canal: "whatsapp", contenido: "", fecha_envio: "", imagen: null, segmentos: [] });
         alert("✅ Campaña guardada");
       } else {
-        console.error("❌ Error HTTP:", res.status);
-        alert("❌ Error al guardar campaña.");
+        const error = await res.json();
+        alert(`❌ ${error.error || "Error al guardar campaña."}`);
       }
     } catch (err) {
       setLoading(false);
@@ -112,9 +144,57 @@ export default function CampaignsClient() {
         <SiGmail className="text-[#D14836]" size={28} />
         Crear nueva campaña
       </h2>
-  
+
       <TrainingHelp context="campaign" />
-  
+
+      {usage && (
+        <div className="mb-6 flex flex-wrap gap-4 text-sm text-white/70">
+          <div>📲 WhatsApp usados: {usage.whatsapp || 0} / 300</div>
+          <div>📩 SMS usados: {usage.sms || 0} / 500</div>
+          <div>📧 Emails usados: {usage.email || 0} / 1000</div>
+        </div>
+      )}
+
+      <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+        <h3 className="font-bold text-white text-lg mb-2">📁 Contactos cargados ({cantidadContactos}/300)</h3>
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleUploadContactos}
+          className="block mb-2 text-sm text-white/70"
+        />
+        <p className="text-sm text-white/50">
+          El archivo debe tener columnas: nombre, email, telefono, segmento
+        </p>
+      </div>
+      
+      <button
+        onClick={async () => {
+          const confirmar = confirm("¿Seguro que deseas eliminar todos los contactos?");
+          if (!confirmar) return;
+
+          try {
+            const res = await fetch(`${BACKEND_URL}/api/contactos`, {
+              method: "DELETE",
+              credentials: "include",
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+              alert("✅ Contactos eliminados.");
+              setCantidadContactos(0);
+            } else {
+              alert(`❌ ${data.error}`);
+            }
+          } catch (err) {
+            console.error("❌ Error al eliminar contactos:", err);
+          }
+        }}
+        className="text-red-400 hover:text-red-600 text-sm underline mt-2"
+      >
+        🗑️ Eliminar todos los contactos
+      </button>
+
       <label className="block mb-2 font-medium">📝 Nombre de la campaña</label>
       <input
         name="nombre"
