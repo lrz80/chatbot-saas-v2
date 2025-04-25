@@ -100,7 +100,7 @@ export default function VoiceConfigPage() {
         Asistente de Voz por Idioma
       </h1>
       <TrainingHelp context="voice" />
-
+  
       <div className="flex space-x-4 mb-6">
         {idiomasDisponibles.map((lang) => (
           <button
@@ -114,12 +114,12 @@ export default function VoiceConfigPage() {
           </button>
         ))}
       </div>
-
+  
       <form onSubmit={handleSubmit} className="mb-10">
         <input type="hidden" name="idioma" value={idioma} />
         <input type="hidden" name="canal" value="voz" />
         <input type="hidden" name="tenant_id" value={tenantId} />
-
+  
         <VoicePromptGenerator
           idioma={idioma}
           categoria={tenant?.categoria || "general"}
@@ -128,7 +128,7 @@ export default function VoiceConfigPage() {
             (document.querySelector("input[name='welcome_message']") as HTMLInputElement).value = bienvenida;
           }}
         />
-
+  
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <FiSettings className="text-purple-400" />
@@ -136,7 +136,7 @@ export default function VoiceConfigPage() {
           </label>
           <textarea name="system_prompt" className="w-full border px-4 py-2 rounded" rows={4} />
         </div>
-
+  
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <FiMessageCircle className="text-green-400" />
@@ -144,7 +144,7 @@ export default function VoiceConfigPage() {
           </label>
           <input type="text" name="welcome_message" className="w-full border px-4 py-2 rounded" />
         </div>
-
+  
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <FiVolume2 className="text-indigo-400" />
@@ -165,25 +165,25 @@ export default function VoiceConfigPage() {
                 const voice = (
                   document.querySelector("select[name='voice_name']") as HTMLSelectElement
                 )?.value;
-
+  
                 const previewForm = new FormData();
                 previewForm.append("voice", voice);
                 previewForm.append("language", idioma);
-
+  
                 await fetch(`${BACKEND_URL}/api/voice-preview`, {
                   method: "POST",
                   body: previewForm,
                   credentials: "include",
                 });
-
-                toast.info("\ud83d\udcde Voz enviada. Llam\u00e1 al n\u00famero de prueba para escuchar.");
+  
+                toast.info("📞 Voz enviada. Llamá al número de prueba para escuchar.");
               }}
             >
               Escuchar voz
             </button>
           </div>
         </div>
-
+  
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <FiHash className="text-yellow-400" />
@@ -196,45 +196,48 @@ export default function VoiceConfigPage() {
             placeholder="precio, cita, horario..."
           />
         </div>
-
+  
         <button
           type="submit"
           className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700"
         >
-          Guardar Configuraci\u00f3n
+          Guardar Configuración
         </button>
       </form>
-
+  
       <hr className="my-8 border-white/20" />
-
-      <h2 className="text-xl font-bold mb-4">\ud83e\uddd0 Historial de llamadas y emociones</h2>
-
+  
+      <h2 className="text-xl font-bold mb-4">🧠 Historial de llamadas y emociones</h2>
+  
       {loadingHistory ? (
         <div className="text-gray-400 animate-pulse">Cargando historial...</div>
       ) : voiceMessages.length === 0 ? (
-        <div className="text-gray-400">No hay registros de voz a\u00fan.</div>
+        <div className="text-gray-400">No hay registros de voz aún.</div>
       ) : (
         <div className="space-y-4 max-h-[300px] overflow-y-auto">
-          {voiceMessages.map((msg, idx) => (
-            <div
-              key={idx}
-              className="bg-white/10 border border-white/20 p-4 rounded-xl backdrop-blur-sm"
-            >
-              <div className="text-sm text-white/70 mb-1">
-                {new Date(msg.timestamp).toLocaleString()} — {msg.from_number || "an\u00f3nimo"}
-              </div>
-              <div className="font-semibold text-white">
-                {msg.sender === "user" ? "\ud83d\udc64 Cliente:" : "\ud83e\udd16 Bot:"} {msg.content}
-              </div>
-              {msg.sender === "user" && msg.emotion && (
-                <div className="text-sm mt-1 text-purple-300">
-                  Emoci\u00f3n detectada: <span className="font-medium">{msg.emotion}</span>
+          {voiceMessages
+            .slice() // para no mutar el original
+            .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+            .map((msg, idx) => (
+              <div
+                key={idx}
+                className="bg-white/10 border border-white/20 p-4 rounded-xl backdrop-blur-sm mb-4"
+              >
+                <div className="text-sm text-white/70 mb-1">
+                  {new Date(msg.timestamp).toLocaleString()} — {msg.from_number || "anónimo"}
                 </div>
-              )}
-            </div>
-          ))}
+                <div className="font-semibold text-white">
+                  {msg.sender === "user" ? "👤 Cliente:" : "🤖 Bot:"} {msg.content}
+                </div>
+                {msg.sender === "user" && msg.emotion && (
+                  <div className="text-sm mt-1 text-purple-300">
+                    Emoción detectada: <span className="font-medium">{msg.emotion}</span>
+                  </div>
+                )}
+              </div>
+            ))}
         </div>
       )}
     </div>
   );
-}
+}  
