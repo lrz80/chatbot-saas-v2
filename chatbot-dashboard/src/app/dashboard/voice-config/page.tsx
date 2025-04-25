@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTenant } from "@/context/TenantContext";
 import { toast } from "react-toastify";
@@ -8,29 +8,9 @@ import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
 
-type VoiceOption = {
-  label: string;
-  value: string;
-};
 
-function getVoicesByLanguage(lang: string): VoiceOption[] {
-  const voices: Record<string, VoiceOption[]> = {
-    "es-ES": [
-      { label: "Alice (neutro)", value: "alice" },
-      { label: "Conchita (España)", value: "Polly.Conchita" },
-      { label: "Lucia (España)", value: "Polly.Lucia" },
-      { label: "Miguel (España)", value: "Polly.Miguel" },
-    ],
-    "en-US": [
-      { label: "Matthew (US)", value: "Polly.Matthew" },
-      { label: "Joanna (US)", value: "Polly.Joanna" },
-      { label: "Kendra (US)", value: "Polly.Kendra" },
-      { label: "Joey (US)", value: "Polly.Joey" },
-    ],
-    "default": [{ label: "Alice (neutro)", value: "alice" }],
-  };
-  return voices[lang] || voices["default"];
-}
+// Tipo de voz por idioma
+
 
 export default function VoiceConfigPage() {
   const [idioma, setIdioma] = useState("es-ES");
@@ -39,19 +19,54 @@ export default function VoiceConfigPage() {
   const router = useRouter();
 
   const idiomasDisponibles = [
-    { label: "Español", value: "es-ES" },
+    { label: "Espa\u00f1ol", value: "es-ES" },
     { label: "English", value: "en-US" },
   ];
+
+  const voiceOptions: Record<string, { label: string; value: string }[]> = {
+    "es-ES": [
+      { label: "Alice (neutro)", value: "alice" },
+      { label: "Conchita (Espa\u00f1a)", value: "Polly.Conchita" },
+      { label: "Lucia (Espa\u00f1a)", value: "Polly.Lucia" },
+      { label: "Miguel (Espa\u00f1a)", value: "Polly.Miguel" },
+    ],
+    "en-US": [
+      { label: "Matthew (US)", value: "Polly.Matthew" },
+      { label: "Joanna (US)", value: "Polly.Joanna" },
+      { label: "Kendra (US)", value: "Polly.Kendra" },
+      { label: "Joey (US)", value: "Polly.Joey" },
+    ],
+    default: [{ label: "Alice (neutro)", value: "alice" }],
+  };
+
+  const [voiceMessages, setVoiceMessages] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/messages?canal=voice`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        setVoiceMessages(data);
+      } catch (err) {
+        console.error("Error al cargar historial de voz:", err);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    fetchMessages();
+  }, []);
 
   if (!tenant) {
     return (
       <div className="flex justify-center items-center h-40 text-gray-400 animate-pulse">
-        Cargando configuración del negocio...
+        Cargando configuraci\u00f3n del negocio...
       </div>
     );
   }
-
-  const voiceOptions = getVoicesByLanguage(idioma);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,15 +81,17 @@ export default function VoiceConfigPage() {
       });
 
       if (res.ok) {
-        toast.success("✅ ¡Configuración guardada!");
+        toast.success("\u2705 \u00a1Configuraci\u00f3n guardada!");
       } else {
-        toast.error("❌ Algo salió mal.");
+        toast.error("\u274c Algo sali\u00f3 mal.");
       }
     } catch (err) {
       console.error("Error al guardar:", err);
-      alert("⚠️ Error inesperado.");
+      alert("\u26a0\ufe0f Error inesperado.");
     }
   };
+
+  const voiceOptionsByLang = voiceOptions[idioma] || voiceOptions["default"];
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
@@ -98,7 +115,7 @@ export default function VoiceConfigPage() {
         ))}
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="mb-10">
         <input type="hidden" name="idioma" value={idioma} />
         <input type="hidden" name="canal" value="voz" />
         <input type="hidden" name="tenant_id" value={tenantId} />
@@ -135,7 +152,7 @@ export default function VoiceConfigPage() {
           </label>
           <div className="flex gap-3 items-center">
             <select name="voice_name" className="w-full border px-4 py-2 rounded">
-              {voiceOptions.map((voice) => (
+              {voiceOptionsByLang.map((voice) => (
                 <option key={voice.value} value={voice.value}>
                   {voice.label}
                 </option>
@@ -159,7 +176,7 @@ export default function VoiceConfigPage() {
                   credentials: "include",
                 });
 
-                toast.info("📞 Voz enviada. Llamá al número de prueba para escuchar.");
+                toast.info("\ud83d\udcde Voz enviada. Llam\u00e1 al n\u00famero de prueba para escuchar.");
               }}
             >
               Escuchar voz
@@ -184,9 +201,40 @@ export default function VoiceConfigPage() {
           type="submit"
           className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700"
         >
-          Guardar Configuración
+          Guardar Configuraci\u00f3n
         </button>
       </form>
+
+      <hr className="my-8 border-white/20" />
+
+      <h2 className="text-xl font-bold mb-4">\ud83e\uddd0 Historial de llamadas y emociones</h2>
+
+      {loadingHistory ? (
+        <div className="text-gray-400 animate-pulse">Cargando historial...</div>
+      ) : voiceMessages.length === 0 ? (
+        <div className="text-gray-400">No hay registros de voz a\u00fan.</div>
+      ) : (
+        <div className="space-y-4 max-h-[300px] overflow-y-auto">
+          {voiceMessages.map((msg, idx) => (
+            <div
+              key={idx}
+              className="bg-white/10 border border-white/20 p-4 rounded-xl backdrop-blur-sm"
+            >
+              <div className="text-sm text-white/70 mb-1">
+                {new Date(msg.timestamp).toLocaleString()} — {msg.from_number || "an\u00f3nimo"}
+              </div>
+              <div className="font-semibold text-white">
+                {msg.sender === "user" ? "\ud83d\udc64 Cliente:" : "\ud83e\udd16 Bot:"} {msg.content}
+              </div>
+              {msg.sender === "user" && msg.emotion && (
+                <div className="text-sm mt-1 text-purple-300">
+                  Emoci\u00f3n detectada: <span className="font-medium">{msg.emotion}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
