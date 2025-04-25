@@ -30,6 +30,10 @@ export default function DashboardHome() {
   const [allMessages, setAllMessages] = useState<any[]>([]);
   const [loadingAllMessages, setLoadingAllMessages] = useState(true);
   const [graficoInteracciones, setGraficoInteracciones] = useState<number[]>([]);
+  const [graficoUsuarios, setGraficoUsuarios] = useState<number[]>([]);
+  const [graficoIntenciones, setGraficoIntenciones] = useState<number[]>([]);
+  const [graficoHoraPico, setGraficoHoraPico] = useState<number[]>([]);
+  const [horaPico, setHoraPico] = useState<number | null>(null);
 
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
@@ -171,21 +175,47 @@ export default function DashboardHome() {
   }, {});
 
   useEffect(() => {
-    const fetchInteraccionesPorDia = async () => {
+    const fetchGraficos = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/stats/interacciones-por-dia`, {
-          credentials: 'include',
+        // Hacer todas las peticiones en paralelo
+        const [intRes, usrRes, intVentasRes, horaPicoRes] = await Promise.all([
+          fetch(`${BACKEND_URL}/api/stats/interacciones-por-dia`, { credentials: 'include' }),
+          fetch(`${BACKEND_URL}/api/stats/usuarios-por-dia`, { credentials: 'include' }),
+          fetch(`${BACKEND_URL}/api/stats/intenciones-por-dia`, { credentials: 'include' }),
+          fetch(`${BACKEND_URL}/api/stats/hora-pico`, { credentials: 'include' }),
+        ]);
+  
+        const interacciones = await intRes.json();
+        const usuarios = await usrRes.json();
+        const intenciones = await intVentasRes.json();
+        const horaPicoData = await horaPicoRes.json();
+  
+        // Asignar datos de los gráficos
+        setGraficoInteracciones(interacciones.map((d: any) => parseInt(d.count)));
+        setGraficoUsuarios(usuarios.map((d: any) => parseInt(d.count)));
+        setGraficoIntenciones(intenciones.map((d: any) => parseInt(d.count)));
+  
+        // Para el gráfico de hora pico (opcional: puedes hacer mejor gráfico luego si quieres)
+        const horas = new Array(24).fill(0);
+        interacciones.forEach((d: any) => {
+          const hora = new Date(d.dia).getHours();
+          horas[hora]++;
         });
-        const data = await res.json();
-        const counts = data.map((d: any) => parseInt(d.count));
-        setGraficoInteracciones(counts);
+        setGraficoHoraPico(horas.slice(0, 10)); // ejemplo, primeras 10 horas del día
+  
+        // Asignar valor real de hora pico
+        if (horaPicoData?.hora_pico !== undefined) {
+          setHoraPico(horaPicoData.hora_pico);
+        }
+  
       } catch (err) {
-        console.error("❌ Error al obtener gráfico de interacciones:", err);
+        console.error("❌ Error al cargar gráficos individuales:", err);
       }
     };
   
-    fetchInteraccionesPorDia();
+    fetchGraficos();
   }, []);
+  
 
   if (loading) return <div className="text-white p-10">Cargando...</div>;
 
@@ -232,19 +262,19 @@ export default function DashboardHome() {
         <KpiCardWithChart
           title="Usuarios Únicos"
           value={kpis.unicos}
-          data={[1, 1, 2, 2, 2, 2, 2]}
+          data={graficoUsuarios}
           color="rgba(255, 255, 255, 0.9)"
         />
         <KpiCardWithChart
           title="Hora Pico"
           value={kpis.hora_pico ? `${kpis.hora_pico}:00` : '—'}
-          data={[2, 2, 1, 3, 1, 2, 2]}
+          data={graficoHoraPico}
           color="rgba(255, 180, 100, 1)"
         />
         <KpiCardWithChart
           title="Intenciones de Venta"
           value={ventasStats.total_intenciones}
-          data={[0, 1, 2, 3, 3, 3, 4]}
+          data={graficoIntenciones}
           color="rgba(255, 99, 132, 1)"
         />
       </div>
