@@ -30,6 +30,8 @@ export default function DashboardHome() {
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const [showSuccess, setShowSuccess] = useState(false);
+  const [allMessages, setAllMessages] = useState<any[]>([]);
+  const [loadingAllMessages, setLoadingAllMessages] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,14 +61,6 @@ export default function DashboardHome() {
           setKeywords(data.keywords || []);
         } catch (err) {
           console.error('Error al parsear keywords:', text);
-        }
-
-        const resMessages = await fetch(`${BACKEND_URL}/api/messages?limit=5`, {
-          credentials: 'include',
-        });
-        if (resMessages.ok) {
-          const data = await resMessages.json();
-          setLatestMessages(data.mensajes || []);
         }
 
         const resUsage = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
@@ -134,7 +128,25 @@ export default function DashboardHome() {
     fetchData();
   }, [monthlyView, canal]);
 
-  if (loading) return <div className="text-white p-10">Cargando...</div>;
+  useEffect(() => {
+    const fetchAllMessages = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/messages?limit=50`, {
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error("Error al obtener mensajes");
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("Formato inválido de mensajes");
+        setAllMessages(data);
+      } catch (err) {
+        console.error("❌ Error cargando mensajes:", err);
+      } finally {
+        setLoadingAllMessages(false);
+      }
+    };
+
+    fetchAllMessages();
+  }, []);
 
   const canalIcono = {
     whatsapp: <MessageSquare className="inline-block mr-1 text-green-400" size={16} />,
@@ -143,34 +155,14 @@ export default function DashboardHome() {
     instagram: <Instagram className="inline-block mr-1 text-pink-400" size={16} />,
     default: <MessageCircle className="inline-block mr-1 text-white/60" size={16} />,
   };
-  
-  const [allMessages, setAllMessages] = useState<any[]>([]);
-  const [loadingAllMessages, setLoadingAllMessages] = useState(true);
-  
-  useEffect(() => {
-    const fetchAllMessages = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/messages?limit=50`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        setAllMessages(data);
-      } catch (err) {
-        console.error("❌ Error cargando mensajes:", err);
-      } finally {
-        setLoadingAllMessages(false);
-      }
-    };
-  
-    fetchAllMessages();
-  }, []);
-  
-  // Agrupar por canal
+
   const mensajesPorCanal = allMessages.reduce((acc: Record<string, any[]>, msg: any) => {
     if (!acc[msg.canal]) acc[msg.canal] = [];
     acc[msg.canal].push(msg);
     return acc;
   }, {});
+
+  if (loading) return <div className="text-white p-10">Cargando...</div>;
 
   return (
     <div className="p-4 md:p-6 text-white">
