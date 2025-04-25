@@ -239,18 +239,46 @@ export default function DashboardHome() {
 
         {loadingAllMessages ? (
           <p className="text-white/50">Cargando mensajes...</p>
-        ) : Object.keys(mensajesPorCanal).length === 0 ? (
-          <p className="text-white/50">No hay mensajes aún.</p>
         ) : (
           <div className="space-y-6 max-h-[350px] overflow-y-auto pr-1">
-            {Object.entries(mensajesPorCanal).map(([canal, mensajes]: [string, any[]]) => (
-              <div key={canal}>
+            {canal === 'todos' ? (
+              Object.entries(mensajesPorCanal).map(([canalKey, mensajes]: [string, any[]]) => (
+                <div key={canalKey}>
+                  <h3 className="text-white/80 font-semibold mb-2 text-sm flex items-center gap-1 uppercase">
+                    {canalIcono[canalKey as keyof typeof canalIcono] || canalIcono.default}
+                    {canalKey}
+                  </h3>
+                  <div className="space-y-2">
+                    {mensajes.map((msg, i) => (
+                      <div
+                        key={i}
+                        className="bg-white/5 p-3 rounded border border-white/10 text-sm"
+                      >
+                        <div className="flex justify-between text-white/60 text-xs mb-1">
+                          <span>{new Date(msg.timestamp).toLocaleString()}</span>
+                          <span>{msg.from_number || "anónimo"}</span>
+                        </div>
+                        <div className="font-medium text-white">
+                          {msg.sender === "user" ? "👤 Cliente:" : "🤖 Bot:"} {msg.content}
+                        </div>
+                        {msg.emotion && (
+                          <div className="text-purple-300 text-xs mt-1">
+                            Emoción detectada: <span className="font-semibold">{msg.emotion}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div>
                 <h3 className="text-white/80 font-semibold mb-2 text-sm flex items-center gap-1 uppercase">
                   {canalIcono[canal as keyof typeof canalIcono] || canalIcono.default}
                   {canal}
                 </h3>
                 <div className="space-y-2">
-                  {mensajes.map((msg, i) => (
+                  {(mensajesPorCanal[canal] || []).map((msg, i) => (
                     <div
                       key={i}
                       className="bg-white/5 p-3 rounded border border-white/10 text-sm"
@@ -271,7 +299,7 @@ export default function DashboardHome() {
                   ))}
                 </div>
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>
