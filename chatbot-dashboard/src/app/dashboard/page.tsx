@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { MessageSquare, PhoneCall, Facebook, Instagram, MessageCircle } from "lucide-react";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -135,6 +136,42 @@ export default function DashboardHome() {
 
   if (loading) return <div className="text-white p-10">Cargando...</div>;
 
+  const canalIcono = {
+    whatsapp: <MessageSquare className="inline-block mr-1 text-green-400" size={16} />,
+    voice: <PhoneCall className="inline-block mr-1 text-purple-400" size={16} />,
+    facebook: <Facebook className="inline-block mr-1 text-blue-400" size={16} />,
+    instagram: <Instagram className="inline-block mr-1 text-pink-400" size={16} />,
+    default: <MessageCircle className="inline-block mr-1 text-white/60" size={16} />,
+  };
+  
+  const [allMessages, setAllMessages] = useState<any[]>([]);
+  const [loadingAllMessages, setLoadingAllMessages] = useState(true);
+  
+  useEffect(() => {
+    const fetchAllMessages = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/messages?limit=50`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        setAllMessages(data);
+      } catch (err) {
+        console.error("❌ Error cargando mensajes:", err);
+      } finally {
+        setLoadingAllMessages(false);
+      }
+    };
+  
+    fetchAllMessages();
+  }, []);
+  
+  // Agrupar por canal
+  const mensajesPorCanal = allMessages.reduce((acc: Record<string, any[]>, msg: any) => {
+    if (!acc[msg.canal]) acc[msg.canal] = [];
+    acc[msg.canal].push(msg);
+    return acc;
+  }, {});
+
   return (
     <div className="p-4 md:p-6 text-white">
       {showSuccess && (
@@ -206,17 +243,45 @@ export default function DashboardHome() {
       </div>
 
       <div className="bg-white/10 p-4 rounded mb-6">
-        <h2 className="text-lg md:text-xl mb-2">Historial de Conversaciones</h2>
-        {latestMessages.map((msg, i) => (
-          <div key={i} className="mb-2 p-2 border rounded bg-white/5 text-sm">
-            <strong>{msg.sender === 'user' ? '👤 Cliente' : '🤖 Bot'}:</strong> {msg.content}
+        <h2 className="text-lg md:text-xl mb-4">Historial de Mensajes por Canal</h2>
+
+        {loadingAllMessages ? (
+          <p className="text-white/50">Cargando mensajes...</p>
+        ) : Object.keys(mensajesPorCanal).length === 0 ? (
+          <p className="text-white/50">No hay mensajes aún.</p>
+        ) : (
+          <div className="space-y-6 max-h-[350px] overflow-y-auto pr-1">
+            {Object.entries(mensajesPorCanal).map(([canal, mensajes]: [string, any[]]) => (
+              <div key={canal}>
+                <h3 className="text-white/80 font-semibold mb-2 text-sm flex items-center gap-1 uppercase">
+                  {canalIcono[canal as keyof typeof canalIcono] || canalIcono.default}
+                  {canal}
+                </h3>
+                <div className="space-y-2">
+                  {mensajes.map((msg, i) => (
+                    <div
+                      key={i}
+                      className="bg-white/5 p-3 rounded border border-white/10 text-sm"
+                    >
+                      <div className="flex justify-between text-white/60 text-xs mb-1">
+                        <span>{new Date(msg.timestamp).toLocaleString()}</span>
+                        <span>{msg.from_number || "anónimo"}</span>
+                      </div>
+                      <div className="font-medium text-white">
+                        {msg.sender === "user" ? "👤 Cliente:" : "🤖 Bot:"} {msg.content}
+                      </div>
+                      {msg.emotion && (
+                        <div className="text-purple-300 text-xs mt-1">
+                          Emoción detectada: <span className="font-semibold">{msg.emotion}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-        <div className="mt-4 text-center">
-          <a href="/dashboard/history" className="inline-block bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-4 py-2 rounded-full shadow">
-            Ver historial completo
-          </a>
-        </div>
+        )}
       </div>
 
       <div className="bg-white/10 p-4 rounded mb-6">
