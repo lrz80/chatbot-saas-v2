@@ -10,6 +10,7 @@ export default function BusinessProfilePage() {
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const router = useRouter();
+  const [direccion, setDireccion] = useState('');
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -81,6 +82,25 @@ export default function BusinessProfilePage() {
     }
   };
 
+  const handleCancelarPlan = async () => {
+    if (!confirm("¿Estás seguro de que deseas cancelar tu plan?")) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/stripe/cancel`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (res.ok) {
+        alert("✅ Plan cancelado correctamente.");
+        window.location.reload();
+      } else {
+        alert("❌ Error al cancelar el plan.");
+      }
+    } catch (err) {
+      console.error("❌ Error:", err);
+      alert("❌ Hubo un problema al cancelar el plan.");
+    }
+  };  
+
   if (loading) return <p className="text-center text-white">Cargando información del negocio...</p>;
 
   return (
@@ -123,6 +143,19 @@ export default function BusinessProfilePage() {
             onChange={handleChange}
             className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           />
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="w-full">
+            <label className="text-sm text-white/70 mb-1 block">Dirección del Negocio</label>
+            <input
+              type="text"
+              value={direccion}
+              onChange={(e) => setDireccion(e.target.value)}
+              placeholder="123 Calle Principal, Ciudad, Estado"
+              className="w-full bg-white/10 text-white px-3 py-2 rounded border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
         </div>
 
         <div>
@@ -227,6 +260,14 @@ export default function BusinessProfilePage() {
         <div>
           <p className="text-sm text-indigo-200 font-semibold">Plan Activo</p>
           <p className="text-lg text-white">{formData.plan}</p>
+        </div>
+        <div className="mt-2">
+          <button
+            onClick={handleCancelarPlan}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm"
+          >
+            Cancelar Plan
+          </button>
         </div>
 
         <div>
