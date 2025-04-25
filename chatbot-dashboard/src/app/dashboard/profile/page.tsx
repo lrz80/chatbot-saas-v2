@@ -36,6 +36,7 @@ export default function BusinessProfilePage() {
           membresia_activa: data.membresia_activa,
           membresia_vigencia: data.membresia_vigencia,
         });
+        setDireccion(data.direccion || '');
       } catch (error) {
         console.error('❌ Error al obtener settings:', error);
       } finally {
@@ -63,6 +64,7 @@ export default function BusinessProfilePage() {
         categoria: formData.categoria,
         idioma: formData.idioma,
         logo_url: formData.logo_url,
+        direccion, // 👈 agregamos la dirección aquí
       };
 
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
@@ -99,7 +101,7 @@ export default function BusinessProfilePage() {
       console.error("❌ Error:", err);
       alert("❌ Hubo un problema al cancelar el plan.");
     }
-  };  
+  };
 
   if (loading) return <p className="text-center text-white">Cargando información del negocio...</p>;
 
@@ -147,7 +149,7 @@ export default function BusinessProfilePage() {
 
         <div className="flex flex-col md:flex-row gap-4">
           <div className="w-full">
-            <label className="text-sm text-white/70 mb-1 block">Dirección del Negocio</label>
+            <label className="text-sm text-indigo-200 font-semibold">Dirección del Negocio</label>
             <input
               type="text"
               value={direccion}
