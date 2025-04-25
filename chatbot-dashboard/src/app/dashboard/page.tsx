@@ -13,6 +13,7 @@ import {
   Legend,
 } from 'chart.js';
 import { MessageSquare, PhoneCall, Facebook, Instagram, MessageCircle } from "lucide-react";
+import KpiCardWithChart from '@/components/KpiCardWithChart';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -28,6 +29,7 @@ export default function DashboardHome() {
   const [ventasStats, setVentasStats] = useState({ total_intenciones: 0, leads_calientes: 0 });
   const [allMessages, setAllMessages] = useState<any[]>([]);
   const [loadingAllMessages, setLoadingAllMessages] = useState(true);
+  const [graficoInteracciones, setGraficoInteracciones] = useState<number[]>([]);
 
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
@@ -168,6 +170,23 @@ export default function DashboardHome() {
     return acc;
   }, {});
 
+  useEffect(() => {
+    const fetchInteraccionesPorDia = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/stats/interacciones-por-dia`, {
+          credentials: 'include',
+        });
+        const data = await res.json();
+        const counts = data.map((d: any) => parseInt(d.count));
+        setGraficoInteracciones(counts);
+      } catch (err) {
+        console.error("❌ Error al obtener gráfico de interacciones:", err);
+      }
+    };
+  
+    fetchInteraccionesPorDia();
+  }, []);
+
   if (loading) return <div className="text-white p-10">Cargando...</div>;
 
   return (
@@ -203,14 +222,31 @@ export default function DashboardHome() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">Interacciones Totales: {kpis.total}</div>
-        <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">Usuarios Únicos: {kpis.unicos}</div>
-        <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">Hora Pico: {kpis.hora_pico ? `${kpis.hora_pico}:00` : '—'}</div>
-        <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">
-          🧠 Intenciones: {ventasStats.total_intenciones}<br />
-          🔥 Leads calientes: {ventasStats.leads_calientes}
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <KpiCardWithChart
+          title="Interacciones Totales"
+          value={kpis.total}
+          data={graficoInteracciones}
+          color="rgba(168, 85, 247, 1)"
+        />
+        <KpiCardWithChart
+          title="Usuarios Únicos"
+          value={kpis.unicos}
+          data={[1, 1, 2, 2, 2, 2, 2]}
+          color="rgba(255, 255, 255, 0.9)"
+        />
+        <KpiCardWithChart
+          title="Hora Pico"
+          value={kpis.hora_pico ? `${kpis.hora_pico}:00` : '—'}
+          data={[2, 2, 1, 3, 1, 2, 2]}
+          color="rgba(255, 180, 100, 1)"
+        />
+        <KpiCardWithChart
+          title="Intenciones de Venta"
+          value={ventasStats.total_intenciones}
+          data={[0, 1, 2, 3, 3, 3, 4]}
+          color="rgba(255, 99, 132, 1)"
+        />
       </div>
 
       <div className="mb-6">
