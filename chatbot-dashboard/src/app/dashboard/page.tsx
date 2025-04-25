@@ -25,13 +25,13 @@ export default function DashboardHome() {
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0, plan: 'free' });
   const [onboardingCompletado, setOnboardingCompletado] = useState<boolean>(true);
   const [canal, setCanal] = useState<string>('todos');
-  const [latestMessages, setLatestMessages] = useState<any[]>([]);
+  const [ventasStats, setVentasStats] = useState({ total_intenciones: 0, leads_calientes: 0 });
+  const [allMessages, setAllMessages] = useState<any[]>([]);
+  const [loadingAllMessages, setLoadingAllMessages] = useState(true);
 
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const [showSuccess, setShowSuccess] = useState(false);
-  const [allMessages, setAllMessages] = useState<any[]>([]);
-  const [loadingAllMessages, setLoadingAllMessages] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,8 +99,14 @@ export default function DashboardHome() {
         if (resKpi.ok) {
           const kpiData = await resKpi.json();
           setKpis(kpiData);
-        } else {
-          console.error("❌ Error al obtener KPIs:", resKpi.status);
+        }
+
+        const resVentas = await fetch(`${BACKEND_URL}/api/sales-intelligence/stats`, {
+          credentials: 'include',
+        });
+        if (resVentas.ok) {
+          const data = await resVentas.json();
+          setVentasStats(data);
         }
 
       } catch (err) {
@@ -201,6 +207,10 @@ export default function DashboardHome() {
         <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">Interacciones Totales: {kpis.total}</div>
         <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">Usuarios Únicos: {kpis.unicos}</div>
         <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">Hora Pico: {kpis.hora_pico ? `${kpis.hora_pico}:00` : '—'}</div>
+        <div className="bg-white/10 p-3 text-sm md:text-base rounded text-center">
+          🧠 Intenciones: {ventasStats.total_intenciones}<br />
+          🔥 Leads calientes: {ventasStats.leads_calientes}
+        </div>
       </div>
 
       <div className="mb-6">
