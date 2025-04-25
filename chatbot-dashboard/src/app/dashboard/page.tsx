@@ -22,7 +22,7 @@ export default function DashboardHome() {
   const [loading, setLoading] = useState(true);
   const [kpis, setKpis] = useState({ total: 0, unicos: 0, hora_pico: null });
   const [chartData, setChartData] = useState<any>(null);
-  const [monthlyView, setMonthlyView] = useState<'year' | 'current'>('year');
+  const [monthlyView, setMonthlyView] = useState<'year' | 'current'>('current');
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0, plan: 'free' });
   const [onboardingCompletado, setOnboardingCompletado] = useState<boolean>(true);
   const [canal, setCanal] = useState<string>('todos');
