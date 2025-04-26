@@ -342,6 +342,11 @@ export default function DashboardHome() {
                             Emoción detectada: <span className="font-semibold">{msg.emotion}</span>
                           </div>
                         )}
+                        {msg.intencion && (
+                          <div className="text-green-400 text-xs mt-1">
+                            🧠 Intención detectada: <span className="font-semibold">{msg.intencion}</span> (Nivel {msg.nivel_interes})
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -369,6 +374,11 @@ export default function DashboardHome() {
                       {msg.emotion && (
                         <div className="text-purple-300 text-xs mt-1">
                           Emoción detectada: <span className="font-semibold">{msg.emotion}</span>
+                        </div>
+                      )}
+                      {msg.intencion && (
+                        <div className="text-green-400 text-xs mt-1">
+                          🧠 Intención detectada: <span className="font-semibold">{msg.intencion}</span> (Nivel {msg.nivel_interes})
                         </div>
                       )}
                     </div>
