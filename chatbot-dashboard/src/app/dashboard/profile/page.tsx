@@ -55,7 +55,7 @@ export default function BusinessProfilePage() {
       router.push('/upgrade');
       return;
     }
-
+  
     setSaving(true);
     try {
       const payload = {
@@ -63,17 +63,17 @@ export default function BusinessProfilePage() {
         horario_atencion: formData.horario_atencion,
         categoria: formData.categoria,
         idioma: formData.idioma,
-        logo_url: formData.logo_url,
-        direccion, // 👈 agregamos la dirección aquí
+        logo_url: formData.logo_url || '', // 👈 Nunca dejar undefined o null
+        direccion, // 👈 Dirección también se incluye siempre
       };
-
+  
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload),
       });
-
+  
       if (res.ok) alert('✅ Cambios guardados correctamente');
       else alert('❌ Error al guardar cambios');
     } catch (err) {
@@ -82,7 +82,7 @@ export default function BusinessProfilePage() {
     } finally {
       setSaving(false);
     }
-  };
+  };  
 
   const handleCancelarPlan = async () => {
     if (!confirm("¿Estás seguro de que deseas cancelar tu plan?")) return;
