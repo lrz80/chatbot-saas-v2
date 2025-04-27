@@ -14,42 +14,67 @@ export default function FollowUpSettingsPage() {
   const [mensajeGeneral, setMensajeGeneral] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const [mensajesEnviados, setMensajesEnviados] = useState<any[]>([]);
+  const [loadingMensajes, setLoadingMensajes] = useState(true);
+  const [reloadingMensajes, setReloadingMensajes] = useState(false);
+
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/follow-up-settings`, {
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error('Error al cargar configuración');
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/follow-up-settings`, {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Error al cargar configuración');
 
-        const data = await res.json();
-
-        if (data) {
-          const totalMinutos = data.minutos_espera || 60;
-          setDiasEspera(Math.floor(totalMinutos / 1440));
-          setHorasEspera(Math.floor((totalMinutos % 1440) / 60));
-          setMensajePrecio(data.mensaje_precio || '');
-          setMensajeAgendar(data.mensaje_agendar || '');
-          setMensajeUbicacion(data.mensaje_ubicacion || '');
-          setMensajeGeneral(data.mensaje_general || '');
-        }
-      } catch (error) {
-        console.error('❌ Error al cargar configuración de seguimiento:', error);
-      } finally {
-        setLoading(false);
+      const data = await res.json();
+      if (data) {
+        const totalMinutos = data.minutos_espera || 60;
+        setDiasEspera(Math.floor(totalMinutos / 1440));
+        setHorasEspera(Math.floor((totalMinutos % 1440) / 60));
+        setMensajePrecio(data.mensaje_precio || '');
+        setMensajeAgendar(data.mensaje_agendar || '');
+        setMensajeUbicacion(data.mensaje_ubicacion || '');
+        setMensajeGeneral(data.mensaje_general || '');
       }
-    };
+    } catch (error) {
+      console.error('❌ Error al cargar configuración de seguimiento:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchSettings();
-  }, []);
+  const fetchMensajesEnviados = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/follow-up/sent-messages`, {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Error al cargar mensajes enviados');
+
+      const data = await res.json();
+      setMensajesEnviados(data || []);
+    } catch (error) {
+      console.error('❌ Error al cargar mensajes enviados:', error);
+    } finally {
+      setLoadingMensajes(false);
+      setReloadingMensajes(false);
+    }
+  };
+
+  const handleReloadMensajes = async () => {
+    try {
+      setReloadingMensajes(true);
+      await fetchMensajesEnviados();
+    } catch (error) {
+      console.error('❌ Error recargando mensajes:', error);
+      setReloadingMensajes(false);
+    }
+  };
 
   const handleSave = async () => {
     try {
       setSaving(true);
-
       const totalMinutos = (diasEspera * 24 * 60) + (horasEspera * 60);
 
       const res = await fetch(`${BACKEND_URL}/api/follow-up-settings`, {
@@ -76,6 +101,11 @@ export default function FollowUpSettingsPage() {
     }
   };
 
+  useEffect(() => {
+    fetchSettings();
+    fetchMensajesEnviados();
+  }, []);
+
   if (loading) {
     return <div className="text-white p-10">Cargando configuración...</div>;
   }
@@ -90,6 +120,7 @@ export default function FollowUpSettingsPage() {
         </div>
       )}
 
+      {/* Configuración de Seguimiento */}
       <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl mb-8 shadow-md">
         <h2 className="text-xl font-bold mb-6">⏰ Tiempo de Espera para Seguimiento</h2>
 
@@ -119,6 +150,7 @@ export default function FollowUpSettingsPage() {
         </div>
       </section>
 
+      {/* Mensajes de Seguimiento */}
       <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl shadow-md space-y-6">
         <h2 className="text-xl font-bold mb-6">✉️ Mensajes Personalizados de Seguimiento</h2>
 
@@ -171,6 +203,41 @@ export default function FollowUpSettingsPage() {
             {saving ? 'Guardando...' : 'Guardar Configuración'}
           </button>
         </div>
+      </section>
+
+      {/* Mensajes enviados */}
+      <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl shadow-md mt-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold">📬 Seguimientos Enviados</h2>
+          <button
+            onClick={handleReloadMensajes}
+            className="text-xs px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded-full font-semibold transition-all disabled:opacity-50"
+            disabled={reloadingMensajes}
+          >
+            {reloadingMensajes ? 'Recargando...' : '🔄 Recargar'}
+          </button>
+        </div>
+
+        {loadingMensajes ? (
+          <p className="text-white/50 animate-pulse">Cargando mensajes enviados...</p>
+        ) : mensajesEnviados.length === 0 ? (
+          <p className="text-white/50">Aún no se han enviado mensajes de seguimiento.</p>
+        ) : (
+          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+            {mensajesEnviados.map((mensaje, index) => (
+              <div
+                key={index}
+                className="bg-white/5 border border-white/10 p-4 rounded-lg text-sm text-white flex flex-col gap-2 transition-all duration-300"
+              >
+                <div className="flex justify-between text-xs text-white/60">
+                  <span>{new Date(mensaje.fecha_envio).toLocaleString()}</span>
+                  <span>{mensaje.contacto}</span>
+                </div>
+                <div className="text-white">{mensaje.contenido}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
