@@ -73,6 +73,7 @@ export default function Sidebar({ user, onLogout, isOpen, onClose }: any) {
               { href: '/dashboard/training', icon: <FiMessageCircle />, label: 'Asistente de WhatsApp' },
               { href: '/dashboard/meta-config', icon: <FaFacebookF size={16} />, label: 'Facebook Messenger' },
               { href: '/dashboard/voice-config', icon: <FiMic />, label: 'Asistente de Voz' },
+              { href: '/dashboard/follow-up', icon: <FiMessageCircle />, label: 'Seguimiento de Leads' }, // 🔥 Insertado aquí
               { href: '/dashboard/campaigns', icon: <FiMail />, label: 'Campañas de Marketing' },
             ].map((item, index) => (
               <a
