@@ -8,10 +8,10 @@ export default function FollowUpSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [horasEspera, setHorasEspera] = useState<number>(0);
   const [diasEspera, setDiasEspera] = useState<number>(0);
-  const [mensajePrecio, setMensajePrecio] = useState<string>('');
-  const [mensajeAgendar, setMensajeAgendar] = useState<string>('');
-  const [mensajeUbicacion, setMensajeUbicacion] = useState<string>('');
-  const [mensajeGeneral, setMensajeGeneral] = useState<string>('');
+  const [mensajePrecio, setMensajePrecio] = useState('');
+  const [mensajeAgendar, setMensajeAgendar] = useState('');
+  const [mensajeUbicacion, setMensajeUbicacion] = useState('');
+  const [mensajeGeneral, setMensajeGeneral] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
   const router = useRouter();
@@ -23,8 +23,7 @@ export default function FollowUpSettingsPage() {
         const res = await fetch(`${BACKEND_URL}/api/follow-up-settings`, {
           credentials: 'include',
         });
-
-        if (!res.ok) throw new Error("Error al cargar configuración");
+        if (!res.ok) throw new Error('Error al cargar configuración');
 
         const data = await res.json();
 
@@ -77,87 +76,89 @@ export default function FollowUpSettingsPage() {
     }
   };
 
-  if (loading) return <div className="text-white p-10">Cargando configuración...</div>;
+  if (loading) {
+    return <div className="text-white p-10">Cargando configuración...</div>;
+  }
 
   return (
     <div className="p-4 md:p-6 text-white">
-      <h1 className="text-2xl md:text-3xl font-extrabold mb-6">Seguimiento de Leads</h1>
+      <h1 className="text-2xl md:text-3xl font-extrabold mb-8">Seguimiento de Leads</h1>
 
       {showSuccess && (
-        <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded mb-6 text-center font-medium">
-          ✅ Configuración guardada exitosamente
+        <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded-xl mb-8 text-center font-medium animate-pulse">
+          ✅ ¡Configuración guardada exitosamente!
         </div>
       )}
 
-      <div className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 p-6 rounded-xl mb-8">
-        <h2 className="text-xl font-bold mb-4">⏰ Tiempo de Espera para Seguimiento</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl mb-8 shadow-md">
+        <h2 className="text-xl font-bold mb-6">⏰ Tiempo de Espera para Seguimiento</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm mb-2">Días:</label>
+            <label className="block text-sm mb-2 font-semibold text-purple-200">Días:</label>
             <input
               type="number"
               min="0"
               value={diasEspera}
-              onChange={(e) => setDiasEspera(parseInt(e.target.value))}
-              className="w-full p-2 rounded bg-white/20 border border-white/30 focus:outline-none text-white"
+              onChange={(e) => setDiasEspera(parseInt(e.target.value) || 0)}
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm mb-2">Horas:</label>
+            <label className="block text-sm mb-2 font-semibold text-purple-200">Horas:</label>
             <input
               type="number"
               min="0"
               max="23"
               value={horasEspera}
-              onChange={(e) => setHorasEspera(parseInt(e.target.value))}
-              className="w-full p-2 rounded bg-white/20 border border-white/30 focus:outline-none text-white"
+              onChange={(e) => setHorasEspera(parseInt(e.target.value) || 0)}
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white"
             />
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 p-6 rounded-xl space-y-6">
-        <h2 className="text-xl font-bold mb-4">✉️ Mensajes de Seguimiento</h2>
+      <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl shadow-md space-y-6">
+        <h2 className="text-xl font-bold mb-6">✉️ Mensajes Personalizados de Seguimiento</h2>
 
         <div>
-          <label className="block text-sm mb-2">Mensaje para clientes que preguntan precios:</label>
+          <label className="block text-sm mb-2 font-semibold text-purple-200">Mensaje para clientes que preguntan precios:</label>
           <textarea
             value={mensajePrecio}
             onChange={(e) => setMensajePrecio(e.target.value)}
             rows={3}
-            className="w-full p-3 rounded bg-white/20 border border-white/30 focus:outline-none text-white"
+            className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white resize-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm mb-2">Mensaje para clientes que desean agendar cita:</label>
+          <label className="block text-sm mb-2 font-semibold text-purple-200">Mensaje para clientes que desean agendar cita:</label>
           <textarea
             value={mensajeAgendar}
             onChange={(e) => setMensajeAgendar(e.target.value)}
             rows={3}
-            className="w-full p-3 rounded bg-white/20 border border-white/30 focus:outline-none text-white"
+            className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white resize-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm mb-2">Mensaje para clientes que preguntan ubicación:</label>
+          <label className="block text-sm mb-2 font-semibold text-purple-200">Mensaje para clientes que preguntan ubicación:</label>
           <textarea
             value={mensajeUbicacion}
             onChange={(e) => setMensajeUbicacion(e.target.value)}
             rows={3}
-            className="w-full p-3 rounded bg-white/20 border border-white/30 focus:outline-none text-white"
+            className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white resize-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm mb-2">Mensaje general para otros casos:</label>
+          <label className="block text-sm mb-2 font-semibold text-purple-200">Mensaje general para otros casos:</label>
           <textarea
             value={mensajeGeneral}
             onChange={(e) => setMensajeGeneral(e.target.value)}
             rows={3}
-            className="w-full p-3 rounded bg-white/20 border border-white/30 focus:outline-none text-white"
+            className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white resize-none"
           />
         </div>
 
@@ -165,12 +166,12 @@ export default function FollowUpSettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-full text-white font-semibold w-full disabled:opacity-50"
+            className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-full text-white font-bold w-full transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? 'Guardando...' : 'Guardar configuración'}
+            {saving ? 'Guardando...' : 'Guardar Configuración'}
           </button>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
