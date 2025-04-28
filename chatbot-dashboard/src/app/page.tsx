@@ -91,6 +91,7 @@ export default function LandingPage() {
         </a>
 
       </section>
+      <Footer />
     </div>
   );
 }
@@ -112,7 +113,6 @@ function FeatureCard({
       <p className="text-sm text-white/70 text-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         {description}
       </p>
-      <Footer />
     </div>
   );
 }
