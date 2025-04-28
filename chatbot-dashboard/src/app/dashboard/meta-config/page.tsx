@@ -45,9 +45,9 @@ export default function MetaConfigPage() {
 
   if (loading || !tenantId) return null;
 
-  const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${META_APP_ID}&redirect_uri=${encodeURIComponent(
+  const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${META_APP_ID}&redirect_uri=${encodeURIComponent(
     REDIRECT_URI
-  )}&scope=pages_messaging,pages_read_engagement,pages_manage_metadata,pages_show_list,pages_manage_posts,instagram_basic,instagram_manage_messages&response_type=code&state=${tenantId}`;
+  )}&scope=pages_show_list,pages_messaging,instagram_basic,instagram_manage_messages,instagram_messaging&response_type=code&state=${tenantId}&auth_type=rerequest`;
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
@@ -67,7 +67,7 @@ export default function MetaConfigPage() {
 
       <div className="space-y-6">
         <p className="text-white/80">
-          Configuración deshabilitada temporalmente en el frontend.
+          Pulsa el botón para conectar tu Página de Facebook e Instagram Business.
         </p>
 
         <div className="mt-6 space-y-1 text-sm">
