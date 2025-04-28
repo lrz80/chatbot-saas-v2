@@ -8,14 +8,21 @@ export default function Footer() {
       <p>
         © {new Date().getFullYear()} Aamy.ai — Todos los derechos reservados.
       </p>
-      <p className="mt-2">
+      <div className="mt-2 flex justify-center gap-4">
         <Link
           href="/dashboard/privacy-policy"
           className="underline hover:text-purple-400 transition"
         >
           Política de Privacidad
         </Link>
-      </p>
+        <span>|</span>
+        <Link
+          href="/dashboard/terms-of-service"
+          className="underline hover:text-purple-400 transition"
+        >
+          Términos de Servicio
+        </Link>
+      </div>
     </footer>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Footer from '@/components/Footer';
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -164,6 +165,7 @@ export default function RegisterPage() {
           <p className="text-white/80 text-sm">Hemos enviado un enlace de verificación a tu correo. Por favor revísalo para activar tu cuenta.</p>
         </div>
       )}
+      <Footer />
     </div>
   );
 }

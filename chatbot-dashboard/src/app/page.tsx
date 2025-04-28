@@ -1,6 +1,7 @@
 /// <reference types="react" />
 'use client';
 
+import Footer from '@/components/Footer';
 import React, { JSX } from "react";
 import HeroSection from "@/components/HeroSection";
 import Marquee from "react-fast-marquee";
@@ -111,6 +112,7 @@ function FeatureCard({
       <p className="text-sm text-white/70 text-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         {description}
       </p>
+      <Footer />
     </div>
   );
 }
