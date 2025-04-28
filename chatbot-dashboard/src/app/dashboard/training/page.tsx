@@ -1,5 +1,6 @@
 "use client";
 
+import Footer from '@/components/Footer';
 import { useEffect, useRef, useState } from "react";
 import TrainingHelp from "@/components/TrainingHelp";
 import PromptGenerator from "@/components/PromptGenerator";
@@ -615,6 +616,7 @@ export default function TrainingPage() {
               Enviar
             </button>
           </div>
+          <Footer />
         </div>
       </div>
     </div>

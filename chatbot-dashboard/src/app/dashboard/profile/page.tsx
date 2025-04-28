@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BriefcaseIcon } from '@heroicons/react/24/outline';
 import { BACKEND_URL } from '@/utils/api';
+import Footer from '@/components/Footer';
 
 export default function BusinessProfilePage() {
   const [loading, setLoading] = useState(true);
@@ -314,6 +315,7 @@ export default function BusinessProfilePage() {
           {saving ? 'Guardando...' : formData.membresia_activa ? 'Guardar Cambios' : 'Actualizar Membresía'}
         </button>
       </div>
+      <Footer />
     </div>
   );
 }

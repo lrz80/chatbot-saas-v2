@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Footer from '@/components/Footer';
 
 export default function FollowUpSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -236,9 +237,11 @@ export default function FollowUpSettingsPage() {
                 <div className="text-white">{mensaje.contenido}</div>
               </div>
             ))}
+            <Footer />
           </div>
         )}
       </section>
     </div>
+
   );
 }

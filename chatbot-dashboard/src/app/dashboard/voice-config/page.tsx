@@ -7,6 +7,7 @@ import { FiMic, FiMessageCircle, FiSettings, FiVolume2, FiHash } from "react-ico
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
+import Footer from '@/components/Footer';
 
 
 // Tipo de voz por idioma
@@ -234,6 +235,7 @@ export default function VoiceConfigPage() {
                     Emoción detectada: <span className="font-medium">{msg.emotion}</span>
                   </div>
                 )}
+                <Footer />
               </div>
             ))}
         </div>
