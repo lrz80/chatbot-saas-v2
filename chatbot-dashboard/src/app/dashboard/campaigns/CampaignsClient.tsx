@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { SiGmail } from "react-icons/si";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
+import Footer from '@/components/Footer';
 
 const SEGMENTOS = [
   { id: "cliente", label: "Cliente" },
@@ -341,6 +342,7 @@ export default function CampaignsClient() {
           </table>
         </div>
       )}
+      <Footer />
     </div>
   );
 }  

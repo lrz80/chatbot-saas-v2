@@ -235,11 +235,12 @@ export default function VoiceConfigPage() {
                     Emoción detectada: <span className="font-medium">{msg.emotion}</span>
                   </div>
                 )}
-                <Footer />
               </div>
             ))}
         </div>
       )}
+      <Footer />
     </div>
   );
+  
 }  

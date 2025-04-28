@@ -242,6 +242,5 @@ export default function FollowUpSettingsPage() {
         )}
       </section>
     </div>
-
   );
 }

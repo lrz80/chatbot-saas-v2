@@ -616,9 +616,9 @@ export default function TrainingPage() {
               Enviar
             </button>
           </div>
-          <Footer />
         </div>
       </div>
+      <Footer />
     </div>
-  );  
+  ); 
 } 
