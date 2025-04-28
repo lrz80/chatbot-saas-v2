@@ -1,5 +1,6 @@
 'use client';
 
+import Footer from '@/components/Footer';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bar } from 'react-chartjs-2';
@@ -404,6 +405,7 @@ export default function DashboardHome() {
           <p className="text-white/50 text-sm">No hay datos aún.</p>
         )}
       </div>
+      <Footer />
     </div>
   );
 }
