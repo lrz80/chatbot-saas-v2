@@ -241,6 +241,5 @@ export default function VoiceConfigPage() {
       )}
       <Footer />
     </div>
-  );
-  
+  ); 
 }  

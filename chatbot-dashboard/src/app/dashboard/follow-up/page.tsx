@@ -237,10 +237,10 @@ export default function FollowUpSettingsPage() {
                 <div className="text-white">{mensaje.contenido}</div>
               </div>
             ))}
-            <Footer />
           </div>
         )}
       </section>
+    <Footer />
     </div>
   );
 }
