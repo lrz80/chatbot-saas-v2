@@ -49,6 +49,10 @@ export default function MetaConfigPage() {
     REDIRECT_URI
   )}&scope=pages_show_list,pages_messaging,instagram_basic,instagram_manage_messages,instagram_messaging&response_type=code&state=${tenantId}&auth_type=rerequest`;
 
+  console.log("✅ META_APP_ID:", META_APP_ID);
+  console.log("✅ REDIRECT_URI:", REDIRECT_URI);
+  console.log("✅ authUrl generado:", authUrl);
+
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
