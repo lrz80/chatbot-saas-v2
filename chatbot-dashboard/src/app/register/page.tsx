@@ -163,9 +163,9 @@ export default function RegisterPage() {
         <div className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl text-center">
           <h2 className="text-2xl font-bold text-purple-300 mb-4">✅ Registro exitoso</h2>
           <p className="text-white/80 text-sm">Hemos enviado un enlace de verificación a tu correo. Por favor revísalo para activar tu cuenta.</p>
+          <Footer />
         </div>
       )}
-      <Footer />
     </div>
   );
 }
