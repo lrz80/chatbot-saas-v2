@@ -219,6 +219,17 @@ export default function LoginPage() {
             />
           </div>
 
+          <div className="text-center mt-4">
+            <a
+              href="/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-gray-400 hover:text-indigo-400 transition underline-offset-4 hover:underline"
+            >
+              Política de Privacidad
+            </a>
+          </div>
+          
           <button
             type="submit"
             className="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-700 transition text-white font-semibold shadow-lg"
