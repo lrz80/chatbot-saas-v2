@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import PromptGenerator from '@/components/PromptGenerator';
 import TrainingHelp from '@/components/TrainingHelp';
 import { BACKEND_URL } from '@/utils/api';
-import { BotMessageSquare, MessageSquareText, NotebookText, Save, Settings } from 'lucide-react';
+import { BotMessageSquare, MessageSquareText, NotebookText, Save, Settings, PlusCircle, Trash2 } from 'lucide-react';
 
 export default function MetaConfigPage() {
   const [connected, setConnected] = useState(false);
@@ -31,10 +31,7 @@ export default function MetaConfigPage() {
   useEffect(() => {
     const fetchConfiguracion = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/settings`, {
-          credentials: 'include',
-        });
-
+        const res = await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
           setMensajeBienvenida(data.facebook_mensaje_bienvenida || '');
@@ -44,7 +41,6 @@ export default function MetaConfigPage() {
           setBienvenidaMeta(data.bienvenida_meta || '');
           setFaq(data.faq || []);
           setIntents(data.intents || []);
-
           if (data.facebook_page_id && data.facebook_access_token) {
             setConnected(true);
             setFacebookPageName(data.facebook_page_name || '');
@@ -57,14 +53,12 @@ export default function MetaConfigPage() {
         console.error('Error obteniendo configuración de Meta:', error);
       }
     };
-
     fetchConfiguracion();
   }, []);
 
   const handleGuardar = async () => {
     setSaving(true);
     setSaved(false);
-
     try {
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
         method: 'PUT',
@@ -80,12 +74,8 @@ export default function MetaConfigPage() {
           intents,
         }),
       });
-
-      if (res.ok) {
-        setSaved(true);
-      } else {
-        alert('❌ Error al guardar configuración.');
-      }
+      if (res.ok) setSaved(true);
+      else alert('❌ Error al guardar configuración.');
     } catch (error) {
       console.error('Error guardando configuración:', error);
       alert('❌ Error al guardar configuración.');
@@ -94,103 +84,47 @@ export default function MetaConfigPage() {
     }
   };
 
-  const handleConnectFacebook = () => {
-    const appId = '672113805196816';
-    const redirectUri = 'https://api.aamy.ai/api/facebook/oauth-callback';
-
-    const scopes = [
-      'pages_show_list',
-      'pages_messaging',
-      'instagram_basic',
-      'instagram_manage_messages',
-      'instagram_manage_comments',
-    ].join(',');
-
-    const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
-      redirectUri
-    )}&scope=${scopes}&response_type=code&auth_type=rerequest`;
-
-    window.location.href = authUrl;
-  };
-
-  const handleDesconectar = async () => {
-    if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/settings`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          facebook_page_id: null,
-          facebook_page_name: null,
-          facebook_access_token: null,
-          instagram_business_account_id: null,
-          instagram_page_id: null,
-          instagram_page_name: null,
-        }),
-      });
-
-      if (res.ok) {
-        alert('✅ Facebook e Instagram desconectados.');
-        location.reload();
-      } else {
-        alert('❌ Error al desconectar.');
-      }
-    } catch (error) {
-      console.error('Error desconectando:', error);
-      alert('❌ Error al desconectar.');
-    }
-  };
-
   const handlePreviewSend = () => {
     if (!input.trim()) return;
-
     setMessages((prev) => [...prev, { role: 'user', content: input }]);
     const respuestaBot = `Soy Amy, bienvenido a ${facebookPageName || 'nuestro negocio'}. ¿Cómo puedo ayudarte hoy?`;
     setMessages((prev) => [...prev, { role: 'assistant', content: respuestaBot }]);
     setInput('');
   };
 
+  const agregarFaq = () => setFaq([...faq, { pregunta: '', respuesta: '' }]);
+  const eliminarFaq = (index: number) => setFaq(faq.filter((_, i) => i !== index));
+  const actualizarFaq = (index: number, campo: string, valor: string) => {
+    const nuevasFaq = [...faq];
+    (nuevasFaq[index] as any)[campo] = valor;
+    setFaq(nuevasFaq);
+  };
+
+  const agregarIntent = () => setIntents([...intents, { nombre: '', ejemplos: [], respuesta: '' }]);
+  const eliminarIntent = (index: number) => setIntents(intents.filter((_, i) => i !== index));
+  const actualizarIntent = (index: number, campo: string, valor: string) => {
+    const nuevosIntents = [...intents];
+    (nuevosIntents[index] as any)[campo] = valor;
+    setIntents(nuevosIntents);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between p-8 text-white bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f]">
-      <div className="flex flex-col items-center w-full">
+    <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
+      <div className="max-w-7xl mx-auto flex flex-col gap-8">
 
-        <h1 className="text-3xl font-bold mb-6">Configuración de Meta (Facebook & Instagram)</h1>
+        <h1 className="text-3xl md:text-4xl font-extrabold text-center mb-8 text-purple-300">
+          Configuración de Facebook e Instagram
+        </h1>
 
-        {connected ? (
-          <div className="bg-green-500/20 text-green-300 font-semibold py-4 px-6 rounded-lg mb-6 text-center">
-            <p>✅ Página conectada: {facebookPageName || 'Desconocido'}</p>
-            {instagramPageName && (
-              <p>✅ Instagram conectado: @{instagramPageName}</p>
-            )}
-            <button
-              onClick={handleDesconectar}
-              className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-all duration-200"
-            >
-              Desconectar Facebook/Instagram
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleConnectFacebook}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-all duration-200 mb-6"
-          >
-            Conectar Facebook / Instagram
-          </button>
-        )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
-        <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-
-          {/* Entrenamiento */}
+          {/* Sección Configuración */}
           <div className="flex flex-col gap-6">
 
-          <TrainingHelp context="meta" />
+            <TrainingHelp context="meta" />
 
-            <div className="bg-white/10 rounded-xl p-6 border border-white/20">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Settings size={28} /> Instrucciones para el asistente
-              </h2>
+            <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><Settings size={28} /> Instrucciones</h2>
               <PromptGenerator
                 infoClave={infoClaveMeta}
                 funcionesAsistente={funcionesMeta}
@@ -200,40 +134,92 @@ export default function MetaConfigPage() {
                 membresiaActiva={true}
                 onPromptGenerated={(nuevoPrompt) => setPromptMeta(nuevoPrompt)}
               />
-
             </div>
 
-            <div className="bg-white/10 rounded-xl p-6 border border-white/20">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <NotebookText size={28} /> Preguntas frecuentes
-              </h2>
-
-              {/* Aquí podrías agregar FAQs */}
-              {/* ... */}
+            <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><NotebookText size={28} /> Preguntas Frecuentes</h2>
+              {faq.map((item, index) => (
+                <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
+                  <input
+                    type="text"
+                    placeholder="Pregunta"
+                    value={item.pregunta}
+                    onChange={(e) => actualizarFaq(index, 'pregunta', e.target.value)}
+                    className="p-2 bg-white/10 border border-white/20 rounded"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Respuesta"
+                    value={item.respuesta}
+                    onChange={(e) => actualizarFaq(index, 'respuesta', e.target.value)}
+                    className="p-2 bg-white/10 border border-white/20 rounded"
+                  />
+                  <button onClick={() => eliminarFaq(index)} className="text-red-400 text-xs flex items-center gap-1">
+                    <Trash2 size={16} /> Eliminar
+                  </button>
+                </div>
+              ))}
+              <button onClick={agregarFaq} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
+                <PlusCircle /> Agregar Pregunta
+              </button>
             </div>
 
-            <div className="bg-white/10 rounded-xl p-6 border border-white/20">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <MessageSquareText size={28} /> Intenciones personalizadas
-              </h2>
-
-              {/* Aquí podrías agregar intents */}
-              {/* ... */}
+            <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><MessageSquareText size={28} /> Intenciones Personalizadas</h2>
+              {intents.map((item, index) => (
+                <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
+                  <input
+                    type="text"
+                    placeholder="Nombre de intención"
+                    value={item.nombre}
+                    onChange={(e) => actualizarIntent(index, 'nombre', e.target.value)}
+                    className="p-2 bg-white/10 border border-white/20 rounded"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Respuesta"
+                    value={item.respuesta}
+                    onChange={(e) => actualizarIntent(index, 'respuesta', e.target.value)}
+                    className="p-2 bg-white/10 border border-white/20 rounded"
+                  />
+                  <button onClick={() => eliminarIntent(index)} className="text-red-400 text-xs flex items-center gap-1">
+                    <Trash2 size={16} /> Eliminar
+                  </button>
+                </div>
+              ))}
+              <button onClick={agregarIntent} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
+                <PlusCircle /> Agregar Intención
+              </button>
             </div>
 
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={handleGuardar}
+                disabled={saving}
+                className="px-8 py-4 bg-green-600 hover:bg-green-700 rounded-2xl text-xl font-bold disabled:opacity-50"
+              >
+                {saving ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </div>
+
+            {saved && (
+              <div className="text-green-400 text-center mt-4 font-medium">
+                ✅ Configuración guardada exitosamente.
+              </div>
+            )}
           </div>
 
           {/* Vista previa */}
-          <div className="bg-white/10 rounded-xl p-6 border border-white/20 flex flex-col">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+          <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md flex flex-col">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <BotMessageSquare size={28} /> Vista previa
             </h2>
 
-            <div className="flex-1 flex flex-col overflow-y-auto bg-white/5 rounded-lg p-4 mb-4" ref={previewRef}>
+            <div className="flex-1 overflow-y-auto bg-white/5 rounded-lg p-4 mb-4 space-y-2" ref={previewRef}>
               {messages.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={`p-3 my-2 rounded-lg max-w-xs ${
+                  className={`p-3 rounded-lg max-w-xs ${
                     msg.role === 'user' ? 'bg-blue-500/20 ml-auto' : 'bg-green-500/20 mr-auto'
                   }`}
                 >
@@ -260,20 +246,6 @@ export default function MetaConfigPage() {
           </div>
 
         </div>
-
-        <button
-          onClick={handleGuardar}
-          disabled={saving}
-          className="mt-10 px-8 py-4 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-xl disabled:opacity-50"
-        >
-          {saving ? 'Guardando...' : 'Guardar Cambios'}
-        </button>
-
-        {saved && (
-          <div className="text-green-400 font-medium mt-4 text-center">
-            ✅ Configuración guardada exitosamente.
-          </div>
-        )}
 
       </div>
 
