@@ -33,10 +33,14 @@ export default function MetaConfigPage() {
         const res = await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
+  
           setPromptMeta(data.prompt_meta || '');
           setBienvenidaMeta(data.bienvenida_meta || '');
+          setFuncionesMeta(data.funciones_asistente || '');
+          setInfoClaveMeta(data.info_clave || '');
           setFaq(data.faq || []);
           setIntents(data.intents || []);
+  
           if (data.facebook_page_id && data.facebook_access_token) {
             setConnected(true);
             setFacebookPageName(data.facebook_page_name || '');
@@ -50,7 +54,7 @@ export default function MetaConfigPage() {
       }
     };
     fetchConfiguracion();
-  }, []);
+  }, []);  
 
   const handleGuardar = async () => {
     setSaving(true);
