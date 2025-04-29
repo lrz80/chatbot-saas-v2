@@ -5,7 +5,8 @@ import Footer from '@/components/Footer';
 import PromptGenerator from '@/components/PromptGenerator';
 import TrainingHelp from '@/components/TrainingHelp';
 import { BACKEND_URL } from '@/utils/api';
-import { BotMessageSquare, Facebook, MessageSquareText, NotebookText, PlusCircle, Settings, Trash2 } from 'lucide-react';
+import { BotMessageSquare, MessageSquareText, NotebookText, PlusCircle, Settings, Trash2 } from 'lucide-react';
+import { FaFacebookSquare } from 'react-icons/fa'; // ✅ ícono oficial de Facebook
 
 export default function MetaConfigPage() {
   const [connected, setConnected] = useState(false);
@@ -112,7 +113,7 @@ export default function MetaConfigPage() {
       <div className="max-w-5xl mx-auto flex flex-col gap-8">
 
         <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
-          <Facebook size={36} /> Configuración de Facebook e Instagram
+        <FaFacebookSquare size={36} className="text-blue-500 animate-pulse" />Configuración de Facebook e Instagram
         </h1>
 
         {/* Estado de Conexión Facebook / Instagram */}
