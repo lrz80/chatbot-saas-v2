@@ -247,22 +247,6 @@ export default function MetaConfigPage() {
             />
           </div>
 
-          {/* Botón de guardar */}
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={handleGuardar}
-              disabled={saving}
-              className="px-10 py-4 bg-green-600 hover:bg-green-700 text-2xl font-bold rounded-full disabled:opacity-50 transition-all"
-            >
-              {saving ? 'Guardando...' : 'Guardar Configuración'}
-            </button>
-          </div>
-
-          {saved && (
-            <div className="text-green-400 text-center mt-4 font-medium">
-              ✅ Configuración guardada exitosamente.
-            </div>
-          )}
         </div>
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
@@ -356,13 +340,13 @@ export default function MetaConfigPage() {
           </div>
         </div>
 
-        <div className="flex justify-center mt-10">
+        <div className="flex justify-center mt-8">
           <button
             onClick={handleGuardar}
             disabled={saving}
-            className="px-10 py-4 bg-green-600 hover:bg-green-700 text-2xl font-bold rounded-full disabled:opacity-50"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold text-lg px-8 py-3 rounded-full transition-all disabled:opacity-50"
           >
-            {saving ? 'Guardando...' : 'Guardar Cambios'}
+            {saving ? 'Guardando...' : 'Guardar Configuración'}
           </button>
         </div>
 
