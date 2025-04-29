@@ -1,43 +1,47 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Footer from '@/components/Footer'; // 👈 Importamos el Footer
-import { BACKEND_URL } from '@/utils/api'; // 👈 Importamos el BACKEND_URL
+import Footer from '@/components/Footer';
+import { BACKEND_URL } from '@/utils/api';
 
 export default function MetaConfigPage() {
   const [connected, setConnected] = useState(false);
+  const [facebookPageName, setFacebookPageName] = useState('');
+  const [instagramPageName, setInstagramPageName] = useState('');
   const [mensajeBienvenida, setMensajeBienvenida] = useState('');
   const [mensajeFueraHorario, setMensajeFueraHorario] = useState('');
   const [mensajeDefault, setMensajeDefault] = useState('');
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Detectar si el URL tiene el query ?connected=success
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('connected') === 'success') {
-      setConnected(true);
-    }
+    const fetchConfiguracion = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/settings`, {
+          credentials: 'include',
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setMensajeBienvenida(data.facebook_mensaje_bienvenida || '');
+          setMensajeFueraHorario(data.facebook_mensaje_fuera_horario || '');
+          setMensajeDefault(data.facebook_mensaje_default || '');
+
+          if (data.facebook_page_id && data.facebook_access_token) {
+            setConnected(true);
+            setFacebookPageName(data.facebook_page_name || '');
+            setInstagramPageName(data.instagram_page_name || '');
+          } else {
+            setConnected(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error obteniendo configuración de Meta:', error);
+      }
+    };
 
     fetchConfiguracion();
   }, []);
-
-  const fetchConfiguracion = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/settings`, {
-        credentials: 'include',
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setMensajeBienvenida(data.facebook_mensaje_bienvenida || '');
-        setMensajeFueraHorario(data.facebook_mensaje_fuera_horario || '');
-        setMensajeDefault(data.facebook_mensaje_default || '');
-      }
-    } catch (error) {
-      console.error('Error obteniendo configuración de Meta:', error);
-    }
-  };
 
   const handleGuardar = async () => {
     setLoading(true);
@@ -87,14 +91,53 @@ export default function MetaConfigPage() {
     window.location.href = authUrl;
   };
 
+  const handleDesconectar = async () => {
+    if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          facebook_page_id: null,
+          facebook_page_name: null,
+          facebook_access_token: null,
+          instagram_business_account_id: null,
+          instagram_page_id: null,
+          instagram_page_name: null,
+        }),
+      });
+
+      if (res.ok) {
+        alert('✅ Facebook e Instagram desconectados.');
+        location.reload();
+      } else {
+        alert('❌ Error al desconectar.');
+      }
+    } catch (error) {
+      console.error('Error desconectando:', error);
+      alert('❌ Error al desconectar.');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-between p-8 text-white bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f]">
       <div className="flex flex-col items-center w-full">
         <h1 className="text-3xl font-bold mb-6">Configuración de Meta (Facebook & Instagram)</h1>
 
         {connected ? (
-          <div className="bg-green-500/20 text-green-300 font-semibold py-4 px-6 rounded-lg mb-6">
-            ✅ Conectado exitosamente con Facebook / Instagram
+          <div className="bg-green-500/20 text-green-300 font-semibold py-4 px-6 rounded-lg mb-6 text-center">
+            <p>✅ Página conectada: {facebookPageName || 'Desconocido'}</p>
+            {instagramPageName && (
+              <p>✅ Instagram conectado: @{instagramPageName}</p>
+            )}
+            <button
+              onClick={handleDesconectar}
+              className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-all duration-200"
+            >
+              Desconectar Facebook/Instagram
+            </button>
           </div>
         ) : (
           <button
