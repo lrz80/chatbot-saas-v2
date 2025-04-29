@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Footer from '@/components/Footer'; // 👈 Aquí importamos el Footer
+import Footer from '@/components/Footer'; // 👈 Importamos el Footer
+import { BACKEND_URL } from '@/utils/api'; // 👈 Importamos el BACKEND_URL
 
 export default function MetaConfigPage() {
   const [connected, setConnected] = useState(false);
@@ -23,7 +24,7 @@ export default function MetaConfigPage() {
 
   const fetchConfiguracion = async () => {
     try {
-      const res = await fetch('/api/settings', {
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
         credentials: 'include',
       });
 
@@ -43,7 +44,7 @@ export default function MetaConfigPage() {
     setSaved(false);
 
     try {
-      const res = await fetch('/api/settings', {
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
