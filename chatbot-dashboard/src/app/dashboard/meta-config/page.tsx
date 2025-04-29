@@ -117,14 +117,14 @@ export default function MetaConfigPage() {
         </h1>
 
         {/* Estado de Conexión Facebook / Instagram */}
-        <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md flex flex-col items-center text-center">
+        <div className="bg-white/5 rounded-xl p-4 border border-white/20 shadow-md flex flex-col items-center text-center gap-4 max-w-md mx-auto">
           {!connected ? (
             <>
-              <p className="text-lg mb-4">Conecta tu cuenta de Facebook e Instagram para comenzar.</p>
+              <p className="text-lg">Conecta tu cuenta de Facebook e Instagram para comenzar.</p>
               <button
                 onClick={() => {
-                  const appId = '672113805196816'; // tu App ID
-                  const redirectUri = 'https://api.aamy.ai/api/facebook/oauth-callback'; // tu redirect URI
+                  const appId = '672113805196816';
+                  const redirectUri = 'https://api.aamy.ai/api/facebook/oauth-callback';
 
                   const scopes = [
                     'pages_show_list',
@@ -140,17 +140,19 @@ export default function MetaConfigPage() {
 
                   window.location.href = authUrl;
                 }}
-                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-full font-bold text-lg transition-all"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-full font-bold text-base transition-all"
               >
                 Conectar Facebook / Instagram
               </button>
             </>
           ) : (
             <>
-              <p className="text-green-400 font-bold text-lg mb-2">✅ Página conectada: {facebookPageName || 'Desconocida'}</p>
-              {instagramPageName && (
-                <p className="text-green-400 font-bold text-lg mb-6">✅ Instagram conectado: @{instagramPageName}</p>
-              )}
+              <div className="space-y-2">
+                <p className="text-green-400 font-semibold text-base">✅ Página conectada: {facebookPageName || 'Desconocida'}</p>
+                {instagramPageName && (
+                  <p className="text-green-400 font-semibold text-base">✅ Instagram conectado: @{instagramPageName}</p>
+                )}
+              </div>
               <button
                 onClick={async () => {
                   if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
@@ -181,7 +183,7 @@ export default function MetaConfigPage() {
                     alert('❌ Error al desconectar.');
                   }
                 }}
-                className="px-8 py-4 bg-red-600 hover:bg-red-700 rounded-full font-bold text-lg transition-all"
+                className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-full font-bold text-base transition-all"
               >
                 Desconectar Facebook / Instagram
               </button>
