@@ -6,7 +6,9 @@ import PromptGenerator from '@/components/PromptGenerator';
 import TrainingHelp from '@/components/TrainingHelp';
 import { BACKEND_URL } from '@/utils/api';
 import { BotMessageSquare, MessageSquareText, NotebookText, PlusCircle, Settings, Trash2 } from 'lucide-react';
-import { FaFacebookSquare } from 'react-icons/fa'; // ✅ ícono oficial de Facebook
+import { FaFacebook, FaInstagram } from 'react-icons/fa';
+import { SiMeta } from 'react-icons/si'; // ✅ ícono oficial de Meta
+
 
 export default function MetaConfigPage() {
   const [connected, setConnected] = useState(false);
@@ -113,7 +115,7 @@ export default function MetaConfigPage() {
       <div className="max-w-5xl mx-auto flex flex-col gap-8">
 
         <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
-        <FaFacebookSquare size={36} className="text-blue-500 animate-pulse" />Configuración de Facebook e Instagram
+        <SiMeta size={36} className="text-sky-400 animate-pulse" /> Configuración de Facebook e Instagram
         </h1>
 
         {/* Estado de Conexión Facebook / Instagram */}
@@ -149,12 +151,12 @@ export default function MetaConfigPage() {
         ) : (
           <>
             <div className="flex flex-wrap gap-4">
-              <div className="bg-green-600/10 border border-green-400 text-green-300 rounded-lg px-4 py-2 text-sm font-medium min-w-[220px] text-left">
-                ✅ Página conectada: {facebookPageName}
+              <div className="flex items-center gap-2 bg-green-600/10 border border-green-400 text-green-300 rounded-lg px-4 py-2 text-sm font-medium min-w-[240px]">
+                <FaFacebook className="text-blue-500" /> Página conectada: {facebookPageName}
               </div>
 
-              <div className="bg-green-600/10 border border-green-400 text-green-300 rounded-lg px-4 py-2 text-sm font-medium min-w-[220px] text-left">
-                ✅ Instagram conectado: @{instagramPageName}
+              <div className="flex items-center gap-2 bg-green-600/10 border border-green-400 text-green-300 rounded-lg px-4 py-2 text-sm font-medium min-w-[240px]">
+                <FaInstagram className="text-pink-500" /> Instagram conectado: @{instagramPageName}
               </div>
             </div>
 
@@ -164,7 +166,7 @@ export default function MetaConfigPage() {
 
                 try {
                   const res = await fetch(`${BACKEND_URL}/api/settings`, {
-                  method: 'PUT',
+                    method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify({
