@@ -84,7 +84,7 @@ export default function MetaConfigPage() {
   const handlePreviewSend = () => {
     if (!input.trim()) return;
     setMessages((prev) => [...prev, { role: 'user', content: input }]);
-    const respuestaBot = `Soy Amy, bienvenido a ${facebookPageName || 'nuestro negocio'}. ¿Cómo puedo ayudarte hoy?`;
+    const respuestaBot = `🤖 (Basado en tu configuración actual)\n${promptMeta || 'No hay prompt definido aún.'}`;
     setMessages((prev) => [...prev, { role: 'assistant', content: respuestaBot }]);
     setInput('');
   };
@@ -319,13 +319,20 @@ export default function MetaConfigPage() {
           </div>
 
           <div className="flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className="flex-1 p-3 rounded-lg bg-white/10 border border-white/20 text-white"
-              placeholder="Escribe un mensaje..."
-            />
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handlePreviewSend();
+              }
+            }}
+            className="flex-1 p-3 rounded-lg bg-white/10 border border-white/20 text-white"
+            placeholder="Escribe un mensaje..."
+          />
+
             <button
               onClick={handlePreviewSend}
               className="px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-all duration-200"
