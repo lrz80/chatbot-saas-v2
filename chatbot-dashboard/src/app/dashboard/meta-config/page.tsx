@@ -115,6 +115,79 @@ export default function MetaConfigPage() {
           <Facebook size={36} /> Configuración de Facebook e Instagram
         </h1>
 
+        {/* Estado de Conexión Facebook / Instagram */}
+        <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md flex flex-col items-center text-center">
+          {!connected ? (
+            <>
+              <p className="text-lg mb-4">Conecta tu cuenta de Facebook e Instagram para comenzar.</p>
+              <button
+                onClick={() => {
+                  const appId = '672113805196816'; // tu App ID
+                  const redirectUri = 'https://api.aamy.ai/api/facebook/oauth-callback'; // tu redirect URI
+
+                  const scopes = [
+                    'pages_show_list',
+                    'pages_messaging',
+                    'instagram_basic',
+                    'instagram_manage_messages',
+                    'instagram_manage_comments',
+                  ].join(',');
+
+                  const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
+                    redirectUri
+                  )}&scope=${scopes}&response_type=code&auth_type=rerequest`;
+
+                  window.location.href = authUrl;
+                }}
+                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-full font-bold text-lg transition-all"
+              >
+                Conectar Facebook / Instagram
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-green-400 font-bold text-lg mb-2">✅ Página conectada: {facebookPageName || 'Desconocida'}</p>
+              {instagramPageName && (
+                <p className="text-green-400 font-bold text-lg mb-6">✅ Instagram conectado: @{instagramPageName}</p>
+              )}
+              <button
+                onClick={async () => {
+                  if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
+
+                  try {
+                    const res = await fetch(`${BACKEND_URL}/api/settings`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                      body: JSON.stringify({
+                        facebook_page_id: null,
+                        facebook_page_name: null,
+                        facebook_access_token: null,
+                        instagram_business_account_id: null,
+                        instagram_page_id: null,
+                        instagram_page_name: null,
+                      }),
+                    });
+
+                    if (res.ok) {
+                      alert('✅ Facebook e Instagram desconectados.');
+                      location.reload();
+                    } else {
+                      alert('❌ Error al desconectar.');
+                    }
+                  } catch (error) {
+                    console.error('Error desconectando:', error);
+                    alert('❌ Error al desconectar.');
+                  }
+                }}
+                className="px-8 py-4 bg-red-600 hover:bg-red-700 rounded-full font-bold text-lg transition-all"
+              >
+                Desconectar Facebook / Instagram
+              </button>
+            </>
+          )}
+        </div>
+
         <TrainingHelp context="meta" />
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
