@@ -22,8 +22,8 @@ export default function MetaConfigPage() {
       'pages_messaging',
       'instagram_basic',
       'instagram_manage_messages',
-      'instagram_messaging',
-    ].join(',');
+      'instagram_manage_comments',
+    ].join(',');    
 
     const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
       redirectUri
