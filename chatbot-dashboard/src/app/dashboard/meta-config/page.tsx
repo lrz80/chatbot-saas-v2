@@ -202,6 +202,8 @@ export default function MetaConfigPage() {
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><Settings size={28} /> Instrucciones</h2>
+
+          {/* Prompt Generator */}
           <PromptGenerator
             infoClave={infoClaveMeta}
             funcionesAsistente={funcionesMeta}
@@ -211,6 +213,56 @@ export default function MetaConfigPage() {
             membresiaActiva={true}
             onPromptGenerated={(nuevoPrompt) => setPromptMeta(nuevoPrompt)}
           />
+
+          {/* Mensaje de bienvenida */}
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-purple-300 mb-1">💬 Mensaje de bienvenida</label>
+            <input
+              list="sugerencias-bienvenida"
+              value={bienvenidaMeta}
+              onChange={(e) => setBienvenidaMeta(e.target.value)}
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400"
+              placeholder="Escribe o selecciona una sugerencia"
+            />
+
+            <datalist id="sugerencias-bienvenida">
+              <option value="Hola 👋 Soy Amy, tu asistente virtual. ¿En qué puedo ayudarte hoy?" />
+              <option value="¡Bienvenido a nuestro estudio! ¿En qué te puedo asistir?" />
+              <option value="Hola, soy Amy. ¿Te ayudo a reservar una cita o responder preguntas?" />
+              <option value="¡Hola! Estoy aquí para ayudarte con precios, horarios y reservas." />
+              <option value="Hola, ¿qué servicio te interesa hoy?" />
+            </datalist>
+
+          </div>
+
+          {/* Prompt generado */}
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-purple-300 mb-1">🧠 Prompt del sistema generado</label>
+            <textarea
+              rows={6}
+              value={promptMeta}
+              onChange={(e) => setPromptMeta(e.target.value)}
+              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400"
+              placeholder="Aquí aparecerá el prompt generado por el sistema..."
+            />
+          </div>
+
+          {/* Botón de guardar */}
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={handleGuardar}
+              disabled={saving}
+              className="px-10 py-4 bg-green-600 hover:bg-green-700 text-2xl font-bold rounded-full disabled:opacity-50 transition-all"
+            >
+              {saving ? 'Guardando...' : 'Guardar Configuración'}
+            </button>
+          </div>
+
+          {saved && (
+            <div className="text-green-400 text-center mt-4 font-medium">
+              ✅ Configuración guardada exitosamente.
+            </div>
+          )}
         </div>
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
