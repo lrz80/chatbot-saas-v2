@@ -14,9 +14,6 @@ export default function MetaConfigPage() {
   const [connected, setConnected] = useState(false);
   const [facebookPageName, setFacebookPageName] = useState('');
   const [instagramPageName, setInstagramPageName] = useState('');
-  const [mensajeBienvenida, setMensajeBienvenida] = useState('');
-  const [mensajeFueraHorario, setMensajeFueraHorario] = useState('');
-  const [mensajeDefault, setMensajeDefault] = useState('');
   const [promptMeta, setPromptMeta] = useState('');
   const [bienvenidaMeta, setBienvenidaMeta] = useState('');
   const [faq, setFaq] = useState<{ pregunta: string; respuesta: string }[]>([]);
@@ -36,9 +33,6 @@ export default function MetaConfigPage() {
         const res = await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
-          setMensajeBienvenida(data.facebook_mensaje_bienvenida || '');
-          setMensajeFueraHorario(data.facebook_mensaje_fuera_horario || '');
-          setMensajeDefault(data.facebook_mensaje_default || '');
           setPromptMeta(data.prompt_meta || '');
           setBienvenidaMeta(data.bienvenida_meta || '');
           setFaq(data.faq || []);
@@ -67,9 +61,6 @@ export default function MetaConfigPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          facebook_mensaje_bienvenida: mensajeBienvenida,
-          facebook_mensaje_fuera_horario: mensajeFueraHorario,
-          facebook_mensaje_default: mensajeDefault,
           prompt_meta: promptMeta,
           bienvenida_meta: bienvenidaMeta,
           faq,
