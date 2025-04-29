@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import PromptGenerator from '@/components/PromptGenerator';
 import TrainingHelp from '@/components/TrainingHelp';
 import { BACKEND_URL } from '@/utils/api';
-import { BotMessageSquare, MessageSquareText, NotebookText, Save, Settings, PlusCircle, Trash2 } from 'lucide-react';
+import { BotMessageSquare, Facebook, MessageSquareText, NotebookText, PlusCircle, Settings, Trash2 } from 'lucide-react';
 
 export default function MetaConfigPage() {
   const [connected, setConnected] = useState(false);
@@ -18,7 +18,6 @@ export default function MetaConfigPage() {
   const [bienvenidaMeta, setBienvenidaMeta] = useState('');
   const [faq, setFaq] = useState<{ pregunta: string; respuesta: string }[]>([]);
   const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [input, setInput] = useState('');
@@ -110,142 +109,133 @@ export default function MetaConfigPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
-      <div className="max-w-7xl mx-auto flex flex-col gap-8">
+      <div className="max-w-5xl mx-auto flex flex-col gap-8">
 
-        <h1 className="text-3xl md:text-4xl font-extrabold text-center mb-8 text-purple-300">
-          Configuración de Facebook e Instagram
+        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
+          <Facebook size={36} /> Configuración de Facebook e Instagram
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <TrainingHelp context="meta" />
 
-          {/* Sección Configuración */}
-          <div className="flex flex-col gap-6">
+        <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><Settings size={28} /> Instrucciones</h2>
+          <PromptGenerator
+            infoClave={infoClaveMeta}
+            funcionesAsistente={funcionesMeta}
+            setInfoClave={setInfoClaveMeta}
+            setFuncionesAsistente={setFuncionesMeta}
+            idioma="es"
+            membresiaActiva={true}
+            onPromptGenerated={(nuevoPrompt) => setPromptMeta(nuevoPrompt)}
+          />
+        </div>
 
-            <TrainingHelp context="meta" />
-
-            <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><Settings size={28} /> Instrucciones</h2>
-              <PromptGenerator
-                infoClave={infoClaveMeta}
-                funcionesAsistente={funcionesMeta}
-                setInfoClave={setInfoClaveMeta}
-                setFuncionesAsistente={setFuncionesMeta}
-                idioma="es"
-                membresiaActiva={true}
-                onPromptGenerated={(nuevoPrompt) => setPromptMeta(nuevoPrompt)}
-              />
-            </div>
-
-            <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><NotebookText size={28} /> Preguntas Frecuentes</h2>
-              {faq.map((item, index) => (
-                <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
-                  <input
-                    type="text"
-                    placeholder="Pregunta"
-                    value={item.pregunta}
-                    onChange={(e) => actualizarFaq(index, 'pregunta', e.target.value)}
-                    className="p-2 bg-white/10 border border-white/20 rounded"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Respuesta"
-                    value={item.respuesta}
-                    onChange={(e) => actualizarFaq(index, 'respuesta', e.target.value)}
-                    className="p-2 bg-white/10 border border-white/20 rounded"
-                  />
-                  <button onClick={() => eliminarFaq(index)} className="text-red-400 text-xs flex items-center gap-1">
-                    <Trash2 size={16} /> Eliminar
-                  </button>
-                </div>
-              ))}
-              <button onClick={agregarFaq} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
-                <PlusCircle /> Agregar Pregunta
-              </button>
-            </div>
-
-            <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><MessageSquareText size={28} /> Intenciones Personalizadas</h2>
-              {intents.map((item, index) => (
-                <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
-                  <input
-                    type="text"
-                    placeholder="Nombre de intención"
-                    value={item.nombre}
-                    onChange={(e) => actualizarIntent(index, 'nombre', e.target.value)}
-                    className="p-2 bg-white/10 border border-white/20 rounded"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Respuesta"
-                    value={item.respuesta}
-                    onChange={(e) => actualizarIntent(index, 'respuesta', e.target.value)}
-                    className="p-2 bg-white/10 border border-white/20 rounded"
-                  />
-                  <button onClick={() => eliminarIntent(index)} className="text-red-400 text-xs flex items-center gap-1">
-                    <Trash2 size={16} /> Eliminar
-                  </button>
-                </div>
-              ))}
-              <button onClick={agregarIntent} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
-                <PlusCircle /> Agregar Intención
-              </button>
-            </div>
-
-            <div className="flex justify-center mt-6">
-              <button
-                onClick={handleGuardar}
-                disabled={saving}
-                className="px-8 py-4 bg-green-600 hover:bg-green-700 rounded-2xl text-xl font-bold disabled:opacity-50"
-              >
-                {saving ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
-            </div>
-
-            {saved && (
-              <div className="text-green-400 text-center mt-4 font-medium">
-                ✅ Configuración guardada exitosamente.
-              </div>
-            )}
-          </div>
-
-          {/* Vista previa */}
-          <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md flex flex-col">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <BotMessageSquare size={28} /> Vista previa
-            </h2>
-
-            <div className="flex-1 overflow-y-auto bg-white/5 rounded-lg p-4 mb-4 space-y-2" ref={previewRef}>
-              {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`p-3 rounded-lg max-w-xs ${
-                    msg.role === 'user' ? 'bg-blue-500/20 ml-auto' : 'bg-green-500/20 mr-auto'
-                  }`}
-                >
-                  {msg.content}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
+        <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><NotebookText size={28} /> Preguntas Frecuentes</h2>
+          {faq.map((item, index) => (
+            <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
               <input
                 type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="flex-1 p-3 rounded-lg bg-white/10 border border-white/20 text-white"
-                placeholder="Escribe un mensaje..."
+                placeholder="Pregunta"
+                value={item.pregunta}
+                onChange={(e) => actualizarFaq(index, 'pregunta', e.target.value)}
+                className="p-2 bg-white/10 border border-white/20 rounded"
               />
-              <button
-                onClick={handlePreviewSend}
-                className="px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-all duration-200"
-              >
-                Enviar
+              <input
+                type="text"
+                placeholder="Respuesta"
+                value={item.respuesta}
+                onChange={(e) => actualizarFaq(index, 'respuesta', e.target.value)}
+                className="p-2 bg-white/10 border border-white/20 rounded"
+              />
+              <button onClick={() => eliminarFaq(index)} className="text-red-400 text-xs flex items-center gap-1">
+                <Trash2 size={16} /> Eliminar
               </button>
             </div>
+          ))}
+          <button onClick={agregarFaq} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
+            <PlusCircle /> Agregar Pregunta
+          </button>
+        </div>
+
+        <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><MessageSquareText size={28} /> Intenciones Personalizadas</h2>
+          {intents.map((item, index) => (
+            <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
+              <input
+                type="text"
+                placeholder="Nombre de intención"
+                value={item.nombre}
+                onChange={(e) => actualizarIntent(index, 'nombre', e.target.value)}
+                className="p-2 bg-white/10 border border-white/20 rounded"
+              />
+              <input
+                type="text"
+                placeholder="Respuesta"
+                value={item.respuesta}
+                onChange={(e) => actualizarIntent(index, 'respuesta', e.target.value)}
+                className="p-2 bg-white/10 border border-white/20 rounded"
+              />
+              <button onClick={() => eliminarIntent(index)} className="text-red-400 text-xs flex items-center gap-1">
+                <Trash2 size={16} /> Eliminar
+              </button>
+            </div>
+          ))}
+          <button onClick={agregarIntent} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
+            <PlusCircle /> Agregar Intención
+          </button>
+        </div>
+
+        <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md flex flex-col">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <BotMessageSquare size={28} /> Vista previa
+          </h2>
+
+          <div className="flex-1 overflow-y-auto bg-white/5 rounded-lg p-4 mb-4 space-y-2" ref={previewRef}>
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`p-3 rounded-lg max-w-xs ${
+                  msg.role === 'user' ? 'bg-blue-500/20 ml-auto' : 'bg-green-500/20 mr-auto'
+                }`}
+              >
+                {msg.content}
+              </div>
+            ))}
           </div>
 
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="flex-1 p-3 rounded-lg bg-white/10 border border-white/20 text-white"
+              placeholder="Escribe un mensaje..."
+            />
+            <button
+              onClick={handlePreviewSend}
+              className="px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-all duration-200"
+            >
+              Enviar
+            </button>
+          </div>
         </div>
+
+        <div className="flex justify-center mt-10">
+          <button
+            onClick={handleGuardar}
+            disabled={saving}
+            className="px-10 py-4 bg-green-600 hover:bg-green-700 text-2xl font-bold rounded-full disabled:opacity-50"
+          >
+            {saving ? 'Guardando...' : 'Guardar Cambios'}
+          </button>
+        </div>
+
+        {saved && (
+          <div className="text-green-400 text-center mt-4 font-medium">
+            ✅ Configuración guardada exitosamente.
+          </div>
+        )}
 
       </div>
 
