@@ -1,84 +1,55 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { FaFacebookF } from "react-icons/fa";
-import TrainingHelp from "@/components/TrainingHelp";
-import { BACKEND_URL } from "@/utils/api";
-
-const META_APP_ID = process.env.NEXT_PUBLIC_META_APP_ID!;
-const REDIRECT_URI = process.env.NEXT_PUBLIC_META_REDIRECT_URI!;
+import { useEffect, useState } from 'react';
 
 export default function MetaConfigPage() {
-  const router = useRouter();
-  const [tenantId, setTenantId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [connected, setConnected] = useState(false);
 
-  const estadoFacebook = "❌ No conectado a Facebook";
-  const estadoInstagram = "❌ No conectado a Instagram";
-
+  // Detectar si el URL tiene el query ?connected=success
   useEffect(() => {
-    const loadTenant = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/settings`, {
-          credentials: "include",
-        });
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('connected') === 'success') {
+      setConnected(true);
+    }
+  }, []);
 
-        if (!res.ok) {
-          console.error("❌ No autenticado");
-          router.push("/login");
-          return;
-        }
+  const handleConnectFacebook = () => {
+    const appId = '672113805196816';
+    const redirectUri = 'https://api.aamy.ai/api/facebook/oauth-callback';
 
-        const data = await res.json();
-        setTenantId(data.tenant_id);
-      } catch (err) {
-        console.error("❌ Error cargando tenant:", err);
-        router.push("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
+    const scopes = [
+      'pages_show_list',
+      'pages_messaging',
+      'instagram_basic',
+      'instagram_manage_messages',
+      'instagram_messaging',
+    ].join(',');
 
-    loadTenant();
-  }, [router]);
+    const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}&scope=${scopes}&response_type=code&auth_type=rerequest`;
 
-  if (loading || !tenantId) return null;
-
-  const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${META_APP_ID}&redirect_uri=${encodeURIComponent(
-    REDIRECT_URI
-  )}&scope=pages_show_list,pages_messaging,instagram_basic,instagram_manage_messages,instagram_messaging&response_type=code&state=${tenantId}&auth_type=rerequest`;
-
-  console.log("✅ META_APP_ID:", META_APP_ID);
-  console.log("✅ REDIRECT_URI:", REDIRECT_URI);
-  console.log("✅ authUrl generado:", authUrl);
+    window.location.href = authUrl;
+  };
 
   return (
-    <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <FaFacebookF className="text-[#1877F2]" size={28} />
-        Configuración de Facebook e Instagram
-      </h1>
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-white bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f]">
+      <h1 className="text-3xl font-bold mb-6">Configuración de Meta (Facebook & Instagram)</h1>
 
-      <TrainingHelp context="meta" />
-
-      <a
-        href={authUrl}
-        className="inline-block mb-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
-      >
-        Conectar con Facebook e Instagram
-      </a>
-
-      <div className="space-y-6">
-        <p className="text-white/80">
-          Pulsa el botón para conectar tu Página de Facebook e Instagram Business.
-        </p>
-
-        <div className="mt-6 space-y-1 text-sm">
-          <p><strong>Estado Facebook:</strong> {estadoFacebook}</p>
-          <p><strong>Estado Instagram:</strong> {estadoInstagram}</p>
+      {connected ? (
+        <div className="bg-green-500/20 text-green-300 font-semibold py-4 px-6 rounded-lg mb-6">
+          ✅ Conectado exitosamente con Facebook / Instagram
         </div>
-      </div>
+      ) : (
+        <button
+          onClick={handleConnectFacebook}
+          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-all duration-200"
+        >
+          Conectar Facebook / Instagram
+        </button>
+      )}
+
+      {/* Aquí más adelante agregamos los formularios de automatización */}
     </div>
   );
 }
