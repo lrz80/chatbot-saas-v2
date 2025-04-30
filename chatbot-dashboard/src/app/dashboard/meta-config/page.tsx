@@ -93,7 +93,7 @@ export default function MetaConfigPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ message: mensajeUsuario }),
+        body: JSON.stringify({ message: mensajeUsuario, canal: 'preview-meta' }),
       });
   
       const data = await res.json();

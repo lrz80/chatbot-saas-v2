@@ -163,7 +163,7 @@ export default function TrainingPage() {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: input }),
+      body: JSON.stringify({ message: input, canal: 'preview-whatsapp' }),
     });
 
     const data = await res.json();
