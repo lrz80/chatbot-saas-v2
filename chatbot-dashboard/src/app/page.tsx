@@ -1,10 +1,10 @@
+// src/app/page.tsx
 /// <reference types="react" />
 'use client';
 
 import Footer from '@/components/Footer';
 import React, { JSX } from "react";
 import HeroSection from "@/components/HeroSection";
-import Marquee from "react-fast-marquee";
 import {
   FaRobot,
   FaChartBar,
@@ -19,45 +19,48 @@ import {
 const features = [
   {
     icon: <FaRobot size={28} className="text-purple-400 drop-shadow" />,
-    title: "Atención 24/7",
-    description:
-      "Ofrece atención constante con respuestas automáticas, incluso cuando no estás disponible. Tu negocio siempre conectado.",
+    title: "Automatización 24/7",
+    description: "Tu asistente responde a clientes en cualquier momento, sin pausas ni descansos.",
   },
   {
     icon: <FaChartBar size={28} className="text-purple-300 drop-shadow" />,
     title: "Estadísticas en tiempo real",
-    description:
-      "Visualiza métricas, interacciones y rendimiento en tiempo real desde tu panel centralizado.",
+    description: "Mide interacciones, usuarios únicos y rendimiento con visualizaciones automáticas.",
   },
   {
     icon: <FaWhatsapp size={28} className="text-green-400 drop-shadow" />,
-    title: "WhatsApp Integrado",
-    description:
-      "Responde automáticamente en WhatsApp con flujos inteligentes sin perder tiempo.",
+    title: "WhatsApp Automatizado",
+    description: "Envía respuestas inteligentes y automatizadas directamente en WhatsApp.",
   },
   {
     icon: <FaFacebookMessenger size={28} className="text-blue-400 drop-shadow" />,
-    title: "Facebook Messenger",
-    description:
-      "Conecta tu página y automatiza respuestas con IA las 24 horas del día.",
+    title: "Facebook (próximamente)",
+    description: "La automatización en Messenger estará disponible muy pronto. Estamos en revisión con Meta.",
   },
   {
     icon: <FaInstagram size={28} className="text-pink-400 drop-shadow" />,
-    title: "Instagram DM",
-    description:
-      "Automatiza respuestas a mensajes directos en Instagram para atender consultas frecuentes.",
+    title: "Instagram (próximamente)",
+    description: "Automatiza mensajes directos en Instagram. Función habilitada tras revisión de Meta.",
   },
   {
     icon: <FaMicrophoneAlt size={28} className="text-indigo-400 drop-shadow" />,
     title: "Asistente de Voz AI",
-    description:
-      "Atiende llamadas entrantes con voz natural y profesional, disponible 24/7.",
+    description: "Recibe llamadas con una voz natural que resuelve dudas y agenda citas automáticamente.",
   },
   {
     icon: <FaBullhorn size={28} className="text-yellow-400 drop-shadow" />,
+    title: "Seguimiento de Leads",
+    description: "Detecta intención de compra y agenda seguimientos automáticos para no perder ventas.",
+  },
+  {
+    icon: <FaBullhorn size={28} className="text-orange-400 drop-shadow" />,
     title: "Campañas de Marketing",
-    description:
-      "Lanza campañas masivas automatizadas con promociones personalizadas.",
+    description: "Crea y programa campañas por WhatsApp, Email o SMS con promociones personalizadas.",
+  },
+  {
+    icon: <FaInstagram size={28} className="text-pink-300 drop-shadow" />,
+    title: "Auto-publicaciones (próximamente)",
+    description: "Programa publicaciones automáticas en Instagram y Facebook. En desarrollo.",
   },
 ];
 
@@ -71,11 +74,14 @@ export default function LandingPage() {
         <h2 className="text-3xl font-bold text-center mb-12 text-white">
           ¿Qué puedes hacer con nuestro Asistente Virtual?
         </h2>
-        <Marquee pauseOnHover speed={40} gradient={false}>
-          {features.map((feature, index) => (
-            <FeatureCard key={index} {...feature} />
-          ))}
-        </Marquee>
+        <div className="overflow-x-auto scrollbar-hide px-4">
+          <div className="flex gap-4 min-w-full">
+            {features.map((feature, index) => (
+              <FeatureCard key={index} {...feature} />
+            ))}
+          </div>
+        </div>
+
       </section>
 
       {/* CTA Final */}

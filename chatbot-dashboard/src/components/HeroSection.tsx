@@ -46,7 +46,7 @@ export default function HeroSection() {
           href="/login"
           className="bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
         >
-          🚀 Probar Amy AI Gratis
+          Probar Amy AI Gratis
         </a>
       </div>
     </section>
