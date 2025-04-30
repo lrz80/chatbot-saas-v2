@@ -6,15 +6,31 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   useEffect(() => {
+    // ✅ Registrar el Service Worker
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js");
+      navigator.serviceWorker.register("/service-worker.js").catch(console.error);
     }
 
-    window.addEventListener("beforeinstallprompt", (e) => {
+    // ✅ Inyectar el manifest si no está presente
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const link = document.createElement("link");
+      link.rel = "manifest";
+      link.href = "/manifest.json";
+      document.head.appendChild(link);
+    }
+
+    // ✅ Mostrar banner personalizado cuando se dispare el evento
+    const handler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallBanner(true);
-    });
+    };
+
+    window.addEventListener("beforeinstallprompt", handler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+    };
   }, []);
 
   const handleInstall = () => {
