@@ -124,6 +124,24 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="py-20 bg-[#151032] text-white text-center">
+        <h2 className="text-3xl font-bold mb-12 text-purple-300">Lo que dicen nuestros clientes</h2>
+        <div className="flex flex-wrap justify-center gap-6">
+          <div className="max-w-xs bg-white/10 border border-white/10 p-6 rounded-xl shadow-lg">
+            <p className="italic text-sm text-white/80">
+              “Desde que usamos Amy, respondemos más rápido y cerramos más ventas por WhatsApp.”
+            </p>
+            <p className="mt-4 font-bold text-purple-300">— Laura, Tienda Pet</p>
+          </div>
+          <div className="max-w-xs bg-white/10 border border-white/10 p-6 rounded-xl shadow-lg">
+            <p className="italic text-sm text-white/80">
+              “Automatizar mis mensajes me ahorra más de 10 horas a la semana.”
+            </p>
+            <p className="mt-4 font-bold text-purple-300">— Carlos, Clínica Vida</p>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Final */}
       <section className="py-16 bg-indigo-950/40 text-center backdrop-blur-md">
         <h2 className="text-2xl font-bold mb-4 text-white">¿Listo para comenzar?</h2>
