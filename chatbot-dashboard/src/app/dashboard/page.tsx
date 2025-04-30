@@ -13,7 +13,8 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { MessageSquare, PhoneCall, Facebook, Instagram, MessageCircle } from "lucide-react";
+import { MessageSquare, PhoneCall, MessageCircle } from "lucide-react";
+import { FaFacebookF, FaInstagram } from "react-icons/fa"; // usa react-icons
 import KpiCardWithChart from '@/components/KpiCardWithChart';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -39,6 +40,20 @@ export default function DashboardHome() {
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const canalIcono = {
+    whatsapp: <MessageSquare className="inline-block mr-1 text-green-400" size={16} />,
+    voice: <PhoneCall className="inline-block mr-1 text-purple-400" size={16} />,
+    facebook: <FaFacebookF className="inline-block mr-1 text-blue-400" size={16} />,
+    instagram: <FaInstagram className="inline-block mr-1 text-pink-400" size={16} />,
+    default: <MessageCircle className="inline-block mr-1 text-white/60" size={16} />,
+  };  
+  
+  const mensajesPorCanal = allMessages.reduce((acc: Record<string, any[]>, msg: any) => {
+    if (!acc[msg.canal]) acc[msg.canal] = [];
+    acc[msg.canal].push(msg);
+    return acc;
+  }, {});  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -144,7 +159,7 @@ export default function DashboardHome() {
   useEffect(() => {
     const fetchAllMessages = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/messages?limit=50`, {
+        const res = await fetch(`${BACKEND_URL}/api/messages?limit=50${canal !== 'todos' ? `&canal=${canal}` : ''}`, {
           credentials: 'include',
         });
         if (!res.ok) throw new Error("Error al obtener mensajes");
@@ -157,23 +172,10 @@ export default function DashboardHome() {
         setLoadingAllMessages(false);
       }
     };
-
+  
     fetchAllMessages();
-  }, []);
-
-  const canalIcono = {
-    whatsapp: <MessageSquare className="inline-block mr-1 text-green-400" size={16} />,
-    voice: <PhoneCall className="inline-block mr-1 text-purple-400" size={16} />,
-    facebook: <Facebook className="inline-block mr-1 text-blue-400" size={16} />,
-    instagram: <Instagram className="inline-block mr-1 text-pink-400" size={16} />,
-    default: <MessageCircle className="inline-block mr-1 text-white/60" size={16} />,
-  };
-
-  const mensajesPorCanal = allMessages.reduce((acc: Record<string, any[]>, msg: any) => {
-    if (!acc[msg.canal]) acc[msg.canal] = [];
-    acc[msg.canal].push(msg);
-    return acc;
-  }, {});
+  }, [canal]);
+  
 
   useEffect(() => {
     const fetchGraficos = async () => {
