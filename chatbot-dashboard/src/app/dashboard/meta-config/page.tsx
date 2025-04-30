@@ -81,13 +81,28 @@ export default function MetaConfigPage() {
     }
   };
 
-  const handlePreviewSend = () => {
+  const handlePreviewSend = async () => {
     if (!input.trim()) return;
-    setMessages((prev) => [...prev, { role: 'user', content: input }]);
-    const respuestaBot = `🤖 (Basado en tu configuración actual)\n${promptMeta || 'No hay prompt definido aún.'}`;
-    setMessages((prev) => [...prev, { role: 'assistant', content: respuestaBot }]);
+  
+    const mensajeUsuario = input.trim();
+    setMessages((prev) => [...prev, { role: 'user', content: mensajeUsuario }]);
     setInput('');
-  };
+  
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ message: mensajeUsuario }),
+      });
+  
+      const data = await res.json();
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
+    } catch (error) {
+      console.error('❌ Error en vista previa:', error);
+      setMessages((prev) => [...prev, { role: 'assistant', content: '⚠️ Error generando respuesta' }]);
+    }
+  };  
 
   const agregarFaq = () => setFaq([...faq, { pregunta: '', respuesta: '' }]);
   const eliminarFaq = (index: number) => setFaq(faq.filter((_, i) => i !== index));
