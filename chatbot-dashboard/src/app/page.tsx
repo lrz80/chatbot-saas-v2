@@ -2,9 +2,11 @@
 /// <reference types="react" />
 'use client';
 
+import 'keen-slider/keen-slider.min.css';
+import { useKeenSlider } from 'keen-slider/react';
 import Footer from '@/components/Footer';
-import React, { JSX } from "react";
-import HeroSection from "@/components/HeroSection";
+import React, { JSX, useEffect, useState } from 'react';
+import HeroSection from '@/components/HeroSection';
 import {
   FaRobot,
   FaChartBar,
@@ -13,7 +15,8 @@ import {
   FaInstagram,
   FaMicrophoneAlt,
   FaBullhorn,
-} from "react-icons/fa";
+  FaUserCheck,
+} from 'react-icons/fa';
 
 // 🔥 Features con estilos y descripciones más claras
 const features = [
@@ -48,7 +51,7 @@ const features = [
     description: "Recibe llamadas con una voz natural que resuelve dudas y agenda citas automáticamente.",
   },
   {
-    icon: <FaBullhorn size={28} className="text-yellow-400 drop-shadow" />,
+    icon: <FaUserCheck size={28} className="text-yellow-400 drop-shadow" />,
     title: "Seguimiento de Leads",
     description: "Detecta intención de compra y agenda seguimientos automáticos para no perder ventas.",
   },
@@ -65,23 +68,50 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
+    loop: true,
+    renderMode: "performance",
+    slides: {
+      perView: 3,
+      spacing: 16,
+    },
+    breakpoints: {
+      "(max-width: 768px)": {
+        slides: { perView: 1.2, spacing: 12 },
+      },
+    },
+  });
+
+  // AutoPlay cada 3s
+  useEffect(() => {
+    if (!slider) return;
+    const interval = setInterval(() => {
+      slider.current?.next();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [slider]);
+
   return (
     <div className="min-h-screen bg-[#0f0a1e] text-white">
       <HeroSection />
 
-      {/* 🔁 Carrusel animado */}
+      {/* Mensaje de canales disponibles */}
+      <p className="text-center text-yellow-400 text-sm mt-4">
+        ✅ WhatsApp ya disponible — Facebook e Instagram próximamente
+      </p>
+
+      {/* 🔁 Carrusel automático + manual */}
       <section className="py-20 bg-[#0f0a1e] backdrop-blur-sm">
         <h2 className="text-3xl font-bold text-center mb-12 text-white">
           ¿Qué puedes hacer con nuestro Asistente Virtual?
         </h2>
-        <div className="overflow-x-auto scrollbar-hide px-4">
-          <div className="flex gap-4 min-w-full">
-            {features.map((feature, index) => (
-              <FeatureCard key={index} {...feature} />
-            ))}
-          </div>
+        <div ref={sliderRef} className="keen-slider px-4">
+          {features.map((feature, index) => (
+            <div key={index} className="keen-slider__slide">
+              <FeatureCard {...feature} />
+            </div>
+          ))}
         </div>
-
       </section>
 
       {/* CTA Final */}
@@ -91,11 +121,10 @@ export default function LandingPage() {
           Activa tu membresía y desbloquea el potencial completo de tu Asistente Virtual para optimizar la atención al cliente de tu negocio.
         </p>
         <a href="/login">
-          <button className="bg-white text-black font-semibold px-6 py-3 rounded-full hover:bg-gray-200 transition">
-            Accede al Panel
+          <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg transition">
+            🚀 Probar Amy AI Gratis
           </button>
         </a>
-
       </section>
       <Footer />
     </div>
