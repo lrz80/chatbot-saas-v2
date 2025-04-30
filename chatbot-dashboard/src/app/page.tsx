@@ -115,7 +115,11 @@ export default function LandingPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         {/* Favicon */}
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon-new.ico" />
+
+        {/* Manifest & App Theme */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0f0a1e" />
 
         {/* Open Graph para redes sociales */}
         <meta property="og:type" content="website" />
