@@ -13,8 +13,8 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { MessageSquare, PhoneCall, MessageCircle } from "lucide-react";
-import { FaFacebookF, FaInstagram } from "react-icons/fa"; // usa react-icons
+import { PhoneCall, MessageCircle } from "lucide-react";
+import { FaWhatsapp, FaFacebook, FaInstagram } from 'react-icons/fa';
 import KpiCardWithChart from '@/components/KpiCardWithChart';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -42,11 +42,11 @@ export default function DashboardHome() {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const canalIcono = {
-    whatsapp: <MessageSquare className="inline-block mr-1 text-green-400" size={16} />,
-    voice: <PhoneCall className="inline-block mr-1 text-purple-400" size={16} />,
-    facebook: <FaFacebookF className="inline-block mr-1 text-blue-400" size={16} />,
-    instagram: <FaInstagram className="inline-block mr-1 text-pink-400" size={16} />,
-    default: <MessageCircle className="inline-block mr-1 text-white/60" size={16} />,
+    whatsapp: <FaWhatsapp className="inline-block text-green-500" size={16} />,
+    voice: <PhoneCall className="inline-block text-purple-400" size={16} />,
+    facebook: <FaFacebook className="inline-block text-blue-500" size={16} />,
+    instagram: <FaInstagram className="inline-block text-pink-500" size={16} />,
+    default: <MessageCircle className="inline-block text-white/60" size={16} />,
   };  
   
   const mensajesPorCanal = allMessages.reduce((acc: Record<string, any[]>, msg: any) => {
