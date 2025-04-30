@@ -5,7 +5,7 @@
 import 'keen-slider/keen-slider.min.css';
 import { useKeenSlider } from 'keen-slider/react';
 import Footer from '@/components/Footer';
-import React, { JSX, useEffect, useState } from 'react';
+import React, { JSX, useEffect, useState, useRef } from 'react';
 import HeroSection from '@/components/HeroSection';
 import {
   FaRobot,
@@ -82,30 +82,40 @@ export default function LandingPage() {
     },
   });
 
-  // AutoPlay cada 3s
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ⏱ Autoplay solo cuando no está pausado
   useEffect(() => {
     if (!slider) return;
-    const interval = setInterval(() => {
-      slider.current?.next();
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [slider]);
+
+    const clearTimer = () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+
+    if (!paused) {
+      timerRef.current = setInterval(() => {
+        slider.current?.next();
+      }, 3000);
+    }
+
+    return () => clearTimer();
+  }, [slider, paused]);
 
   return (
     <div className="min-h-screen bg-[#0f0a1e] text-white">
       <HeroSection />
 
-      {/* Mensaje de canales disponibles */}
-      <p className="text-center text-yellow-400 text-sm mt-4">
-        ✅ WhatsApp ya disponible — Facebook e Instagram próximamente
-      </p>
-
-      {/* 🔁 Carrusel automático + manual */}
       <section className="py-20 bg-[#0f0a1e] backdrop-blur-sm">
         <h2 className="text-3xl font-bold text-center mb-12 text-white">
           ¿Qué puedes hacer con nuestro Asistente Virtual?
         </h2>
-        <div ref={sliderRef} className="keen-slider px-4">
+        <div
+          ref={sliderRef}
+          className="keen-slider px-4"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
           {features.map((feature, index) => (
             <div key={index} className="keen-slider__slide">
               <FeatureCard {...feature} />
@@ -122,7 +132,7 @@ export default function LandingPage() {
         </p>
         <a href="/login">
           <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg transition">
-            🚀 Probar Amy AI Gratis
+            Probar Amy AI Gratis
           </button>
         </a>
       </section>
