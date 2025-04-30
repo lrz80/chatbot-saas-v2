@@ -3,12 +3,11 @@
 import {
   FiHome,
   FiUser,
-  FiMessageCircle,
   FiLogOut,
   FiMic,
   FiMail,
 } from 'react-icons/fi';
-import { FaFacebookF } from 'react-icons/fa';
+import { FaWhatsapp, FaFacebookMessenger } from 'react-icons/fa';
 import ClientOnly from './ClientOnly';
 import { useEffect, useState } from 'react';
 import { BACKEND_URL } from '@/utils/api';
@@ -70,10 +69,10 @@ export default function Sidebar({ user, onLogout, isOpen, onClose }: any) {
             {[
               { href: '/dashboard', icon: <FiHome />, label: 'Inicio' },
               { href: '/dashboard/profile', icon: <FiUser />, label: 'Perfil del Negocio' },
-              { href: '/dashboard/training', icon: <FiMessageCircle />, label: 'Asistente de WhatsApp' },
-              { href: '/dashboard/meta-config', icon: <FaFacebookF size={16} />, label: 'Asistente de Meta' },
+              { href: '/dashboard/training', icon: <FaWhatsapp className="text-white" />, label: 'Asistente de WhatsApp' },
+              { href: '/dashboard/meta-config', icon: <FaFacebookMessenger className="text-white" />, label: 'Asistente de Meta' },
               { href: '/dashboard/voice-config', icon: <FiMic />, label: 'Asistente de Voz' },
-              { href: '/dashboard/follow-up', icon: <FiMessageCircle />, label: 'Seguimiento de Leads' }, // 🔥 Insertado aquí
+              { href: '/dashboard/follow-up', icon: <FiMail />, label: 'Seguimiento de Leads' },
               { href: '/dashboard/campaigns', icon: <FiMail />, label: 'Campañas de Marketing' },
             ].map((item, index) => (
               <a
