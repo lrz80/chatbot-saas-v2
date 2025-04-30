@@ -1,3 +1,4 @@
+// src/components/HeroSection.tsx
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -34,17 +35,18 @@ export default function HeroSection() {
         <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight leading-tight drop-shadow-md">
           Conoce a <span className="text-violet-400">Amy</span> — Tu Asistente AI 24/7
         </h1>
+
         <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed drop-shadow">
-          Automatiza llamadas, respuestas en WhatsApp, Instagram, Facebook y tus Campañas de Marketing. 
+          Automatiza llamadas, respuestas en WhatsApp, Instagram, Facebook y tus Campañas de Marketing.
           Mejora tu atención al cliente con una asistente inteligente, natural y siempre disponible.
         </p>
 
-        {/* CTA */}
+        {/* CTA Mejorado */}
         <a
           href="/login"
-          className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-xl hover:scale-105 hover:brightness-110 transition-all duration-300"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
         >
-          Comenzar con Amy AI
+          🚀 Probar Amy AI Gratis
         </a>
       </div>
     </section>
