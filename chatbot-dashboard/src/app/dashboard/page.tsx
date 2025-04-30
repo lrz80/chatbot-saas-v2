@@ -243,18 +243,6 @@ export default function DashboardHome() {
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {['todos', 'whatsapp', 'voice', 'instagram', 'facebook'].map((c) => (
-          <button
-            key={c}
-            onClick={() => setCanal(c)}
-            className={`px-3 py-1 text-xs md:text-sm rounded-full ${canal === c ? 'bg-purple-700 text-white' : 'bg-white/10 text-white/70'}`}
-          >
-            {c === 'todos' ? 'Todos los canales' : c.charAt(0).toUpperCase() + c.slice(1)}
-          </button>
-        ))}
-      </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <KpiCardWithChart
           title="Interacciones Totales"
@@ -314,6 +302,21 @@ export default function DashboardHome() {
       </div>
 
       <div className="bg-white/10 p-4 rounded mb-6">
+      <div className="mb-4 flex flex-wrap gap-2">
+        {['todos', 'whatsapp', 'voice', 'instagram', 'facebook'].map((c) => (
+          <button
+            key={c}
+            onClick={() => setCanal(c)}
+            className={`flex items-center gap-2 px-3 py-1 text-xs md:text-sm rounded-full ${
+              canal === c ? 'bg-purple-700 text-white' : 'bg-white/10 text-white/70'
+            }`}
+          >
+            {canalIcono[c as keyof typeof canalIcono] || canalIcono.default}
+            {c === 'todos' ? 'Todos' : c.charAt(0).toUpperCase() + c.slice(1)}
+          </button>
+        ))}
+      </div>
+
         <h2 className="text-lg md:text-xl mb-4">Historial de Mensajes por Canal</h2>
 
         {loadingAllMessages ? (
