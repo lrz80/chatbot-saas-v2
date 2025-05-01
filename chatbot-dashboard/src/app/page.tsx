@@ -2,7 +2,8 @@
 /// <reference types="react" />
 'use client';
 
-import Head from 'next/head';
+import DemoWhatsApp from '@/components/DemoWhatsApp';
+import ParaQuienEsAmy from '@/components/ParaQuienEsAmy';
 import 'keen-slider/keen-slider.min.css';
 import { useKeenSlider } from 'keen-slider/react';
 import Footer from '@/components/Footer';
@@ -139,6 +140,10 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      <ParaQuienEsAmy />
+
+      <DemoWhatsApp />
 
       <section className="py-20 bg-[#151032] text-white text-center">
         <h2 className="text-3xl font-bold mb-12 text-purple-300">Lo que dicen nuestros clientes</h2>
