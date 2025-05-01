@@ -11,13 +11,18 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   title: "Aamy AI",
   description: "Automatiza tu negocio con Aamy.AI, tu asistente 24/7.",
+  icons: {
+    icon: "/favicon-new.ico",
+  },
+  manifest: "/manifest.json",
+  themeColor: "#0f0a1e",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ClientWrapper>{children}</ClientWrapper>
         <ToastContainer position="top-right" autoClose={3000} />
