@@ -30,7 +30,20 @@ export default function DemoWhatsApp() {
         />
 
         {/* Mensajes dentro de la pantalla */}
-        <div className="absolute z-0 left-[43px] top-[97px] w-[216px] h-[405px] overflow-y-auto rounded-xl p-2 bg-[#0f0f0f]/90 backdrop-blur-md space-y-2">
+        <div
+          className="absolute z-0"
+          style={{
+            top: 395,
+            left: 805,
+            width: 310,
+            height: 690,
+            overflowY: 'auto',
+            padding: '12px',
+            backgroundColor: 'rgba(15,15,15,0.9)',
+            borderRadius: '1rem',
+          }}
+        >
+
           {mensajes.map((msg, i) => (
             <motion.div
               key={i}
