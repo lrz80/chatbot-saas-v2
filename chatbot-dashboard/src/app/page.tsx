@@ -119,7 +119,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0f0a1e] text-white overflow-x-hidden">
       <HeroSection />
 
-      <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#0f0a1e] to-[#1c1236] backdrop-blur-sm">
+      <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#0f0a1e] to-[#1c1236]">
         <h2 className="text-3xl font-bold text-center mb-12 text-white">
           ¿Qué puedes hacer con nuestro Asistente Virtual?
         </h2>
@@ -130,7 +130,7 @@ export default function LandingPage() {
           onMouseLeave={() => setPaused(false)}
         >
           {features.map((feature, index) => (
-            <div key={index} className="keen-slider__slide">
+            <div key={index} className="keen-slider__slide w-full flex justify-center">
               <FeatureCard {...feature} />
             </div>
           ))}
@@ -176,7 +176,6 @@ export default function LandingPage() {
   );
 }
 
-// 🧩 Componente de Feature
 function FeatureCard({
   icon,
   title,
@@ -187,7 +186,7 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="w-full max-w-xs mx-auto flex flex-col items-center justify-start bg-white/10 border border-white/10 backdrop-blur-md px-6 py-5 rounded-xl shadow-md hover:shadow-lg min-w-[260px] mx-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
+    <div className="w-full max-w-xs flex flex-col items-center justify-start bg-white/10 border border-white/10 backdrop-blur-md px-6 py-5 rounded-xl shadow-md hover:shadow-lg mx-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
       {icon}
       <h3 className="text-base font-semibold mt-2 text-center text-white">{title}</h3>
       <p className="text-sm text-white/70 text-center mt-2 transition-opacity duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100">

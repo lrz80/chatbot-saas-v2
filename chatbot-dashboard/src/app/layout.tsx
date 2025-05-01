@@ -8,6 +8,7 @@ import ClientWrapper from "./ClientWrapper";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
+// ✅ Mantén metadata sin themeColor
 export const metadata: Metadata = {
   title: "Aamy AI",
   description: "Automatiza tu negocio con Aamy.AI, tu asistente 24/7.",
@@ -15,6 +16,10 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
   },
   manifest: "/manifest.json",
+};
+
+// ✅ Agrega esto justo debajo
+export const viewport = {
   themeColor: "#0f0a1e",
 };
 
