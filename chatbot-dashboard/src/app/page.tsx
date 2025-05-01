@@ -150,15 +150,15 @@ export default function LandingPage() {
         <div className="flex flex-wrap justify-center gap-6">
           <div className="max-w-xs bg-white/10 border border-white/10 p-6 rounded-xl shadow-lg">
             <p className="italic text-sm text-white/80">
-              “Desde que usamos Amy, respondemos más rápido y cerramos más ventas por WhatsApp.”
+              “Desde que usamos Amy, respondemos más rápido y agendamos más citas por WhatsApp.”
             </p>
-            <p className="mt-4 font-bold text-purple-300">— Laura, Tienda Pet</p>
+            <p className="mt-4 font-bold text-purple-300">— Laura, Pet Grooming</p>
           </div>
           <div className="max-w-xs bg-white/10 border border-white/10 p-6 rounded-xl shadow-lg">
             <p className="italic text-sm text-white/80">
               “Automatizar mis mensajes me ahorra más de 10 horas a la semana.”
             </p>
-            <p className="mt-4 font-bold text-purple-300">— Carlos, Clínica Vida</p>
+            <p className="mt-4 font-bold text-purple-300">— Luis, Indoor Cylcing Studio</p>
           </div>
         </div>
       </section>
@@ -194,7 +194,7 @@ function FeatureCard({
     <div className="flex flex-col items-center justify-start bg-white/10 border border-white/10 backdrop-blur-md px-6 py-5 rounded-xl shadow-md hover:shadow-lg min-w-[260px] mx-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
       {icon}
       <h3 className="text-base font-semibold mt-2 text-center text-white">{title}</h3>
-      <p className="text-sm text-white/70 text-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <p className="text-sm text-white/70 text-center mt-2 transition-opacity duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100">
         {description}
       </p>
     </div>

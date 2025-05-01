@@ -14,7 +14,7 @@ const targetList = [
     icon: <ShoppingBag size={36} />,
     title: 'E-commerce y ventas por catálogo',
     description:
-      'Tiendas online, revendedores por WhatsApp, Instagram y dropshipping.',
+      'Tiendas online, ventas por WhatsApp, Instagram y dropshipping.',
   },
   {
     icon: <Dumbbell size={36} />,
