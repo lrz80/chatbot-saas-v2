@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "Aamy AI",
   description: "Automatiza tu negocio con Aamy.AI, tu asistente 24/7.",
   icons: {
-    icon: "/favicon-new.ico",
+    icon: "/favicon.ico",
   },
   manifest: "/manifest.json",
   themeColor: "#0f0a1e",
