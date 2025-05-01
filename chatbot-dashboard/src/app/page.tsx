@@ -119,38 +119,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#0f0a1e] text-white">
-      <Head>
-        {/* Título y descripción */}
-        <title>Automatiza tu negocio con Amy AI | Asistente inteligente 24/7</title>
-        <meta
-          name="description"
-          content="Amy es tu asistente AI para WhatsApp, Instagram y Facebook. Automatiza mensajes, responde clientes y mejora tus ventas."
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-        {/* Favicon */}
-        <link rel="icon" href="/favicon-new.ico" />
-
-        {/* Open Graph para redes sociales */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.aamy.ai/" />
-        <meta property="og:title" content="Automatiza tu negocio con Amy AI" />
-        <meta
-          property="og:description"
-          content="Asistente inteligente 24/7 para automatizar WhatsApp, Instagram y Facebook."
-        />
-        <meta property="og:image" content="https://www.aamy.ai/og-image.png" />
-
-        {/* Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://www.aamy.ai/" />
-        <meta name="twitter:title" content="Automatiza tu negocio con Amy AI" />
-        <meta
-          name="twitter:description"
-          content="Asistente inteligente 24/7 para automatizar WhatsApp, Instagram y Facebook."
-        />
-        <meta name="twitter:image" content="https://www.aamy.ai/og-image.png" />
-      </Head>
 
       <HeroSection />
 
