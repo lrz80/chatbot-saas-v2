@@ -1,4 +1,3 @@
-// src/app/page.tsx
 /// <reference types="react" />
 'use client';
 
@@ -72,13 +71,13 @@ const features = [
 export default function LandingPage() {
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     loop: true,
-    renderMode: "performance",
+    renderMode: 'performance',
     slides: {
       perView: 3,
       spacing: 16,
     },
     breakpoints: {
-      "(max-width: 768px)": {
+      '(max-width: 768px)': {
         slides: { perView: 1.2, spacing: 12 },
       },
     },
@@ -87,7 +86,6 @@ export default function LandingPage() {
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ⏱ Autoplay solo cuando no está pausado
   useEffect(() => {
     if (!slider) return;
 
@@ -104,32 +102,30 @@ export default function LandingPage() {
     return () => clearTimer();
   }, [slider, paused]);
 
-    // 🛠 Registrar Service Worker para PWA
-    useEffect(() => {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker
-          .register('/service-worker.js')
-          .then(registration => {
-            console.log('✅ Service Worker registrado:', registration);
-          })
-          .catch(error => {
-            console.error('❌ Error al registrar Service Worker:', error);
-          });
-      }
-    }, []);  
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/service-worker.js')
+        .then((registration) => {
+          console.log('✅ Service Worker registrado:', registration);
+        })
+        .catch((error) => {
+          console.error('❌ Error al registrar Service Worker:', error);
+        });
+    }
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#0f0a1e] text-white">
-
+    <div className="min-h-screen bg-[#0f0a1e] text-white overflow-x-hidden">
       <HeroSection />
 
-      <section className="py-20 bg-[#0f0a1e] backdrop-blur-sm">
+      <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#0f0a1e] to-[#1c1236] backdrop-blur-sm">
         <h2 className="text-3xl font-bold text-center mb-12 text-white">
           ¿Qué puedes hacer con nuestro Asistente Virtual?
         </h2>
         <div
           ref={sliderRef}
-          className="keen-slider px-4"
+          className="keen-slider"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
@@ -145,26 +141,25 @@ export default function LandingPage() {
 
       <DemoWhatsApp />
 
-      <section className="py-20 bg-[#151032] text-white text-center">
+      <section className="py-20 px-4 sm:px-6 md:px-8 bg-[#151032] text-white text-center">
         <h2 className="text-3xl font-bold mb-12 text-purple-300">Lo que dicen nuestros clientes</h2>
         <div className="flex flex-wrap justify-center gap-6">
-          <div className="max-w-xs bg-white/10 border border-white/10 p-6 rounded-xl shadow-lg">
+          <div className="w-full max-w-xs bg-white/10 border border-white/10 p-6 rounded-xl shadow-lg">
             <p className="italic text-sm text-white/80">
               “Desde que usamos Amy, respondemos más rápido y agendamos más citas por WhatsApp.”
             </p>
             <p className="mt-4 font-bold text-purple-300">— Laura, Pet Grooming</p>
           </div>
-          <div className="max-w-xs bg-white/10 border border-white/10 p-6 rounded-xl shadow-lg">
+          <div className="w-full max-w-xs bg-white/10 border border-white/10 p-6 rounded-xl shadow-lg">
             <p className="italic text-sm text-white/80">
               “Automatizar mis mensajes me ahorra más de 10 horas a la semana.”
             </p>
-            <p className="mt-4 font-bold text-purple-300">— Luis, Indoor Cylcing Studio</p>
+            <p className="mt-4 font-bold text-purple-300">— Luis, Indoor Cycling Studio</p>
           </div>
         </div>
       </section>
 
-      {/* CTA Final */}
-      <section className="py-16 bg-indigo-950/40 text-center backdrop-blur-md">
+      <section className="py-16 px-4 sm:px-6 md:px-8 bg-indigo-950/40 text-center backdrop-blur-md">
         <h2 className="text-2xl font-bold mb-4 text-white">¿Listo para comenzar?</h2>
         <p className="mb-6 text-white/80 max-w-xl mx-auto">
           Activa tu membresía y desbloquea el potencial completo de tu Asistente Virtual para optimizar la atención al cliente de tu negocio.
@@ -175,6 +170,7 @@ export default function LandingPage() {
           </button>
         </a>
       </section>
+
       <Footer />
     </div>
   );
@@ -191,7 +187,7 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-start bg-white/10 border border-white/10 backdrop-blur-md px-6 py-5 rounded-xl shadow-md hover:shadow-lg min-w-[260px] mx-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
+    <div className="w-full max-w-xs mx-auto flex flex-col items-center justify-start bg-white/10 border border-white/10 backdrop-blur-md px-6 py-5 rounded-xl shadow-md hover:shadow-lg min-w-[260px] mx-2 hover:scale-105 transition-all duration-300 group cursor-pointer">
       {icon}
       <h3 className="text-base font-semibold mt-2 text-center text-white">{title}</h3>
       <p className="text-sm text-white/70 text-center mt-2 transition-opacity duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100">
