@@ -17,5 +17,20 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "screenshots": [
+  {
+    "src": "/screenshots/login-wide.png",
+    "sizes": "1445x768",
+    "type": "image/png",
+    "form_factor": "wide"
+  },
+  {
+    "src": "/screenshots/dashboard-narrow.png",
+    "sizes": "1445x768",
+    "type": "image/png",
+    "form_factor": "narrow"
+  }
+]
+
 }
