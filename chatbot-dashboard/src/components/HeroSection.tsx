@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 
 export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -15,7 +16,7 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section className="relative bg-black min-h-screen text-white overflow-hidden flex flex-col items-center justify-end pb-20">
+    <section className="relative bg-black min-h-screen text-white overflow-hidden flex flex-col items-center justify-end pb-20 font-sans">
       {/* 🎥 Video de fondo */}
       <video
         ref={videoRef}
@@ -27,28 +28,38 @@ export default function HeroSection() {
         className="absolute top-0 left-0 w-full h-full object-cover z-0"
       />
 
-      {/* 🌑 Overlay para contraste */}
-      <div className="absolute inset-0 bg-black/50 z-0" />
+      {/* 🌑 Overlay con degradado */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/40 to-transparent z-0" />
 
-      {/* 🌟 Hero Content */}
-      <div className="z-10 text-center px-6 max-w-3xl animate-fade-up">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight leading-tight drop-shadow-md">
+      {/* 🌟 Hero Content animado */}
+      <motion.div
+        className="z-10 text-center px-6 max-w-3xl"
+        initial={{ opacity: 0, y: 60 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1 }}
+      >
+        <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight leading-tight drop-shadow-[0_2px_8px_rgba(138,43,226,0.4)]">
           Conoce a <span className="text-violet-400">Amy</span> — Tu Asistente AI 24/7
         </h1>
 
         <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed drop-shadow">
-          Automatiza llamadas, respuestas en WhatsApp, Instagram, Facebook y tus Campañas de Marketing.
-          Mejora tu atención al cliente con una asistente inteligente, natural y siempre disponible.
+          Automatiza llamadas, WhatsApp, Instagram, Facebook y campañas. Amy responde por ti 24/7 con IA natural y poderosa.
         </p>
 
-        {/* CTA Mejorado */}
         <a
           href="/login"
           className="bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
         >
           Probar Amy AI Gratis
         </a>
-      </div>
+
+        <a
+          href="#benefits"
+          className="mt-4 block text-purple-300 text-sm hover:underline"
+        >
+          Ver cómo funciona
+        </a>
+      </motion.div>
     </section>
   );
 }
