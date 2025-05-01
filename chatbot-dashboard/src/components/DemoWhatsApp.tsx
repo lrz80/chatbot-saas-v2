@@ -6,7 +6,7 @@ import Image from 'next/image';
 export default function DemoWhatsApp() {
   const mensajes = [
     { de: 'cliente', texto: 'Hola, ¿cuánto cuesta el facial?' },
-    { de: 'amy', texto: 'Hola 👋 Soy Amy, asistente de AC Studio. El facial cuesta $100 e incluye limpieza profunda y mascarilla.' },
+    { de: 'amy', texto: 'Hola 👋 Soy Amy, asistente de AC Studio. El facial cuesta $60 e incluye limpieza facial profunda.'},
     { de: 'cliente', texto: '¿Tienen citas hoy?' },
     { de: 'amy', texto: 'Sí, tenemos disponibilidad a las 3:00 pm y 5:30 pm. ¿Cuál prefieres?' },
   ];
@@ -30,7 +30,7 @@ export default function DemoWhatsApp() {
         />
 
         {/* Mensajes dentro de la pantalla */}
-        <div className="absolute z-0 left-[39px] top-[95px] w-[222px] h-[400px] overflow-y-auto rounded-xl p-2 bg-[#0f0f0f]/80 backdrop-blur-md space-y-2">
+        <div className="absolute z-0 left-[43px] top-[97px] w-[216px] h-[405px] overflow-y-auto rounded-xl p-2 bg-[#0f0f0f]/90 backdrop-blur-md space-y-2">
           {mensajes.map((msg, i) => (
             <motion.div
               key={i}
