@@ -4,6 +4,8 @@ import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ClientWrapper from "./ClientWrapper";
+import Navbar from "@/components/Navbar";
+
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -29,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Navbar /> {/* ✅ Aquí va el navbar */}
         <ClientWrapper>{children}</ClientWrapper>
         <ToastContainer position="top-right" autoClose={3000} />
       </body>
