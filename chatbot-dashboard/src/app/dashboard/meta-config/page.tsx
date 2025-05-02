@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import PromptGenerator from '@/components/PromptGenerator';
 import TrainingHelp from '@/components/TrainingHelp';
 import { BACKEND_URL } from '@/utils/api';
-import { SiMeta, SiFacebook, SiInstagram, SiWhatsapp, SiAudioboom, SiMailchimp } from 'react-icons/si';
+import { SiMeta, SiFacebook, SiInstagram, SiBookstack, SiBuffer, SiOpenai, SiMinutemailer } from 'react-icons/si';
 import { PlusCircle, Trash2 } from 'lucide-react';
 
 export default function MetaConfigPage() {
@@ -22,6 +22,7 @@ export default function MetaConfigPage() {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [infoClaveMeta, setInfoClaveMeta] = useState('');
   const [funcionesMeta, setFuncionesMeta] = useState('');
+  const [membresiaActiva, setMembresiaActiva] = useState(true);
 
   const previewRef = useRef<HTMLDivElement | null>(null);
 
@@ -37,6 +38,7 @@ export default function MetaConfigPage() {
         setInfoClaveMeta(data.info_clave || '');
         setFaq(data.faq || []);
         setIntents(data.intents || []);
+        setMembresiaActiva(data.membresia_activa);
 
         if (data.facebook_page_id && data.facebook_access_token) {
           setConnected(true);
@@ -100,9 +102,7 @@ export default function MetaConfigPage() {
 
       if (res.ok) {
         alert('✅ Facebook e Instagram desconectados.');
-        setConnected(false);
-        setFacebookPageName('');
-        setInstagramPageName('');
+        fetchConfiguracion();
       } else {
         alert('❌ Error al desconectar.');
       }
@@ -242,7 +242,10 @@ export default function MetaConfigPage() {
         <TrainingHelp context="meta" />
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><SiMailchimp size={28} className="text-yellow-400" /> Instrucciones</h2>
+          <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
+            <SiOpenai className="animate-pulse" size={24} />
+            Entrenamiento por Intención
+          </h3>
 
           {/* Prompt Generator */}
           <PromptGenerator
@@ -257,7 +260,7 @@ export default function MetaConfigPage() {
 
           {/* Mensaje de bienvenida */}
           <div className="mt-6">
-            <label className="block text-sm font-medium text-purple-300 mb-1">💬 Mensaje de bienvenida</label>
+            <label className="block text-sm font-medium text-purple-300 mb-1"> Mensaje de bienvenida</label>
             <input
               list="sugerencias-bienvenida"
               value={bienvenidaMeta}
@@ -278,7 +281,7 @@ export default function MetaConfigPage() {
 
           {/* Prompt generado */}
           <div className="mt-6">
-            <label className="block text-sm font-medium text-purple-300 mb-1">🧠 Prompt del sistema generado</label>
+            <label className="block text-sm font-medium text-purple-300 mb-1"> Instrucciones generadas</label>
             <textarea
               rows={6}
               value={promptMeta}
@@ -291,7 +294,10 @@ export default function MetaConfigPage() {
         </div>
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><SiWhatsapp size={28} className="text-green-400" /> Preguntas Frecuentes</h2>
+          <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
+            <SiBookstack className="animate-pulse" size={24} />
+            Preguntas Frecuentes
+          </h3>
           {faq.map((item, index) => (
             <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
               <input
@@ -319,7 +325,10 @@ export default function MetaConfigPage() {
         </div>
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><SiAudioboom size={28} className="text-purple-400" /> Intenciones Personalizadas</h2>
+          <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
+            <SiBuffer className="animate-pulse" size={24} />
+            Flujos Guiados Interactivos
+          </h3>
           {intents.map((item, index) => (
             <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
               <input
@@ -347,9 +356,10 @@ export default function MetaConfigPage() {
         </div>
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md flex flex-col">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <SiMeta size={28} className="text-purple-300" /> Vista previa
-          </h2>
+          <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
+            <SiMinutemailer className="animate-pulse" size={24} />
+            Vista previa del Asistente
+          </h3>
 
           <div className="flex-1 overflow-y-auto bg-white/5 rounded-lg p-4 mb-4 space-y-2" ref={previewRef}>
             {messages.map((msg, idx) => (
@@ -389,13 +399,17 @@ export default function MetaConfigPage() {
         </div>
 
         <div className="flex justify-center mt-8">
-          <button
-            onClick={handleGuardar}
-            disabled={saving}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold text-lg px-8 py-3 rounded-full transition-all disabled:opacity-50"
-          >
-            {saving ? 'Guardando...' : 'Guardar Configuración'}
-          </button>
+        <button
+          className={`px-4 py-2 rounded ${
+            membresiaActiva
+              ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+              : "bg-gray-600 text-white/50 cursor-not-allowed"
+          }`}
+          disabled={!membresiaActiva}
+        >
+          Acción restringida por membresía
+        </button>
+
         </div>
 
         {saved && (
