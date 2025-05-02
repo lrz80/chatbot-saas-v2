@@ -13,6 +13,7 @@ import {
   Settings,
 } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
+import { SiWhatsapp } from 'react-icons/si';
 
 type FlowOption = {
   texto: string;
@@ -310,10 +311,10 @@ export default function TrainingPage() {
           </div>
         )}
   
-        <h2 className="text-2xl sm:text-3xl font-bold mb-6 flex items-center gap-3">
-          <Settings className="text-indigo-400" size={28} />
-          Configuración del Asistente AI
-        </h2>
+        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-green-400">
+          <SiWhatsapp size={36} className="text-green-400 animate-pulse" />
+          Configuración del Asistente de WhatsApp
+        </h1>
   
         {usage.porcentaje >= 80 && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
