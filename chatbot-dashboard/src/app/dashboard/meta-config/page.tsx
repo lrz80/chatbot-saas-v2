@@ -5,9 +5,8 @@ import Footer from '@/components/Footer';
 import PromptGenerator from '@/components/PromptGenerator';
 import TrainingHelp from '@/components/TrainingHelp';
 import { BACKEND_URL } from '@/utils/api';
-import { BotMessageSquare, MessageSquareText, NotebookText, PlusCircle, Settings, Trash2 } from 'lucide-react';
-import { FaFacebook, FaInstagram } from 'react-icons/fa';
-import { SiMeta } from 'react-icons/si'; // ✅ ícono oficial de Meta
+import { SiMeta, SiFacebook, SiInstagram, SiWhatsapp, SiAudioboom, SiMailchimp } from 'react-icons/si';
+import { PlusCircle, Trash2 } from 'lucide-react';
 
 
 export default function MetaConfigPage() {
@@ -162,11 +161,11 @@ export default function MetaConfigPage() {
           <>
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2 bg-green-600/10 border border-green-400 text-green-300 rounded-lg px-4 py-2 text-sm font-medium min-w-[240px]">
-                <FaFacebook className="text-blue-500" /> Página conectada: {facebookPageName}
+              <SiFacebook className="text-blue-500" /> Página conectada: {facebookPageName}
               </div>
 
               <div className="flex items-center gap-2 bg-green-600/10 border border-green-400 text-green-300 rounded-lg px-4 py-2 text-sm font-medium min-w-[240px]">
-                <FaInstagram className="text-pink-500" /> Instagram conectado: @{instagramPageName}
+              <SiInstagram className="text-pink-500" /> Instagram conectado: @{instagramPageName}
               </div>
             </div>
 
@@ -211,7 +210,7 @@ export default function MetaConfigPage() {
         <TrainingHelp context="meta" />
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><Settings size={28} /> Instrucciones</h2>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><SiMailchimp size={28} className="text-yellow-400" /> Instrucciones</h2>
 
           {/* Prompt Generator */}
           <PromptGenerator
@@ -260,7 +259,7 @@ export default function MetaConfigPage() {
         </div>
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><NotebookText size={28} /> Preguntas Frecuentes</h2>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><SiWhatsapp size={28} className="text-green-400" /> Preguntas Frecuentes</h2>
           {faq.map((item, index) => (
             <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
               <input
@@ -288,7 +287,7 @@ export default function MetaConfigPage() {
         </div>
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><MessageSquareText size={28} /> Intenciones Personalizadas</h2>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><SiAudioboom size={28} className="text-purple-400" /> Intenciones Personalizadas</h2>
           {intents.map((item, index) => (
             <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
               <input
@@ -317,7 +316,7 @@ export default function MetaConfigPage() {
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md flex flex-col">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <BotMessageSquare size={28} /> Vista previa
+          <SiMeta size={28} className="text-purple-300" /> Vista previa
           </h2>
 
           <div className="flex-1 overflow-y-auto bg-white/5 rounded-lg p-4 mb-4 space-y-2" ref={previewRef}>
