@@ -8,6 +8,8 @@ import { useKeenSlider } from 'keen-slider/react';
 import Footer from '@/components/Footer';
 import React, { JSX, useEffect, useState, useRef } from 'react';
 import HeroSection from '@/components/HeroSection';
+import BenefitsSection from "@/components/BenefitsSection";
+import DashboardPreviewSection from "@/components/DashboardPreviewSection";
 import {
   FaRobot,
   FaChartBar,
@@ -138,6 +140,10 @@ export default function LandingPage() {
       </section>
 
       <ParaQuienEsAmy />
+
+      <BenefitsSection />
+
+      <DashboardPreviewSection />
 
       <DemoWhatsApp />
 
