@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Info } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
+import { SiOpenai, SiDatabricks } from 'react-icons/si';
 
 interface PromptGeneratorProps {
   infoClave: string;
@@ -69,7 +69,7 @@ export default function PromptGenerator({
   return (
     <div className="mb-6">
       <label className="block font-medium mb-1 flex items-center gap-2 text-pink-300">
-        <Sparkles size={18} />
+        <SiOpenai size={18} />
         ¿Qué debe hacer tu asistente?
       </label>
       <textarea
@@ -80,9 +80,9 @@ export default function PromptGenerator({
         className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white placeholder-white/50"
         disabled={!membresiaActiva}
       />
-
+  
       <label className="block font-medium mb-1 flex items-center gap-2 text-teal-300">
-        <Info size={18} />
+        <SiDatabricks size={18} />
         Información que el Asistente debe conocer
       </label>
       <textarea
@@ -93,7 +93,7 @@ export default function PromptGenerator({
         placeholder="Ej: Servicios, links, ubicación, precios..."
         disabled={!membresiaActiva}
       />
-
+  
       <button
         onClick={handleGenerate}
         disabled={!membresiaActiva || loading}
@@ -103,7 +103,7 @@ export default function PromptGenerator({
             : "bg-gray-600 text-white/50 cursor-not-allowed"
         }`}
       >
-        {loading ? "Generando..." : "Generar Prompt"}
+        {loading ? "Generando..." : "Generar Instrucciones"}
       </button>
     </div>
   );
