@@ -8,7 +8,6 @@ import { BACKEND_URL } from '@/utils/api';
 import { SiMeta, SiFacebook, SiInstagram, SiWhatsapp, SiAudioboom, SiMailchimp } from 'react-icons/si';
 import { PlusCircle, Trash2 } from 'lucide-react';
 
-
 export default function MetaConfigPage() {
   const [connected, setConnected] = useState(false);
   const [facebookPageName, setFacebookPageName] = useState('');
@@ -26,34 +25,35 @@ export default function MetaConfigPage() {
 
   const previewRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const fetchConfiguracion = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-  
-          setPromptMeta(data.prompt_meta || '');
-          setBienvenidaMeta(data.bienvenida_meta || '');
-          setFuncionesMeta(data.funciones_asistente || '');
-          setInfoClaveMeta(data.info_clave || '');
-          setFaq(data.faq || []);
-          setIntents(data.intents || []);
-  
-          if (data.facebook_page_id && data.facebook_access_token) {
-            setConnected(true);
-            setFacebookPageName(data.facebook_page_name || '');
-            setInstagramPageName(data.instagram_page_name || '');
-          } else {
-            setConnected(false);
-          }
+  const fetchConfiguracion = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+
+        setPromptMeta(data.prompt_meta || '');
+        setBienvenidaMeta(data.bienvenida_meta || '');
+        setFuncionesMeta(data.funciones_asistente || '');
+        setInfoClaveMeta(data.info_clave || '');
+        setFaq(data.faq || []);
+        setIntents(data.intents || []);
+
+        if (data.facebook_page_id && data.facebook_access_token) {
+          setConnected(true);
+          setFacebookPageName(data.facebook_page_name || '');
+          setInstagramPageName(data.instagram_page_name || '');
+        } else {
+          setConnected(false);
         }
-      } catch (error) {
-        console.error('Error obteniendo configuración de Meta:', error);
       }
-    };
+    } catch (error) {
+      console.error('Error obteniendo configuración de Meta:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchConfiguracion();
-  }, []);  
+  }, []);
 
   const handleGuardar = async () => {
     setSaving(true);
@@ -80,13 +80,45 @@ export default function MetaConfigPage() {
     }
   };
 
+  const handleDesconectar = async () => {
+    if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          facebook_page_id: null,
+          facebook_page_name: null,
+          facebook_access_token: null,
+          instagram_business_account_id: null,
+          instagram_page_id: null,
+          instagram_page_name: null,
+        }),
+      });
+
+      if (res.ok) {
+        alert('✅ Facebook e Instagram desconectados.');
+        setConnected(false);
+        setFacebookPageName('');
+        setInstagramPageName('');
+      } else {
+        alert('❌ Error al desconectar.');
+      }
+    } catch (error) {
+      console.error('Error desconectando:', error);
+      alert('❌ Error al desconectar.');
+    }
+  };
+
   const handlePreviewSend = async () => {
     if (!input.trim()) return;
-  
+
     const mensajeUsuario = input.trim();
     setMessages((prev) => [...prev, { role: 'user', content: mensajeUsuario }]);
     setInput('');
-  
+
     try {
       const res = await fetch(`${BACKEND_URL}/api/preview`, {
         method: 'POST',
@@ -94,14 +126,14 @@ export default function MetaConfigPage() {
         credentials: 'include',
         body: JSON.stringify({ message: mensajeUsuario, canal: 'preview-meta' }),
       });
-  
+
       const data = await res.json();
       setMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
     } catch (error) {
       console.error('❌ Error en vista previa:', error);
       setMessages((prev) => [...prev, { role: 'assistant', content: '⚠️ Error generando respuesta' }]);
     }
-  };  
+  };
 
   const agregarFaq = () => setFaq([...faq, { pregunta: '', respuesta: '' }]);
   const eliminarFaq = (index: number) => setFaq(faq.filter((_, i) => i !== index));
