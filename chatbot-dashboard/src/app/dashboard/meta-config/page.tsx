@@ -169,7 +169,7 @@ export default function MetaConfigPage() {
         <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white/5 border border-white/20 rounded-xl p-4 shadow-md">
 
         {!connected ? (
-          <div className="flex flex-col items-center text-center gap-3 w-full">
+          <div className="flex flex-col items-center justify-center gap-4 bg-white/5 border border-white/20 rounded-xl p-4 shadow-md">
             <p className="text-lg font-medium">Conecta tu cuenta de Facebook e Instagram para comenzar.</p>
             <button
               onClick={() => {
@@ -190,7 +190,7 @@ export default function MetaConfigPage() {
 
                 window.location.href = authUrl;
               }}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-full font-bold text-base transition-all"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm transition"
             >
               Conectar Facebook / Instagram
             </button>
@@ -406,15 +406,15 @@ export default function MetaConfigPage() {
 
         <div className="flex justify-center mt-8">
         <button
-          onClick={handleDesconectar}
-          className={`px-4 py-2 rounded ${
+          onClick={handleGuardar}
+          className={`px-6 py-2 rounded-md font-semibold transition-all ${
             membresiaActiva
-              ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+              ? "bg-green-600 hover:bg-green-700 text-white"
               : "bg-gray-600 text-white/50 cursor-not-allowed"
           }`}
           disabled={!membresiaActiva}
         >
-          Acción restringida por membresía
+          {membresiaActiva ? "Guardar Configuración" : "Acción restringida por membresía"}
         </button>
 
         </div>
