@@ -84,7 +84,7 @@ export default function MetaConfigPage() {
 
   const handleDesconectar = async () => {
     if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
-
+  
     try {
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
         method: 'PUT',
@@ -99,10 +99,10 @@ export default function MetaConfigPage() {
           instagram_page_name: null,
         }),
       });
-
+  
       if (res.ok) {
         alert('✅ Facebook e Instagram desconectados.');
-        fetchConfiguracion();
+        await fetchConfiguracion(); // 🔁 Recarga todos los datos frescos desde el backend
       } else {
         alert('❌ Error al desconectar.');
       }
@@ -110,7 +110,7 @@ export default function MetaConfigPage() {
       console.error('Error desconectando:', error);
       alert('❌ Error al desconectar.');
     }
-  };
+  };  
 
   const handlePreviewSend = async () => {
     if (!input.trim()) return;
@@ -400,6 +400,7 @@ export default function MetaConfigPage() {
 
         <div className="flex justify-center mt-8">
         <button
+          onClick={handleDesconectar}
           className={`px-4 py-2 rounded ${
             membresiaActiva
               ? "bg-indigo-600 hover:bg-indigo-700 text-white"
