@@ -311,7 +311,7 @@ export default function TrainingPage() {
           </div>
         )}
   
-        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-green-400">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
           <SiWhatsapp size={36} className="text-green-400 animate-pulse" />
           Configuración del Asistente de WhatsApp
         </h1>

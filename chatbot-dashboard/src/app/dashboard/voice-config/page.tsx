@@ -8,6 +8,7 @@ import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
 import Footer from '@/components/Footer';
+import { SiAudioboom } from 'react-icons/si';
 
 
 // Tipo de voz por idioma
@@ -96,10 +97,10 @@ export default function VoiceConfigPage() {
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
-      <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
-        <FiMic className="text-purple-400" />
-        Asistente de Voz por Idioma
+      <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
+        <SiAudioboom size={36} className="text-sky-400 animate-pulse" /> Configuración de Asistente de Voz
       </h1>
+
       <TrainingHelp context="voice" />
   
       <div className="flex space-x-4 mb-6">
