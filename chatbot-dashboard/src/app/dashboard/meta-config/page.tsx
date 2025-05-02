@@ -169,7 +169,7 @@ export default function MetaConfigPage() {
         <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white/5 border border-white/20 rounded-xl p-4 shadow-md">
 
         {!connected ? (
-          <div className="flex flex-col items-center justify-center gap-4 bg-white/5 border border-white/20 rounded-xl p-4 shadow-md">
+          <> 
             <p className="text-lg font-medium">Conecta tu cuenta de Facebook e Instagram para comenzar.</p>
             <button
               onClick={() => {
@@ -194,7 +194,7 @@ export default function MetaConfigPage() {
             >
               Conectar Facebook / Instagram
             </button>
-          </div>
+          </>
         ) : (
           <>
             <div className="flex flex-wrap gap-4">
@@ -208,39 +208,12 @@ export default function MetaConfigPage() {
             </div>
 
             <button
-              onClick={async () => {
-                if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
-
-                try {
-                  const res = await fetch(`${BACKEND_URL}/api/settings`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                      facebook_page_id: null,
-                      facebook_page_name: null,
-                      facebook_access_token: null,
-                      instagram_business_account_id: null,
-                      instagram_page_id: null,
-                      instagram_page_name: null,
-                    }),
-                  });
-
-                  if (res.ok) {
-                    alert('✅ Facebook e Instagram desconectados.');
-                    location.reload();
-                  } else {
-                    alert('❌ Error al desconectar.');
-                  }
-                } catch (error) {
-                  console.error('Error desconectando:', error);
-                  alert('❌ Error al desconectar.');
-                }
-              }}
+              onClick={handleDesconectar}
               className="bg-red-600 hover:bg-red-700 text-white font-semibold text-sm px-5 py-2 rounded-lg transition-all h-fit"
             >
               Desconectar
             </button>
+
           </>
         )}
         </div>
