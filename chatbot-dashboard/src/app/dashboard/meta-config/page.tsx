@@ -170,7 +170,7 @@ export default function MetaConfigPage() {
 
         {!connected ? (
           <> 
-            <p className="text-lg font-medium">Conecta tu cuenta de Facebook e Instagram para comenzar.</p>
+            <p className="text-purple-300 font-medium">Conecta tu cuenta de Facebook e Instagram para comenzar.</p>
             <button
               onClick={() => {
                 const appId = '672113805196816';
