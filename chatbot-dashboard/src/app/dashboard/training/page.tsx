@@ -13,7 +13,7 @@ import {
   Settings,
 } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
-import { SiWhatsapp } from 'react-icons/si';
+import { SiWhatsapp, SiBookstack, SiOpenai, SiMinutemailer, SiBuffer } from 'react-icons/si';
 
 type FlowOption = {
   texto: string;
@@ -389,8 +389,10 @@ export default function TrainingPage() {
         </button>
   
         <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
-          <NotebookText /> Preguntas Frecuentes
+          <SiBookstack className="animate-pulse" size={24} />
+          Preguntas Frecuentes
         </h3>
+
         {faq.map((item, i) => (
           <div key={i} className="mb-4">
             <input
@@ -431,8 +433,10 @@ export default function TrainingPage() {
         </button>
   
         <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
-          <BotMessageSquare /> Entrenamiento por Intención
+          <SiOpenai className="animate-pulse" size={24} />
+          Entrenamiento por Intención
         </h3>
+
         <p className="text-sm text-white/70 mb-4">
           Define intenciones específicas para que el asistente pueda reconocer patrones en los mensajes del usuario y responder con mayor precisión. <br />
           <strong>Ejemplo:</strong> Intención: Reservar cita | Ejemplos: “Quiero agendar”, “Reserva para hoy” | Respuesta: “¡Claro! ¿Qué día prefieres?”
@@ -496,9 +500,11 @@ export default function TrainingPage() {
         </div>
   
         <div className="mt-12">
-          <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
-            🧭 Flujos Guiados Interactivos
-          </h3>
+        <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
+          <SiBuffer className="animate-pulse" size={24} />
+          Flujos Guiados Interactivos
+        </h3>
+
           <p className="text-sm text-white/70 mb-4">
             Define botones con posibles subniveles. Si el usuario elige una opción, se responde automáticamente. Si no, el asistente usará IA.
           </p>
@@ -568,9 +574,11 @@ export default function TrainingPage() {
         </div>
   
         <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
-          <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-            <MessageSquareText /> Vista previa del Asistente
-          </h3>
+        <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
+          <SiMinutemailer className="animate-pulse" size={24} />
+          Vista previa del Asistente
+        </h3>
+
           <div
             ref={chatContainerRef}
             className="bg-[#0f0f25]/60 p-4 rounded max-h-[50vh] min-h-[200px] overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10"
