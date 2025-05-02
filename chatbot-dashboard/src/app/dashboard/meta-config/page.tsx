@@ -46,6 +46,8 @@ export default function MetaConfigPage() {
           setInstagramPageName(data.instagram_page_name || '');
         } else {
           setConnected(false);
+          setFacebookPageName('');
+          setInstagramPageName('');
         }
       }
     } catch (error) {
@@ -84,7 +86,7 @@ export default function MetaConfigPage() {
 
   const handleDesconectar = async () => {
     if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
-  
+
     try {
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
         method: 'PUT',
@@ -97,12 +99,16 @@ export default function MetaConfigPage() {
           instagram_business_account_id: null,
           instagram_page_id: null,
           instagram_page_name: null,
+          prompt_meta: promptMeta,
+          bienvenida_meta: bienvenidaMeta,
+          faq,
+          intents
         }),
       });
-  
+
       if (res.ok) {
         alert('✅ Facebook e Instagram desconectados.');
-        await fetchConfiguracion(); // 🔁 Recarga todos los datos frescos desde el backend
+        await fetchConfiguracion();
       } else {
         alert('❌ Error al desconectar.');
       }
@@ -110,7 +116,7 @@ export default function MetaConfigPage() {
       console.error('Error desconectando:', error);
       alert('❌ Error al desconectar.');
     }
-  };  
+  };
 
   const handlePreviewSend = async () => {
     if (!input.trim()) return;
