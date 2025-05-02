@@ -60,4 +60,7 @@ body {
 .bg-hero-glow {
   background: radial-gradient(circle at center, rgba(138,43,226,0.15), rgba(0,0,0,0.9));
 }
+html {
+  scroll-behavior: smooth;
+}
 
