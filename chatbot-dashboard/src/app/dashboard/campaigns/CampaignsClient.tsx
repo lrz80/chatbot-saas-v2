@@ -5,6 +5,7 @@ import { SiGmail } from "react-icons/si";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import Footer from '@/components/Footer';
+import { SiMailchimp } from 'react-icons/si';
 
 const SEGMENTOS = [
   { id: "cliente", label: "Cliente" },
@@ -141,10 +142,9 @@ export default function CampaignsClient() {
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
-      <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-        <SiGmail className="text-[#D14836]" size={28} />
-        Crear nueva campaña
-      </h2>
+      <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
+        <SiMailchimp size={36} className="text-sky-400 animate-pulse" /> Crear Nueva Campaña
+      </h1>
 
       <TrainingHelp context="campaign" />
 

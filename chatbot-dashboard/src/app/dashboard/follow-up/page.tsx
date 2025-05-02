@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
+import { SiSpeedtest } from 'react-icons/si';
 
 export default function FollowUpSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -113,7 +114,9 @@ export default function FollowUpSettingsPage() {
 
   return (
     <div className="p-4 md:p-6 text-white">
-      <h1 className="text-2xl md:text-3xl font-extrabold mb-8">Seguimiento de Leads</h1>
+      <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
+        <SiSpeedtest size={36} className="text-sky-400 animate-pulse" /> Seguimiento de Leads
+      </h1>
 
       {showSuccess && (
         <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded-xl mb-8 text-center font-medium animate-pulse">

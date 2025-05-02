@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTenant } from "@/context/TenantContext";
 import { toast } from "react-toastify";
-import { FiMic, FiMessageCircle, FiSettings, FiVolume2, FiHash } from "react-icons/fi";
+import { FiMessageCircle, FiSettings, FiVolume2, FiHash } from "react-icons/fi";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
