@@ -136,7 +136,7 @@ export default function LoginPage() {
   if (!mounted) return null;
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-black text-white px-4 overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center bg-black text-white px-4 overflow-y-auto md:overflow-hidden">
       <div className="absolute inset-0 bg-gradient-radial from-purple-900/30 to-black z-0" />
 
       <svg className="absolute inset-0 w-full h-full z-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
@@ -155,11 +155,14 @@ export default function LoginPage() {
       </svg>
 
       <div className="absolute inset-0 z-10">
-        {nodos.map((nodo, index) => (
-          <div
-            key={index}
-            className={`absolute ${nodo.posClass} bg-white/5 border border-white/10 p-4 rounded-xl w-60 backdrop-blur-md shadow-lg hover:scale-105 transition-transform`}
-          >
+      {nodos.map((nodo, index) => (
+        <div
+          key={index}
+          className={`absolute ${nodo.posClass} ${
+            index > 3 ? 'hidden sm:block' : ''
+          } bg-white/5 border border-white/10 p-3 rounded-xl w-48 md:w-60 max-w-[90vw] backdrop-blur-md shadow-lg hover:scale-105 transition-transform text-sm`}
+        >
+
             <div className="flex items-center gap-3 mb-2">
               {nodo.icon}
               <span className="text-white text-base font-semibold">{nodo.title}</span>

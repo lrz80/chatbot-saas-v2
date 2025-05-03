@@ -72,6 +72,7 @@ export default function MetaConfigPage() {
           bienvenida_meta: bienvenidaMeta,
           faq,
           intents,
+          canal: 'facebook',
         }),
       });
       if (res.ok) setSaved(true);
@@ -102,7 +103,8 @@ export default function MetaConfigPage() {
           prompt_meta: promptMeta,
           bienvenida_meta: bienvenidaMeta,
           faq,
-          intents
+          intents,
+          canal: 'facebook',
         }),
       });
 

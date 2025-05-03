@@ -8,15 +8,31 @@ const urlsToCache = [
   "/og-image.png"
 ];
 
-// Cachear archivos al instalar
+// ✅ Cachear archivos al instalar
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
+  self.skipWaiting(); // activa de inmediato
 });
 
-// Servir desde caché al estar offline
+// ✅ Eliminar versiones antiguas del caché
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) return caches.delete(key);
+        })
+      )
+    )
+  );
+  self.clients.claim(); // toma control de las pestañas abiertas
+});
+
+// ✅ Servir desde caché si está offline
 self.addEventListener("fetch", event => {
+  if (event.request.method !== "GET") return;
   event.respondWith(
     caches.match(event.request).then(response => response || fetch(event.request))
   );
