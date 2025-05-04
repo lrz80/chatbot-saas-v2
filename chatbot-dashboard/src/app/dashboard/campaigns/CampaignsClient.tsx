@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SiGmail } from "react-icons/si";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import Footer from '@/components/Footer';
@@ -33,7 +32,13 @@ export default function CampaignsClient() {
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setCampaigns(data))
+      .then((data) => {
+        const conId = data.map((c: any) => ({
+          id: c.id ?? c.campana_id ?? c._id,
+          ...c,
+        }));
+        setCampaigns(conId);
+      })
       .catch((err) => console.error("❌ Error al cargar campañas:", err));
 
     fetch(`${BACKEND_URL}/api/campaigns/usage`, { credentials: "include" })
@@ -316,11 +321,18 @@ export default function CampaignsClient() {
                       onClick={async () => {
                         const confirmar = confirm("¿Seguro que deseas eliminar esta campaña?");
                         if (!confirmar) return;
+                      
+                        if (!c.id) {
+                          alert("❌ Esta campaña no tiene un ID válido.");
+                          return;
+                        }
+                      
                         try {
                           const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}`, {
                             method: "DELETE",
                             credentials: "include",
                           });
+                      
                           if (res.ok) {
                             setCampaigns((prev) => prev.filter((x) => x.id !== c.id));
                             alert("✅ Campaña eliminada.");
@@ -331,6 +343,7 @@ export default function CampaignsClient() {
                           console.error("❌ Error eliminando campaña:", err);
                         }
                       }}
+                      
                       className="text-red-400 hover:text-red-600 text-sm underline"
                     >
                       Eliminar
