@@ -17,11 +17,10 @@ import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
 import Footer from '@/components/Footer';
 import { SiAudioboom } from 'react-icons/si';
+import VoicePlayer from "@/components/VoicePlayer";
 
 
 // Tipo de voz por idioma
-
-
 export default function VoiceConfigPage() {
   const [idioma, setIdioma] = useState("es-ES");
   const tenant = useTenant();
@@ -247,6 +246,7 @@ export default function VoiceConfigPage() {
                   ) : (
                     <>
                       <Bot className="inline-block w-4 h-4 mr-1 text-white/70" /> Bot: {msg.content}
+                      {msg.audio_url && <VoicePlayer url={msg.audio_url} />}
                     </>
                   )}
                 </div>
