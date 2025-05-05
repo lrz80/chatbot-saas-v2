@@ -170,7 +170,7 @@ export default function VoiceConfigPage() {
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
         <SiAudioboom size={36} className="text-sky-400 animate-pulse" /> Configuración de Asistente de Voz
       </h1>
-
+  
       <TrainingHelp context="voice" />
   
       <div className="flex space-x-4 mb-6">
@@ -200,6 +200,26 @@ export default function VoiceConfigPage() {
             (document.querySelector("input[name='welcome_message']") as HTMLInputElement).value = bienvenida;
           }}
         />
+  
+        <div className="mb-4">
+          <label className="block mb-2 font-semibold text-white">¿Qué debe hacer el asistente?</label>
+          <textarea
+            name="funciones_asistente"
+            rows={3}
+            className="w-full border px-4 py-2 rounded"
+            placeholder="Ej: responder dudas, agendar citas..."
+          />
+        </div>
+  
+        <div className="mb-4">
+          <label className="block mb-2 font-semibold text-white">Información clave del negocio</label>
+          <textarea
+            name="info_clave"
+            rows={3}
+            className="w-full border px-4 py-2 rounded"
+            placeholder="Ej: precios, dirección, horarios..."
+          />
+        </div>
   
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
@@ -283,7 +303,7 @@ export default function VoiceConfigPage() {
         <Brain className="text-purple-300" />
         Historial de llamadas y emociones
       </h2>
-
+  
       {loadingHistory ? (
         <div className="text-gray-400 animate-pulse">Cargando historial...</div>
       ) : voiceMessages.length === 0 ? (
@@ -291,7 +311,7 @@ export default function VoiceConfigPage() {
       ) : (
         <div className="space-y-4 max-h-[300px] overflow-y-auto">
           {voiceMessages
-            .slice() // para no mutar el original
+            .slice()
             .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
             .map((msg, idx) => (
               <div
@@ -309,11 +329,10 @@ export default function VoiceConfigPage() {
                   ) : (
                     <>
                       <Bot className="inline-block w-4 h-4 mr-1 text-white/70" /> Bot: {msg.content}
-                      {msg.audio_url && <VoicePlayer url={msg.audio_url} />}
                     </>
                   )}
                 </div>
-
+  
                 {msg.sender === "user" && msg.emotion && (
                   <div className="text-sm mt-1 text-purple-300">
                     Emoción detectada: <span className="font-medium">{msg.emotion}</span>
@@ -325,5 +344,5 @@ export default function VoiceConfigPage() {
       )}
       <Footer />
     </div>
-  ); 
+  );   
 }  
