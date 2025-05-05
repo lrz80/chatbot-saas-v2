@@ -2,15 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  FaRobot,
-  FaFacebookF,
-  FaInstagram,
-  FaMicrophoneAlt,
-  FaBullhorn,
-  FaChevronDown,
-  FaChevronUp,
-} from "react-icons/fa";
+import { Bot, Mic, Megaphone, ChevronDown, ChevronUp } from "lucide-react";
+import { SiMeta } from "react-icons/si";
 
 interface Props {
   context: "training" | "meta" | "voice" | "campaign";
@@ -35,13 +28,13 @@ export default function TrainingHelp({ context }: Props) {
         className="flex items-center justify-between w-full bg-white/10 text-white px-4 py-3 rounded-md font-semibold hover:bg-white/20 transition border border-white/20"
       >
         <span className="flex items-center gap-2">
-          {context === "training" && <FaRobot className="text-indigo-400" />}
-          {context === "meta" && <FaFacebookF className="text-[#1877F2]" />}
-          {context === "voice" && <FaMicrophoneAlt className="text-purple-400" />}
-          {context === "campaign" && <FaBullhorn className="text-pink-400" />}
+          {context === "training" && <Bot className="text-indigo-400" />}
+          {context === "meta" && <SiMeta className="text-blue-500" />}
+          {context === "voice" && <Mic className="text-purple-400" />}
+          {context === "campaign" && <Megaphone className="text-pink-400" />}
           {contextTitles[context]}
         </span>
-        {open ? <FaChevronUp /> : <FaChevronDown />}
+        {open ? <ChevronUp /> : <ChevronDown />}
       </button>
 
       {open && (
