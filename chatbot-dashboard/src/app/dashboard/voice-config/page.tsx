@@ -34,19 +34,26 @@ export default function VoiceConfigPage() {
 
   const voiceOptions: Record<string, { label: string; value: string }[]> = {
     "es-ES": [
+      { label: "Rachel (realista)", value: "EXAVITQu4vr4xnSDxMaL" },
+      { label: "Bella (emocional)", value: "21m00Tcm4TlvDq8ikWAM" },
       { label: "Alice (neutro)", value: "alice" },
-      { label: "Conchita (Espa\u00f1a)", value: "Polly.Conchita" },
-      { label: "Lucia (Espa\u00f1a)", value: "Polly.Lucia" },
-      { label: "Miguel (Espa\u00f1a)", value: "Polly.Miguel" },
+      { label: "Conchita (Polly)", value: "Polly.Conchita" },
+      { label: "Lucia (Polly)", value: "Polly.Lucia" },
+      { label: "Miguel (Polly)", value: "Polly.Miguel" },
     ],
     "en-US": [
-      { label: "Matthew (US)", value: "Polly.Matthew" },
-      { label: "Joanna (US)", value: "Polly.Joanna" },
-      { label: "Kendra (US)", value: "Polly.Kendra" },
-      { label: "Joey (US)", value: "Polly.Joey" },
+      { label: "Rachel (realista)", value: "EXAVITQu4vr4xnSDxMaL" },
+      { label: "Antoni (realista)", value: "ErXwobaYiN019PkySvjV" },
+      { label: "Matthew (Polly)", value: "Polly.Matthew" },
+      { label: "Joanna (Polly)", value: "Polly.Joanna" },
+      { label: "Kendra (Polly)", value: "Polly.Kendra" },
+      { label: "Joey (Polly)", value: "Polly.Joey" },
     ],
-    default: [{ label: "Alice (neutro)", value: "alice" }],
-  };
+    default: [
+      { label: "Rachel (realista)", value: "EXAVITQu4vr4xnSDxMaL" },
+      { label: "Alice (neutro)", value: "alice" },
+    ],
+  };  
 
   const [voiceMessages, setVoiceMessages] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
