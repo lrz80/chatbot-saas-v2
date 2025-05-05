@@ -7,7 +7,7 @@ import PromptGenerator from "@/components/PromptGenerator";
 import { useRouter } from "next/navigation";
 import { Save, } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
-import { SiWhatsapp, SiBookstack, SiOpenai, SiMinutemailer, SiBuffer } from 'react-icons/si';
+import { SiWhatsapp, SiBookstack, SiOpenai, SiMinutemailer, SiBuffer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
 
 type FlowOption = {
   texto: string;
@@ -438,7 +438,9 @@ export default function TrainingPage() {
   
         {intents.map((item, i) => (
           <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
-            <label className="block text-sm font-semibold mb-1">🎯 Intención</label>
+            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
+              <SiTarget /> Intención
+            </label>
             <input
               type="text"
               className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
@@ -447,7 +449,9 @@ export default function TrainingPage() {
               disabled={!settings.membresia_activa}
             />
   
-            <label className="block text-sm font-semibold mb-1">✍️ Frases de ejemplo (una por línea)</label>
+            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
+              <SiPaperspace /> Frases de ejemplo (una por línea)
+            </label>
             <textarea
               className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
               value={item.ejemplos.join("\n")}
@@ -456,7 +460,9 @@ export default function TrainingPage() {
               disabled={!settings.membresia_activa}
             />
   
-            <label className="block text-sm font-semibold mb-1">💬 Respuesta del Asistente</label>
+            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
+              <SiChatbot /> Respuesta del Asistente
+            </label>
             <textarea
               className="w-full p-2 border rounded bg-white/10 border-white/20 text-white"
               value={item.respuesta}
