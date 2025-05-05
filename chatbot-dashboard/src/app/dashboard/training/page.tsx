@@ -5,13 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import TrainingHelp from "@/components/TrainingHelp";
 import PromptGenerator from "@/components/PromptGenerator";
 import { useRouter } from "next/navigation";
-import {
-  MessageSquareText,
-  NotebookText,
-  BotMessageSquare,
-  Save,
-  Settings,
-} from "lucide-react";
+import { Save, } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
 import { SiWhatsapp, SiBookstack, SiOpenai, SiMinutemailer, SiBuffer } from 'react-icons/si';
 

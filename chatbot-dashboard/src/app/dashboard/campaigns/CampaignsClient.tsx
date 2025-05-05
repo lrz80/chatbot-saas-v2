@@ -1,14 +1,16 @@
+// src/app/dashboard/campaigns/CampaignsClient.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import Footer from '@/components/Footer';
-import { SiMailchimp } from 'react-icons/si';
+import { SiMailchimp, SiGoogleanalytics, SiGooglecalendar, SiPhotopea, SiChatbot, SiTwilio, SiMinutemailer, SiCampaignmonitor, SiWhatsapp, } from "react-icons/si";
+import { FaTrash, FaUsers, FaPaperPlane, FaAddressBook } from "react-icons/fa";
 
 const SEGMENTOS = [
   { id: "cliente", label: "Cliente" },
-  { id: "nuevos", label: "Nuevos" },
   { id: "leads", label: "Leads" },
   { id: "otros", label: "Otros" },
 ];
@@ -148,21 +150,30 @@ export default function CampaignsClient() {
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
-        <SiMailchimp size={36} className="text-sky-400 animate-pulse" /> Crear Nueva Campaña
+        <SiCampaignmonitor size={36} className="text-sky-400 animate-pulse" /> Crear Nueva Campaña
       </h1>
 
       <TrainingHelp context="campaign" />
 
       {usage && (
-        <div className="mb-6 flex flex-wrap gap-4 text-sm text-white/70">
-          <div>📲 WhatsApp usados: {usage.whatsapp || 0} / 300</div>
-          <div>📩 SMS usados: {usage.sms || 0} / 500</div>
-          <div>📧 Emails usados: {usage.email || 0} / 1000</div>
+        <div className="mb-6 flex flex-wrap gap-4 text-sm text-white/70 items-center">
+        <div className="flex items-center gap-2">
+          <SiWhatsapp className="text-green-400" /> WhatsApp: {usage.whatsapp || 0} / 300
         </div>
+        <div className="flex items-center gap-2">
+          <SiTwilio className="text-red-300" /> SMS: {usage.sms || 0} / 500
+        </div>
+        <div className="flex items-center gap-2">
+          <SiMinutemailer className="text-blue-400" /> Email: {usage.email || 0} / 1000
+        </div>
+      </div>
+      
       )}
 
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-        <h3 className="font-bold text-white text-lg mb-2">📁 Contactos cargados ({cantidadContactos}/1500)</h3>
+      <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
+        <FaAddressBook /> Contactos cargados ({cantidadContactos}/1500)
+      </h3>
         <input
           type="file"
           accept=".csv"
@@ -201,7 +212,9 @@ export default function CampaignsClient() {
         🗑️ Eliminar todos los contactos
       </button>
 
-      <label className="block mb-2 font-medium">📝 Nombre de la campaña</label>
+      <label className="block mb-2 font-medium flex items-center gap-2">
+        <SiCampaignmonitor /> Nombre de la campaña
+      </label>
       <input
         name="nombre"
         value={form.nombre}
@@ -209,7 +222,9 @@ export default function CampaignsClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
   
-      <label className="block mb-2 font-medium">📲 Canal</label>
+      <label className="block mb-2 font-medium flex items-center gap-2">
+        <SiWhatsapp /> Canal
+      </label>
       <select
         name="canal"
         value={form.canal}
@@ -221,7 +236,9 @@ export default function CampaignsClient() {
         <option value="email">Correo Electrónico</option>
       </select>
   
-      <label className="block mb-2 font-medium">💬 Contenido del mensaje</label>
+      <label className="block mb-2 font-medium flex items-center gap-2">
+        <SiChatbot /> Contenido del mensaje
+      </label>
       <textarea
         name="contenido"
         value={form.contenido}
@@ -230,7 +247,9 @@ export default function CampaignsClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
   
-      <label className="block mb-2 font-medium">🖼️ Imagen (opcional)</label>
+      <label className="block mb-2 font-medium flex items-center gap-2">
+        <SiPhotopea /> Imagen (opcional)
+      </label>
       <input
         name="imagen"
         type="file"
@@ -247,7 +266,9 @@ export default function CampaignsClient() {
         />
       )}
   
-      <label className="block mb-2 font-medium">📅 Fecha y hora de envío</label>
+      <label className="block mb-2 font-medium flex items-center gap-2">
+        <SiGooglecalendar /> Fecha y hora de envío
+      </label>
       <input
         name="fecha_envio"
         type="datetime-local"
@@ -289,7 +310,9 @@ export default function CampaignsClient() {
   
       <hr className="my-10 border-white/20" />
   
-      <h2 className="text-xl font-bold mb-4">📊 Estadísticas de campañas enviadas</h2>
+      <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+        <SiGoogleanalytics /> Estadísticas de campañas enviadas
+      </h2>
   
       {campaigns.length === 0 ? (
         <p className="text-white/70">Aún no se han enviado campañas.</p>
@@ -298,13 +321,27 @@ export default function CampaignsClient() {
           <table className="min-w-full table-auto bg-white/5 border border-white/10 rounded-lg text-white">
             <thead>
               <tr className="text-left text-white/80 bg-white/10">
-                <th className="p-3">📝 Nombre</th>
-                <th className="p-3">📲 Canal</th>
-                <th className="p-3">📅 Fecha</th>
-                <th className="p-3">📤 Estado</th>
-                <th className="p-3">👥 Segmentos</th>
-                <th className="p-3">💬 Contenido</th>
-                <th className="p-3">🗑️</th>
+              <th className="p-3 flex items-center gap-2">
+                <SiCampaignmonitor /> Nombre
+              </th>
+              <th className="p-3 flex items-center gap-2">
+                <SiMinutemailer /> Canal
+              </th>
+              <th className="p-3 flex items-center gap-2">
+                <SiGooglecalendar /> Fecha
+              </th>
+              <th className="p-3 flex items-center gap-2">
+                <FaPaperPlane /> Estado
+              </th>
+              <th className="p-3 flex items-center gap-2">
+                <FaUsers /> Segmentos
+              </th>
+              <th className="p-3 flex items-center gap-2">
+                <SiChatbot /> Contenido
+              </th>
+              <th className="p-3 flex items-center gap-2">
+                <FaTrash /> 
+              </th>
               </tr>
             </thead>
             <tbody>
