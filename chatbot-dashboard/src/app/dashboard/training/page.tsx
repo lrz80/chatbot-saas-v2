@@ -170,26 +170,6 @@ export default function TrainingPage() {
     }, 100);
   };
 
-  const handleRegenerate = async () => {
-    if (!isMembershipActive) return;
-    const lastUserMsg = messages.slice().reverse().find((m) => m.role === "user");
-    if (!lastUserMsg) return;
-    setLoading(true);
-    const res = await fetch(`${BACKEND_URL}/chatbot`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mensaje: lastUserMsg.content }),
-    });
-    const data = await res.json();
-    setMessages((prev) => [...prev, { role: "assistant", content: data.respuesta }]);
-    setLoading(false);
-
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
-  };
-
   const handleFaqChange = (index: number, field: string, value: string) => {
     const newFaq = [...faq];
     newFaq[index][field] = value;
@@ -200,14 +180,19 @@ export default function TrainingPage() {
 
   const saveFaq = async () => {
     if (!isMembershipActive) return;
+  
+    const faqsLimpios = faq.filter((f) => f.pregunta.trim() && f.respuesta.trim());
+    if (faqsLimpios.length === 0) return alert("❌ Agrega al menos una FAQ válida.");
+  
     await fetch(`${BACKEND_URL}/api/faq`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ faqs: faq }),
+      body: JSON.stringify({ faqs: faqsLimpios }),
     });
+  
     alert("Preguntas frecuentes guardadas ✅");
-  };
+  };  
 
   const handleIntentChange = (i: number, field: string, value: string) => {
     const updated = [...intents];
@@ -221,22 +206,21 @@ export default function TrainingPage() {
   const saveIntents = async () => {
     if (!isMembershipActive) return;
   
-    const sanitizedIntents = intents.map((intent) => ({
-      ...intent,
-      ejemplos: Array.isArray(intent.ejemplos)
-        ? intent.ejemplos
-        : [intent.ejemplos].filter(Boolean),
-    }));
+    const intencionesLimpias = intents.filter(
+      (i) => i.nombre.trim() && i.ejemplos.length > 0 && i.respuesta.trim()
+    );
+  
+    if (intencionesLimpias.length === 0) return alert("❌ Agrega al menos una intención válida.");
   
     await fetch(`${BACKEND_URL}/api/intents`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ intents: sanitizedIntents }),
+      body: JSON.stringify({ intents: intencionesLimpias }),
     });
   
     alert("Intenciones guardadas ✅");
-  };
+  };  
   
   const [flows, setFlows] = useState<Flow[]>([
     {
@@ -284,14 +268,22 @@ export default function TrainingPage() {
   
   const saveFlows = async () => {
     if (!settings.membresia_activa) return;
+  
+    const flowsValidos = flows.filter(
+      (f) => f.mensaje.trim() && f.opciones.some((o) => o.texto.trim() && (o.respuesta?.trim() || o.submenu))
+    );
+  
+    if (flowsValidos.length === 0) return alert("❌ Agrega al menos un flujo válido.");
+  
     await fetch(`${BACKEND_URL}/api/flows`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ flows }),
+      body: JSON.stringify({ flows: flowsValidos }),
     });
+  
     alert("Flujos guardados ✅");
-  };
+  };  
 
   if (loading) return <p className="text-center">Cargando configuración...</p>;
 
