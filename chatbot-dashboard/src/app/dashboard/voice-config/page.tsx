@@ -59,6 +59,32 @@ export default function VoiceConfigPage() {
   const [loadingHistory, setLoadingHistory] = useState(true);
 
   useEffect(() => {
+    const fetchVoiceConfig = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/voice-config?idioma=${idioma}&canal=voz`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (data) {
+          const promptEl = document.querySelector("textarea[name='system_prompt']") as HTMLTextAreaElement;
+          const welcomeEl = document.querySelector("input[name='welcome_message']") as HTMLInputElement;
+          const voiceEl = document.querySelector("select[name='voice_name']") as HTMLSelectElement;
+          const hintsEl = document.querySelector("input[name='voice_hints']") as HTMLInputElement;
+  
+          if (promptEl) promptEl.value = data.system_prompt || "";
+          if (welcomeEl) welcomeEl.value = data.welcome_message || "";
+          if (voiceEl) voiceEl.value = data.voice_name || "";
+          if (hintsEl) hintsEl.value = data.voice_hints || "";
+        }
+      } catch (err) {
+        console.error("Error al cargar configuración de voz:", err);
+      }
+    };
+  
+    fetchVoiceConfig();
+  }, [idioma]);  
+
+  useEffect(() => {
     const fetchMessages = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/messages?canal=voice`, {
@@ -106,6 +132,36 @@ export default function VoiceConfigPage() {
       alert("\u26a0\ufe0f Error inesperado.");
     }
   };
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      if (!tenant?.id) return;
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/voice-config?tenant_id=${tenant.id}&canal=voz`, {
+          credentials: 'include',
+        });
+        const data = await res.json();
+  
+        setIdioma(data.idioma || 'es-ES');
+  
+        const promptInput = document.querySelector("textarea[name='system_prompt']") as HTMLTextAreaElement;
+        if (promptInput) promptInput.value = data.system_prompt || '';
+  
+        const welcomeInput = document.querySelector("input[name='welcome_message']") as HTMLInputElement;
+        if (welcomeInput) welcomeInput.value = data.welcome_message || '';
+  
+        const hintsInput = document.querySelector("input[name='voice_hints']") as HTMLInputElement;
+        if (hintsInput) hintsInput.value = data.voice_hints || '';
+  
+        const voiceSelect = document.querySelector("select[name='voice_name']") as HTMLSelectElement;
+        if (voiceSelect) voiceSelect.value = data.voice_name || 'alice';
+      } catch (err) {
+        console.error("❌ Error al cargar configuración:", err);
+      }
+    };
+  
+    fetchConfig();
+  }, [tenant?.id]);  
 
   const voiceOptionsByLang = voiceOptions[idioma] || voiceOptions["default"];
 
@@ -236,7 +292,7 @@ export default function VoiceConfigPage() {
         <div className="space-y-4 max-h-[300px] overflow-y-auto">
           {voiceMessages
             .slice() // para no mutar el original
-            .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
             .map((msg, idx) => (
               <div
                 key={idx}
