@@ -3,7 +3,15 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTenant } from "@/context/TenantContext";
 import { toast } from "react-toastify";
-import { FiMessageCircle, FiSettings, FiVolume2, FiHash } from "react-icons/fi";
+import {
+  Settings,
+  MessageCircle,
+  Volume2,
+  Hash, 
+  Brain, 
+  User, 
+  Bot
+} from "lucide-react";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
@@ -133,15 +141,15 @@ export default function VoiceConfigPage() {
   
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
-            <FiSettings className="text-purple-400" />
-            Prompt del sistema ({idioma})
+            <Settings className="text-purple-400" />
+            Instrucciones del sistema ({idioma})
           </label>
           <textarea name="system_prompt" className="w-full border px-4 py-2 rounded" rows={4} />
         </div>
   
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
-            <FiMessageCircle className="text-green-400" />
+            <MessageCircle className="text-green-400" />
             Mensaje de bienvenida ({idioma})
           </label>
           <input type="text" name="welcome_message" className="w-full border px-4 py-2 rounded" />
@@ -149,7 +157,7 @@ export default function VoiceConfigPage() {
   
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
-            <FiVolume2 className="text-indigo-400" />
+            <Volume2 className="text-indigo-400" />
             Voz de Twilio
           </label>
           <div className="flex gap-3 items-center">
@@ -188,7 +196,7 @@ export default function VoiceConfigPage() {
   
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
-            <FiHash className="text-yellow-400" />
+            <Hash className="text-yellow-400" />
             Hints (palabras clave)
           </label>
           <input
@@ -209,8 +217,11 @@ export default function VoiceConfigPage() {
   
       <hr className="my-8 border-white/20" />
   
-      <h2 className="text-xl font-bold mb-4">🧠 Historial de llamadas y emociones</h2>
-  
+      <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
+        <Brain className="text-purple-300" />
+        Historial de llamadas y emociones
+      </h2>
+
       {loadingHistory ? (
         <div className="text-gray-400 animate-pulse">Cargando historial...</div>
       ) : voiceMessages.length === 0 ? (
@@ -229,8 +240,17 @@ export default function VoiceConfigPage() {
                   {new Date(msg.timestamp).toLocaleString()} — {msg.from_number || "anónimo"}
                 </div>
                 <div className="font-semibold text-white">
-                  {msg.sender === "user" ? "👤 Cliente:" : "🤖 Bot:"} {msg.content}
+                  {msg.sender === "user" ? (
+                    <>
+                      <User className="inline-block w-4 h-4 mr-1 text-white/70" /> Cliente: {msg.content}
+                    </>
+                  ) : (
+                    <>
+                      <Bot className="inline-block w-4 h-4 mr-1 text-white/70" /> Bot: {msg.content}
+                    </>
+                  )}
                 </div>
+
                 {msg.sender === "user" && msg.emotion && (
                   <div className="text-sm mt-1 text-purple-300">
                     Emoción detectada: <span className="font-medium">{msg.emotion}</span>

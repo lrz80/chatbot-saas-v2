@@ -4,6 +4,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 import { SiSpeedtest } from 'react-icons/si';
+import {
+  Clock3,
+  Mail,
+  SendHorizonal,
+  RefreshCw,
+} from "lucide-react";
 
 export default function FollowUpSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -126,7 +132,9 @@ export default function FollowUpSettingsPage() {
 
       {/* Configuración de Seguimiento */}
       <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl mb-8 shadow-md">
-        <h2 className="text-xl font-bold mb-6">⏰ Tiempo de Espera para Seguimiento</h2>
+        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+          <Clock3 className="text-purple-300" /> Tiempo de Espera para Seguimiento
+        </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -156,7 +164,9 @@ export default function FollowUpSettingsPage() {
 
       {/* Mensajes de Seguimiento */}
       <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl shadow-md space-y-6">
-        <h2 className="text-xl font-bold mb-6">✉️ Mensajes Personalizados de Seguimiento</h2>
+        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+          <Mail className="text-purple-300" /> Mensajes Personalizados de Seguimiento
+        </h2>
 
         <div>
           <label className="block text-sm mb-2 font-semibold text-purple-200">Mensaje para clientes que preguntan precios:</label>
@@ -212,13 +222,15 @@ export default function FollowUpSettingsPage() {
       {/* Mensajes enviados */}
       <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl shadow-md mt-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">📬 Seguimientos Enviados</h2>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <SendHorizonal className="text-purple-300" /> Seguimientos Enviados
+          </h2>
           <button
             onClick={handleReloadMensajes}
             className="text-xs px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded-full font-semibold transition-all disabled:opacity-50"
             disabled={reloadingMensajes}
           >
-            {reloadingMensajes ? 'Recargando...' : '🔄 Recargar'}
+            {reloadingMensajes ? 'Recargando...' : 'Recargar'}
           </button>
         </div>
 
