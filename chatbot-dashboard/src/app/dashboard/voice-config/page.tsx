@@ -17,7 +17,6 @@ import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
 import Footer from "@/components/Footer";
 import { SiAudioboom } from "react-icons/si";
-import VoicePlayer from "@/components/VoicePlayer";
 
 export default function VoiceConfigPage() {
   const [idioma, setIdioma] = useState("es-ES");
@@ -35,6 +34,16 @@ export default function VoiceConfigPage() {
     "en-US": [],
     default: [],
   });
+
+  const [formValues, setFormValues] = useState({
+    funciones_asistente: "",
+    info_clave: "",
+    system_prompt: "",
+    welcome_message: "",
+    voice_name: "",
+    voice_hints: "",
+  });
+
   const [voiceMessages, setVoiceMessages] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
@@ -46,15 +55,13 @@ export default function VoiceConfigPage() {
         });
         const data = await res.json();
         if (data) {
-          const promptEl = document.querySelector("textarea[name='system_prompt']") as HTMLTextAreaElement;
-          const welcomeEl = document.querySelector("input[name='welcome_message']") as HTMLInputElement;
-          const voiceEl = document.querySelector("select[name='voice_name']") as HTMLSelectElement;
-          const hintsEl = document.querySelector("input[name='voice_hints']") as HTMLInputElement;
-
-          if (data.system_prompt && promptEl) promptEl.value = data.system_prompt;
-          if (data.welcome_message && welcomeEl) welcomeEl.value = data.welcome_message;
-          if (data.voice_name && voiceEl) voiceEl.value = data.voice_name;
-          if (data.voice_hints && hintsEl) hintsEl.value = data.voice_hints;
+          setFormValues((prev) => ({
+            ...prev,
+            system_prompt: data.system_prompt || "",
+            welcome_message: data.welcome_message || "",
+            voice_name: data.voice_name || "",
+            voice_hints: data.voice_hints || "",
+          }));
         }
       } catch (err) {
         console.error("Error al cargar configuración de voz:", err);
@@ -98,18 +105,20 @@ export default function VoiceConfigPage() {
     fetchMessages();
   }, []);
 
-  if (!tenant) {
-    return (
-      <div className="flex justify-center items-center h-40 text-gray-400 animate-pulse">
-        Cargando configuración del negocio...
-      </div>
-    );
-  }
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormValues((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.currentTarget as HTMLFormElement;
-    const formData = new FormData(form);
+    const formData = new FormData();
+    formData.append("idioma", idioma);
+    formData.append("canal", "voz");
+    formData.append("tenant_id", tenantId || "");
+    Object.entries(formValues).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
 
     try {
       const res = await fetch(`${BACKEND_URL}/api/voice-config`, {
@@ -129,7 +138,7 @@ export default function VoiceConfigPage() {
     }
   };
 
-  const voiceOptionsByLang = voiceOptions[idioma] || voiceOptions["default"];
+  const voiceOptionsByLang = voiceOptions[idioma] || voiceOptions.default;
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
@@ -161,16 +170,21 @@ export default function VoiceConfigPage() {
         <VoicePromptGenerator
           idioma={idioma}
           categoria={tenant?.categoria || "general"}
-          onGenerate={(prompt, bienvenida) => {
-            (document.querySelector("textarea[name='system_prompt']") as HTMLTextAreaElement).value = prompt;
-            (document.querySelector("input[name='welcome_message']") as HTMLInputElement).value = bienvenida;
-          }}
+          onGenerate={(prompt, bienvenida) =>
+            setFormValues((prev) => ({
+              ...prev,
+              system_prompt: prompt,
+              welcome_message: bienvenida,
+            }))
+          }
         />
 
         <div className="mb-4">
           <label className="block mb-2 font-semibold text-white">¿Qué debe hacer el asistente?</label>
           <textarea
             name="funciones_asistente"
+            value={formValues.funciones_asistente}
+            onChange={handleChange}
             rows={3}
             className="w-full border px-4 py-2 rounded"
             placeholder="Ej: responder dudas, agendar citas..."
@@ -181,6 +195,8 @@ export default function VoiceConfigPage() {
           <label className="block mb-2 font-semibold text-white">Información clave del negocio</label>
           <textarea
             name="info_clave"
+            value={formValues.info_clave}
+            onChange={handleChange}
             rows={3}
             className="w-full border px-4 py-2 rounded"
             placeholder="Ej: precios, dirección, horarios..."
@@ -192,7 +208,13 @@ export default function VoiceConfigPage() {
             <Settings className="text-purple-400" />
             Instrucciones del sistema ({idioma})
           </label>
-          <textarea name="system_prompt" className="w-full border px-4 py-2 rounded" rows={4} />
+          <textarea
+            name="system_prompt"
+            value={formValues.system_prompt}
+            onChange={handleChange}
+            className="w-full border px-4 py-2 rounded"
+            rows={4}
+          />
         </div>
 
         <div className="mb-4">
@@ -200,7 +222,13 @@ export default function VoiceConfigPage() {
             <MessageCircle className="text-green-400" />
             Mensaje de bienvenida ({idioma})
           </label>
-          <input type="text" name="welcome_message" className="w-full border px-4 py-2 rounded" />
+          <input
+            type="text"
+            name="welcome_message"
+            value={formValues.welcome_message}
+            onChange={handleChange}
+            className="w-full border px-4 py-2 rounded"
+          />
         </div>
 
         <div className="mb-4">
@@ -209,7 +237,12 @@ export default function VoiceConfigPage() {
             Voz de ElevenLabs
           </label>
           <div className="flex gap-3 items-center">
-            <select name="voice_name" className="w-full border px-4 py-2 rounded">
+            <select
+              name="voice_name"
+              value={formValues.voice_name}
+              onChange={handleChange}
+              className="w-full border px-4 py-2 rounded"
+            >
               {voiceOptionsByLang.map((voice) => (
                 <option key={voice.value} value={voice.value}>
                   {voice.label}
@@ -220,12 +253,8 @@ export default function VoiceConfigPage() {
               type="button"
               className="text-sm bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600"
               onClick={async () => {
-                const voice = (
-                  document.querySelector("select[name='voice_name']") as HTMLSelectElement
-                )?.value;
-
                 const previewForm = new FormData();
-                previewForm.append("voice", voice);
+                previewForm.append("voice", formValues.voice_name);
                 previewForm.append("language", idioma);
 
                 await fetch(`${BACKEND_URL}/api/voice-preview`, {
@@ -250,6 +279,8 @@ export default function VoiceConfigPage() {
           <input
             type="text"
             name="voice_hints"
+            value={formValues.voice_hints}
+            onChange={handleChange}
             className="w-full border px-4 py-2 rounded"
             placeholder="precio, cita, horario..."
           />
