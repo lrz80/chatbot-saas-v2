@@ -30,7 +30,11 @@ export default function VoiceConfigPage() {
     { label: "English", value: "en-US" },
   ];
 
-  const [voiceOptions, setVoiceOptions] = useState<{ label: string; value: string }[]>([]);
+  const [voiceOptions, setVoiceOptions] = useState<Record<string, { label: string; value: string }[]>>({
+    "es-ES": [],
+    "en-US": [],
+    default: [],
+  });
   const [voiceMessages, setVoiceMessages] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
@@ -47,10 +51,10 @@ export default function VoiceConfigPage() {
           const voiceEl = document.querySelector("select[name='voice_name']") as HTMLSelectElement;
           const hintsEl = document.querySelector("input[name='voice_hints']") as HTMLInputElement;
 
-          if (promptEl) promptEl.value = data.system_prompt || "";
-          if (welcomeEl) welcomeEl.value = data.welcome_message || "";
-          if (voiceEl) voiceEl.value = data.voice_name || "";
-          if (hintsEl) hintsEl.value = data.voice_hints || "";
+          if (data.system_prompt && promptEl) promptEl.value = data.system_prompt;
+          if (data.welcome_message && welcomeEl) welcomeEl.value = data.welcome_message;
+          if (data.voice_name && voiceEl) voiceEl.value = data.voice_name;
+          if (data.voice_hints && hintsEl) hintsEl.value = data.voice_hints;
         }
       } catch (err) {
         console.error("Error al cargar configuración de voz:", err);
@@ -124,6 +128,8 @@ export default function VoiceConfigPage() {
       alert("⚠️ Error inesperado.");
     }
   };
+
+  const voiceOptionsByLang = voiceOptions[idioma] || voiceOptions["default"];
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
@@ -204,7 +210,7 @@ export default function VoiceConfigPage() {
           </label>
           <div className="flex gap-3 items-center">
             <select name="voice_name" className="w-full border px-4 py-2 rounded">
-              {voiceOptions.map((voice) => (
+              {voiceOptionsByLang.map((voice) => (
                 <option key={voice.value} value={voice.value}>
                   {voice.label}
                 </option>
