@@ -190,9 +190,9 @@ export default function VoiceConfigPage() {
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
         <SiAudioboom size={36} className="text-sky-400 animate-pulse" /> Configuración de Asistente de Voz
       </h1>
-
+  
       <TrainingHelp context="voice" />
-
+  
       <div className="flex space-x-4 mb-6">
         {idiomasDisponibles.map((lang) => (
           <button
@@ -206,12 +206,12 @@ export default function VoiceConfigPage() {
           </button>
         ))}
       </div>
-
+  
       <form onSubmit={handleSubmit} className="mb-10">
         <input type="hidden" name="idioma" value={idioma} />
         <input type="hidden" name="canal" value="voz" />
         <input type="hidden" name="tenant_id" value={tenantId} />
-
+  
         <VoicePromptGenerator
           idioma={idioma}
           categoria={tenant?.categoria || "general"}
@@ -220,21 +220,69 @@ export default function VoiceConfigPage() {
             (document.querySelector("input[name='welcome_message']") as HTMLInputElement).value = bienvenida;
           }}
         />
-
+  
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          {/* Prompt del sistema */}
+          <div>
+            <label className="block text-white font-semibold mb-1">Prompt del sistema generado</label>
+            <textarea
+              name="system_prompt"
+              rows={6}
+              placeholder="Este es el comportamiento del asistente de voz..."
+              className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+              required
+            />
+          </div>
+  
+          {/* Mensaje de bienvenida y voz */}
+          <div>
+            <label className="block text-white font-semibold mb-1">Mensaje de bienvenida</label>
+            <input
+              type="text"
+              name="welcome_message"
+              placeholder="Hola, soy Amy. Bienvenido a..."
+              className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+              required
+            />
+  
+            <label className="block text-white font-semibold mt-4 mb-1">Seleccionar voz</label>
+            <select
+              name="voice_name"
+              className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+              required
+            >
+              <option value="">Selecciona una voz</option>
+              {voiceOptions.map((v) => (
+                <option key={v.value} value={v.value}>
+                  {v.label}
+                </option>
+              ))}
+            </select>
+  
+            <label className="block text-white font-semibold mt-4 mb-1">Hints de pronunciación (opcional)</label>
+            <input
+              type="text"
+              name="voice_hints"
+              placeholder="Nombres o términos difíciles de pronunciar"
+              className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+            />
+          </div>
+        </div>
+  
         {/* Audio demo generado */}
-        {voiceOptions.length > 0 && (
+        {audioDemoUrl && (
           <div className="mt-6">
             <label className="block mb-2 font-semibold text-white">Vista previa de la voz:</label>
             <VoicePlayer url={audioDemoUrl} />
           </div>
         )}
-
+  
         {/* Links útiles */}
-        <div className="mb-8">
+        <div className="mb-8 mt-10">
           <label className="block mb-2 font-semibold text-white flex items-center gap-2">
             <Link className="text-blue-400" /> Links útiles (enviar por SMS)
           </label>
-
+  
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <input
               type="text"
@@ -265,12 +313,15 @@ export default function VoiceConfigPage() {
           >
             Agregar link útil
           </button>
-
+  
           <ul className="text-white space-y-2">
             {linksUtiles.map((link) => (
               <li key={link.id} className="flex justify-between items-center bg-white/5 p-3 rounded-md">
                 <span className="text-sm">
-                  <strong>{link.intencion}</strong>: {link.mensaje} — <a href={link.url} target="_blank" className="underline">{link.url}</a>
+                  <strong>{link.intencion}</strong>: {link.mensaje} —{" "}
+                  <a href={link.url} target="_blank" className="underline">
+                    {link.url}
+                  </a>
                 </span>
                 <button onClick={() => eliminarLink(link.id)}>
                   <Trash className="text-red-400 hover:text-red-500 w-4 h-4" />
@@ -279,17 +330,15 @@ export default function VoiceConfigPage() {
             ))}
           </ul>
         </div>
-
-        {/* ...resto del formulario permanece igual... */}
       </form>
-
+  
       {/* Historial de llamadas */}
       <hr className="my-8 border-white/20" />
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
         <Brain className="text-purple-300" />
         Historial de llamadas y emociones
       </h2>
-
+  
       {loadingHistory ? (
         <div className="text-gray-400 animate-pulse">Cargando historial...</div>
       ) : voiceMessages.length === 0 ? (
@@ -327,8 +376,8 @@ export default function VoiceConfigPage() {
             ))}
         </div>
       )}
-
+  
       <Footer />
     </div>
   );
-}
+}  
