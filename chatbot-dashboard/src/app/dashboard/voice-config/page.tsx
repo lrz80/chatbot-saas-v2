@@ -7,20 +7,18 @@ import {
   Settings,
   MessageCircle,
   Volume2,
-  Hash, 
-  Brain, 
-  User, 
-  Bot
+  Hash,
+  Brain,
+  User,
+  Bot,
 } from "lucide-react";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
-import Footer from '@/components/Footer';
-import { SiAudioboom } from 'react-icons/si';
+import Footer from "@/components/Footer";
+import { SiAudioboom } from "react-icons/si";
 import VoicePlayer from "@/components/VoicePlayer";
 
-
-// Tipo de voz por idioma
 export default function VoiceConfigPage() {
   const [idioma, setIdioma] = useState("es-ES");
   const tenant = useTenant();
@@ -28,33 +26,11 @@ export default function VoiceConfigPage() {
   const router = useRouter();
 
   const idiomasDisponibles = [
-    { label: "Espa\u00f1ol", value: "es-ES" },
+    { label: "Español", value: "es-ES" },
     { label: "English", value: "en-US" },
   ];
 
-  const voiceOptions: Record<string, { label: string; value: string }[]> = {
-    "es-ES": [
-      { label: "Rachel (realista)", value: "EXAVITQu4vr4xnSDxMaL" },
-      { label: "Bella (emocional)", value: "21m00Tcm4TlvDq8ikWAM" },
-      { label: "Alice (neutro)", value: "alice" },
-      { label: "Conchita (Polly)", value: "Polly.Conchita" },
-      { label: "Lucia (Polly)", value: "Polly.Lucia" },
-      { label: "Miguel (Polly)", value: "Polly.Miguel" },
-    ],
-    "en-US": [
-      { label: "Rachel (realista)", value: "EXAVITQu4vr4xnSDxMaL" },
-      { label: "Antoni (realista)", value: "ErXwobaYiN019PkySvjV" },
-      { label: "Matthew (Polly)", value: "Polly.Matthew" },
-      { label: "Joanna (Polly)", value: "Polly.Joanna" },
-      { label: "Kendra (Polly)", value: "Polly.Kendra" },
-      { label: "Joey (Polly)", value: "Polly.Joey" },
-    ],
-    default: [
-      { label: "Rachel (realista)", value: "EXAVITQu4vr4xnSDxMaL" },
-      { label: "Alice (neutro)", value: "alice" },
-    ],
-  };  
-
+  const [voiceOptions, setVoiceOptions] = useState<{ label: string; value: string }[]>([]);
   const [voiceMessages, setVoiceMessages] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
@@ -70,7 +46,7 @@ export default function VoiceConfigPage() {
           const welcomeEl = document.querySelector("input[name='welcome_message']") as HTMLInputElement;
           const voiceEl = document.querySelector("select[name='voice_name']") as HTMLSelectElement;
           const hintsEl = document.querySelector("input[name='voice_hints']") as HTMLInputElement;
-  
+
           if (promptEl) promptEl.value = data.system_prompt || "";
           if (welcomeEl) welcomeEl.value = data.welcome_message || "";
           if (voiceEl) voiceEl.value = data.voice_name || "";
@@ -80,9 +56,25 @@ export default function VoiceConfigPage() {
         console.error("Error al cargar configuración de voz:", err);
       }
     };
-  
+
     fetchVoiceConfig();
-  }, [idioma]);  
+  }, [idioma]);
+
+  useEffect(() => {
+    const fetchVoices = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/elevenlabs/voices`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        setVoiceOptions(data);
+      } catch (err) {
+        console.error("Error cargando voces:", err);
+      }
+    };
+
+    fetchVoices();
+  }, []);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -105,7 +97,7 @@ export default function VoiceConfigPage() {
   if (!tenant) {
     return (
       <div className="flex justify-center items-center h-40 text-gray-400 animate-pulse">
-        Cargando configuraci\u00f3n del negocio...
+        Cargando configuración del negocio...
       </div>
     );
   }
@@ -123,56 +115,24 @@ export default function VoiceConfigPage() {
       });
 
       if (res.ok) {
-        toast.success("\u2705 \u00a1Configuraci\u00f3n guardada!");
+        toast.success("✅ ¡Configuración guardada!");
       } else {
-        toast.error("\u274c Algo sali\u00f3 mal.");
+        toast.error("❌ Algo salió mal.");
       }
     } catch (err) {
       console.error("Error al guardar:", err);
-      alert("\u26a0\ufe0f Error inesperado.");
+      alert("⚠️ Error inesperado.");
     }
   };
-
-  useEffect(() => {
-    const fetchConfig = async () => {
-      if (!tenant?.id) return;
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/voice-config?tenant_id=${tenant.id}&canal=voz`, {
-          credentials: 'include',
-        });
-        const data = await res.json();
-  
-        setIdioma(data.idioma || 'es-ES');
-  
-        const promptInput = document.querySelector("textarea[name='system_prompt']") as HTMLTextAreaElement;
-        if (promptInput) promptInput.value = data.system_prompt || '';
-  
-        const welcomeInput = document.querySelector("input[name='welcome_message']") as HTMLInputElement;
-        if (welcomeInput) welcomeInput.value = data.welcome_message || '';
-  
-        const hintsInput = document.querySelector("input[name='voice_hints']") as HTMLInputElement;
-        if (hintsInput) hintsInput.value = data.voice_hints || '';
-  
-        const voiceSelect = document.querySelector("select[name='voice_name']") as HTMLSelectElement;
-        if (voiceSelect) voiceSelect.value = data.voice_name || 'alice';
-      } catch (err) {
-        console.error("❌ Error al cargar configuración:", err);
-      }
-    };
-  
-    fetchConfig();
-  }, [tenant?.id]);  
-
-  const voiceOptionsByLang = voiceOptions[idioma] || voiceOptions["default"];
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
         <SiAudioboom size={36} className="text-sky-400 animate-pulse" /> Configuración de Asistente de Voz
       </h1>
-  
+
       <TrainingHelp context="voice" />
-  
+
       <div className="flex space-x-4 mb-6">
         {idiomasDisponibles.map((lang) => (
           <button
@@ -186,12 +146,12 @@ export default function VoiceConfigPage() {
           </button>
         ))}
       </div>
-  
+
       <form onSubmit={handleSubmit} className="mb-10">
         <input type="hidden" name="idioma" value={idioma} />
         <input type="hidden" name="canal" value="voz" />
         <input type="hidden" name="tenant_id" value={tenantId} />
-  
+
         <VoicePromptGenerator
           idioma={idioma}
           categoria={tenant?.categoria || "general"}
@@ -200,7 +160,7 @@ export default function VoiceConfigPage() {
             (document.querySelector("input[name='welcome_message']") as HTMLInputElement).value = bienvenida;
           }}
         />
-  
+
         <div className="mb-4">
           <label className="block mb-2 font-semibold text-white">¿Qué debe hacer el asistente?</label>
           <textarea
@@ -210,7 +170,7 @@ export default function VoiceConfigPage() {
             placeholder="Ej: responder dudas, agendar citas..."
           />
         </div>
-  
+
         <div className="mb-4">
           <label className="block mb-2 font-semibold text-white">Información clave del negocio</label>
           <textarea
@@ -220,7 +180,7 @@ export default function VoiceConfigPage() {
             placeholder="Ej: precios, dirección, horarios..."
           />
         </div>
-  
+
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <Settings className="text-purple-400" />
@@ -228,7 +188,7 @@ export default function VoiceConfigPage() {
           </label>
           <textarea name="system_prompt" className="w-full border px-4 py-2 rounded" rows={4} />
         </div>
-  
+
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <MessageCircle className="text-green-400" />
@@ -236,15 +196,15 @@ export default function VoiceConfigPage() {
           </label>
           <input type="text" name="welcome_message" className="w-full border px-4 py-2 rounded" />
         </div>
-  
+
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <Volume2 className="text-indigo-400" />
-            Voz de Twilio
+            Voz de ElevenLabs
           </label>
           <div className="flex gap-3 items-center">
             <select name="voice_name" className="w-full border px-4 py-2 rounded">
-              {voiceOptionsByLang.map((voice) => (
+              {voiceOptions.map((voice) => (
                 <option key={voice.value} value={voice.value}>
                   {voice.label}
                 </option>
@@ -257,17 +217,17 @@ export default function VoiceConfigPage() {
                 const voice = (
                   document.querySelector("select[name='voice_name']") as HTMLSelectElement
                 )?.value;
-  
+
                 const previewForm = new FormData();
                 previewForm.append("voice", voice);
                 previewForm.append("language", idioma);
-  
+
                 await fetch(`${BACKEND_URL}/api/voice-preview`, {
                   method: "POST",
                   body: previewForm,
                   credentials: "include",
                 });
-  
+
                 toast.info("📞 Voz enviada. Llamá al número de prueba para escuchar.");
               }}
             >
@@ -275,7 +235,7 @@ export default function VoiceConfigPage() {
             </button>
           </div>
         </div>
-  
+
         <div className="mb-4">
           <label className="block mb-2 font-semibold flex items-center gap-2">
             <Hash className="text-yellow-400" />
@@ -288,7 +248,7 @@ export default function VoiceConfigPage() {
             placeholder="precio, cita, horario..."
           />
         </div>
-  
+
         <button
           type="submit"
           className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700"
@@ -296,14 +256,14 @@ export default function VoiceConfigPage() {
           Guardar Configuración
         </button>
       </form>
-  
+
       <hr className="my-8 border-white/20" />
-  
+
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
         <Brain className="text-purple-300" />
         Historial de llamadas y emociones
       </h2>
-  
+
       {loadingHistory ? (
         <div className="text-gray-400 animate-pulse">Cargando historial...</div>
       ) : voiceMessages.length === 0 ? (
@@ -332,7 +292,7 @@ export default function VoiceConfigPage() {
                     </>
                   )}
                 </div>
-  
+
                 {msg.sender === "user" && msg.emotion && (
                   <div className="text-sm mt-1 text-purple-300">
                     Emoción detectada: <span className="font-medium">{msg.emotion}</span>
@@ -344,5 +304,5 @@ export default function VoiceConfigPage() {
       )}
       <Footer />
     </div>
-  );   
-}  
+  );
+}
