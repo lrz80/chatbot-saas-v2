@@ -268,13 +268,23 @@ export default function VoiceConfigPage() {
           </div>
         </div>
   
-        {/* Demo de voz generado */}
+        {/* Vista previa de voz generada */}
         {audioDemoUrl && (
           <div className="mt-6">
             <label className="block mb-2 font-semibold text-white">Vista previa de la voz:</label>
             <VoicePlayer url={audioDemoUrl} />
           </div>
         )}
+  
+        {/* Botón de guardar configuración */}
+        <div className="mt-8">
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition-all"
+          >
+            Guardar configuración
+          </button>
+        </div>
   
         {/* Links útiles */}
         <div className="mt-10 mb-8">
