@@ -18,7 +18,6 @@ import Footer from "@/components/Footer";
 import { SiAudioboom } from "react-icons/si";
 import VoicePlayer from "@/components/VoicePlayer";
 
-
 export default function VoiceConfigPage() {
   const [idioma, setIdioma] = useState("es-ES");
   const tenant = useTenant();
@@ -36,6 +35,7 @@ export default function VoiceConfigPage() {
   const [linksUtiles, setLinksUtiles] = useState<any[]>([]);
   const [nuevoLink, setNuevoLink] = useState({ intencion: "", mensaje: "", url: "" });
   const [audioDemoUrl, setAudioDemoUrl] = useState<string>("");
+  const [linksParaEliminar, setLinksParaEliminar] = useState<number[]>([]);
 
   useEffect(() => {
     const fetchVoiceConfig = async () => {
@@ -49,12 +49,12 @@ export default function VoiceConfigPage() {
           const welcomeEl = document.querySelector("input[name='welcome_message']") as HTMLInputElement;
           const voiceEl = document.querySelector("select[name='voice_name']") as HTMLSelectElement;
           const hintsEl = document.querySelector("input[name='voice_hints']") as HTMLInputElement;
-  
+
           if (promptEl) promptEl.value = data.system_prompt || "";
           if (welcomeEl) welcomeEl.value = data.welcome_message || "";
           if (voiceEl) voiceEl.value = data.voice_name || "";
           if (hintsEl) hintsEl.value = data.voice_hints || "";
-  
+
           if (data.audio_demo_url) {
             setAudioDemoUrl(data.audio_demo_url);
           } else {
@@ -65,9 +65,9 @@ export default function VoiceConfigPage() {
         console.error("Error al cargar configuración de voz:", err);
       }
     };
-  
+
     fetchVoiceConfig();
-  }, [idioma]);  
+  }, [idioma]);
 
   useEffect(() => {
     const fetchVoices = async () => {
@@ -162,6 +162,11 @@ export default function VoiceConfigPage() {
     }
   };
 
+  const marcarParaEliminar = (id: number) => {
+    setLinksUtiles((prev) => prev.filter((l) => l.id !== id));
+    setLinksParaEliminar((prev) => [...prev, id]);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
@@ -176,6 +181,20 @@ export default function VoiceConfigPage() {
 
       if (res.ok) {
         toast.success("✅ ¡Configuración guardada!");
+
+        // 🔥 Eliminar links marcados para borrar
+        if (linksParaEliminar.length > 0) {
+          await Promise.all(
+            linksParaEliminar.map((id) =>
+              fetch(`${BACKEND_URL}/api/voice-links/${id}`, {
+                method: "DELETE",
+                credentials: "include",
+              })
+            )
+          );
+          setLinksParaEliminar([]);
+          toast.info("🗑️ Links eliminados correctamente.");
+        }
       } else {
         toast.error("❌ Algo salió mal.");
       }
@@ -339,9 +358,15 @@ export default function VoiceConfigPage() {
                     {link.url}
                   </a>
                 </span>
-                <button onClick={() => eliminarLink(link.id)}>
-                  <Trash className="text-red-400 hover:text-red-500 w-4 h-4" />
+                <button
+                  type="button"
+                  onClick={() => marcarParaEliminar(link.id)}
+                  className="text-red-500 hover:text-red-700 text-lg font-bold ml-4"
+                  title="Eliminar"
+                >
+                  ✖
                 </button>
+
               </li>
             ))}
           </ul>
