@@ -5,10 +5,6 @@ import { useRouter } from "next/navigation";
 import { useTenant } from "@/context/TenantContext";
 import { toast } from "react-toastify";
 import {
-  Settings,
-  MessageCircle,
-  Volume2,
-  Hash,
   Brain,
   User,
   Bot,
@@ -20,6 +16,8 @@ import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
 import Footer from "@/components/Footer";
 import { SiAudioboom } from "react-icons/si";
+import VoicePlayer from "@/components/VoicePlayer";
+
 
 export default function VoiceConfigPage() {
   const [idioma, setIdioma] = useState("es-ES");
@@ -37,6 +35,7 @@ export default function VoiceConfigPage() {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [linksUtiles, setLinksUtiles] = useState<any[]>([]);
   const [nuevoLink, setNuevoLink] = useState({ intencion: "", mensaje: "", url: "" });
+  const [audioDemoUrl, setAudioDemoUrl] = useState<string>("");
 
   useEffect(() => {
     const fetchVoiceConfig = async () => {
@@ -50,19 +49,25 @@ export default function VoiceConfigPage() {
           const welcomeEl = document.querySelector("input[name='welcome_message']") as HTMLInputElement;
           const voiceEl = document.querySelector("select[name='voice_name']") as HTMLSelectElement;
           const hintsEl = document.querySelector("input[name='voice_hints']") as HTMLInputElement;
-
+  
           if (promptEl) promptEl.value = data.system_prompt || "";
           if (welcomeEl) welcomeEl.value = data.welcome_message || "";
           if (voiceEl) voiceEl.value = data.voice_name || "";
           if (hintsEl) hintsEl.value = data.voice_hints || "";
+  
+          if (data.audio_demo_url) {
+            setAudioDemoUrl(data.audio_demo_url);
+          } else {
+            setAudioDemoUrl("");
+          }
         }
       } catch (err) {
         console.error("Error al cargar configuración de voz:", err);
       }
     };
-
+  
     fetchVoiceConfig();
-  }, [idioma]);
+  }, [idioma]);  
 
   useEffect(() => {
     const fetchVoices = async () => {
@@ -179,7 +184,7 @@ export default function VoiceConfigPage() {
       alert("⚠️ Error inesperado.");
     }
   };
-  
+
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
@@ -215,6 +220,14 @@ export default function VoiceConfigPage() {
             (document.querySelector("input[name='welcome_message']") as HTMLInputElement).value = bienvenida;
           }}
         />
+
+        {/* Audio demo generado */}
+        {voiceOptions.length > 0 && (
+          <div className="mt-6">
+            <label className="block mb-2 font-semibold text-white">Vista previa de la voz:</label>
+            <VoicePlayer url={audioDemoUrl} />
+          </div>
+        )}
 
         {/* Links útiles */}
         <div className="mb-8">

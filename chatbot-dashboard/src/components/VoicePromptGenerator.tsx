@@ -1,3 +1,5 @@
+// ✅ src/components/VoicePromptGenerator.tsx
+
 "use client";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -14,9 +16,19 @@ export default function VoicePromptGenerator({ idioma, categoria, onGenerate }: 
 
   const handleGenerate = async () => {
     setLoading(true);
+
     try {
-      const funciones = (document.querySelector("textarea[name='funciones_asistente']") as HTMLTextAreaElement)?.value || "";
-      const info = (document.querySelector("textarea[name='info_clave']") as HTMLTextAreaElement)?.value || "";
+      const funcionesTextarea = document.querySelector("textarea[name='funciones_asistente']") as HTMLTextAreaElement | null;
+      const infoTextarea = document.querySelector("textarea[name='info_clave']") as HTMLTextAreaElement | null;
+
+      const funciones = funcionesTextarea?.value.trim() || "";
+      const info = infoTextarea?.value.trim() || "";
+
+      if (!funciones || !info) {
+        toast.warn("Por favor completa ambos campos antes de generar el prompt.");
+        setLoading(false);
+        return;
+      }
 
       const res = await fetch(`${BACKEND_URL}/api/voice-prompt`, {
         method: "POST",
@@ -31,16 +43,18 @@ export default function VoicePromptGenerator({ idioma, categoria, onGenerate }: 
       });
 
       const data = await res.json();
+
       if (res.ok) {
         onGenerate(data.prompt, data.bienvenida);
         toast.success("✅ Prompt generado automáticamente");
       } else {
-        toast.error("❌ No se pudo generar el prompt.");
+        toast.error(data.error || "❌ No se pudo generar el prompt.");
       }
     } catch (err) {
-      toast.error("❌ Error de red");
+      toast.error("❌ Error al conectar con el servidor.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
