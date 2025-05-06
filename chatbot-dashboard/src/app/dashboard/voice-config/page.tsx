@@ -211,7 +211,7 @@ export default function VoiceConfigPage() {
         <input type="hidden" name="tenant_id" value={tenantId} />
   
         {/* Campos necesarios para generar el prompt */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 gap-6 mb-6">
           <div>
             <label className="block text-white font-semibold mb-1">¿Qué debe hacer tu asistente?</label>
             <textarea
@@ -241,7 +241,7 @@ export default function VoiceConfigPage() {
           }}
         />
   
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div className="grid grid-cols-1 gap-6 mt-6">
           <div>
             <label className="block text-white font-semibold mb-1">Prompt del sistema generado</label>
             <textarea
