@@ -221,8 +221,8 @@ export default function VoiceConfigPage() {
           }}
         />
   
+        {/* Campos de configuración de voz */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          {/* Prompt del sistema */}
           <div>
             <label className="block text-white font-semibold mb-1">Prompt del sistema generado</label>
             <textarea
@@ -234,7 +234,6 @@ export default function VoiceConfigPage() {
             />
           </div>
   
-          {/* Mensaje de bienvenida y voz */}
           <div>
             <label className="block text-white font-semibold mb-1">Mensaje de bienvenida</label>
             <input
@@ -269,7 +268,7 @@ export default function VoiceConfigPage() {
           </div>
         </div>
   
-        {/* Audio demo generado */}
+        {/* Demo de voz generado */}
         {audioDemoUrl && (
           <div className="mt-6">
             <label className="block mb-2 font-semibold text-white">Vista previa de la voz:</label>
@@ -278,7 +277,7 @@ export default function VoiceConfigPage() {
         )}
   
         {/* Links útiles */}
-        <div className="mb-8 mt-10">
+        <div className="mt-10 mb-8">
           <label className="block mb-2 font-semibold text-white flex items-center gap-2">
             <Link className="text-blue-400" /> Links útiles (enviar por SMS)
           </label>
