@@ -66,14 +66,20 @@ export default function VoiceConfigPage() {
           credentials: "include",
         });
         const data = await res.json();
-        setVoiceOptions(data); // ahora es un array plano con label y value
+        if (Array.isArray(data)) {
+          setVoiceOptions(data);
+        } else {
+          console.error("❌ La respuesta de voices no es un array:", data);
+          toast.error("Error al cargar voces disponibles.");
+        }
       } catch (err) {
         console.error("Error cargando voces:", err);
+        toast.error("No se pudieron cargar las voces de ElevenLabs.");
       }
     };
-
+  
     fetchVoices();
-  }, []);
+  }, []);  
 
   useEffect(() => {
     const fetchMessages = async () => {
