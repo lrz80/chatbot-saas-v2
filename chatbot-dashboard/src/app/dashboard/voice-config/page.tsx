@@ -197,9 +197,7 @@ export default function VoiceConfigPage() {
         {idiomasDisponibles.map((lang) => (
           <button
             key={lang.value}
-            className={`px-4 py-2 rounded ${
-              idioma === lang.value ? "bg-purple-600 text-white" : "bg-gray-200"
-            }`}
+            className={`px-4 py-2 rounded ${idioma === lang.value ? "bg-purple-600 text-white" : "bg-gray-200"}`}
             onClick={() => setIdioma(lang.value)}
           >
             {lang.label}
@@ -221,7 +219,6 @@ export default function VoiceConfigPage() {
           }}
         />
   
-        {/* Campos de configuración de voz */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
             <label className="block text-white font-semibold mb-1">Prompt del sistema generado</label>
@@ -268,23 +265,12 @@ export default function VoiceConfigPage() {
           </div>
         </div>
   
-        {/* Vista previa de voz generada */}
         {audioDemoUrl && (
           <div className="mt-6">
             <label className="block mb-2 font-semibold text-white">Vista previa de la voz:</label>
             <VoicePlayer url={audioDemoUrl} />
           </div>
         )}
-  
-        {/* Botón de guardar configuración */}
-        <div className="mt-8">
-          <button
-            type="submit"
-            className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition-all"
-          >
-            Guardar configuración
-          </button>
-        </div>
   
         {/* Links útiles */}
         <div className="mt-10 mb-8">
@@ -338,6 +324,16 @@ export default function VoiceConfigPage() {
               </li>
             ))}
           </ul>
+  
+          {/* ✅ Botón de guardar configuración */}
+          <div className="mt-6">
+            <button
+              type="submit"
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded shadow"
+            >
+              Guardar configuración
+            </button>
+          </div>
         </div>
       </form>
   
@@ -388,5 +384,5 @@ export default function VoiceConfigPage() {
   
       <Footer />
     </div>
-  );
+  );  
 }  
