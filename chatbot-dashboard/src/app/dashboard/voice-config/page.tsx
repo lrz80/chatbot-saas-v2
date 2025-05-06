@@ -33,7 +33,7 @@ export default function VoiceConfigPage() {
   const [voiceMessages, setVoiceMessages] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [linksUtiles, setLinksUtiles] = useState<any[]>([]);
-  const [nuevoLink, setNuevoLink] = useState({ intencion: "", mensaje: "", url: "" });
+  const [nuevoLink, setNuevoLink] = useState({ tipo: "", nombre: "", url: "" });
   const [audioDemoUrl, setAudioDemoUrl] = useState<string>("");
   const [linksParaEliminar, setLinksParaEliminar] = useState<number[]>([]);
 
@@ -136,7 +136,7 @@ export default function VoiceConfigPage() {
       });
       if (res.ok) {
         toast.success("✅ Link agregado");
-        setNuevoLink({ intencion: "", mensaje: "", url: "" });
+        setNuevoLink({ tipo: "", nombre: "", url: "" });
         const data = await res.json();
         setLinksUtiles(data);
       } else {
@@ -229,7 +229,6 @@ export default function VoiceConfigPage() {
         <input type="hidden" name="canal" value="voz" />
         <input type="hidden" name="tenant_id" value={tenantId} />
   
-        {/* Campos necesarios para generar el prompt */}
         <div className="grid grid-cols-1 gap-6 mb-6">
           <div>
             <label className="block text-white font-semibold mb-1">¿Qué debe hacer tu asistente?</label>
@@ -321,16 +320,16 @@ export default function VoiceConfigPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <input
               type="text"
-              placeholder="Intención: reservar, pagar, etc."
-              value={nuevoLink.intencion}
-              onChange={(e) => setNuevoLink({ ...nuevoLink, intencion: e.target.value })}
+              placeholder="Tipo: reservar, pagar, etc."
+              value={nuevoLink.tipo}
+              onChange={(e) => setNuevoLink({ ...nuevoLink, tipo: e.target.value })}
               className="border px-3 py-2 rounded"
             />
             <input
               type="text"
-              placeholder="Mensaje del SMS"
-              value={nuevoLink.mensaje}
-              onChange={(e) => setNuevoLink({ ...nuevoLink, mensaje: e.target.value })}
+              placeholder="Nombre del link"
+              value={nuevoLink.nombre}
+              onChange={(e) => setNuevoLink({ ...nuevoLink, nombre: e.target.value })}
               className="border px-3 py-2 rounded"
             />
             <input
@@ -353,7 +352,7 @@ export default function VoiceConfigPage() {
             {linksUtiles.map((link) => (
               <li key={link.id} className="flex justify-between items-center bg-white/5 p-3 rounded-md">
                 <span className="text-sm">
-                  <strong>{link.intencion}</strong>: {link.mensaje} —{" "}
+                  <strong>{link.tipo}</strong>: {link.nombre} — {" "}
                   <a href={link.url} target="_blank" className="underline">
                     {link.url}
                   </a>
@@ -366,7 +365,6 @@ export default function VoiceConfigPage() {
                 >
                   ✖
                 </button>
-
               </li>
             ))}
           </ul>
@@ -428,5 +426,5 @@ export default function VoiceConfigPage() {
   
       <Footer />
     </div>
-  );    
+  );
 }  
