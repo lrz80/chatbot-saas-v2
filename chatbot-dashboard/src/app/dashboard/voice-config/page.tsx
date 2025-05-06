@@ -210,6 +210,28 @@ export default function VoiceConfigPage() {
         <input type="hidden" name="canal" value="voz" />
         <input type="hidden" name="tenant_id" value={tenantId} />
   
+        {/* Campos necesarios para generar el prompt */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label className="block text-white font-semibold mb-1">¿Qué debe hacer tu asistente?</label>
+            <textarea
+              name="funciones_asistente"
+              rows={3}
+              placeholder="Ejemplo: Atender llamadas, agendar citas, responder preguntas..."
+              className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-white font-semibold mb-1">Información clave sobre tu negocio</label>
+            <textarea
+              name="info_clave"
+              rows={3}
+              placeholder="Ejemplo: Servicios, horarios, ubicación, promociones..."
+              className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+            />
+          </div>
+        </div>
+  
         <VoicePromptGenerator
           idioma={idioma}
           categoria={tenant?.categoria || "general"}
@@ -272,7 +294,6 @@ export default function VoiceConfigPage() {
           </div>
         )}
   
-        {/* Links útiles */}
         <div className="mt-10 mb-8">
           <label className="block mb-2 font-semibold text-white flex items-center gap-2">
             <Link className="text-blue-400" /> Links útiles (enviar por SMS)
@@ -325,7 +346,6 @@ export default function VoiceConfigPage() {
             ))}
           </ul>
   
-          {/* ✅ Botón de guardar configuración */}
           <div className="mt-6">
             <button
               type="submit"
@@ -337,7 +357,6 @@ export default function VoiceConfigPage() {
         </div>
       </form>
   
-      {/* Historial de llamadas */}
       <hr className="my-8 border-white/20" />
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
         <Brain className="text-purple-300" />
@@ -384,5 +403,5 @@ export default function VoiceConfigPage() {
   
       <Footer />
     </div>
-  );  
+  );    
 }  
