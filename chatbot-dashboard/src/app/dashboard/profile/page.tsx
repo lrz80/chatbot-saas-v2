@@ -154,7 +154,7 @@ export default function BusinessProfilePage() {
               value={direccion}
               onChange={(e) => setDireccion(e.target.value)}
               placeholder="123 Calle Principal, Ciudad, Estado"
-              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-gray-400"
+              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function BusinessProfilePage() {
             name="categoria"
             value={formData.categoria || ''}
             onChange={handleChange}
-            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-gray-400"
+            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           >
             <option value="">Selecciona una categoría</option>
             <option value="spa">Spa</option>

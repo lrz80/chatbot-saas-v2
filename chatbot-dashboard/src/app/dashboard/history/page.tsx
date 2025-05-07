@@ -22,10 +22,8 @@ export default function MessageHistory() {
 
   const fetchMessages = async (reset = false) => {
     try {
-      const pageToFetch = reset ? 1 : page;
-
       const res = await fetch(
-        `${BACKEND_URL}/api/messages?canal=${canal}&page=${pageToFetch}&limit=${PAGE_SIZE}`,
+        `${BACKEND_URL}/api/messages?canal=${canal}&page=${reset ? 1 : page}&limit=${PAGE_SIZE}`,
         { credentials: "include" }
       );
       if (!res.ok) throw new Error("Error al obtener mensajes");
@@ -38,15 +36,13 @@ export default function MessageHistory() {
       if (reset) {
         setMessages(nuevosMensajes);
         setPage(2);
-        if (nuevosMensajes.length > 0) {
-          lastTimestampRef.current = nuevosMensajes[nuevosMensajes.length - 1].timestamp;
-        }
       } else {
         setMessages((prev) => [...prev, ...nuevosMensajes]);
         setPage((prev) => prev + 1);
-        if (nuevosMensajes.length > 0) {
-          lastTimestampRef.current = nuevosMensajes[nuevosMensajes.length - 1].timestamp;
-        }
+      }
+
+      if (nuevosMensajes.length > 0) {
+        lastTimestampRef.current = nuevosMensajes[nuevosMensajes.length - 1].timestamp;
       }
 
       setHasMore(nuevosMensajes.length === PAGE_SIZE);
@@ -65,42 +61,47 @@ export default function MessageHistory() {
     }
   };
 
-  // 🔄 Polling solo para mensajes nuevos
-  useEffect(() => {
-    const intervalo = setInterval(async () => {
-      try {
-        const res = await fetch(
-          `${BACKEND_URL}/api/messages?canal=${canal}&page=1&limit=5`,
-          { credentials: "include" }
-        );
-        const data = await res.json();
-        const nuevos = data.mensajes.sort(
-          (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        );
+  const fetchMensajesNuevos = async () => {
+    try {
+      const desde = lastTimestampRef.current;
+      if (!desde) return;
 
-        const ultFecha = lastTimestampRef.current;
-        const nuevosFiltrados = ultFecha
-          ? nuevos.filter(
-              (msg: any) => new Date(msg.timestamp).getTime() > new Date(ultFecha).getTime()
-            )
-          : nuevos;
+      const res = await fetch(
+        `${BACKEND_URL}/api/messages/nuevos?canal=${canal}&desde=${encodeURIComponent(desde)}`,
+        { credentials: "include" }
+      );
+      if (!res.ok) return;
 
-        if (nuevosFiltrados.length > 0) {
-          setMessages((prev) => [...prev, ...nuevosFiltrados]);
-          lastTimestampRef.current =
-            nuevosFiltrados[nuevosFiltrados.length - 1].timestamp;
-        }
-      } catch (err) {
-        console.error("❌ Error en polling de mensajes:", err);
+      const data = await res.json();
+      const nuevos = data.mensajes?.sort(
+        (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      ) || [];
+
+      if (nuevos.length > 0) {
+        setMessages((prev) => [...prev, ...nuevos]);
+        lastTimestampRef.current = nuevos[nuevos.length - 1].timestamp;
+
+        setConteo((prev) => ({
+          ...prev,
+          [canal || "whatsapp"]: prev[canal || "whatsapp"] + nuevos.length,
+        }));
       }
-    }, 5000);
-
-    return () => clearInterval(intervalo);
-  }, [canal]);
+    } catch (err) {
+      console.error("❌ Error en polling de nuevos mensajes:", err);
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
-    fetchMessages(true); // reset al cambiar canal
+    fetchMessages(true);
+  }, [canal]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchMensajesNuevos();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [canal]);
 
   return (
@@ -147,11 +148,9 @@ export default function MessageHistory() {
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
-
                   {msg.sender === "user" && msg.from_number && (
                     <p className="text-xs text-white/50 mt-1">📞 {msg.from_number}</p>
                   )}
-
                   <p className="text-xs mt-1 text-right text-white/70">
                     {msg.canal?.toUpperCase() || "WHATSAPP"} •{" "}
                     {format(new Date(msg.timestamp), "dd/MM/yyyy HH:mm")}
