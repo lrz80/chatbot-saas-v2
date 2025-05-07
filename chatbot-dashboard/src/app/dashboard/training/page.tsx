@@ -9,6 +9,7 @@ import { Save, } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
 import { SiWhatsapp, SiBookstack, SiOpenai, SiMinutemailer, SiBuffer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
 
+
 type FlowOption = {
   texto: string;
   respuesta?: string;
@@ -25,6 +26,13 @@ type Flow = {
 
 export default function TrainingPage() {
   const router = useRouter();
+  const bloquearSiNoMembresia = (callback: () => void) => {
+    if (!settings.membresia_activa) {
+      router.push("/upgrade"); // Redirige al usuario para activar su plan
+      return;
+    }
+    callback(); // Si tiene membresía activa, ejecuta la acción real
+  };
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
@@ -363,7 +371,7 @@ export default function TrainingPage() {
         />
   
         <button
-          onClick={handleSave}
+          onClick={() => bloquearSiNoMembresia(handleSave)}
           disabled={!settings.membresia_activa}
           className={`px-6 py-2 rounded-lg flex items-center gap-2 mb-10 ${
             settings.membresia_activa
@@ -407,7 +415,7 @@ export default function TrainingPage() {
           + Agregar
         </button>
         <button
-          onClick={saveFaq}
+          onClick={() => bloquearSiNoMembresia(saveFaq)}
           disabled={!settings.membresia_activa}
           className={`px-4 py-2 rounded text-white ${
             settings.membresia_activa
@@ -479,7 +487,7 @@ export default function TrainingPage() {
           </button>
   
           <button
-            onClick={saveIntents}
+            onClick={() => bloquearSiNoMembresia(saveIntents)}
             disabled={!settings.membresia_activa}
             className={`px-4 py-2 rounded ${
               settings.membresia_activa
@@ -553,7 +561,7 @@ export default function TrainingPage() {
           ))}
   
           <button
-            onClick={saveFlows}
+            onClick={() => bloquearSiNoMembresia(saveFlows)}
             disabled={!settings.membresia_activa}
             className={`px-4 py-2 rounded mt-2 ${
               settings.membresia_activa
@@ -606,7 +614,7 @@ export default function TrainingPage() {
               className="flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
             />
             <button
-              onClick={handleSend}
+              onClick={() => bloquearSiNoMembresia(handleSend)}
               disabled={!settings.membresia_activa}
               className={`px-4 py-2 rounded ${
                 settings.membresia_activa
