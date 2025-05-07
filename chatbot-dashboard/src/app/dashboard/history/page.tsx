@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
 import { BACKEND_URL } from "@/utils/api";
 
@@ -12,6 +12,7 @@ export default function MessageHistory() {
   const [canal, setCanal] = useState("");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const lastTimestampRef = useRef<string | null>(null);
 
   const [conteo, setConteo] = useState({
     whatsapp: 0,
@@ -21,13 +22,12 @@ export default function MessageHistory() {
 
   const fetchMessages = async (reset = false) => {
     try {
-      const res = await fetch(
-        `${BACKEND_URL}/api/messages?canal=${canal}&page=${reset ? 1 : page}&limit=${PAGE_SIZE}`,
-        {
-          credentials: "include",
-        }
-      );
+      const pageToFetch = reset ? 1 : page;
 
+      const res = await fetch(
+        `${BACKEND_URL}/api/messages?canal=${canal}&page=${pageToFetch}&limit=${PAGE_SIZE}`,
+        { credentials: "include" }
+      );
       if (!res.ok) throw new Error("Error al obtener mensajes");
 
       const data = await res.json();
@@ -38,14 +38,19 @@ export default function MessageHistory() {
       if (reset) {
         setMessages(nuevosMensajes);
         setPage(2);
+        if (nuevosMensajes.length > 0) {
+          lastTimestampRef.current = nuevosMensajes[nuevosMensajes.length - 1].timestamp;
+        }
       } else {
         setMessages((prev) => [...prev, ...nuevosMensajes]);
         setPage((prev) => prev + 1);
+        if (nuevosMensajes.length > 0) {
+          lastTimestampRef.current = nuevosMensajes[nuevosMensajes.length - 1].timestamp;
+        }
       }
 
       setHasMore(nuevosMensajes.length === PAGE_SIZE);
 
-      // Conteo por canal global
       const allMessages = reset ? nuevosMensajes : [...messages, ...nuevosMensajes];
       setConteo({
         whatsapp: allMessages.filter((m) => m.canal === "whatsapp").length,
@@ -60,9 +65,42 @@ export default function MessageHistory() {
     }
   };
 
+  // 🔄 Polling solo para mensajes nuevos
+  useEffect(() => {
+    const intervalo = setInterval(async () => {
+      try {
+        const res = await fetch(
+          `${BACKEND_URL}/api/messages?canal=${canal}&page=1&limit=5`,
+          { credentials: "include" }
+        );
+        const data = await res.json();
+        const nuevos = data.mensajes.sort(
+          (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+
+        const ultFecha = lastTimestampRef.current;
+        const nuevosFiltrados = ultFecha
+          ? nuevos.filter(
+              (msg: any) => new Date(msg.timestamp).getTime() > new Date(ultFecha).getTime()
+            )
+          : nuevos;
+
+        if (nuevosFiltrados.length > 0) {
+          setMessages((prev) => [...prev, ...nuevosFiltrados]);
+          lastTimestampRef.current =
+            nuevosFiltrados[nuevosFiltrados.length - 1].timestamp;
+        }
+      } catch (err) {
+        console.error("❌ Error en polling de mensajes:", err);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalo);
+  }, [canal]);
+
   useEffect(() => {
     setLoading(true);
-    fetchMessages(true); // resetear paginación al cambiar de canal
+    fetchMessages(true); // reset al cambiar canal
   }, [canal]);
 
   return (
@@ -109,11 +147,9 @@ export default function MessageHistory() {
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{msg.content}</p>
-                  
+
                   {msg.sender === "user" && msg.from_number && (
-                    <p className="text-xs text-white/50 mt-1">
-                      📞 {msg.from_number}
-                    </p>
+                    <p className="text-xs text-white/50 mt-1">📞 {msg.from_number}</p>
                   )}
 
                   <p className="text-xs mt-1 text-right text-white/70">
