@@ -154,7 +154,7 @@ export default function BusinessProfilePage() {
               value={direccion}
               onChange={(e) => setDireccion(e.target.value)}
               placeholder="123 Calle Principal, Ciudad, Estado"
-              className="w-full bg-white/10 text-white px-3 py-2 rounded border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-gray-400"
             />
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function BusinessProfilePage() {
             name="categoria"
             value={formData.categoria || ''}
             onChange={handleChange}
-            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-white"
+            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-gray-400"
           >
             <option value="">Selecciona una categoría</option>
             <option value="spa">Spa</option>
@@ -226,13 +226,13 @@ export default function BusinessProfilePage() {
         </div>
 
         {[{
-          label: 'Número de Twilio (WhatsApp)',
+          label: 'Número del Asistente (WhatsApp)',
           value: formData.twilio_number
         }, {
-          label: 'Número de Twilio (SMS)',
+          label: 'Número del Asistente (SMS)',
           value: formData.twilio_sms_number
         }, {
-          label: 'Número de Twilio (Voz)',
+          label: 'Número del Asistente (Voz)',
           value: formData.twilio_voice_number
         }].map(({ label, value }, i) => (
           <div key={i}>
