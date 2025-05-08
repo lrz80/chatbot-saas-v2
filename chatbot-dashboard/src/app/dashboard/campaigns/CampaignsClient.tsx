@@ -39,6 +39,8 @@ export default function CampaignsClient() {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [entregas, setEntregas] = useState<any[]>([]);
+  const [contactos, setContactos] = useState<{ nombre: string; telefono: string; segmento: string }[]>([]);
+
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -116,6 +118,10 @@ export default function CampaignsClient() {
         setCantidadContactos((prev) => prev + data.nuevos);
       } else {
         alert(`❌ ${data.error}`);
+        // luego del alert ✅ Contactos subidos...
+        const resContactos = await fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" });
+        const dataContactos = await resContactos.json();
+        setContactos(dataContactos || []);
       }
     } catch (err) {
       console.error("❌ Error al subir contactos:", err);
@@ -134,8 +140,6 @@ export default function CampaignsClient() {
     }
   
     // ✅ Filtrar contactos por segmento y extraer teléfonos válidos
-    const [contactos, setContactos] = useState<any[]>([]);
-
     const telefonosFiltrados = contactos
       .filter((c) => form.segmentos.includes(c.segmento) && /^\+?\d{10,15}$/.test(c.telefono))
       .map((c) => c.telefono.trim());
