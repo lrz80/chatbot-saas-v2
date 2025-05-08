@@ -5,7 +5,6 @@ import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import Footer from '@/components/Footer';
 import {
-  SiMailchimp,
   SiGoogleanalytics,
   SiGooglecalendar,
   SiPhotopea,
@@ -15,7 +14,7 @@ import {
   SiCampaignmonitor,
   SiWhatsapp,
 } from "react-icons/si";
-import { FaTrash, FaUsers, FaPaperPlane, FaAddressBook } from "react-icons/fa";
+import { FaAddressBook } from "react-icons/fa";
 
 const SEGMENTOS = [
   { id: "cliente", label: "Cliente" },
@@ -128,23 +127,34 @@ export default function CampaignsClient() {
       alert("Por favor completa todos los campos requeridos.");
       return;
     }
-
+  
     if (new Date(form.fecha_envio) <= new Date()) {
       alert("La fecha de envío debe ser futura.");
       return;
     }
+  
+    // ✅ Filtrar contactos por segmento y extraer teléfonos válidos
+    const [contactos, setContactos] = useState<any[]>([]);
 
+    const telefonosFiltrados = contactos
+      .filter((c) => form.segmentos.includes(c.segmento) && /^\+?\d{10,15}$/.test(c.telefono))
+      .map((c) => c.telefono.trim());
+  
+    if (telefonosFiltrados.length === 0) {
+      alert("❌ No hay números válidos para enviar por WhatsApp.");
+      return;
+    }
+  
     const data = new FormData();
-    Object.entries(form).forEach(([key, val]) => {
-      if (key === "segmentos") {
-        data.append("segmentos", JSON.stringify(val));
-      } else if (key === "imagen" && val) {
-        data.append("imagen", val as File);
-      } else {
-        data.append(key, val as string);
-      }
-    });
-
+    data.append("nombre", form.nombre);
+    data.append("canal", form.canal);
+    data.append("contenido", form.contenido);
+    data.append("fecha_envio", form.fecha_envio);
+    data.append("segmentos", JSON.stringify(telefonosFiltrados));
+    if (form.imagen) {
+      data.append("imagen", form.imagen);
+    }
+  
     try {
       setLoading(true);
       const res = await fetch(`${BACKEND_URL}/api/campaigns`, {
@@ -153,7 +163,7 @@ export default function CampaignsClient() {
         credentials: "include",
       });
       setLoading(false);
-
+  
       if (res.ok) {
         const nueva = await res.json();
         setCampaigns((prev) => [nueva, ...prev]);
@@ -168,7 +178,7 @@ export default function CampaignsClient() {
       console.error("❌ Error de red:", err);
       alert("❌ Error al conectar con el servidor.");
     }
-  };
+  };  
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
