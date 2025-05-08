@@ -342,26 +342,14 @@ export default function CampaignsClient() {
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full table-auto bg-white/5 border border-white/10 rounded-lg text-white">
             <thead>
-              <tr className="text-left text-white/80 bg-white/10">
-                <th className="p-3 flex items-center gap-2">
-                  <SiCampaignmonitor /> Nombre
-                </th>
-                <th className="p-3 flex items-center gap-2">
-                  <SiMinutemailer /> Canal
-                </th>
-                <th className="p-3 flex items-center gap-2">
-                  <SiGooglecalendar /> Fecha
-                </th>
-                <th className="p-3 flex items-center gap-2">
-                  <FaPaperPlane /> Estado
-                </th>
-                <th className="p-3 flex items-center gap-2">
-                  <FaUsers /> Segmentos
-                </th>
-                <th className="p-3 flex items-center gap-2">
-                  <SiChatbot /> Contenido
-                </th>
-                <th className="p-3">Acciones</th>
+              <tr className="text-white/80 bg-white/10">
+                <th className="p-3">📛 Nombre</th>
+                <th className="p-3">📲 Canal</th>
+                <th className="p-3">📅 Fecha</th>
+                <th className="p-3">📤 Estado</th>
+                <th className="p-3">👥 Segmentos</th>
+                <th className="p-3">💬 Contenido</th>
+                <th className="p-3">⚙️ Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -378,18 +366,18 @@ export default function CampaignsClient() {
                       onClick={async () => {
                         const confirmar = confirm("¿Seguro que deseas eliminar esta campaña?");
                         if (!confirmar) return;
-  
+
                         if (!c.id) {
                           alert("❌ Esta campaña no tiene un ID válido.");
                           return;
                         }
-  
+
                         try {
                           const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}`, {
                             method: "DELETE",
                             credentials: "include",
                           });
-  
+
                           if (res.ok) {
                             setCampaigns((prev) => prev.filter((x) => x.id !== c.id));
                             alert("✅ Campaña eliminada.");
