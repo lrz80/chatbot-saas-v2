@@ -1,3 +1,5 @@
+// src/app/dashboard/page.tsx
+
 'use client';
 
 import Footer from '@/components/Footer';
@@ -120,7 +122,12 @@ export default function DashboardHome() {
         });
         if (resKpi.ok) {
           const kpiData = await resKpi.json();
-          setKpis(kpiData);
+          setKpis({
+            total: kpiData.total,
+            unicos: kpiData.unicos,
+            hora_pico: kpiData.hora_pico, // usa esto o renombra como quieras
+          });
+          setHoraPico(kpiData.hora_pico); // ahora sí se actualiza          
         }
 
         const resVentas = await fetch(`${BACKEND_URL}/api/sales-intelligence/stats`, {

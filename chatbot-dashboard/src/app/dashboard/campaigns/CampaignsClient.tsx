@@ -1,12 +1,20 @@
-// src/app/dashboard/campaigns/CampaignsClient.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import Footer from '@/components/Footer';
-import { SiMailchimp, SiGoogleanalytics, SiGooglecalendar, SiPhotopea, SiChatbot, SiTwilio, SiMinutemailer, SiCampaignmonitor, SiWhatsapp, } from "react-icons/si";
+import {
+  SiMailchimp,
+  SiGoogleanalytics,
+  SiGooglecalendar,
+  SiPhotopea,
+  SiChatbot,
+  SiTwilio,
+  SiMinutemailer,
+  SiCampaignmonitor,
+  SiWhatsapp,
+} from "react-icons/si";
 import { FaTrash, FaUsers, FaPaperPlane, FaAddressBook } from "react-icons/fa";
 
 const SEGMENTOS = [
@@ -30,6 +38,8 @@ export default function CampaignsClient() {
   const [cantidadContactos, setCantidadContactos] = useState(0);
   const [showSegmentos, setShowSegmentos] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [entregas, setEntregas] = useState<any[]>([]);
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -56,6 +66,19 @@ export default function CampaignsClient() {
       .then((data) => setCantidadContactos(data.total || 0))
       .catch((err) => console.error("❌ Error al contar contactos:", err));
   }, []);
+
+  const verEntregas = async (campanaId: string) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/campaigns/${campanaId}/sms-status`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      setEntregas(data);
+    } catch (err) {
+      console.error("❌ Error al cargar entregas:", err);
+      alert("No se pudo cargar el detalle de entregas.");
+    }
+  };
 
   const handleChange = (e: any) => {
     const { name, value, files } = e.target;
@@ -152,28 +175,27 @@ export default function CampaignsClient() {
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
         <SiCampaignmonitor size={36} className="text-sky-400 animate-pulse" /> Crear Nueva Campaña
       </h1>
-
+  
       <TrainingHelp context="campaign" />
-
+  
       {usage && (
         <div className="mb-6 flex flex-wrap gap-4 text-sm text-white/70 items-center">
-        <div className="flex items-center gap-2">
-          <SiWhatsapp className="text-green-400" /> WhatsApp: {usage.whatsapp || 0} / 300
+          <div className="flex items-center gap-2">
+            <SiWhatsapp className="text-green-400" /> WhatsApp: {usage.whatsapp || 0} / 300
+          </div>
+          <div className="flex items-center gap-2">
+            <SiTwilio className="text-red-300" /> SMS: {usage.sms || 0} / 500
+          </div>
+          <div className="flex items-center gap-2">
+            <SiMinutemailer className="text-blue-400" /> Email: {usage.email || 0} / 1000
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <SiTwilio className="text-red-300" /> SMS: {usage.sms || 0} / 500
-        </div>
-        <div className="flex items-center gap-2">
-          <SiMinutemailer className="text-blue-400" /> Email: {usage.email || 0} / 1000
-        </div>
-      </div>
-      
       )}
-
+  
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-      <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
-        <FaAddressBook /> Contactos cargados ({cantidadContactos}/1500)
-      </h3>
+        <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
+          <FaAddressBook /> Contactos cargados ({cantidadContactos}/1500)
+        </h3>
         <input
           type="file"
           accept=".csv"
@@ -184,18 +206,18 @@ export default function CampaignsClient() {
           El archivo debe tener columnas: nombre, email, telefono, segmento
         </p>
       </div>
-      
+  
       <button
         onClick={async () => {
           const confirmar = confirm("¿Seguro que deseas eliminar todos los contactos?");
           if (!confirmar) return;
-
+  
           try {
             const res = await fetch(`${BACKEND_URL}/api/contactos`, {
               method: "DELETE",
               credentials: "include",
             });
-
+  
             const data = await res.json();
             if (res.ok) {
               alert("✅ Contactos eliminados.");
@@ -211,7 +233,7 @@ export default function CampaignsClient() {
       >
         🗑️ Eliminar todos los contactos
       </button>
-
+  
       <label className="block mb-2 font-medium flex items-center gap-2">
         <SiCampaignmonitor /> Nombre de la campaña
       </label>
@@ -321,27 +343,25 @@ export default function CampaignsClient() {
           <table className="min-w-full table-auto bg-white/5 border border-white/10 rounded-lg text-white">
             <thead>
               <tr className="text-left text-white/80 bg-white/10">
-              <th className="p-3 flex items-center gap-2">
-                <SiCampaignmonitor /> Nombre
-              </th>
-              <th className="p-3 flex items-center gap-2">
-                <SiMinutemailer /> Canal
-              </th>
-              <th className="p-3 flex items-center gap-2">
-                <SiGooglecalendar /> Fecha
-              </th>
-              <th className="p-3 flex items-center gap-2">
-                <FaPaperPlane /> Estado
-              </th>
-              <th className="p-3 flex items-center gap-2">
-                <FaUsers /> Segmentos
-              </th>
-              <th className="p-3 flex items-center gap-2">
-                <SiChatbot /> Contenido
-              </th>
-              <th className="p-3 flex items-center gap-2">
-                <FaTrash /> 
-              </th>
+                <th className="p-3 flex items-center gap-2">
+                  <SiCampaignmonitor /> Nombre
+                </th>
+                <th className="p-3 flex items-center gap-2">
+                  <SiMinutemailer /> Canal
+                </th>
+                <th className="p-3 flex items-center gap-2">
+                  <SiGooglecalendar /> Fecha
+                </th>
+                <th className="p-3 flex items-center gap-2">
+                  <FaPaperPlane /> Estado
+                </th>
+                <th className="p-3 flex items-center gap-2">
+                  <FaUsers /> Segmentos
+                </th>
+                <th className="p-3 flex items-center gap-2">
+                  <SiChatbot /> Contenido
+                </th>
+                <th className="p-3">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -353,23 +373,23 @@ export default function CampaignsClient() {
                   <td className="p-3">{new Date(c.programada_para) > new Date() ? "⏳ Programada" : "✅ Enviada"}</td>
                   <td className="p-3">{Array.isArray(c.destinatarios) ? c.destinatarios.join(", ") : JSON.parse(c.destinatarios || "[]").join(", ")}</td>
                   <td className="p-3 truncate max-w-xs">{c.contenido}</td>
-                  <td className="p-3">
+                  <td className="p-3 space-y-1">
                     <button
                       onClick={async () => {
                         const confirmar = confirm("¿Seguro que deseas eliminar esta campaña?");
                         if (!confirmar) return;
-                      
+  
                         if (!c.id) {
                           alert("❌ Esta campaña no tiene un ID válido.");
                           return;
                         }
-                      
+  
                         try {
                           const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}`, {
                             method: "DELETE",
                             credentials: "include",
                           });
-                      
+  
                           if (res.ok) {
                             setCampaigns((prev) => prev.filter((x) => x.id !== c.id));
                             alert("✅ Campaña eliminada.");
@@ -380,10 +400,15 @@ export default function CampaignsClient() {
                           console.error("❌ Error eliminando campaña:", err);
                         }
                       }}
-                      
-                      className="text-red-400 hover:text-red-600 text-sm underline"
+                      className="text-red-400 hover:text-red-600 text-sm underline block"
                     >
                       Eliminar
+                    </button>
+                    <button
+                      onClick={() => verEntregas(c.id)}
+                      className="text-blue-400 hover:text-blue-500 text-sm underline block"
+                    >
+                      Ver entregas
                     </button>
                   </td>
                 </tr>
@@ -392,7 +417,38 @@ export default function CampaignsClient() {
           </table>
         </div>
       )}
+  
+      {/* Modal de entregas */}
+      {modalVisible && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+          <div className="bg-[#1a1a2f] p-6 rounded-lg shadow-lg max-w-lg w-full">
+            <h3 className="text-xl font-bold mb-4 text-white">📋 Entregas de la campaña</h3>
+            {entregas.length === 0 ? (
+              <p className="text-white/70">No se encontraron registros.</p>
+            ) : (
+              <ul className="space-y-2 max-h-64 overflow-y-auto text-sm text-white">
+                {entregas.map((e, i) => (
+                  <li key={i} className="border-b border-white/10 pb-2">
+                    <span className="block">📱 {e.telefono}</span>
+                    <span className="text-white/50">📤 Estado: {e.estado || 'Enviado'}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="mt-4 text-right">
+              <button
+                onClick={() => setModalVisible(false)}
+                className="px-4 py-2 bg-indigo-600 rounded hover:bg-indigo-700 text-white"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+  
       <Footer />
     </div>
   );
-}  
+  }
+  

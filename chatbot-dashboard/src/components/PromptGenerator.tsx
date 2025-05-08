@@ -1,3 +1,5 @@
+// src/components/PromptGenerator.tsx
+
 "use client";
 
 import { useState } from "react";
