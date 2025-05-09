@@ -14,6 +14,7 @@ import {
   SiCampaignmonitor
 } from "react-icons/si";
 import { FaAddressBook } from "react-icons/fa";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SEGMENTOS = [
   { id: "cliente", label: "Cliente" },
@@ -281,15 +282,75 @@ export default function CampaignsClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
-      <select
-        name="canal"
-        value={form.canal}
-        onChange={handleChange}
-        className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
-      >
-        <option value="sms">SMS</option>
-        <option value="email">Correo Electrónico</option>
-      </select>
+      <Tabs defaultValue={form.canal} onValueChange={(v) => setForm({ ...form, canal: v })} className="mb-8">
+        <TabsList className="bg-white/10 mb-4">
+          <TabsTrigger value="sms">📲 SMS</TabsTrigger>
+          <TabsTrigger value="email">📧 Email</TabsTrigger>
+        </TabsList>
+
+        {/* SMS */}
+        <TabsContent value="sms">
+          <p className="text-xs text-white/60 italic mb-2">Solo texto plano. Imágenes y links no son compatibles con SMS.</p>
+
+          <label className="block mb-2 font-medium flex items-center gap-2">
+            <SiChatbot /> Contenido del mensaje
+          </label>
+          <textarea
+            name="contenido"
+            value={form.contenido}
+            onChange={handleChange}
+            rows={4}
+            className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
+          />
+        </TabsContent>
+
+        {/* Email */}
+        <TabsContent value="email">
+          <p className="text-xs text-white/60 italic mb-2">Puedes incluir imagen, link y HTML enriquecido.</p>
+
+          <label className="block mb-2 font-medium flex items-center gap-2">
+            🔗 Enlace opcional (URL)
+          </label>
+          <input
+            type="url"
+            name="link_url"
+            value={form.link_url}
+            onChange={handleChange}
+            placeholder="https://tusitio.com/oferta"
+            className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
+          />
+
+          <label className="block mb-2 font-medium flex items-center gap-2">
+            <SiChatbot /> Contenido del mensaje
+          </label>
+          <textarea
+            name="contenido"
+            value={form.contenido}
+            onChange={handleChange}
+            rows={4}
+            className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
+          />
+
+          <label className="block mb-2 font-medium flex items-center gap-2">
+            <SiPhotopea /> Imagen (opcional)
+          </label>
+          <input
+            name="imagen"
+            type="file"
+            accept="image/*"
+            onChange={handleChange}
+            className="mb-4"
+          />
+
+          {form.imagen && (
+            <img
+              src={URL.createObjectURL(form.imagen)}
+              alt="Preview"
+              className="mb-4 rounded border border-white/20 max-h-48"
+            />
+          )}
+        </TabsContent>
+      </Tabs>
 
       <label className="block mb-2 font-medium flex items-center gap-2">
         🔗 Enlace opcional (URL)
