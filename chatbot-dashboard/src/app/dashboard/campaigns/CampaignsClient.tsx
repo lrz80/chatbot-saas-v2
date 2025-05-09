@@ -29,7 +29,8 @@ export default function CampaignsClient() {
     fecha_envio: "",
     imagen: null as File | null,
     segmentos: [] as string[],
-  });
+    link_url: "", // ✅ nuevo campo
+  });  
 
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [usage, setUsage] = useState<{ [canal: string]: number }>({});
@@ -172,6 +173,7 @@ export default function CampaignsClient() {
     data.append("contenido", form.contenido);
     data.append("fecha_envio", form.fecha_envio);
     data.append("segmentos", JSON.stringify(destinatariosFiltrados));
+    data.append("link_url", form.link_url);
     if (form.imagen) data.append("imagen", form.imagen);
 
     try {
@@ -186,7 +188,16 @@ export default function CampaignsClient() {
       if (res.ok) {
         const nueva = await res.json();
         setCampaigns((prev) => [nueva, ...prev]);
-        setForm({ nombre: "", canal: "sms", contenido: "", fecha_envio: "", imagen: null, segmentos: [] });
+        setForm({
+          nombre: "",
+          canal: "sms",
+          contenido: "",
+          fecha_envio: "",
+          imagen: null,
+          segmentos: [],
+          link_url: "", // ✅ Agregado para cumplir con el tipo
+        });
+        
         alert("✅ Campaña guardada");
       } else {
         const error = await res.json();
@@ -279,6 +290,18 @@ export default function CampaignsClient() {
         <option value="sms">SMS</option>
         <option value="email">Correo Electrónico</option>
       </select>
+
+      <label className="block mb-2 font-medium flex items-center gap-2">
+        🔗 Enlace opcional (URL)
+      </label>
+      <input
+        type="url"
+        name="link_url"
+        value={form.link_url}
+        onChange={handleChange}
+        placeholder="https://tusitio.com/oferta"
+        className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
+      />
 
       <label className="block mb-2 font-medium flex items-center gap-2">
         <SiChatbot /> Contenido del mensaje
