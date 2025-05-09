@@ -141,7 +141,7 @@ export default function CampaignsClient() {
   };
 
   const handleSubmit = async () => {
-    if (!form.nombre || !form.contenido || !form.fecha_envio || form.segmentos.length === 0) {
+    if (!form.nombre || !form.fecha_envio || form.segmentos.length === 0) {
       alert("Por favor completa todos los campos requeridos.");
       return;
     }
@@ -151,27 +151,31 @@ export default function CampaignsClient() {
       return;
     }
   
+    if (form.canal === "whatsapp" && !plantilla) {
+      alert("Debes seleccionar una plantilla de WhatsApp.");
+      return;
+    }
+  
     console.log("🧾 Contactos cargados:", contactos);
     console.log("📦 Segmentos seleccionados:", form.segmentos);
     console.log("🎯 Canal seleccionado:", form.canal);
-
-    // ✅ Filtrar contactos por segmento y extraer teléfonos válidos
+  
     let destinatariosFiltrados: string[] = [];
-
+  
     if (form.canal === "whatsapp" || form.canal === "sms") {
       destinatariosFiltrados = contactos
         .filter((c) => form.segmentos.includes(c.segmento) && /^\+?\d{10,15}$/.test(c.telefono))
         .map((c) => c.telefono.trim());
-
+  
       if (destinatariosFiltrados.length === 0) {
-        alert(`❌ No hay números válidos para enviar por ${form.canal === "whatsapp" ? "WhatsApp" : "SMS"}.`);
+        alert(`❌ No hay números válidos para enviar por ${form.canal.toUpperCase()}.`);
         return;
       }
     } else if (form.canal === "email") {
       destinatariosFiltrados = contactos
         .filter((c) => form.segmentos.includes(c.segmento) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))
         .map((c) => c.email.trim());
-
+  
       if (destinatariosFiltrados.length === 0) {
         alert("❌ No hay correos válidos para enviar por Email.");
         return;
@@ -181,11 +185,14 @@ export default function CampaignsClient() {
     const data = new FormData();
     data.append("nombre", form.nombre);
     data.append("canal", form.canal);
-    data.append("contenido", form.contenido);
+    data.append("contenido", form.contenido); // Se ignora en backend si es WhatsApp
     data.append("fecha_envio", form.fecha_envio);
     data.append("segmentos", JSON.stringify(destinatariosFiltrados));
-    if (form.imagen) {
-      data.append("imagen", form.imagen);
+    if (form.imagen) data.append("imagen", form.imagen);
+  
+    if (form.canal === "whatsapp") {
+      data.append("template_sid", plantilla);
+      data.append("template_vars", JSON.stringify(variables));
     }
   
     try {
@@ -201,6 +208,8 @@ export default function CampaignsClient() {
         const nueva = await res.json();
         setCampaigns((prev) => [nueva, ...prev]);
         setForm({ nombre: "", canal: "whatsapp", contenido: "", fecha_envio: "", imagen: null, segmentos: [] });
+        setPlantilla("");
+        setVariables({});
         alert("✅ Campaña guardada");
       } else {
         const error = await res.json();
@@ -211,7 +220,17 @@ export default function CampaignsClient() {
       console.error("❌ Error de red:", err);
       alert("❌ Error al conectar con el servidor.");
     }
-  };  
+  };
+  
+  // Estado para plantilla
+  const [plantilla, setPlantilla] = useState(""); // SID
+  const [variables, setVariables] = useState<{ [clave: string]: string }>({});
+
+  // Lista de plantillas disponibles (deberías cargar esto desde tu backend)
+  const plantillasDisponibles = [
+    { sid: "HSM123456789", nombre: "promo_mayo", variables: 2 },
+    { sid: "HSM987654321", nombre: "bienvenida", variables: 1 },
+  ];
 
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
@@ -300,7 +319,44 @@ export default function CampaignsClient() {
         <option value="sms">SMS</option>
         <option value="email">Correo Electrónico</option>
       </select>
-  
+      {form.canal === "whatsapp" && (
+        <div className="mb-6">
+          <label className="block mb-2 font-medium flex items-center gap-2">
+            🧩 Plantilla de WhatsApp
+          </label>
+          <select
+            value={plantilla}
+            onChange={(e) => {
+              setPlantilla(e.target.value);
+              setVariables({});
+            }}
+            className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
+          >
+            <option value="">Selecciona una plantilla</option>
+            {plantillasDisponibles.map((p) => (
+              <option key={p.sid} value={p.sid}>
+                {p.nombre} ({p.variables} variable{p.variables > 1 ? "s" : ""})
+              </option>
+            ))}
+          </select>
+
+          {/* Campos dinámicos para variables de la plantilla */}
+          {plantilla &&
+            [...Array(plantillasDisponibles.find((p) => p.sid === plantilla)?.variables || 0)].map((_, i) => (
+              <input
+                key={i}
+                type="text"
+                placeholder={`Variable ${i + 1}`}
+                className="w-full mb-2 p-2 rounded bg-white/10 border border-white/20"
+                value={variables[(i + 1).toString()] || ""}
+                onChange={(e) =>
+                  setVariables((prev) => ({ ...prev, [(i + 1).toString()]: e.target.value }))
+                }
+              />
+            ))}
+        </div>
+      )}
+
       <label className="block mb-2 font-medium flex items-center gap-2">
         <SiChatbot /> Contenido del mensaje
       </label>
