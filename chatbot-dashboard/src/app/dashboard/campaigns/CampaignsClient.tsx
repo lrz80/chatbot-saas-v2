@@ -43,6 +43,7 @@ export default function CampaignsClient() {
 
 
   useEffect(() => {
+    // 📨 Cargar campañas existentes
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
@@ -53,7 +54,8 @@ export default function CampaignsClient() {
         setCampaigns(conId);
       })
       .catch((err) => console.error("❌ Error al cargar campañas:", err));
-
+  
+    // 📊 Cargar uso mensual por canal
     fetch(`${BACKEND_URL}/api/campaigns/usage`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
@@ -61,12 +63,22 @@ export default function CampaignsClient() {
         setUsage(map);
       })
       .catch((err) => console.error("❌ Error al cargar uso de campañas:", err));
-
+  
+    // 📦 Cargar cantidad de contactos
     fetch(`${BACKEND_URL}/api/contactos/count`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setCantidadContactos(data.total || 0))
       .catch((err) => console.error("❌ Error al contar contactos:", err));
-  }, []);
+  
+    // 📇 Cargar lista completa de contactos
+    fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        setContactos(data || []);
+        console.log("✅ Contactos cargados correctamente:", data);
+      })
+      .catch((err) => console.error("❌ Error al cargar contactos:", err));
+  }, []);  
 
   const verEntregas = async (campanaId: string) => {
     try {
