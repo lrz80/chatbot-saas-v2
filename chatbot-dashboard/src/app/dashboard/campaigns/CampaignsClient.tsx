@@ -39,7 +39,7 @@ export default function CampaignsClient() {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [entregas, setEntregas] = useState<any[]>([]);
-  const [contactos, setContactos] = useState<{ nombre: string; telefono: string; segmento: string }[]>([]);
+  const [contactos, setContactos] = useState<{ nombre: string; telefono: string; email: string; segmento: string }[]>([]);
 
 
   useEffect(() => {
@@ -140,13 +140,26 @@ export default function CampaignsClient() {
     }
   
     // ✅ Filtrar contactos por segmento y extraer teléfonos válidos
-    const telefonosFiltrados = contactos
-      .filter((c) => form.segmentos.includes(c.segmento) && /^\+?\d{10,15}$/.test(c.telefono))
-      .map((c) => c.telefono.trim());
-  
-    if (telefonosFiltrados.length === 0) {
-      alert("❌ No hay números válidos para enviar por WhatsApp.");
-      return;
+    let destinatariosFiltrados: string[] = [];
+
+    if (form.canal === "whatsapp" || form.canal === "sms") {
+      destinatariosFiltrados = contactos
+        .filter((c) => form.segmentos.includes(c.segmento) && /^\+?\d{10,15}$/.test(c.telefono))
+        .map((c) => c.telefono.trim());
+
+      if (destinatariosFiltrados.length === 0) {
+        alert(`❌ No hay números válidos para enviar por ${form.canal === "whatsapp" ? "WhatsApp" : "SMS"}.`);
+        return;
+      }
+    } else if (form.canal === "email") {
+      destinatariosFiltrados = contactos
+        .filter((c) => form.segmentos.includes(c.segmento) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))
+        .map((c) => c.email.trim());
+
+      if (destinatariosFiltrados.length === 0) {
+        alert("❌ No hay correos válidos para enviar por Email.");
+        return;
+      }
     }
   
     const data = new FormData();
@@ -154,7 +167,7 @@ export default function CampaignsClient() {
     data.append("canal", form.canal);
     data.append("contenido", form.contenido);
     data.append("fecha_envio", form.fecha_envio);
-    data.append("segmentos", JSON.stringify(telefonosFiltrados));
+    data.append("segmentos", JSON.stringify(destinatariosFiltrados));
     if (form.imagen) {
       data.append("imagen", form.imagen);
     }
