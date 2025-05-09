@@ -11,8 +11,7 @@ import {
   SiChatbot,
   SiTwilio,
   SiMinutemailer,
-  SiCampaignmonitor,
-  SiWhatsapp,
+  SiCampaignmonitor
 } from "react-icons/si";
 import { FaAddressBook } from "react-icons/fa";
 
@@ -25,7 +24,7 @@ const SEGMENTOS = [
 export default function CampaignsClient() {
   const [form, setForm] = useState({
     nombre: "",
-    canal: "whatsapp",
+    canal: "sms",
     contenido: "",
     fecha_envio: "",
     imagen: null as File | null,
@@ -41,9 +40,7 @@ export default function CampaignsClient() {
   const [entregas, setEntregas] = useState<any[]>([]);
   const [contactos, setContactos] = useState<{ nombre: string; telefono: string; email: string; segmento: string }[]>([]);
 
-
   useEffect(() => {
-    // 📨 Cargar campañas existentes
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
@@ -54,8 +51,7 @@ export default function CampaignsClient() {
         setCampaigns(conId);
       })
       .catch((err) => console.error("❌ Error al cargar campañas:", err));
-  
-    // 📊 Cargar uso mensual por canal
+
     fetch(`${BACKEND_URL}/api/campaigns/usage`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
@@ -63,14 +59,12 @@ export default function CampaignsClient() {
         setUsage(map);
       })
       .catch((err) => console.error("❌ Error al cargar uso de campañas:", err));
-  
-    // 📦 Cargar cantidad de contactos
+
     fetch(`${BACKEND_URL}/api/contactos/count`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setCantidadContactos(data.total || 0))
       .catch((err) => console.error("❌ Error al contar contactos:", err));
-  
-    // 📇 Cargar lista completa de contactos
+
     fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
@@ -78,7 +72,7 @@ export default function CampaignsClient() {
         console.log("✅ Contactos cargados correctamente:", data);
       })
       .catch((err) => console.error("❌ Error al cargar contactos:", err));
-  }, []);  
+  }, []);
 
   const verEntregas = async (campanaId: string) => {
     try {
@@ -130,7 +124,6 @@ export default function CampaignsClient() {
         setCantidadContactos((prev) => prev + data.nuevos);
       } else {
         alert(`❌ ${data.error}`);
-        // luego del alert ✅ Contactos subidos...
         const resContactos = await fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" });
         const dataContactos = await resContactos.json();
         setContactos(dataContactos || []);
@@ -145,56 +138,42 @@ export default function CampaignsClient() {
       alert("Por favor completa todos los campos requeridos.");
       return;
     }
-  
+
     if (new Date(form.fecha_envio) <= new Date()) {
       alert("La fecha de envío debe ser futura.");
       return;
     }
-  
-    if (form.canal === "whatsapp" && !plantilla) {
-      alert("Debes seleccionar una plantilla de WhatsApp.");
-      return;
-    }
-  
-    console.log("🧾 Contactos cargados:", contactos);
-    console.log("📦 Segmentos seleccionados:", form.segmentos);
-    console.log("🎯 Canal seleccionado:", form.canal);
-  
+
     let destinatariosFiltrados: string[] = [];
-  
-    if (form.canal === "whatsapp" || form.canal === "sms") {
+
+    if (form.canal === "sms") {
       destinatariosFiltrados = contactos
         .filter((c) => form.segmentos.includes(c.segmento) && /^\+?\d{10,15}$/.test(c.telefono))
         .map((c) => c.telefono.trim());
-  
+
       if (destinatariosFiltrados.length === 0) {
-        alert(`❌ No hay números válidos para enviar por ${form.canal.toUpperCase()}.`);
+        alert("❌ No hay números válidos para enviar por SMS.");
         return;
       }
     } else if (form.canal === "email") {
       destinatariosFiltrados = contactos
         .filter((c) => form.segmentos.includes(c.segmento) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))
         .map((c) => c.email.trim());
-  
+
       if (destinatariosFiltrados.length === 0) {
         alert("❌ No hay correos válidos para enviar por Email.");
         return;
       }
     }
-  
+
     const data = new FormData();
     data.append("nombre", form.nombre);
     data.append("canal", form.canal);
-    data.append("contenido", form.contenido); // Se ignora en backend si es WhatsApp
+    data.append("contenido", form.contenido);
     data.append("fecha_envio", form.fecha_envio);
     data.append("segmentos", JSON.stringify(destinatariosFiltrados));
     if (form.imagen) data.append("imagen", form.imagen);
-  
-    if (form.canal === "whatsapp") {
-      data.append("template_sid", plantilla);
-      data.append("template_vars", JSON.stringify(variables));
-    }
-  
+
     try {
       setLoading(true);
       const res = await fetch(`${BACKEND_URL}/api/campaigns`, {
@@ -203,13 +182,11 @@ export default function CampaignsClient() {
         credentials: "include",
       });
       setLoading(false);
-  
+
       if (res.ok) {
         const nueva = await res.json();
         setCampaigns((prev) => [nueva, ...prev]);
-        setForm({ nombre: "", canal: "whatsapp", contenido: "", fecha_envio: "", imagen: null, segmentos: [] });
-        setPlantilla("");
-        setVariables({});
+        setForm({ nombre: "", canal: "sms", contenido: "", fecha_envio: "", imagen: null, segmentos: [] });
         alert("✅ Campaña guardada");
       } else {
         const error = await res.json();
@@ -222,16 +199,6 @@ export default function CampaignsClient() {
     }
   };
   
-  // Estado para plantilla
-  const [plantilla, setPlantilla] = useState(""); // SID
-  const [variables, setVariables] = useState<{ [clave: string]: string }>({});
-
-  // Lista de plantillas disponibles (deberías cargar esto desde tu backend)
-  const plantillasDisponibles = [
-    { sid: "HSM123456789", nombre: "promo_mayo", variables: 2 },
-    { sid: "HSM987654321", nombre: "bienvenida", variables: 1 },
-  ];
-
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
@@ -302,10 +269,7 @@ export default function CampaignsClient() {
         onChange={handleChange}
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
-  
-      <label className="block mb-2 font-medium flex items-center gap-2">
-        <SiWhatsapp /> Canal
-      </label>
+
       <select
         name="canal"
         value={form.canal}
@@ -315,43 +279,6 @@ export default function CampaignsClient() {
         <option value="sms">SMS</option>
         <option value="email">Correo Electrónico</option>
       </select>
-      {form.canal === "whatsapp" && (
-        <div className="mb-6">
-          <label className="block mb-2 font-medium flex items-center gap-2">
-            🧩 Plantilla de WhatsApp
-          </label>
-          <select
-            value={plantilla}
-            onChange={(e) => {
-              setPlantilla(e.target.value);
-              setVariables({});
-            }}
-            className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
-          >
-            <option value="">Selecciona una plantilla</option>
-            {plantillasDisponibles.map((p) => (
-              <option key={p.sid} value={p.sid}>
-                {p.nombre} ({p.variables} variable{p.variables > 1 ? "s" : ""})
-              </option>
-            ))}
-          </select>
-
-          {/* Campos dinámicos para variables de la plantilla */}
-          {plantilla &&
-            [...Array(plantillasDisponibles.find((p) => p.sid === plantilla)?.variables || 0)].map((_, i) => (
-              <input
-                key={i}
-                type="text"
-                placeholder={`Variable ${i + 1}`}
-                className="w-full mb-2 p-2 rounded bg-white/10 border border-white/20"
-                value={variables[(i + 1).toString()] || ""}
-                onChange={(e) =>
-                  setVariables((prev) => ({ ...prev, [(i + 1).toString()]: e.target.value }))
-                }
-              />
-            ))}
-        </div>
-      )}
 
       <label className="block mb-2 font-medium flex items-center gap-2">
         <SiChatbot /> Contenido del mensaje
