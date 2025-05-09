@@ -400,9 +400,20 @@ export default function CampaignsClient() {
                 <tr key={c.id} className="border-t border-white/10 hover:bg-white/10">
                   <td className="p-3">{c.titulo || c.nombre}</td>
                   <td className="p-3 capitalize">{c.canal}</td>
-                  <td className="p-3">{new Date(c.programada_para).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" })}</td>
-                  <td className="p-3">{new Date(c.programada_para) > new Date() ? "⏳ Programada" : "✅ Enviada"}</td>
-                  <td className="p-3">{Array.isArray(c.destinatarios) ? c.destinatarios.join(", ") : JSON.parse(c.destinatarios || "[]").join(", ")}</td>
+                  <td className="p-3">
+                    {new Date(c.programada_para).toLocaleString(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </td>
+                  <td className="p-3">
+                    {new Date(c.programada_para) > new Date() ? "⏳ Programada" : "✅ Enviada"}
+                  </td>
+                  <td className="p-3">
+                    {Array.isArray(c.destinatarios)
+                      ? c.destinatarios.join(", ")
+                      : JSON.parse(c.destinatarios || "[]").join(", ")}
+                  </td>
                   <td className="p-3 truncate max-w-xs">{c.contenido}</td>
                   <td className="p-3 space-y-1">
                     <button
