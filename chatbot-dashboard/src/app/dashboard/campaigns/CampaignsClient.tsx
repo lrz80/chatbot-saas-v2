@@ -14,7 +14,13 @@ import {
   SiCampaignmonitor
 } from "react-icons/si";
 import { FaAddressBook } from "react-icons/fa";
-import * as Tabs from "@radix-ui/react-tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+
 
 const SEGMENTOS = [
   { id: "cliente", label: "Cliente" },
@@ -282,23 +288,40 @@ export default function CampaignsClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
-      <Tabs.Trigger
-        value="sms"
-        className={`px-4 py-2 rounded-l text-sm ${
-          form.canal === "sms" ? "bg-indigo-600 text-white" : "bg-white/10 text-white/60"
-        }`}
+      <Tabs
+        defaultValue={form.canal}
+        onValueChange={(v) => setForm((prev) => ({ ...prev, canal: v }))}
+        className="w-full mb-8"
       >
-        📲 SMS
-      </Tabs.Trigger>
+        <TabsList className="flex space-x-2 bg-white/10 p-1 rounded mb-4">
+          <TabsTrigger
+            value="sms"
+            className={form.canal === "sms" ? "bg-indigo-600 text-white px-4 py-2 rounded" : "text-white/70 px-4 py-2"}
+          >
+            📲 SMS
+          </TabsTrigger>
+          <TabsTrigger
+            value="email"
+            className={form.canal === "email" ? "bg-indigo-600 text-white px-4 py-2 rounded" : "text-white/70 px-4 py-2"}
+          >
+            📧 Email
+          </TabsTrigger>
+        </TabsList>
 
-      <Tabs.Trigger
-        value="email"
-        className={`px-4 py-2 rounded-r text-sm ${
-          form.canal === "email" ? "bg-indigo-600 text-white" : "bg-white/10 text-white/60"
-        }`}
-      >
-        📧 Email
-      </Tabs.Trigger>
+        <TabsContent value="sms">
+          <p className="text-xs text-white/60 italic mb-2">
+            Solo texto plano. Imágenes y links no son compatibles con SMS.
+          </p>
+          {/* contenido SMS */}
+        </TabsContent>
+
+        <TabsContent value="email">
+          <p className="text-xs text-white/60 italic mb-2">
+            Puedes incluir imagen, link y HTML enriquecido.
+          </p>
+          {/* contenido email */}
+        </TabsContent>
+      </Tabs>
 
       <label className="block mb-2 font-medium flex items-center gap-2">
         🔗 Enlace opcional (URL)
