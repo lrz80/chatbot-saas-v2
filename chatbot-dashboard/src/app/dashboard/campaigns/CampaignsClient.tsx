@@ -139,6 +139,10 @@ export default function CampaignsClient() {
       return;
     }
   
+    console.log("🧾 Contactos cargados:", contactos);
+    console.log("📦 Segmentos seleccionados:", form.segmentos);
+    console.log("🎯 Canal seleccionado:", form.canal);
+
     // ✅ Filtrar contactos por segmento y extraer teléfonos válidos
     let destinatariosFiltrados: string[] = [];
 
