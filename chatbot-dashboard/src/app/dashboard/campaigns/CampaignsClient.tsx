@@ -282,25 +282,23 @@ export default function CampaignsClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
-      <Tabs.Root
-        defaultValue={form.canal}
-        value={form.canal}
-        onValueChange={(v) => setForm({ ...form, canal: v })}
-        className="mb-8"
+      <Tabs.Trigger
+        value="sms"
+        className={`px-4 py-2 rounded-l text-sm ${
+          form.canal === "sms" ? "bg-indigo-600 text-white" : "bg-white/10 text-white/60"
+        }`}
       >
-        <Tabs.List className="bg-white/10 mb-4">
-          <Tabs.Trigger value="sms">📲 SMS</Tabs.Trigger>
-          <Tabs.Trigger value="email">📧 Email</Tabs.Trigger>
-        </Tabs.List>
+        📲 SMS
+      </Tabs.Trigger>
 
-        <Tabs.Content value="sms">
-          {/* contenido SMS aquí */}
-        </Tabs.Content>
-
-        <Tabs.Content value="email">
-          {/* contenido Email aquí */}
-        </Tabs.Content>
-      </Tabs.Root>
+      <Tabs.Trigger
+        value="email"
+        className={`px-4 py-2 rounded-r text-sm ${
+          form.canal === "email" ? "bg-indigo-600 text-white" : "bg-white/10 text-white/60"
+        }`}
+      >
+        📧 Email
+      </Tabs.Trigger>
 
       <label className="block mb-2 font-medium flex items-center gap-2">
         🔗 Enlace opcional (URL)
