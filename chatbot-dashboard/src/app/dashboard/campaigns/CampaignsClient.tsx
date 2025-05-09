@@ -243,9 +243,6 @@ export default function CampaignsClient() {
       {usage && (
         <div className="mb-6 flex flex-wrap gap-4 text-sm text-white/70 items-center">
           <div className="flex items-center gap-2">
-            <SiWhatsapp className="text-green-400" /> WhatsApp: {usage.whatsapp || 0} / 300
-          </div>
-          <div className="flex items-center gap-2">
             <SiTwilio className="text-red-300" /> SMS: {usage.sms || 0} / 500
           </div>
           <div className="flex items-center gap-2">
@@ -315,7 +312,6 @@ export default function CampaignsClient() {
         onChange={handleChange}
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       >
-        <option value="whatsapp">WhatsApp</option>
         <option value="sms">SMS</option>
         <option value="email">Correo Electrónico</option>
       </select>
