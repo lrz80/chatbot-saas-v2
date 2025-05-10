@@ -219,6 +219,8 @@ export default function CampaignsClient() {
     }
   };
   
+  console.log("📦 Campañas cargadas:", campaigns);
+
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
