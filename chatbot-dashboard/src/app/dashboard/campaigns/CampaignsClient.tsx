@@ -195,15 +195,15 @@ export default function CampaignsClient() {
       if (res.ok) {
         const nueva = await res.json();
         setCampaigns((prev) => [nueva, ...prev]);
-        setForm({
+        setForm((prev) => ({
+          ...prev,
           nombre: "",
-          canal: "sms",
           contenido: "",
           fecha_envio: "",
           imagen: null,
           segmentos: [],
-          link_url: "", // ✅ Agregado para cumplir con el tipo
-        });
+          link_url: "",
+        }));        
         
         alert("✅ Campaña guardada");
       } else {
