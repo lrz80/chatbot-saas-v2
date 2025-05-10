@@ -2,7 +2,7 @@ const CACHE_NAME = "aamy-cache-v1";
 const urlsToCache = [
   "/",
   "/manifest.json",
-  "/favicon-new.ico",
+  "/favicon.ico",
   "/aamy-icon-192.png",
   "/aamy-icon-512.png",
   "/og-image.png"
