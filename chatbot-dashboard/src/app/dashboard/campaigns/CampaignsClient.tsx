@@ -392,9 +392,9 @@ export default function CampaignsClient() {
         <SiGoogleanalytics /> Estadísticas de campañas enviadas
       </h2>
   
-      {campaigns.length === 0 ? (
+      {Array.isArray(campaigns) && campaigns.length === 0 ? (
         <p className="text-white/70">Aún no se han enviado campañas.</p>
-      ) : (
+      ) : Array.isArray(campaigns) ? (
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full table-auto bg-white/5 border border-white/10 rounded-lg text-white">
             <thead>
@@ -433,18 +433,15 @@ export default function CampaignsClient() {
                       onClick={async () => {
                         const confirmar = confirm("¿Seguro que deseas eliminar esta campaña?");
                         if (!confirmar) return;
-
                         if (!c.id) {
                           alert("❌ Esta campaña no tiene un ID válido.");
                           return;
                         }
-
                         try {
                           const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}`, {
                             method: "DELETE",
                             credentials: "include",
                           });
-
                           if (res.ok) {
                             setCampaigns((prev) => prev.filter((x) => x.id !== c.id));
                             alert("✅ Campaña eliminada.");
@@ -471,8 +468,10 @@ export default function CampaignsClient() {
             </tbody>
           </table>
         </div>
+      ) : (
+        <p className="text-red-500">❌ Error al cargar las campañas. Intenta recargar la página.</p>
       )}
-  
+
       {/* Modal de entregas */}
       {modalVisible && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
