@@ -8,10 +8,23 @@ const urlsToCache = [
   "/og-image.png"
 ];
 
-// ✅ Cachear archivos al instalar
+// ✅ Cachear archivos al instalar (con validación)
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(async cache => {
+      for (const url of urlsToCache) {
+        try {
+          const response = await fetch(url, { cache: "no-cache" });
+          if (response.ok) {
+            await cache.put(url, response.clone());
+          } else {
+            console.warn(`⚠️ No se pudo cachear ${url}: ${response.status}`);
+          }
+        } catch (err) {
+          console.error(`❌ Error cacheando ${url}:`, err);
+        }
+      }
+    })
   );
   self.skipWaiting(); // activa de inmediato
 });

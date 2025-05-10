@@ -13,7 +13,7 @@ import ClientOnly from './ClientOnly';
 import { useEffect, useState } from 'react';
 import { BACKEND_URL } from '@/utils/api';
 
-export default function Sidebar({ user, onLogout, isOpen, onClose }: any) {
+export default function Sidebar({ onLogout, isOpen, onClose }: any) {
   const [tenant, setTenant] = useState<any>(null);
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function Sidebar({ user, onLogout, isOpen, onClose }: any) {
               </div>
             ) : (
               <div className="w-12 h-12 bg-white/20 text-white font-bold flex items-center justify-center rounded-full text-xl shadow-inner">
-                {user?.email?.charAt(0).toUpperCase() || 'U'}
+                {(tenant?.owner_name || tenant?.email || 'U').charAt(0).toUpperCase()}
               </div>
             )}
             <div>

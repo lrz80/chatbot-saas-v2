@@ -14,8 +14,14 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
       e.preventDefault();
       setDeferredPrompt(e);
 
-      // ✅ Mostrar banner solo si no se mostró en esta sesión
-      const alreadyShown = sessionStorage.getItem("install-banner-dismissed");
+      // ✅ Proteger acceso a sessionStorage
+      let alreadyShown = false;
+      try {
+        alreadyShown = typeof window !== "undefined" && sessionStorage.getItem("install-banner-dismissed") === "true";
+      } catch (err) {
+        console.warn("⚠️ sessionStorage no accesible:", err);
+      }
+
       if (!alreadyShown) {
         setShowInstallBanner(true);
       }
@@ -33,14 +39,22 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
       deferredPrompt.prompt();
       deferredPrompt.userChoice.finally(() => {
         setShowInstallBanner(false);
-        sessionStorage.setItem("install-banner-dismissed", "true");
+        try {
+          sessionStorage.setItem("install-banner-dismissed", "true");
+        } catch (err) {
+          console.warn("⚠️ No se pudo guardar en sessionStorage:", err);
+        }
       });
     }
   };
 
   const handleDismiss = () => {
     setShowInstallBanner(false);
-    sessionStorage.setItem("install-banner-dismissed", "true");
+    try {
+      sessionStorage.setItem("install-banner-dismissed", "true");
+    } catch (err) {
+      console.warn("⚠️ No se pudo guardar en sessionStorage:", err);
+    }
   };
 
   return (
