@@ -1,6 +1,6 @@
 // src/app/verify/page.tsx
 
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -14,11 +14,18 @@ export default function VerifyEmailPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const storedEmail = localStorage.getItem("pending_email");
-    if (!storedEmail) {
+    try {
+      if (typeof window !== "undefined") {
+        const storedEmail = localStorage.getItem("pending_email");
+        if (!storedEmail) {
+          router.push("/login");
+        } else {
+          setEmail(storedEmail);
+        }
+      }
+    } catch (err) {
+      console.warn("⚠️ No se pudo acceder a localStorage:", err);
       router.push("/login");
-    } else {
-      setEmail(storedEmail);
     }
   }, [router]);
 
@@ -40,7 +47,11 @@ export default function VerifyEmailPage() {
       if (!res.ok) throw new Error(data.error || "Verificación fallida");
 
       alert("✅ Correo verificado correctamente");
-      localStorage.removeItem("pending_email");
+      try {
+        localStorage.removeItem("pending_email");
+      } catch (err) {
+        console.warn("⚠️ No se pudo limpiar localStorage:", err);
+      }
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message);
