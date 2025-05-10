@@ -289,10 +289,12 @@ export default function CampaignsClient() {
       />
 
       <Tabs
-        value={form.canal === "sms" || form.canal === "email" ? form.canal : "sms"} // ✅ FIX: siempre valor válido
+        defaultValue="sms"
+        value={["sms", "email"].includes(form.canal) ? form.canal : "sms"}
         onValueChange={(v) => setForm((prev) => ({ ...prev, canal: v }))}
         className="w-full mb-8"
       >
+
         <TabsList className="flex space-x-2 bg-white/10 p-1 rounded mb-4">
           <TabsTrigger value="sms">📲 SMS</TabsTrigger>
           <TabsTrigger value="email">📧 Email</TabsTrigger>
