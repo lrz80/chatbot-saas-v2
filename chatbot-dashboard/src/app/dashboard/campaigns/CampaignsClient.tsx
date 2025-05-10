@@ -288,28 +288,16 @@ export default function CampaignsClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
-        <Tabs
-          value={form.canal || "sms"}
-          onValueChange={(v) => setForm((prev) => ({ ...prev, canal: v }))}
-          className="w-full mb-8"
-        >
-
+      <Tabs
+        value={form.canal === "sms" || form.canal === "email" ? form.canal : "sms"}
+        onValueChange={(v) => setForm((prev) => ({ ...prev, canal: v }))}
+        className="w-full mb-8"
+      >
         <TabsList className="flex space-x-2 bg-white/10 p-1 rounded mb-4">
-          <TabsTrigger
-            value="sms"
-            className={form.canal === "sms" ? "bg-indigo-600 text-white px-4 py-2 rounded" : "text-white/70 px-4 py-2"}
-          >
-            📲 SMS
-          </TabsTrigger>
-          <TabsTrigger
-            value="email"
-            className={form.canal === "email" ? "bg-indigo-600 text-white px-4 py-2 rounded" : "text-white/70 px-4 py-2"}
-          >
-            📧 Email
-          </TabsTrigger>
+          <TabsTrigger value="sms">📲 SMS</TabsTrigger>
+          <TabsTrigger value="email">📧 Email</TabsTrigger>
         </TabsList>
 
-        {/* Contenido SMS */}
         <TabsContent value="sms">
           <p className="text-xs text-white/60 italic mb-2">
             Solo texto plano. Imágenes y links no son compatibles con SMS.
@@ -324,57 +312,56 @@ export default function CampaignsClient() {
             rows={4}
             className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
           />
-              </TabsContent>
+        </TabsContent>
 
-              {/* Contenido Email */}
-              <TabsContent value="email">
-                <p className="text-xs text-white/60 italic mb-2">
-                  Puedes incluir imagen, link y HTML enriquecido.
-                </p>
+        <TabsContent value="email">
+          <p className="text-xs text-white/60 italic mb-2">
+            Puedes incluir imagen, link y HTML enriquecido.
+          </p>
 
-                <label className="block mb-2 font-medium flex items-center gap-2">
-                  🔗 Enlace opcional (URL)
-                </label>
-                <input
-                  type="url"
-                  name="link_url"
-                  value={form.link_url}
-                  onChange={handleChange}
-                  placeholder="https://tusitio.com/oferta"
-                  className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
-                />
+          <label className="block mb-2 font-medium flex items-center gap-2">
+            🔗 Enlace opcional (URL)
+          </label>
+          <input
+            type="url"
+            name="link_url"
+            value={form.link_url}
+            onChange={handleChange}
+            placeholder="https://tusitio.com/oferta"
+            className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
+          />
 
-                <label className="block mb-2 font-medium flex items-center gap-2">
-                  <SiChatbot /> Contenido del mensaje
-                </label>
-                <textarea
-                  name="contenido"
-                  value={form.contenido}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
-                />
+          <label className="block mb-2 font-medium flex items-center gap-2">
+            <SiChatbot /> Contenido del mensaje
+          </label>
+          <textarea
+            name="contenido"
+            value={form.contenido}
+            onChange={handleChange}
+            rows={4}
+            className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
+          />
 
-                <label className="block mb-2 font-medium flex items-center gap-2">
-                  <SiPhotopea /> Imagen (opcional)
-                </label>
-                <input
-                  name="imagen"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleChange}
-                  className="mb-4"
-                />
+          <label className="block mb-2 font-medium flex items-center gap-2">
+            <SiPhotopea /> Imagen (opcional)
+          </label>
+          <input
+            name="imagen"
+            type="file"
+            accept="image/*"
+            onChange={handleChange}
+            className="mb-4"
+          />
 
-                {form.imagen && (
-                  <img
-                    src={URL.createObjectURL(form.imagen)}
-                    alt="Preview"
-                    className="mb-4 rounded border border-white/20 max-h-48"
-                  />
-                )}
-              </TabsContent>
-            </Tabs>
+          {form.imagen && (
+            <img
+              src={URL.createObjectURL(form.imagen)}
+              alt="Preview"
+              className="mb-4 rounded border border-white/20 max-h-48"
+            />
+          )}
+        </TabsContent>
+      </Tabs>
 
       <label className="block mb-2 font-medium flex items-center gap-2">
         <SiGooglecalendar /> Fecha y hora de envío
