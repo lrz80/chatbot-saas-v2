@@ -288,11 +288,12 @@ export default function CampaignsClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
-      <Tabs
-        defaultValue={form.canal}
-        onValueChange={(v) => setForm((prev) => ({ ...prev, canal: v }))}
-        className="w-full mb-8"
-      >
+        <Tabs
+          value={form.canal || "sms"}
+          onValueChange={(v) => setForm((prev) => ({ ...prev, canal: v }))}
+          className="w-full mb-8"
+        >
+
         <TabsList className="flex space-x-2 bg-white/10 p-1 rounded mb-4">
           <TabsTrigger
             value="sms"
