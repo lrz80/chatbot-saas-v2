@@ -289,7 +289,7 @@ export default function CampaignsClient() {
       />
 
       <Tabs
-        value={form.canal === "sms" || form.canal === "email" ? form.canal : "sms"}
+        value={form.canal === "sms" || form.canal === "email" ? form.canal : "sms"} // ✅ FIX: siempre valor válido
         onValueChange={(v) => setForm((prev) => ({ ...prev, canal: v }))}
         className="w-full mb-8"
       >
@@ -299,52 +299,32 @@ export default function CampaignsClient() {
         </TabsList>
 
         <TabsContent value="sms">
-          <p className="text-xs text-white/60 italic mb-2">
-            Solo texto plano. Imágenes y links no son compatibles con SMS.
-          </p>
-          <label className="block mb-2 font-medium flex items-center gap-2">
-            <SiChatbot /> Contenido del mensaje
-          </label>
+          <p className="text-sm text-white/70 mb-2">Solo texto plano. No se permiten imágenes ni links.</p>
           <textarea
             name="contenido"
             value={form.contenido}
             onChange={handleChange}
+            className="w-full p-2 mb-4 bg-white/10 border border-white/20 rounded"
             rows={4}
-            className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
           />
         </TabsContent>
 
         <TabsContent value="email">
-          <p className="text-xs text-white/60 italic mb-2">
-            Puedes incluir imagen, link y HTML enriquecido.
-          </p>
-
-          <label className="block mb-2 font-medium flex items-center gap-2">
-            🔗 Enlace opcional (URL)
-          </label>
           <input
             type="url"
             name="link_url"
             value={form.link_url}
             onChange={handleChange}
+            className="w-full p-2 mb-4 bg-white/10 border border-white/20 rounded"
             placeholder="https://tusitio.com/oferta"
-            className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
           />
-
-          <label className="block mb-2 font-medium flex items-center gap-2">
-            <SiChatbot /> Contenido del mensaje
-          </label>
           <textarea
             name="contenido"
             value={form.contenido}
             onChange={handleChange}
+            className="w-full p-2 mb-4 bg-white/10 border border-white/20 rounded"
             rows={4}
-            className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
           />
-
-          <label className="block mb-2 font-medium flex items-center gap-2">
-            <SiPhotopea /> Imagen (opcional)
-          </label>
           <input
             name="imagen"
             type="file"
@@ -352,7 +332,6 @@ export default function CampaignsClient() {
             onChange={handleChange}
             className="mb-4"
           />
-
           {form.imagen && (
             <img
               src={URL.createObjectURL(form.imagen)}
