@@ -1,3 +1,5 @@
+// dashboard/campaigns/CampaignsClient.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -290,7 +292,7 @@ export default function CampaignsClient() {
 
       <Tabs
         defaultValue="sms"
-        value={["sms", "email"].includes(form.canal) ? form.canal : "sms"}
+        value={form.canal === "sms" || form.canal === "email" ? form.canal : "sms"}
         onValueChange={(v) => setForm((prev) => ({ ...prev, canal: v }))}
         className="w-full mb-8"
       >
@@ -334,7 +336,7 @@ export default function CampaignsClient() {
             onChange={handleChange}
             className="mb-4"
           />
-          {form.imagen && (
+          {form.imagen instanceof File && (
             <img
               src={URL.createObjectURL(form.imagen)}
               alt="Preview"
@@ -410,24 +412,35 @@ export default function CampaignsClient() {
             </thead>
             <tbody>
               {campaigns.map((c) => (
-                <tr key={c.id} className="border-t border-white/10 hover:bg-white/10">
-                  <td className="p-3">{c.titulo || c.nombre}</td>
-                  <td className="p-3 capitalize">{c.canal}</td>
+                <tr key={c.id || c.campana_id || Math.random()} className="border-t border-white/10 hover:bg-white/10">
+                  <td className="p-3">{c.titulo || c.nombre || "Sin nombre"}</td>
+                  <td className="p-3 capitalize">{c.canal || "desconocido"}</td>
                   <td className="p-3">
-                    {new Date(c.programada_para).toLocaleString(undefined, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    {c.programada_para
+                      ? new Date(c.programada_para).toLocaleString(undefined, {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })
+                      : "Sin fecha"}
                   </td>
                   <td className="p-3">
-                    {new Date(c.programada_para) > new Date() ? "⏳ Programada" : "✅ Enviada"}
+                    {c.programada_para && new Date(c.programada_para) > new Date()
+                      ? "⏳ Programada"
+                      : "✅ Enviada"}
                   </td>
                   <td className="p-3">
-                    {Array.isArray(c.destinatarios)
-                      ? c.destinatarios.join(", ")
-                      : JSON.parse(c.destinatarios || "[]").join(", ")}
+                    {(() => {
+                      try {
+                        const destinatarios = Array.isArray(c.destinatarios)
+                          ? c.destinatarios
+                          : JSON.parse(c.destinatarios || "[]");
+                        return destinatarios.join(", ");
+                      } catch (err) {
+                        return "Error al leer destinatarios";
+                      }
+                    })()}
                   </td>
-                  <td className="p-3 truncate max-w-xs">{c.contenido}</td>
+                  <td className="p-3 truncate max-w-xs">{c.contenido || "Sin contenido"}</td>
                   <td className="p-3 space-y-1">
                     <button
                       onClick={async () => {
