@@ -25,15 +25,25 @@ export default function CampaignsSmsClient() {
   const [contactos, setContactos] = useState<any[]>([]);
   const [cantidadContactos, setCantidadContactos] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [entregas, setEntregas] = useState<any[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => {
+      .then(async (data) => {
         const smsOnly = (data || []).filter((c: any) => c.canal === "sms");
-        setCampaigns(smsOnly);
+
+        // Obtener entregas para cada campaña
+        const enriched = await Promise.all(
+          smsOnly.map(async (c: any) => {
+            const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}/sms-status`, {
+              credentials: "include",
+            });
+            const entregas = res.ok ? await res.json() : [];
+            return { ...c, entregas };
+          })
+        );
+
+        setCampaigns(enriched);
       });
 
     fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" })
@@ -57,19 +67,6 @@ export default function CampaignsSmsClient() {
   const handleChange = (e: any) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const verEntregas = async (campanaId: string) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/campaigns/${campanaId}/sms-status`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      setEntregas(data);
-      setModalVisible(true);
-    } catch (err) {
-      alert("No se pudo cargar el detalle de entregas.");
-    }
   };
 
   const handleSubmit = async () => {
@@ -215,51 +212,12 @@ export default function CampaignsSmsClient() {
                 <strong className="text-white">{c.nombre}</strong>
               </div>
               <div className="text-white/90">{c.contenido}</div>
-              <div className="mt-2">
-                <button
-                  onClick={() => verEntregas(c.id)}
-                  className="text-sm text-blue-400 underline"
-                >
-                  Ver entregas
-                </button>
+              <div className="text-sm mt-2 text-white/80">
+                📨 {c.entregas?.length ?? 0} enviados · ✅ {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0} entregados · ❌ {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0} fallidos
               </div>
             </li>
           ))}
         </ul>
-      )}
-
-      {modalVisible && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-          <div className="bg-[#1a1a2f] p-6 rounded-lg shadow-lg max-w-lg w-full">
-            <h3 className="text-xl font-bold mb-4 text-white">📋 Entregas de la campaña</h3>
-            {entregas.length === 0 ? (
-              <p className="text-white/70">No se encontraron registros.</p>
-            ) : (
-              <ul className="space-y-2 max-h-64 overflow-y-auto text-sm text-white">
-                {entregas.map((e, i) => (
-                  <li key={i} className="border-b border-white/10 pb-2">
-                    <div>📱 {e.telefono}</div>
-                    <div>📤 Estado: {e.status}</div>
-                    {e.error_message && (
-                      <div className="text-red-400 text-xs">⚠️ {e.error_message}</div>
-                    )}
-                    <div className="text-xs text-white/40">
-                      {new Date(e.timestamp).toLocaleString()}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="mt-4 text-right">
-              <button
-                onClick={() => setModalVisible(false)}
-                className="px-4 py-2 bg-indigo-600 rounded hover:bg-indigo-700 text-white"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       <Footer />
