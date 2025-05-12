@@ -1,4 +1,4 @@
-import CampaignsSmsClient from "../../CampaignsSmsClient";
+import CampaignsSmsClient from "../CampaignsSmsClient";
 
 export default function SmsCampaignPage() {
   return <CampaignsSmsClient />;
