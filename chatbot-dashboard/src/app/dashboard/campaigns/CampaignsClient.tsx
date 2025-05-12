@@ -396,9 +396,11 @@ export default function CampaignsClient() {
         <SiGoogleanalytics /> Estadísticas de campañas enviadas
       </h2>
   
-      {Array.isArray(campaigns) && campaigns.length === 0 ? (
+      {!Array.isArray(campaigns) ? (
+        <p className="text-red-500">❌ Error al cargar las campañas. Intenta recargar la página.</p>
+      ) : campaigns.length === 0 ? (
         <p className="text-white/70">Aún no se han enviado campañas.</p>
-      ) : Array.isArray(campaigns) ? (
+      ) : (
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full table-auto bg-white/5 border border-white/10 rounded-lg text-white">
             <thead>
@@ -413,78 +415,80 @@ export default function CampaignsClient() {
               </tr>
             </thead>
             <tbody>
-              {campaigns.map((c) => (
-                <tr key={c.id || c.campana_id || Math.random()} className="border-t border-white/10 hover:bg-white/10">
-                  <td className="p-3">{c.titulo || c.nombre || "Sin nombre"}</td>
-                  <td className="p-3 capitalize">{c.canal || "desconocido"}</td>
-                  <td className="p-3">
-                    {c.programada_para
-                      ? new Date(c.programada_para).toLocaleString(undefined, {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })
-                      : "Sin fecha"}
-                  </td>
-                  <td className="p-3">
-                    {c.programada_para && new Date(c.programada_para) > new Date()
-                      ? "⏳ Programada"
-                      : "✅ Enviada"}
-                  </td>
-                  <td className="p-3">
-                    {(() => {
-                      try {
-                        const destinatarios = Array.isArray(c.destinatarios)
-                          ? c.destinatarios
-                          : JSON.parse(c.destinatarios || "[]");
-                        return destinatarios.join(", ");
-                      } catch (err) {
-                        return "Error al leer destinatarios";
-                      }
-                    })()}
-                  </td>
-                  <td className="p-3 truncate max-w-xs">{c.contenido || "Sin contenido"}</td>
-                  <td className="p-3 space-y-1">
-                    <button
-                      onClick={async () => {
-                        const confirmar = confirm("¿Seguro que deseas eliminar esta campaña?");
-                        if (!confirmar) return;
-                        if (!c.id) {
-                          alert("❌ Esta campaña no tiene un ID válido.");
-                          return;
-                        }
-                        try {
-                          const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}`, {
-                            method: "DELETE",
-                            credentials: "include",
-                          });
-                          if (res.ok) {
-                            setCampaigns((prev) => prev.filter((x) => x.id !== c.id));
-                            alert("✅ Campaña eliminada.");
-                          } else {
-                            alert("❌ No se pudo eliminar.");
+              {campaigns.map((c) => {
+                if (!c || typeof c !== "object") return null; // protección adicional
+
+                const fecha = c.programada_para
+                  ? new Date(c.programada_para)
+                  : null;
+
+                  let destinatarios: string[] = [];
+                try {
+                  destinatarios = Array.isArray(c.destinatarios)
+                    ? c.destinatarios
+                    : JSON.parse(c.destinatarios || "[]");
+                } catch {
+                  destinatarios = ["Error al leer destinatarios"];
+                }
+
+                return (
+                  <tr key={c.id || c.campana_id || Math.random()} className="border-t border-white/10 hover:bg-white/10">
+                    <td className="p-3">{c.titulo || c.nombre || "Sin nombre"}</td>
+                    <td className="p-3 capitalize">{c.canal || "desconocido"}</td>
+                    <td className="p-3">
+                      {fecha
+                        ? fecha.toLocaleString(undefined, {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })
+                        : "Sin fecha"}
+                    </td>
+                    <td className="p-3">
+                      {fecha && fecha > new Date() ? "⏳ Programada" : "✅ Enviada"}
+                    </td>
+                    <td className="p-3">{destinatarios.join(", ")}</td>
+                    <td className="p-3 truncate max-w-xs">{c.contenido || "Sin contenido"}</td>
+                    <td className="p-3 space-y-1">
+                      <button
+                        onClick={async () => {
+                          const confirmar = confirm("¿Seguro que deseas eliminar esta campaña?");
+                          if (!confirmar) return;
+                          if (!c.id) {
+                            alert("❌ Esta campaña no tiene un ID válido.");
+                            return;
                           }
-                        } catch (err) {
-                          console.error("❌ Error eliminando campaña:", err);
-                        }
-                      }}
-                      className="text-red-400 hover:text-red-600 text-sm underline block"
-                    >
-                      Eliminar
-                    </button>
-                    <button
-                      onClick={() => verEntregas(c.id)}
-                      className="text-blue-400 hover:text-blue-500 text-sm underline block"
-                    >
-                      Ver entregas
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                          try {
+                            const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}`, {
+                              method: "DELETE",
+                              credentials: "include",
+                            });
+                            if (res.ok) {
+                              setCampaigns((prev) => prev.filter((x) => x.id !== c.id));
+                              alert("✅ Campaña eliminada.");
+                            } else {
+                              alert("❌ No se pudo eliminar.");
+                            }
+                          } catch (err) {
+                            console.error("❌ Error eliminando campaña:", err);
+                          }
+                        }}
+                        className="text-red-400 hover:text-red-600 text-sm underline block"
+                      >
+                        Eliminar
+                      </button>
+                      <button
+                        onClick={() => verEntregas(c.id)}
+                        className="text-blue-400 hover:text-blue-500 text-sm underline block"
+                      >
+                        Ver entregas
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-      ) : (
-        <p className="text-red-500">❌ Error al cargar las campañas. Intenta recargar la página.</p>
       )}
 
       {/* Modal de entregas */}
