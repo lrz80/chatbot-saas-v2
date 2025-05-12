@@ -1,3 +1,4 @@
+// src/app/dashboard/campaigns/CampaignsSmsClient.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -34,11 +35,15 @@ export default function CampaignsSmsClient() {
 
         const enriched = await Promise.all(
           smsOnly.map(async (c: any) => {
-            const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}/sms-status`, {
-              credentials: "include",
-            });
-            const entregas = res.ok ? await res.json() : [];
-            return { ...c, entregas };
+            try {
+              const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}/sms-status`, {
+                credentials: "include",
+              });
+              const entregas = res.ok ? await res.json() : [];
+              return { ...c, entregas };
+            } catch {
+              return { ...c, entregas: [] };
+            }
           })
         );
 
@@ -128,9 +133,6 @@ export default function CampaignsSmsClient() {
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
           <FaAddressBook /> Contactos cargados ({cantidadContactos}/1500)
         </h3>
-        <p className="text-sm text-white/50">
-          Puedes subir contactos desde la sección de campañas o segmentarlos por nombre.
-        </p>
       </div>
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
@@ -140,7 +142,6 @@ export default function CampaignsSmsClient() {
         name="nombre"
         value={form.nombre}
         onChange={handleChange}
-        placeholder="Nombre de la campaña"
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
@@ -151,7 +152,6 @@ export default function CampaignsSmsClient() {
         name="contenido"
         value={form.contenido}
         onChange={handleChange}
-        placeholder="Ej: 🎉 ¡Hola! Aún tienes tu clase GRATIS disponible. Reserva ahora  👉 [link]. ¡Te esperamos!"
         className="w-full p-2 mb-4 bg-white/10 border border-white/20 rounded"
         rows={3}
       />
@@ -207,9 +207,7 @@ export default function CampaignsSmsClient() {
               <div className="flex items-center gap-2 mb-1 text-white/80">
                 <SiGooglecalendar /> {new Date(c.programada_para).toLocaleString()}
               </div>
-              <div className="mb-1">
-                <strong className="text-white">{c.nombre}</strong>
-              </div>
+              <div className="mb-1 font-semibold">{c.nombre}</div>
               <div className="text-white/90">{c.contenido}</div>
               <div className="text-sm mt-2 text-white/80">
                 📨 {c.entregas?.length ?? 0} enviados · ✅{" "}
@@ -217,22 +215,20 @@ export default function CampaignsSmsClient() {
                 {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0} fallidos
               </div>
               {c.entregas?.length > 0 && (
-                <div className="mt-3 border-t border-white/10 pt-3">
-                  <ul className="space-y-1 text-xs text-white/70">
-                    {c.entregas.map((e: any, i: number) => (
-                      <li key={i} className="border-b border-white/10 pb-2">
-                        <div>📱 {e.to_number}</div>
-                        <div>📤 Estado: {e.status}</div>
-                        {e.error_message && (
-                          <div className="text-red-400">⚠️ {e.error_message}</div>
-                        )}
-                        <div className="text-white/40 text-[11px]">
-                          {new Date(e.timestamp).toLocaleString()}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <ul className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs">
+                  {c.entregas.map((e: any, i: number) => (
+                    <li key={i} className="border-b border-white/10 pb-2">
+                      <div>📱 {e.to_number}</div>
+                      <div>📤 Estado: {e.status}</div>
+                      {e.error_message && (
+                        <div className="text-red-400">⚠️ {e.error_message}</div>
+                      )}
+                      <div className="text-white/40">
+                        {new Date(e.timestamp).toLocaleString()}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </li>
           ))}
