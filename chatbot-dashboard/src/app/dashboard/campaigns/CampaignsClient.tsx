@@ -416,13 +416,13 @@ export default function CampaignsClient() {
             </thead>
             <tbody>
               {campaigns.map((c) => {
-                if (!c || typeof c !== "object") return null; // protección adicional
+                if (!c || typeof c !== "object") return null;
 
                 const fecha = c.programada_para
                   ? new Date(c.programada_para)
                   : null;
 
-                  let destinatarios: string[] = [];
+                let destinatarios: string[] = [];
                 try {
                   destinatarios = Array.isArray(c.destinatarios)
                     ? c.destinatarios
@@ -432,7 +432,7 @@ export default function CampaignsClient() {
                 }
 
                 return (
-                  <tr key={c.id || c.campana_id || Math.random()} className="border-t border-white/10 hover:bg-white/10">
+                  <tr key={c.id || Math.random()} className="border-t border-white/10 hover:bg-white/10">
                     <td className="p-3">{c.titulo || c.nombre || "Sin nombre"}</td>
                     <td className="p-3 capitalize">{c.canal || "desconocido"}</td>
                     <td className="p-3">
