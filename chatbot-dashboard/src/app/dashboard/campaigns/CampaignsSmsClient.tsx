@@ -2,107 +2,42 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
-import TrainingHelp from "@/components/TrainingHelp";
+import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
-import Footer from '@/components/Footer';
-import {
-  SiGoogleanalytics,
-  SiGooglecalendar,
-  SiTwilio,
-  SiMinutemailer,
-  SiCampaignmonitor
-} from "react-icons/si";
+import Footer from "@/components/Footer";
+import { SiTwilio, SiGoogleanalytics } from "react-icons/si";
 import { FaAddressBook } from "react-icons/fa";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-
-
-const SEGMENTOS = [
-  { id: "cliente", label: "Cliente" },
-  { id: "leads", label: "Leads" },
-  { id: "otros", label: "Otros" },
-];
+import TrainingHelp from "@/components/TrainingHelp";
 
 export default function CampaignsSmsClient() {
   const [form, setForm] = useState({
     nombre: "",
-    canal: "sms",
     contenido: "",
     fecha_envio: "",
-    imagen: null as File | null,
     segmentos: [] as string[],
-    link_url: "", // ✅ nuevo campo
-  });  
+  });
 
   const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [usage, setUsage] = useState<{ [canal: string]: number }>({});
+  const [contactos, setContactos] = useState<any[]>([]);
   const [cantidadContactos, setCantidadContactos] = useState(0);
-  const [showSegmentos, setShowSegmentos] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [entregas, setEntregas] = useState<any[]>([]);
-  const [contactos, setContactos] = useState<{ nombre: string; telefono: string; email: string; segmento: string }[]>([]);
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
-        const conId = data.map((c: any) => ({
-          id: c.id ?? c.campana_id ?? c._id,
-          ...c,
-        }));
-        setCampaigns(conId);
-      })
-      .catch((err) => console.error("❌ Error al cargar campañas:", err));
-
-    fetch(`${BACKEND_URL}/api/campaigns/usage`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        const map = Object.fromEntries(data.map((d: any) => [d.canal, Number(d.total)]));
-        setUsage(map);
-      })
-      .catch((err) => console.error("❌ Error al cargar uso de campañas:", err));
-
-    fetch(`${BACKEND_URL}/api/contactos/count`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => setCantidadContactos(data.total || 0))
-      .catch((err) => console.error("❌ Error al contar contactos:", err));
+        const smsOnly = (data || []).filter((c: any) => c.canal === "sms");
+        setCampaigns(smsOnly);
+      });
 
     fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => {
-        setContactos(data || []);
-        console.log("✅ Contactos cargados correctamente:", data);
-      })
-      .catch((err) => console.error("❌ Error al cargar contactos:", err));
+      .then((data) => setContactos(data || []));
+
+    fetch(`${BACKEND_URL}/api/contactos/count`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => setCantidadContactos(data.total || 0));
   }, []);
-
-  const verEntregas = async (campanaId: string) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/campaigns/${campanaId}/sms-status`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      setEntregas(data);
-    } catch (err) {
-      console.error("❌ Error al cargar entregas:", err);
-      alert("No se pudo cargar el detalle de entregas.");
-    }
-  };
-
-  const handleChange = (e: any) => {
-    const { name, value, files } = e.target;
-    if (name === "imagen") {
-      setForm((prev) => ({ ...prev, imagen: files[0] }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
-  };
 
   const toggleSegmento = (id: string) => {
     setForm((prev) => ({
@@ -113,75 +48,33 @@ export default function CampaignsSmsClient() {
     }));
   };
 
-  const handleUploadContactos = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/contactos/upload`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        alert(`✅ Contactos subidos: ${data.nuevos}`);
-        setCantidadContactos((prev) => prev + data.nuevos);
-      } else {
-        alert(`❌ ${data.error}`);
-        const resContactos = await fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" });
-        const dataContactos = await resContactos.json();
-        setContactos(dataContactos || []);
-      }
-    } catch (err) {
-      console.error("❌ Error al subir contactos:", err);
-    }
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async () => {
     if (!form.nombre || !form.fecha_envio || form.segmentos.length === 0) {
-      alert("Por favor completa todos los campos requeridos.");
+      alert("Completa todos los campos.");
       return;
     }
 
-    if (new Date(form.fecha_envio) <= new Date()) {
-      alert("La fecha de envío debe ser futura.");
+    const destinatarios = contactos
+      .filter((c: any) => form.segmentos.includes(c.segmento))
+      .map((c: any) => c.telefono)
+      .filter((t: string) => /^\+?\d{10,15}$/.test(t));
+
+    if (destinatarios.length === 0) {
+      alert("❌ No hay números válidos para enviar SMS.");
       return;
-    }
-
-    let destinatariosFiltrados: string[] = [];
-
-    if (form.canal === "sms") {
-      destinatariosFiltrados = contactos
-        .filter((c) => form.segmentos.includes(c.segmento) && /^\+?\d{10,15}$/.test(c.telefono))
-        .map((c) => c.telefono.trim());
-
-      if (destinatariosFiltrados.length === 0) {
-        alert("❌ No hay números válidos para enviar por SMS.");
-        return;
-      }
-    } else if (form.canal === "email") {
-      destinatariosFiltrados = contactos
-        .filter((c) => form.segmentos.includes(c.segmento) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))
-        .map((c) => c.email.trim());
-
-      if (destinatariosFiltrados.length === 0) {
-        alert("❌ No hay correos válidos para enviar por Email.");
-        return;
-      }
     }
 
     const data = new FormData();
     data.append("nombre", form.nombre);
-    data.append("canal", form.canal);
+    data.append("canal", "sms");
     data.append("contenido", form.contenido);
     data.append("fecha_envio", form.fecha_envio);
-    data.append("segmentos", JSON.stringify(destinatariosFiltrados));
-    data.append("link_url", form.link_url);
-    if (form.imagen) data.append("imagen", form.imagen);
+    data.append("segmentos", JSON.stringify(destinatarios));
 
     try {
       setLoading(true);
@@ -190,25 +83,16 @@ export default function CampaignsSmsClient() {
         body: data,
         credentials: "include",
       });
+
+      const json = await res.json();
       setLoading(false);
 
       if (res.ok) {
-        const nueva = await res.json();
-        setCampaigns((prev) => [nueva, ...prev]);
-        setForm((prev) => ({
-          ...prev,
-          nombre: "",
-          contenido: "",
-          fecha_envio: "",
-          imagen: null,
-          segmentos: [],
-          link_url: "",
-        }));        
-        
-        alert("✅ Campaña guardada");
+        alert("✅ Campaña enviada");
+        setForm({ nombre: "", contenido: "", fecha_envio: "", segmentos: [] });
+        setCampaigns((prev) => [json, ...prev]);
       } else {
-        const error = await res.json();
-        alert(`❌ ${error.error || "Error al guardar campaña."}`);
+        alert(`❌ ${json.error || "Error desconocido"}`);
       }
     } catch (err) {
       setLoading(false);
@@ -216,73 +100,25 @@ export default function CampaignsSmsClient() {
       alert("❌ Error al conectar con el servidor.");
     }
   };
-  
-  console.log("📦 Campañas cargadas:", campaigns);
 
   return (
-    <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
-      <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
-        <SiCampaignmonitor size={36} className="text-sky-400 animate-pulse" /> Crear Nueva Campaña
+    <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
+      <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
+        <SiTwilio className="text-red-300 animate-pulse" /> Campañas por SMS
       </h1>
-  
+
       <TrainingHelp context="campaign" />
-  
-      {usage && (
-        <div className="mb-6 flex flex-wrap gap-4 text-sm text-white/70 items-center">
-          <div className="flex items-center gap-2">
-            <SiTwilio className="text-red-300" /> SMS: {usage.sms || 0} / 500
-          </div>
-          <div className="flex items-center gap-2">
-            <SiMinutemailer className="text-blue-400" /> Email: {usage.email || 0} / 1000
-          </div>
-        </div>
-      )}
-  
+
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
           <FaAddressBook /> Contactos cargados ({cantidadContactos}/1500)
         </h3>
-        <input
-          type="file"
-          accept=".csv"
-          onChange={handleUploadContactos}
-          className="block mb-2 text-sm text-white/70"
-        />
         <p className="text-sm text-white/50">
-          El archivo debe tener columnas: nombre, email, telefono, segmento
+          Puedes subir contactos desde la sección de campañas o segmentarlos por nombre.
         </p>
       </div>
-  
-      <button
-        onClick={async () => {
-          const confirmar = confirm("¿Seguro que deseas eliminar todos los contactos?");
-          if (!confirmar) return;
-  
-          try {
-            const res = await fetch(`${BACKEND_URL}/api/contactos`, {
-              method: "DELETE",
-              credentials: "include",
-            });
-  
-            const data = await res.json();
-            if (res.ok) {
-              alert("✅ Contactos eliminados.");
-              setCantidadContactos(0);
-            } else {
-              alert(`❌ ${data.error}`);
-            }
-          } catch (err) {
-            console.error("❌ Error al eliminar contactos:", err);
-          }
-        }}
-        className="text-red-400 hover:text-red-600 text-sm underline mt-2"
-      >
-        🗑️ Eliminar todos los contactos
-      </button>
-  
-      <label className="block mb-2 font-medium flex items-center gap-2">
-        <SiCampaignmonitor /> Nombre de la campaña
-      </label>
+
+      <label className="block mb-2 font-medium text-white">📛 Nombre de la campaña</label>
       <input
         name="nombre"
         value={form.nombre}
@@ -290,236 +126,67 @@ export default function CampaignsSmsClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
-      <Tabs
-        defaultValue="sms"
-        value={["sms", "email"].includes(form.canal) ? form.canal : "sms"}
-        onValueChange={(v) => setForm((prev) => ({ ...prev, canal: v }))}
-        className="w-full mb-8"
-      >
+      <label className="block mb-2 font-medium text-white">💬 Contenido del SMS</label>
+      <textarea
+        name="contenido"
+        value={form.contenido}
+        onChange={handleChange}
+        className="w-full p-2 mb-4 bg-white/10 border border-white/20 rounded"
+        rows={3}
+      />
 
-        <TabsList className="flex space-x-2 bg-white/10 p-1 rounded mb-4">
-          <TabsTrigger value="sms">📲 SMS</TabsTrigger>
-          <TabsTrigger value="email">📧 Email</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="sms">
-          <p className="text-sm text-white/70 mb-2">Solo texto plano. No se permiten imágenes ni links.</p>
-          <textarea
-            name="contenido"
-            value={form.contenido}
-            onChange={handleChange}
-            className="w-full p-2 mb-4 bg-white/10 border border-white/20 rounded"
-            rows={4}
-          />
-        </TabsContent>
-
-        <TabsContent value="email">
-          <input
-            type="url"
-            name="link_url"
-            value={form.link_url}
-            onChange={handleChange}
-            className="w-full p-2 mb-4 bg-white/10 border border-white/20 rounded"
-            placeholder="https://tusitio.com/oferta"
-          />
-          <textarea
-            name="contenido"
-            value={form.contenido}
-            onChange={handleChange}
-            className="w-full p-2 mb-4 bg-white/10 border border-white/20 rounded"
-            rows={4}
-          />
-          <input
-            name="imagen"
-            type="file"
-            accept="image/*"
-            onChange={handleChange}
-            className="mb-4"
-          />
-          {form.imagen instanceof File && (
-            <img
-              src={URL.createObjectURL(form.imagen)}
-              alt="Preview"
-              className="mb-4 rounded border border-white/20 max-h-48"
-            />
-          )}
-        </TabsContent>
-      </Tabs>
-
-      <label className="block mb-2 font-medium flex items-center gap-2">
-        <SiGooglecalendar /> Fecha y hora de envío
-      </label>
+      <label className="block mb-2 font-medium text-white">📅 Fecha y hora de envío</label>
       <input
-        name="fecha_envio"
         type="datetime-local"
+        name="fecha_envio"
         value={form.fecha_envio}
         onChange={handleChange}
         className="w-full mb-6 p-2 rounded bg-white/10 border border-white/20"
       />
-  
+
       <div className="mb-6">
-        <button
-          onClick={() => setShowSegmentos((s) => !s)}
-          className="mb-2 text-indigo-300 underline hover:text-indigo-400"
-        >
-          {showSegmentos ? "🔽 Ocultar segmentos" : "▶️ Elegir segmentos"}
-        </button>
-        {showSegmentos && (
-          <div className="grid grid-cols-2 gap-2 border border-white/10 bg-white/5 rounded p-4">
-            {SEGMENTOS.map((seg) => (
-              <label key={seg.id} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={form.segmentos.includes(seg.id)}
-                  onChange={() => toggleSegmento(seg.id)}
-                />
-                {seg.label}
-              </label>
-            ))}
-          </div>
-        )}
+        <h3 className="text-white mb-2">👥 Segmentos</h3>
+        {["cliente", "leads", "otros"].map((seg) => (
+          <label key={seg} className="block text-white text-sm mb-1">
+            <input
+              type="checkbox"
+              checked={form.segmentos.includes(seg)}
+              onChange={() => toggleSegmento(seg)}
+              className="mr-2"
+            />
+            {seg}
+          </label>
+        ))}
       </div>
-  
+
       <button
         onClick={handleSubmit}
         disabled={loading}
         className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? "Enviando..." : "Programar campaña"}
+        {loading ? "Enviando..." : "Programar campaña SMS"}
       </button>
-  
+
       <hr className="my-10 border-white/20" />
-  
-      <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-        <SiGoogleanalytics /> Estadísticas de campañas enviadas
+
+      <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
+        <SiGoogleanalytics /> Campañas programadas/enviadas
       </h2>
-  
-      {!Array.isArray(campaigns) ? (
-        <p className="text-red-500">❌ Error al cargar las campañas. Intenta recargar la página.</p>
-      ) : campaigns.length === 0 ? (
-        <p className="text-white/70">Aún no se han enviado campañas.</p>
+
+      {campaigns.length === 0 ? (
+        <p className="text-white/70">No hay campañas SMS registradas aún.</p>
       ) : (
-        <div className="overflow-x-auto mt-4">
-          <table className="min-w-full table-auto bg-white/5 border border-white/10 rounded-lg text-white">
-            <thead>
-              <tr className="text-white/80 bg-white/10">
-                <th className="p-3">📛 Nombre</th>
-                <th className="p-3">📲 Canal</th>
-                <th className="p-3">📅 Fecha</th>
-                <th className="p-3">📤 Estado</th>
-                <th className="p-3">👥 Segmentos</th>
-                <th className="p-3">💬 Contenido</th>
-                <th className="p-3">⚙️ Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {campaigns.map((c) => {
-                if (!c || typeof c !== "object") return null;
-
-                const fecha = c.programada_para
-                  ? new Date(c.programada_para)
-                  : null;
-
-                let destinatarios: string[] = [];
-                try {
-                  destinatarios = Array.isArray(c.destinatarios)
-                    ? c.destinatarios
-                    : JSON.parse(c.destinatarios || "[]");
-                } catch {
-                  destinatarios = ["Error al leer destinatarios"];
-                }
-
-                return (
-                  <tr key={c.id || Math.random()} className="border-t border-white/10 hover:bg-white/10">
-                    <td className="p-3">{c.titulo || c.nombre || "Sin nombre"}</td>
-                    <td className="p-3 capitalize">{c.canal || "desconocido"}</td>
-                    <td className="p-3">
-                      {fecha
-                        ? fecha.toLocaleString(undefined, {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })
-                        : "Sin fecha"}
-                    </td>
-                    <td className="p-3">
-                      {fecha && fecha > new Date() ? "⏳ Programada" : "✅ Enviada"}
-                    </td>
-                    <td className="p-3">{destinatarios.join(", ")}</td>
-                    <td className="p-3 truncate max-w-xs">{c.contenido || "Sin contenido"}</td>
-                    <td className="p-3 space-y-1">
-                      <button
-                        onClick={async () => {
-                          const confirmar = confirm("¿Seguro que deseas eliminar esta campaña?");
-                          if (!confirmar) return;
-                          if (!c.id) {
-                            alert("❌ Esta campaña no tiene un ID válido.");
-                            return;
-                          }
-                          try {
-                            const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}`, {
-                              method: "DELETE",
-                              credentials: "include",
-                            });
-                            if (res.ok) {
-                              setCampaigns((prev) => prev.filter((x) => x.id !== c.id));
-                              alert("✅ Campaña eliminada.");
-                            } else {
-                              alert("❌ No se pudo eliminar.");
-                            }
-                          } catch (err) {
-                            console.error("❌ Error eliminando campaña:", err);
-                          }
-                        }}
-                        className="text-red-400 hover:text-red-600 text-sm underline block"
-                      >
-                        Eliminar
-                      </button>
-                      <button
-                        onClick={() => verEntregas(c.id)}
-                        className="text-blue-400 hover:text-blue-500 text-sm underline block"
-                      >
-                        Ver entregas
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <ul className="space-y-4 text-white text-sm">
+          {campaigns.map((c) => (
+            <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
+              <strong>{c.nombre}</strong> — {new Date(c.programada_para).toLocaleString()} —{" "}
+              {c.contenido}
+            </li>
+          ))}
+        </ul>
       )}
 
-      {/* Modal de entregas */}
-      {modalVisible && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-          <div className="bg-[#1a1a2f] p-6 rounded-lg shadow-lg max-w-lg w-full">
-            <h3 className="text-xl font-bold mb-4 text-white">📋 Entregas de la campaña</h3>
-            {entregas.length === 0 ? (
-              <p className="text-white/70">No se encontraron registros.</p>
-            ) : (
-              <ul className="space-y-2 max-h-64 overflow-y-auto text-sm text-white">
-                {entregas.map((e, i) => (
-                  <li key={i} className="border-b border-white/10 pb-2">
-                    <span className="block">📱 {e.telefono}</span>
-                    <span className="text-white/50">📤 Estado: {e.estado || 'Enviado'}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="mt-4 text-right">
-              <button
-                onClick={() => setModalVisible(false)}
-                className="px-4 py-2 bg-indigo-600 rounded hover:bg-indigo-700 text-white"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-  
       <Footer />
     </div>
   );
-  }
-  
+}
