@@ -9,8 +9,6 @@ import Footer from '@/components/Footer';
 import {
   SiGoogleanalytics,
   SiGooglecalendar,
-  SiPhotopea,
-  SiChatbot,
   SiTwilio,
   SiMinutemailer,
   SiCampaignmonitor
@@ -294,7 +292,7 @@ export default function CampaignsClient() {
 
       <Tabs
         defaultValue="sms"
-        value={form.canal === "sms" || form.canal === "email" ? form.canal : "sms"}
+        value={["sms", "email"].includes(form.canal) ? form.canal : "sms"}
         onValueChange={(v) => setForm((prev) => ({ ...prev, canal: v }))}
         className="w-full mb-8"
       >
