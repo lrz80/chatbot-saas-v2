@@ -7,6 +7,7 @@ import {
   FiMic,
   FiMail,
   FiUsers,
+  FiMessageSquare,
 } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookMessenger } from 'react-icons/fa';
 import ClientOnly from './ClientOnly';
@@ -74,7 +75,8 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
               { href: '/dashboard/meta-config', icon: <FaFacebookMessenger className="text-white" />, label: 'Asistente de Meta' },
               { href: '/dashboard/voice-config', icon: <FiMic />, label: 'Asistente de Voz' },
               { href: '/dashboard/follow-up', icon: <FiUsers />, label: 'Seguimiento de Leads' },
-              { href: '/dashboard/campaigns', icon: <FiMail />, label: 'Campañas de Marketing' },
+              { href: '/dashboard/campaigns/sms', icon: <FiMessageSquare />, label: 'Campañas SMS' },
+              { href: '/dashboard/campaigns/email', icon: <FiMail />, label: 'Campañas Email' },
             ].map((item, index) => (
               <a
                 key={index}
