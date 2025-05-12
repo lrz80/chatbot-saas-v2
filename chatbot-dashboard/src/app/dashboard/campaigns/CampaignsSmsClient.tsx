@@ -1,4 +1,4 @@
-// dashboard/campaigns/CampaignsClient.tsx
+// dashboard/campaigns/CampaignsSmsClient.tsx
 
 "use client";
 
@@ -28,7 +28,7 @@ const SEGMENTOS = [
   { id: "otros", label: "Otros" },
 ];
 
-export default function CampaignsClient() {
+export default function CampaignsSmsClient() {
   const [form, setForm] = useState({
     nombre: "",
     canal: "sms",
