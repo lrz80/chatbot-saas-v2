@@ -3,8 +3,14 @@
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 import Footer from "@/components/Footer";
-import { SiMinutemailer } from "react-icons/si";
-import { FaAddressBook } from "react-icons/fa";
+import {
+  SiCampaignmonitor,
+  SiMinutemailer,
+  SiGooglecalendar,
+  SiGoogleanalytics,
+  SiLinktree,
+} from "react-icons/si";
+import { FaAddressBook, FaPaperclip } from "react-icons/fa";
 import TrainingHelp from "@/components/TrainingHelp";
 
 export default function CampaignsEmailClient() {
@@ -15,6 +21,7 @@ export default function CampaignsEmailClient() {
     segmentos: [] as string[],
     link_url: "",
     imagen: null as File | null,
+    archivo_adjunto: null as File | null,
   });
 
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -52,6 +59,8 @@ export default function CampaignsEmailClient() {
     const { name, value, files } = e.target;
     if (name === "imagen") {
       setForm((prev) => ({ ...prev, imagen: files[0] }));
+    } else if (name === "archivo_adjunto") {
+      setForm((prev) => ({ ...prev, archivo_adjunto: files[0] }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
@@ -81,6 +90,7 @@ export default function CampaignsEmailClient() {
     data.append("segmentos", JSON.stringify(destinatarios));
     data.append("link_url", form.link_url);
     if (form.imagen) data.append("imagen", form.imagen);
+    if (form.archivo_adjunto) data.append("archivo_adjunto", form.archivo_adjunto);
 
     try {
       setLoading(true);
@@ -102,6 +112,7 @@ export default function CampaignsEmailClient() {
           segmentos: [],
           link_url: "",
           imagen: null,
+          archivo_adjunto: null,
         });
         setCampaigns((prev) => [json, ...prev]);
       } else {
@@ -128,6 +139,10 @@ export default function CampaignsEmailClient() {
         </h3>
       </div>
 
+      {/* Campos del formulario */}
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <SiCampaignmonitor /> Nombre de la campaña
+      </label>
       <input
         name="nombre"
         value={form.nombre}
@@ -136,6 +151,9 @@ export default function CampaignsEmailClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <SiLinktree /> Link del Email (opcional)
+      </label>
       <input
         type="url"
         name="link_url"
@@ -145,6 +163,9 @@ export default function CampaignsEmailClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <SiMinutemailer /> Contenido del Email
+      </label>
       <textarea
         name="contenido"
         value={form.contenido}
@@ -154,6 +175,9 @@ export default function CampaignsEmailClient() {
         rows={4}
       />
 
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <SiMinutemailer /> Imagen del Email
+      </label>
       <input
         name="imagen"
         type="file"
@@ -169,6 +193,20 @@ export default function CampaignsEmailClient() {
         />
       )}
 
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <FaPaperclip /> Archivo adjunto (PDF, DOCX, ZIP...)
+      </label>
+      <input
+        name="archivo_adjunto"
+        type="file"
+        accept=".pdf,.doc,.docx,.zip,.xls,.xlsx,.ppt,.pptx"
+        onChange={handleChange}
+        className="mb-4"
+      />
+
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <SiGooglecalendar /> Fecha y hora de envío
+      </label>
       <input
         type="datetime-local"
         name="fecha_envio"
@@ -178,7 +216,9 @@ export default function CampaignsEmailClient() {
       />
 
       <div className="mb-6">
-        <h3 className="text-white mb-2">👥 Segmentos</h3>
+        <h3 className="text-white mb-2 flex items-center gap-2">
+          <SiCampaignmonitor /> Segmentos
+        </h3>
         {["cliente", "leads", "otros"].map((seg) => (
           <label key={seg} className="block text-white text-sm mb-1">
             <input
@@ -202,7 +242,9 @@ export default function CampaignsEmailClient() {
 
       <hr className="my-10 border-white/20" />
 
-      <h2 className="text-xl font-bold mb-4 text-white">📬 Campañas por Email</h2>
+      <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
+        <SiGoogleanalytics /> Campañas programadas/enviadas
+      </h2>
 
       {campaigns.length === 0 ? (
         <p className="text-white/70">No hay campañas Email registradas aún.</p>
@@ -210,8 +252,43 @@ export default function CampaignsEmailClient() {
         <ul className="space-y-4 text-white text-sm">
           {campaigns.map((c) => (
             <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
-              <strong>{c.nombre}</strong> — {new Date(c.programada_para).toLocaleString()} —{" "}
-              {c.contenido}
+              <div className="flex items-center gap-2 mb-1 text-white/80">
+                <SiGooglecalendar /> {new Date(c.programada_para).toLocaleString()}
+              </div>
+              <div className="mb-1">
+                <strong className="text-white">{c.nombre}</strong>
+              </div>
+              <div className="text-white/90">{c.contenido}</div>
+
+              {c.link_url && (
+                <div className="mt-2 text-blue-400 underline text-sm">
+                  <a href={c.link_url} target="_blank" rel="noopener noreferrer">
+                    Ver enlace
+                  </a>
+                </div>
+              )}
+
+              {c.imagen_url && (
+                <div className="mt-2">
+                  <img
+                    src={c.imagen_url}
+                    alt="Imagen campaña"
+                    className="max-h-32 border border-white/10 rounded"
+                  />
+                </div>
+              )}
+
+              {c.archivo_adjunto_url && (
+                <div className="mt-2 text-blue-300 underline text-sm">
+                  <a
+                    href={c.archivo_adjunto_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    📎 Ver archivo adjunto
+                  </a>
+                </div>
+              )}
             </li>
           ))}
         </ul>

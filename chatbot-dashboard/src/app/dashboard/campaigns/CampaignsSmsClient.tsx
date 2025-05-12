@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 import Footer from "@/components/Footer";
-import { SiTwilio, SiGoogleanalytics } from "react-icons/si";
+import { SiTwilio, SiGoogleanalytics, SiCampaignmonitor, SiMinutemailer, SiGooglecalendar } from "react-icons/si";
 import { FaAddressBook } from "react-icons/fa";
 import TrainingHelp from "@/components/TrainingHelp";
 
@@ -118,7 +118,9 @@ export default function CampaignsSmsClient() {
         </p>
       </div>
 
-      <label className="block mb-2 font-medium text-white">📛 Nombre de la campaña</label>
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <SiCampaignmonitor /> Nombre de la campaña
+      </label>
       <input
         name="nombre"
         value={form.nombre}
@@ -126,7 +128,9 @@ export default function CampaignsSmsClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
-      <label className="block mb-2 font-medium text-white">💬 Contenido del SMS</label>
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <SiMinutemailer /> Contenido del SMS
+      </label>
       <textarea
         name="contenido"
         value={form.contenido}
@@ -135,7 +139,9 @@ export default function CampaignsSmsClient() {
         rows={3}
       />
 
-      <label className="block mb-2 font-medium text-white">📅 Fecha y hora de envío</label>
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <SiGooglecalendar /> Fecha y hora de envío
+      </label>
       <input
         type="datetime-local"
         name="fecha_envio"
@@ -145,7 +151,9 @@ export default function CampaignsSmsClient() {
       />
 
       <div className="mb-6">
-        <h3 className="text-white mb-2">👥 Segmentos</h3>
+      <h3 className="text-white mb-2 flex items-center gap-2">
+        <SiCampaignmonitor /> Segmentos
+      </h3>
         {["cliente", "leads", "otros"].map((seg) => (
           <label key={seg} className="block text-white text-sm mb-1">
             <input
@@ -171,6 +179,7 @@ export default function CampaignsSmsClient() {
 
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
         <SiGoogleanalytics /> Campañas programadas/enviadas
+
       </h2>
 
       {campaigns.length === 0 ? (
@@ -179,13 +188,33 @@ export default function CampaignsSmsClient() {
         <ul className="space-y-4 text-white text-sm">
           {campaigns.map((c) => (
             <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
-              <strong>{c.nombre}</strong> — {new Date(c.programada_para).toLocaleString()} —{" "}
-              {c.contenido}
+              <div className="flex items-center gap-2 mb-1 text-white/80">
+                <SiGooglecalendar /> {new Date(c.programada_para).toLocaleString()}
+              </div>
+              <div className="mb-1">
+                <strong className="text-white">{c.nombre}</strong>
+              </div>
+              <div className="text-white/90">{c.contenido}</div>
+              {c.link_url && (
+                <div className="mt-2 text-blue-400 underline text-sm">
+                  <a href={c.link_url} target="_blank" rel="noopener noreferrer">
+                    Ver enlace
+                  </a>
+                </div>
+              )}
+              {c.imagen_url && (
+                <div className="mt-2">
+                  <img
+                    src={c.imagen_url}
+                    alt="Imagen campaña"
+                    className="max-h-32 border border-white/10 rounded"
+                  />
+                </div>
+              )}
             </li>
           ))}
         </ul>
       )}
-
       <Footer />
     </div>
   );
