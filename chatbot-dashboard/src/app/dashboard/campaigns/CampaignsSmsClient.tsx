@@ -32,7 +32,6 @@ export default function CampaignsSmsClient() {
       .then(async (data) => {
         const smsOnly = (data || []).filter((c: any) => c.canal === "sms");
 
-        // Obtener entregas para cada campaña
         const enriched = await Promise.all(
           smsOnly.map(async (c: any) => {
             const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}/sms-status`, {
@@ -172,7 +171,7 @@ export default function CampaignsSmsClient() {
         <h3 className="text-white mb-2 flex items-center gap-2">
           <SiCampaignmonitor /> Segmentos
         </h3>
-        {"cliente,leads,otros".split(",").map((seg) => (
+        {["cliente", "leads", "otros"].map((seg) => (
           <label key={seg} className="block text-white text-sm mb-1">
             <input
               type="checkbox"
@@ -202,7 +201,7 @@ export default function CampaignsSmsClient() {
       {campaigns.length === 0 ? (
         <p className="text-white/70">No hay campañas SMS registradas aún.</p>
       ) : (
-        <ul className="space-y-4 text-white text-sm">
+        <ul className="space-y-6 text-white text-sm">
           {campaigns.map((c) => (
             <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
               <div className="flex items-center gap-2 mb-1 text-white/80">
@@ -213,13 +212,32 @@ export default function CampaignsSmsClient() {
               </div>
               <div className="text-white/90">{c.contenido}</div>
               <div className="text-sm mt-2 text-white/80">
-                📨 {c.entregas?.length ?? 0} enviados · ✅ {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0} entregados · ❌ {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0} fallidos
+                📨 {c.entregas?.length ?? 0} enviados · ✅{" "}
+                {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0} entregados · ❌{" "}
+                {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0} fallidos
               </div>
+              {c.entregas?.length > 0 && (
+                <div className="mt-3 border-t border-white/10 pt-3">
+                  <ul className="space-y-1 text-xs text-white/70">
+                    {c.entregas.map((e: any, i: number) => (
+                      <li key={i} className="border-b border-white/10 pb-2">
+                        <div>📱 {e.to_number}</div>
+                        <div>📤 Estado: {e.status}</div>
+                        {e.error_message && (
+                          <div className="text-red-400">⚠️ {e.error_message}</div>
+                        )}
+                        <div className="text-white/40 text-[11px]">
+                          {new Date(e.timestamp).toLocaleString()}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </li>
           ))}
         </ul>
       )}
-
       <Footer />
     </div>
   );
