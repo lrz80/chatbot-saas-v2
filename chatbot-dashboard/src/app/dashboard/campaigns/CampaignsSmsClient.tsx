@@ -142,6 +142,7 @@ export default function CampaignsSmsClient() {
         name="nombre"
         value={form.nombre}
         onChange={handleChange}
+        placeholder="Nombre de la campaña"
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
@@ -152,6 +153,7 @@ export default function CampaignsSmsClient() {
         name="contenido"
         value={form.contenido}
         onChange={handleChange}
+        placeholder="🎉 ¡Hola! Aún tienes tu clase GRATIS disponible. Reserva ahora 👉 [link]. ¡Te esperamos!"
         className="w-full p-2 mb-4 bg-white/10 border border-white/20 rounded"
         rows={3}
       />
