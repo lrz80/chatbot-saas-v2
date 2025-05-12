@@ -1,8 +1,15 @@
 // src/app/dashboard/campaigns/page.tsx
 
-import CampaignsClient from "./CampaignsClient";
+"use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export default function Page() {
-  return <CampaignsClient />;
+export default function CampaignsRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/dashboard/campaigns/sms");
+  }, [router]);
+
+  return null;
 }
-
