@@ -278,13 +278,22 @@ export default function CampaignsSmsClient() {
                     
                     const limpiarTwilio = (num: string | undefined | null) =>
                       typeof num === "string" ? num.replace(/^tel:/, "") : "";
-                    
+
                     const telefonoLimpio = limpiarTwilio(e.to_number);                    
+
+                    console.log("📤 Número recibido:", e.to_number);
+                    console.log("📒 Contactos disponibles:", contactos.map(c => c.telefono));
 
                     const contacto = contactos.find(
                       (con: any) => normalizar(con.telefono) === normalizar(telefonoLimpio)
                     );
-
+                    
+                    if (!contacto) {
+                      console.warn("❌ No se encontró segmento para:", telefonoLimpio);
+                    } else {
+                      console.log("✅ Match encontrado:", contacto.telefono, contacto.segmento);
+                    }
+                    
                     const segmento = contacto?.segmento || "Desconocido";
 
                     return (
