@@ -273,9 +273,13 @@ export default function CampaignsSmsClient() {
               {expandedCampaignId === c.id && (
                 <ul className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs">
                   {c.entregas.map((e: any, i: number) => {
+                    const normalizar = (num: string) =>
+                      num.replace(/\D/g, "").replace(/^1/, "");
+
                     const contacto = contactos.find(
-                      (con: any) => con.telefono === e.to_number
+                      (con: any) => normalizar(con.telefono) === normalizar(e.to_number)
                     );
+
                     const segmento = contacto?.segmento || "Desconocido";
 
                     return (
