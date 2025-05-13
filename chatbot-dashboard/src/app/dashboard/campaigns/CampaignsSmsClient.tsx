@@ -32,6 +32,7 @@ export default function CampaignsSmsClient() {
   const [cantidadContactos, setCantidadContactos] = useState(0);
   const [loading, setLoading] = useState(false);
   const [expandedCampaignId, setExpandedCampaignId] = useState<number | null>(null);
+  const [membresiaActiva, setMembresiaActiva] = useState<boolean>(false);
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -153,15 +154,27 @@ export default function CampaignsSmsClient() {
 
   const [usoSms, setUsoSms] = useState<{ usados: number; limite: number } | null>(null);
 
+  fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" })
+  .then((res) => res.json())
+  .then((data) => {
+    setMembresiaActiva(data?.membresia_activa === true);
+  })
+  .catch(err => console.error("❌ Error obteniendo membresía:", err));
+
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         const sms = (data.usos || []).find((u: any) => u.canal === "sms");
-        if (sms) setUsoSms({ usados: sms.usados, limite: sms.limite });
+  
+        // ✅ Si no hay fila en la base de datos, asignamos uso por defecto
+        setUsoSms({
+          usados: sms?.usados ?? 0,
+          limite: sms?.limite ?? 500,
+        });
       })
       .catch((err) => console.error("❌ Error cargando uso SMS:", err));
-  }, []);
+  }, []);  
 
   const comprarMasSms = async (cantidad: number) => {
     try {
@@ -278,7 +291,13 @@ export default function CampaignsSmsClient() {
       </div>
 
       <button
-        onClick={handleSubmit}
+        onClick={() => {
+          if (!membresiaActiva) {
+            alert("❌ Tu membresía no está activa. Actívala para usar campañas SMS.");
+            return;
+          }
+          handleSubmit();
+        }}
         disabled={loading}
         className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
       >
