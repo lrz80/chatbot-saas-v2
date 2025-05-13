@@ -151,11 +151,72 @@ export default function CampaignsSmsClient() {
     }
   };
 
+  const [usoSms, setUsoSms] = useState<{ usados: number; limite: number } | null>(null);
+
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        const sms = (data.usos || []).find((u: any) => u.canal === "sms");
+        if (sms) setUsoSms({ usados: sms.usados, limite: sms.limite });
+      })
+      .catch((err) => console.error("❌ Error cargando uso SMS:", err));
+  }, []);
+
+  const comprarMasSms = async (cantidad: number) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/uso-mensual/upgrade`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ canal: "sms", cantidad }),
+      });
+  
+      if (res.ok) {
+        alert("✅ Créditos SMS agregados");
+        location.reload();
+      } else {
+        alert("❌ Error al agregar créditos");
+      }
+    } catch (err) {
+      console.error("❌ Error:", err);
+      alert("❌ Falló la solicitud");
+    }
+  };
+  
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
         <SiTwilio className="text-red-300 animate-pulse" /> Campañas por SMS
       </h1>
+
+      {usoSms && (
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <MdSms /> Uso mensual de SMS
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoSms.usados} de {usoSms.limite} mensajes enviados
+          </p>
+          <div className="w-full bg-white/20 rounded h-3 overflow-hidden mb-2">
+            <div
+              className="bg-green-500 h-full"
+              style={{ width: `${(usoSms.usados / usoSms.limite) * 100}%` }}
+            />
+          </div>
+          <div className="flex gap-2">
+            {[500, 1000, 2000].map((extra) => (
+              <button
+                key={extra}
+                onClick={() => comprarMasSms(extra)}
+                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+              >
+                +{extra}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <TrainingHelp context="campaign" />
 
