@@ -9,9 +9,14 @@ import {
   SiCampaignmonitor,
   SiMinutemailer,
   SiGooglecalendar,
+  SiCheckmarx,
+  SiProbot,
+  SiStatuspal,
 } from "react-icons/si";
+import { MdSms } from "react-icons/md";
 import { FaAddressBook } from "react-icons/fa";
 import TrainingHelp from "@/components/TrainingHelp";
+import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 
 export default function CampaignsSmsClient() {
   const [form, setForm] = useState({
@@ -232,9 +237,15 @@ export default function CampaignsSmsClient() {
                   <div className="text-white/80 mb-1">
                     <SiGooglecalendar className="inline mr-1" /> {new Date(c.programada_para).toLocaleString("es-US", { timeZone: "America/New_York" })}
                   </div>
-                  <div className="text-sm text-white/70">
-                    📤 Enviados: {c.entregas?.length ?? 0} · ✅ Entregados: {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0} · ❌ Fallidos: {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0}
-                  </div>
+                  <span className="flex items-center gap-1">
+                    <SiMinutemailer /> Enviados: {c.entregas?.length ?? 0}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <SiCheckmarx className="text-green-400" /> Entregados: {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <SiProbot className="text-red-400" /> Fallidos: {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0}
+                  </span>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -247,7 +258,7 @@ export default function CampaignsSmsClient() {
                     className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
                     onClick={() => eliminarCampana(c.id)}
                   >
-                    🗑 Eliminar
+                    <SiProbot className="inline mr-1" /> Eliminar
                   </button>
                 </div>
               </div>
@@ -255,10 +266,16 @@ export default function CampaignsSmsClient() {
                 <ul className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs">
                   {c.entregas.map((e: any, i: number) => (
                     <li key={i} className="border-b border-white/10 pb-2">
-                      <div>📱 {e.to_number}</div>
-                      <div>📤 Estado: {e.status}</div>
+                      <div className="flex items-center gap-1">
+                        <MdSms /> {e.to_number}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <SiStatuspal /> Estado: {e.status}
+                      </div>
                       {e.error_message && (
-                        <div className="text-red-400">⚠️ {e.error_message}</div>
+                        <div className="flex items-center gap-1 text-red-400">
+                          <HiOutlineExclamationTriangle /> {e.error_message}
+                        </div>
                       )}
                       <div className="text-white/40">
                         {new Date(e.timestamp).toLocaleString("es-US", { timeZone: "America/New_York" })}
