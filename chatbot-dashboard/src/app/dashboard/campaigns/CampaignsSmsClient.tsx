@@ -235,22 +235,29 @@ export default function CampaignsSmsClient() {
                 <div>
                   <div className="text-lg font-bold text-white mb-1">{c.nombre}</div>
                   <div className="text-white/80 mb-1">
-                    <SiGooglecalendar className="inline mr-1" /> {new Date(c.programada_para).toLocaleString("es-US", { timeZone: "America/New_York" })}
+                    <SiGooglecalendar className="inline mr-1" />{" "}
+                    {new Date(c.programada_para).toLocaleString("es-US", {
+                      timeZone: "America/New_York",
+                    })}
                   </div>
                   <span className="flex items-center gap-1">
                     <SiMinutemailer /> Enviados: {c.entregas?.length ?? 0}
                   </span>
                   <span className="flex items-center gap-1">
-                    <SiCheckmarx className="text-green-400" /> Entregados: {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0}
+                    <SiCheckmarx className="text-green-400" /> Entregados:{" "}
+                    {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0}
                   </span>
                   <span className="flex items-center gap-1">
-                    <SiProbot className="text-red-400" /> Fallidos: {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0}
+                    <SiProbot className="text-red-400" /> Fallidos:{" "}
+                    {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0}
                   </span>
                 </div>
                 <div className="flex gap-2">
                   <button
                     className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
-                    onClick={() => setExpandedCampaignId(c.id === expandedCampaignId ? null : c.id)}
+                    onClick={() =>
+                      setExpandedCampaignId(c.id === expandedCampaignId ? null : c.id)
+                    }
                   >
                     {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
                   </button>
@@ -262,26 +269,52 @@ export default function CampaignsSmsClient() {
                   </button>
                 </div>
               </div>
+
               {expandedCampaignId === c.id && (
                 <ul className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs">
-                  {c.entregas.map((e: any, i: number) => (
-                    <li key={i} className="border-b border-white/10 pb-2">
-                      <div className="flex items-center gap-1">
-                        <MdSms /> {e.to_number}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <SiStatuspal /> Estado: {e.status}
-                      </div>
-                      {e.error_message && (
-                        <div className="flex items-center gap-1 text-red-400">
-                          <HiOutlineExclamationTriangle /> {e.error_message}
+                  {c.entregas.map((e: any, i: number) => {
+                    const contacto = contactos.find(
+                      (con: any) => con.telefono === e.to_number
+                    );
+                    const segmento = contacto?.segmento || "Desconocido";
+
+                    return (
+                      <li key={i} className="border-b border-white/10 pb-2">
+                        <div className="flex items-center gap-1">
+                          <MdSms /> <strong>{e.to_number}</strong>
                         </div>
-                      )}
-                      <div className="text-white/40">
-                        {new Date(e.timestamp).toLocaleString("es-US", { timeZone: "America/New_York" })}
-                      </div>
-                    </li>
-                  ))}
+                        <div className="flex items-center gap-1">
+                          <SiStatuspal />
+                          Estado:{" "}
+                          <span
+                            className={`font-semibold ${
+                              e.status === "delivered"
+                                ? "text-green-400"
+                                : e.status === "failed"
+                                ? "text-red-400"
+                                : "text-yellow-400"
+                            }`}
+                          >
+                            {e.status}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          🏷️ Segmento:{" "}
+                          <span className="italic text-white/80">{segmento}</span>
+                        </div>
+                        {e.error_message && (
+                          <div className="flex items-center gap-1 text-red-400">
+                            <HiOutlineExclamationTriangle /> {e.error_message}
+                          </div>
+                        )}
+                        <div className="text-white/40">
+                          {new Date(e.timestamp).toLocaleString("es-US", {
+                            timeZone: "America/New_York",
+                          })}
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </li>
