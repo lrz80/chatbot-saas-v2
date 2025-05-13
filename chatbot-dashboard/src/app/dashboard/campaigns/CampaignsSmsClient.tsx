@@ -17,6 +17,7 @@ import { MdSms } from "react-icons/md";
 import { FaAddressBook } from "react-icons/fa";
 import TrainingHelp from "@/components/TrainingHelp";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
+import { DateTime } from "luxon";
 
 export default function CampaignsSmsClient() {
   const [form, setForm] = useState({
@@ -236,9 +237,9 @@ export default function CampaignsSmsClient() {
                   <div className="text-lg font-bold text-white mb-1">{c.nombre}</div>
                   <div className="text-white/80 mb-1">
                     <SiGooglecalendar className="inline mr-1" />{" "}
-                    {new Date(c.programada_para).toLocaleString("es-US", {
-                      timeZone: "America/New_York",
-                    })}
+                    {DateTime.fromISO(c.programada_para)
+                      .setZone("America/New_York")
+                      .toLocaleString(DateTime.DATETIME_MED)}
                   </div>
                   <span className="flex items-center gap-1">
                     <SiMinutemailer /> Enviados: {c.entregas?.length ?? 0}
@@ -328,9 +329,9 @@ export default function CampaignsSmsClient() {
                           </div>
                         )}
                         <div className="text-white/40">
-                        {new Date(e.timestamp).toLocaleString("es-US", {
-                          timeZone: "America/New_York",
-                        })}
+                          {DateTime.fromISO(e.timestamp)
+                            .setZone("America/New_York")
+                            .toLocaleString(DateTime.DATETIME_MED)}
                         </div>
                       </li>
                     );
