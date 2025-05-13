@@ -1,4 +1,3 @@
-// src/app/dashboard/campaigns/CampaignsSmsClient.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,6 +25,7 @@ export default function CampaignsSmsClient() {
   const [contactos, setContactos] = useState<any[]>([]);
   const [cantidadContactos, setCantidadContactos] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [expandedCampaignId, setExpandedCampaignId] = useState<number | null>(null);
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -206,17 +206,24 @@ export default function CampaignsSmsClient() {
         <ul className="space-y-6 text-white text-sm">
           {campaigns.map((c) => (
             <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
-              <div className="flex items-center gap-2 mb-1 text-white/80">
-                <SiGooglecalendar /> {new Date(c.programada_para).toLocaleString()}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                  <div className="text-lg font-bold text-white mb-1">{c.nombre}</div>
+                  <div className="text-white/80 mb-1">
+                    <SiGooglecalendar className="inline mr-1" /> {new Date(c.programada_para).toLocaleString("es-US", { timeZone: "America/New_York" })}
+                  </div>
+                  <div className="text-sm text-white/70">
+                    📤 Enviados: {c.entregas?.length ?? 0} · ✅ Entregados: {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0} · ❌ Fallidos: {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0}
+                  </div>
+                </div>
+                <button
+                  className="mt-3 md:mt-0 px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
+                  onClick={() => setExpandedCampaignId(c.id === expandedCampaignId ? null : c.id)}
+                >
+                  {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
+                </button>
               </div>
-              <div className="mb-1 font-semibold">{c.nombre}</div>
-              <div className="text-white/90">{c.contenido}</div>
-              <div className="text-sm mt-2 text-white/80">
-                📨 {c.entregas?.length ?? 0} enviados · ✅{" "}
-                {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0} entregados · ❌{" "}
-                {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0} fallidos
-              </div>
-              {c.entregas?.length > 0 && (
+              {expandedCampaignId === c.id && (
                 <ul className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs">
                   {c.entregas.map((e: any, i: number) => (
                     <li key={i} className="border-b border-white/10 pb-2">
@@ -226,7 +233,7 @@ export default function CampaignsSmsClient() {
                         <div className="text-red-400">⚠️ {e.error_message}</div>
                       )}
                       <div className="text-white/40">
-                      {new Date(e.timestamp).toLocaleString("es-US", { timeZone: "America/New_York" })}
+                        {new Date(e.timestamp).toLocaleString("es-US", { timeZone: "America/New_York" })}
                       </div>
                     </li>
                   ))}
