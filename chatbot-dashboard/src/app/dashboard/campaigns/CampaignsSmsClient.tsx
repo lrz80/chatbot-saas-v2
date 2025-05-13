@@ -99,7 +99,11 @@ export default function CampaignsSmsClient() {
     data.append("nombre", form.nombre);
     data.append("canal", "sms");
     data.append("contenido", form.contenido);
-    data.append("fecha_envio", form.fecha_envio);
+
+    const fechaLocal = new Date(form.fecha_envio);  // <- ✅ Local time
+    const fechaUTC = fechaLocal.toISOString();      // <- ✅ Convert to UTC
+    data.append("fecha_envio", fechaUTC);
+
     data.append("segmentos", JSON.stringify(destinatarios));
 
     try {
