@@ -226,7 +226,7 @@ export default function CampaignsSmsClient() {
                         <div className="text-red-400">⚠️ {e.error_message}</div>
                       )}
                       <div className="text-white/40">
-                        {new Date(e.timestamp).toLocaleString()}
+                      {new Date(e.timestamp).toLocaleString("es-US", { timeZone: "America/New_York" })}
                       </div>
                     </li>
                   ))}
