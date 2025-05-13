@@ -273,15 +273,16 @@ export default function CampaignsSmsClient() {
               {expandedCampaignId === c.id && (
                 <ul className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs">
                   {c.entregas.map((e: any, i: number) => {
+                    console.log("📦 Entrega completa:", e);
                     const normalizar = (num: string | undefined | null) =>
                       typeof num === "string" ? num.replace(/\D/g, "").replace(/^1/, "") : "";
                     
                     const limpiarTwilio = (num: string | undefined | null) =>
                       typeof num === "string" ? num.replace(/^tel:/, "") : "";
 
-                    const telefonoLimpio = limpiarTwilio(e.to_number);                    
+                    const telefonoLimpio = limpiarTwilio(e.to_number || e.to || e.To || "");                    
 
-                    console.log("📤 Número recibido:", e.to_number);
+                    console.log("📤 Número limpio:", telefonoLimpio);
                     console.log("📒 Contactos disponibles:", contactos.map(c => c.telefono));
 
                     const contacto = contactos.find(
