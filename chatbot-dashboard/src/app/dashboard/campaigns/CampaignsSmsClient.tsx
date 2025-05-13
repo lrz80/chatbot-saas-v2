@@ -121,6 +121,26 @@ export default function CampaignsSmsClient() {
     }
   };
 
+  const eliminarCampana = async (id: number) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar esta campaña?")) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/campaigns/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) {
+        setCampaigns((prev) => prev.filter((c) => c.id !== id));
+        alert("✅ Campaña eliminada");
+      } else {
+        alert("❌ Error al eliminar campaña");
+      }
+    } catch (err) {
+      console.error("❌ Error al eliminar:", err);
+      alert("❌ Error al conectar con el servidor.");
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -206,7 +226,7 @@ export default function CampaignsSmsClient() {
         <ul className="space-y-6 text-white text-sm">
           {campaigns.map((c) => (
             <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div>
                   <div className="text-lg font-bold text-white mb-1">{c.nombre}</div>
                   <div className="text-white/80 mb-1">
@@ -216,12 +236,20 @@ export default function CampaignsSmsClient() {
                     📤 Enviados: {c.entregas?.length ?? 0} · ✅ Entregados: {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0} · ❌ Fallidos: {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0}
                   </div>
                 </div>
-                <button
-                  className="mt-3 md:mt-0 px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
-                  onClick={() => setExpandedCampaignId(c.id === expandedCampaignId ? null : c.id)}
-                >
-                  {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
+                    onClick={() => setExpandedCampaignId(c.id === expandedCampaignId ? null : c.id)}
+                  >
+                    {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
+                  </button>
+                  <button
+                    className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
+                    onClick={() => eliminarCampana(c.id)}
+                  >
+                    🗑 Eliminar
+                  </button>
+                </div>
               </div>
               {expandedCampaignId === c.id && (
                 <ul className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs">
