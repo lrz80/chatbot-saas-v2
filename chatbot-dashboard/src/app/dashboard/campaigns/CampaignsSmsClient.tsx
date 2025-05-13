@@ -18,6 +18,7 @@ import { FaAddressBook } from "react-icons/fa";
 import TrainingHelp from "@/components/TrainingHelp";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { DateTime } from "luxon";
+import { useSearchParams } from "next/navigation";
 
 export default function CampaignsSmsClient() {
   const [form, setForm] = useState({
@@ -27,6 +28,9 @@ export default function CampaignsSmsClient() {
     segmentos: [] as string[],
   });
 
+  const searchParams = useSearchParams();
+  const creditoOk = searchParams.get("credito") === "ok";
+  
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [contactos, setContactos] = useState<any[]>([]);
   const [cantidadContactos, setCantidadContactos] = useState(0);
@@ -177,31 +181,33 @@ export default function CampaignsSmsClient() {
   }, []);  
 
   const comprarMasSms = async (cantidad: number) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/uso-mensual/upgrade`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ canal: "sms", cantidad }),
-      });
+    const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ canal: "sms", cantidad }),
+    });
   
-      if (res.ok) {
-        alert("✅ Créditos SMS agregados");
-        location.reload();
-      } else {
-        alert("❌ Error al agregar créditos");
-      }
-    } catch (err) {
-      console.error("❌ Error:", err);
-      alert("❌ Falló la solicitud");
+    const json = await res.json();
+  
+    if (res.ok && json.url) {
+      window.location.href = json.url; // Redirige a Stripe
+    } else {
+      alert("❌ Error al iniciar pago");
     }
-  };
+  };  
   
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
         <SiTwilio className="text-red-300 animate-pulse" /> Campañas por SMS
       </h1>
+
+      {creditoOk && (
+        <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
+          ✅ Créditos agregados exitosamente. Ya puedes usarlos en tus campañas SMS.
+        </div>
+      )}
 
       {usoSms && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
