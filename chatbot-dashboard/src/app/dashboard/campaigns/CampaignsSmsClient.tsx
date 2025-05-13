@@ -280,7 +280,7 @@ export default function CampaignsSmsClient() {
                     const limpiarTwilio = (num: string | undefined | null) =>
                       typeof num === "string" ? num.replace(/^tel:/, "") : "";
 
-                    const telefonoLimpio = limpiarTwilio(e.to_number || e.to || e.To || "");                    
+                    const telefonoLimpio = limpiarTwilio(e.telefono || "");                    
 
                     console.log("📤 Número limpio:", telefonoLimpio);
                     console.log("📒 Contactos disponibles:", contactos.map(c => c.telefono));
