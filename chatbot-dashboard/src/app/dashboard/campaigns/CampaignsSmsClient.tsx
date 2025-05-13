@@ -299,8 +299,9 @@ export default function CampaignsSmsClient() {
 
                     return (
                       <li key={i} className="border-b border-white/10 pb-2">
-                        <div className="flex items-center gap-1">
-                          <MdSms /> <strong>{e.to_number}</strong>
+                        <div className="flex items-center gap-1 text-white/90">
+                        <MdSms />
+                          <span className="font-mono text-sm">{telefonoLimpio}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <SiStatuspal />
