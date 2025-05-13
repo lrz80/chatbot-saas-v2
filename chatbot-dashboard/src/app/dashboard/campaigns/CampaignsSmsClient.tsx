@@ -328,11 +328,9 @@ export default function CampaignsSmsClient() {
                           </div>
                         )}
                         <div className="text-white/40">
-                          {new Date(
-                            e.timestamp?.endsWith("Z") ? e.timestamp : e.timestamp + "Z"
-                          ).toLocaleString("es-US", {
-                            timeZone: "America/New_York",
-                          })}
+                        {new Date(e.timestamp).toLocaleString("es-US", {
+                          timeZone: "America/New_York",
+                        })}
                         </div>
                       </li>
                     );
