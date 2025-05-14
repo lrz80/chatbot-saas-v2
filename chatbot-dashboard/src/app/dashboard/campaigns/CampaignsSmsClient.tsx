@@ -297,6 +297,16 @@ export default function CampaignsSmsClient() {
   };  
   
   useEffect(() => {
+    fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        const usoContactos = (data.usos || []).find((u: any) => u.canal === "contactos");
+        setLimiteContactos(usoContactos?.limite || 500);
+      })
+      .catch((err) => console.error("❌ Error cargando uso de contactos:", err));
+  }, []);
+  
+  useEffect(() => {
     const url = new URL(window.location.href);
     let updated = false;
   
