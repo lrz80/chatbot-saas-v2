@@ -245,29 +245,16 @@ export default function CampaignsSmsClient() {
   };
   
   const comprarMasSms = async (cantidad: number) => {
-    const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ canal: "sms", cantidad }),
-    });
-
-    const json = await res.json();
-
-    if (res.ok && json.url) {
-      window.location.href = json.url;
-    } else {
-      alert("❌ Error al iniciar pago");
-    }
-  };
-  
-  const comprarMasContactos = async (cantidad: number) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ canal: "contactos", cantidad }), // canal personalizado
+        body: JSON.stringify({
+          canal: "sms",
+          cantidad,
+          redirectPath: "/dashboard/campaigns/sms",
+        }),
       });
   
       const json = await res.json();
@@ -281,7 +268,33 @@ export default function CampaignsSmsClient() {
       console.error("❌ Error:", err);
       alert("❌ Falló la solicitud");
     }
-  };
+  };  
+  
+  const comprarMasContactos = async (cantidad: number) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          canal: "contactos",
+          cantidad,
+          redirectPath: "/dashboard/campaigns/email",
+        }),
+      });
+  
+      const json = await res.json();
+  
+      if (res.ok && json.url) {
+        window.location.href = json.url;
+      } else {
+        alert("❌ No se pudo iniciar el pago");
+      }
+    } catch (err) {
+      console.error("❌ Error:", err);
+      alert("❌ Falló la solicitud");
+    }
+  };  
   
   useEffect(() => {
     const url = new URL(window.location.href);
