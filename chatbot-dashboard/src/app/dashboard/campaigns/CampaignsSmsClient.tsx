@@ -30,13 +30,21 @@ export default function CampaignsSmsClient() {
 
   const searchParams = useSearchParams();
   const creditoOk = searchParams.get("credito") === "ok";
-  
+
+  const [limiteContactos, setLimiteContactos] = useState(500);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [contactos, setContactos] = useState<any[]>([]);
   const [cantidadContactos, setCantidadContactos] = useState(0);
   const [loading, setLoading] = useState(false);
   const [expandedCampaignId, setExpandedCampaignId] = useState<number | null>(null);
   const [membresiaActiva, setMembresiaActiva] = useState<boolean>(false);
+  const [usoSms, setUsoSms] = useState<{ usados: number; limite: number } | null>(null);
+  const [nuevoContacto, setNuevoContacto] = useState({
+    nombre: "",
+    telefono: "",
+    email: "",
+    segmento: "leads",
+  });
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -61,13 +69,32 @@ export default function CampaignsSmsClient() {
         setCampaigns(enriched);
       });
 
+    fetch(`${BACKEND_URL}/api/contactos/limite`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        setLimiteContactos(data.limite || 500);
+        setCantidadContactos(data.total || 0);
+      })
+      .catch((err) => console.error("❌ Error cargando límite de contactos:", err));
+
     fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setContactos(data || []));
 
-    fetch(`${BACKEND_URL}/api/contactos/count`, { credentials: "include" })
+    fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setCantidadContactos(data.total || 0));
+      .then((data) => {
+        setMembresiaActiva(data?.membresia_activa === true);
+      })
+      .catch(err => console.error("❌ Error obteniendo membresía:", err));
+
+    fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        const sms = (data.usos || []).find((u: any) => u.canal === "sms");
+        setUsoSms({ usados: sms?.usados ?? 0, limite: sms?.limite ?? 500 });
+      })
+      .catch((err) => console.error("❌ Error cargando uso SMS:", err));
   }, []);
 
   const toggleSegmento = (id: string) => {
@@ -105,10 +132,8 @@ export default function CampaignsSmsClient() {
     data.append("canal", "sms");
     data.append("contenido", form.contenido);
 
-    const fechaLocal = new Date(form.fecha_envio);  // <- ✅ Local time
-    const fechaUTC = fechaLocal.toISOString();      // <- ✅ Convert to UTC
+    const fechaUTC = new Date(form.fecha_envio).toISOString();
     data.append("fecha_envio", fechaUTC);
-
     data.append("segmentos", JSON.stringify(destinatarios));
 
     try {
@@ -136,6 +161,41 @@ export default function CampaignsSmsClient() {
     }
   };
 
+  const handleGuardarContacto = async () => {
+    if (!nuevoContacto.telefono || !nuevoContacto.segmento) {
+      alert("Completa los campos obligatorios");
+      return;
+    }
+
+    if (cantidadContactos >= limiteContactos) {
+      alert("❌ Has alcanzado el límite de contactos permitidos. Compra más para continuar.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/contactos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(nuevoContacto),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("✅ Contacto guardado");
+        setNuevoContacto({ nombre: "", telefono: "", email: "", segmento: "leads" });
+        setContactos((prev) => [...prev, data]);
+        setCantidadContactos((prev) => prev + 1);
+      } else {
+        alert(`❌ ${data.error || "Error al guardar contacto"}`);
+      }
+    } catch (err) {
+      console.error("❌ Error:", err);
+      alert("❌ Falló la conexión");
+    }
+  };
+
   const eliminarCampana = async (id: number) => {
     if (!confirm("¿Estás seguro de que deseas eliminar esta campaña?")) return;
 
@@ -156,30 +216,6 @@ export default function CampaignsSmsClient() {
     }
   };
 
-  const [usoSms, setUsoSms] = useState<{ usados: number; limite: number } | null>(null);
-
-  fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" })
-  .then((res) => res.json())
-  .then((data) => {
-    setMembresiaActiva(data?.membresia_activa === true);
-  })
-  .catch(err => console.error("❌ Error obteniendo membresía:", err));
-
-  useEffect(() => {
-    fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        const sms = (data.usos || []).find((u: any) => u.canal === "sms");
-  
-        // ✅ Si no hay fila en la base de datos, asignamos uso por defecto
-        setUsoSms({
-          usados: sms?.usados ?? 0,
-          limite: sms?.limite ?? 500,
-        });
-      })
-      .catch((err) => console.error("❌ Error cargando uso SMS:", err));
-  }, []);  
-
   const comprarMasSms = async (cantidad: number) => {
     const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
       method: "POST",
@@ -187,21 +223,23 @@ export default function CampaignsSmsClient() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ canal: "sms", cantidad }),
     });
-  
+
     const json = await res.json();
-  
+
     if (res.ok && json.url) {
-      window.location.href = json.url; // Redirige a Stripe
+      window.location.href = json.url;
     } else {
       alert("❌ Error al iniciar pago");
     }
-  };  
+  };
   
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
         <SiTwilio className="text-red-300 animate-pulse" /> Campañas por SMS
       </h1>
+
+      <TrainingHelp context="campaign" />
 
       {creditoOk && (
         <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
@@ -237,12 +275,52 @@ export default function CampaignsSmsClient() {
         </div>
       )}
 
-      <TrainingHelp context="campaign" />
-
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
-          <FaAddressBook /> Contactos cargados ({cantidadContactos}/1500)
+          <FaAddressBook /> Contactos cargados ({cantidadContactos}/{limiteContactos})
         </h3>
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="font-bold text-white mb-2">Agregar contacto manual</h3>
+
+          <input
+            type="text"
+            placeholder="Nombre"
+            value={nuevoContacto.nombre}
+            onChange={(e) => setNuevoContacto({ ...nuevoContacto, nombre: e.target.value })}
+            className="w-full mb-2 p-2 rounded bg-white/10 border border-white/20"
+          />
+          <input
+            type="tel"
+            placeholder="Teléfono"
+            value={nuevoContacto.telefono}
+            onChange={(e) => setNuevoContacto({ ...nuevoContacto, telefono: e.target.value })}
+            className="w-full mb-2 p-2 rounded bg-white/10 border border-white/20"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={nuevoContacto.email}
+            onChange={(e) => setNuevoContacto({ ...nuevoContacto, email: e.target.value })}
+            className="w-full mb-2 p-2 rounded bg-white/10 border border-white/20"
+          />
+
+          <select
+            value={nuevoContacto.segmento}
+            onChange={(e) => setNuevoContacto({ ...nuevoContacto, segmento: e.target.value })}
+            className="w-full mb-3 p-2 rounded bg-white/10 border border-white/20 text-white"
+          >
+            <option value="leads">leads</option>
+            <option value="cliente">cliente</option>
+            <option value="otros">otros</option>
+          </select>
+
+          <button
+            onClick={handleGuardarContacto}
+            className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white"
+          >
+            Guardar contacto
+          </button>
+        </div>
       </div>
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
