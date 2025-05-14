@@ -354,14 +354,12 @@ export default function CampaignsSmsClient() {
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
           <FaAddressBook /> Contactos cargados ({cantidadContactos}/{limiteContactos})
         </h3>
-      </div>
 
-      <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-        <h3 className="font-bold text-white mb-2">Ampliar límite de contactos</h3>
-        <p className="text-white text-sm mb-2">
+        <p className="text-white text-sm mb-3">
           Tienes {cantidadContactos} contactos cargados. Puedes ampliar tu límite comprando un paquete adicional:
         </p>
-        <div className="flex gap-2">
+
+        <div className="flex gap-2 mb-4">
           {[500, 1000, 2000].map((extra) => (
             <button
               key={extra}
@@ -372,37 +370,45 @@ export default function CampaignsSmsClient() {
             </button>
           ))}
         </div>
-      </div>
 
-      <button
-        onClick={handleEliminarContactos}
-        className="bg-red-600 hover:bg-red-500 px-4 py-2 mt-3 rounded font-semibold text-white"
-      >
-        Eliminar todos los contactos
-      </button>
+        <div className="flex flex-col md:flex-row md:items-center gap-3">
+          <button
+            onClick={handleEliminarContactos}
+            className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+          >
+            Eliminar todos los contactos
+          </button>
 
-      <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-        <h3 className="font-bold text-white mb-2">Subir lista de contactos (.CSV)</h3>
+          <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
+            <input
+              type="file"
+              accept=".csv"
+              ref={inputRef}
+              onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  setArchivoCsv(e.target.files[0]);
+                }
+              }}
+              className="hidden"
+            />
 
-        <input
-          type="file"
-          accept=".csv"
-          ref={inputRef}
-          onChange={(e) => {
-            if (e.target.files?.[0]) {
-              setArchivoCsv(e.target.files[0]);
-            }
-          }}
-          className="block w-full mb-3 text-white"
-        />
+            <button
+              onClick={() => inputRef.current?.click()}
+              className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+            >
+              Seleccionar archivo
+            </button>
 
-        <button
-          onClick={handleSubirCsv}
-          className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white"
-          disabled={!archivoCsv}
-        >
-          Subir archivo CSV
-        </button>
+            {archivoCsv && (
+              <button
+                onClick={handleSubirCsv}
+                className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+              >
+                Subir contactos
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
