@@ -220,6 +220,30 @@ export default function CampaignsSmsClient() {
     }
   };
 
+  const handleEliminarContactos = async () => {
+    if (!confirm("¿Estás seguro? Esta acción eliminará todos tus contactos.")) return;
+  
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/contactos`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+  
+      const json = await res.json();
+  
+      if (res.ok) {
+        alert("✅ Contactos eliminados correctamente");
+        setContactos([]);
+        setCantidadContactos(0);
+      } else {
+        alert(`❌ ${json.error || "No se pudo eliminar"}`);
+      }
+    } catch (err) {
+      console.error("❌ Error al eliminar contactos:", err);
+      alert("❌ Error al conectar con el servidor");
+    }
+  };
+  
   const comprarMasSms = async (cantidad: number) => {
     const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
       method: "POST",
@@ -259,6 +283,25 @@ export default function CampaignsSmsClient() {
     }
   };
   
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    let updated = false;
+  
+    if (creditoOk) {
+      url.searchParams.delete("credito");
+      updated = true;
+    }
+  
+    if (contactosOk) {
+      url.searchParams.delete("contactos");
+      updated = true;
+    }
+  
+    if (updated) {
+      window.history.replaceState({}, document.title, url.toString());
+    }
+  }, [creditoOk, contactosOk]);  
+  
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -271,13 +314,13 @@ export default function CampaignsSmsClient() {
         </div>
       )}
 
-      <TrainingHelp context="campaign" />
-
       {creditoOk && (
         <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
           ✅ Créditos agregados exitosamente. Ya puedes usarlos en tus campañas SMS.
         </div>
       )}
+
+      <TrainingHelp context="campaign" />
 
       {usoSms && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
@@ -312,6 +355,31 @@ export default function CampaignsSmsClient() {
           <FaAddressBook /> Contactos cargados ({cantidadContactos}/{limiteContactos})
         </h3>
       </div>
+
+      <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+        <h3 className="font-bold text-white mb-2">Ampliar límite de contactos</h3>
+        <p className="text-white text-sm mb-2">
+          Tienes {cantidadContactos} contactos cargados. Puedes ampliar tu límite comprando un paquete adicional:
+        </p>
+        <div className="flex gap-2">
+          {[500, 1000, 2000].map((extra) => (
+            <button
+              key={extra}
+              onClick={() => comprarMasContactos(extra)}
+              className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
+            >
+              +{extra} contactos
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <button
+        onClick={handleEliminarContactos}
+        className="bg-red-600 hover:bg-red-500 px-4 py-2 mt-3 rounded font-semibold text-white"
+      >
+        Eliminar todos los contactos
+      </button>
 
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
         <h3 className="font-bold text-white mb-2">Subir lista de contactos (.CSV)</h3>
