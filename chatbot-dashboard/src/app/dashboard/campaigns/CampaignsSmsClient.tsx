@@ -30,6 +30,7 @@ export default function CampaignsSmsClient() {
 
   const searchParams = useSearchParams();
   const creditoOk = searchParams.get("credito") === "ok";
+  const contactosOk = searchParams.get("contactos") === "ok";
 
   const [limiteContactos, setLimiteContactos] = useState(500);
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -173,7 +174,7 @@ export default function CampaignsSmsClient() {
     }
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/contactos`, {
+      const res = await fetch(`${BACKEND_URL}/api/contactos/manual`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -233,11 +234,39 @@ export default function CampaignsSmsClient() {
     }
   };
   
+  const comprarMasContactos = async (cantidad: number) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ canal: "contactos", cantidad }), // canal personalizado
+      });
+  
+      const json = await res.json();
+  
+      if (res.ok && json.url) {
+        window.location.href = json.url;
+      } else {
+        alert("❌ No se pudo iniciar el pago");
+      }
+    } catch (err) {
+      console.error("❌ Error:", err);
+      alert("❌ Falló la solicitud");
+    }
+  };
+  
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
         <SiTwilio className="text-red-300 animate-pulse" /> Campañas por SMS
       </h1>
+
+      {contactosOk && (
+        <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
+          ✅ Límite de contactos ampliado exitosamente. Ya puedes cargar más contactos.
+        </div>
+      )}
 
       <TrainingHelp context="campaign" />
 
@@ -281,6 +310,23 @@ export default function CampaignsSmsClient() {
         </h3>
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
           <h3 className="font-bold text-white mb-2">Agregar contacto manual</h3>
+
+          {cantidadContactos >= limiteContactos && (
+            <div className="bg-red-600/20 border border-red-500 text-red-300 p-4 rounded mb-4 text-sm">
+              Has alcanzado el límite de contactos. Para subir más, adquiere un paquete adicional:
+              <div className="flex gap-2 mt-3">
+                {[500, 1000].map((extra) => (
+                  <button
+                    key={extra}
+                    onClick={() => comprarMasContactos(extra)}
+                    className="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-white text-sm"
+                  >
+                    +{extra} contactos
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <input
             type="text"
