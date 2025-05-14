@@ -279,7 +279,7 @@ export default function CampaignsSmsClient() {
         body: JSON.stringify({
           canal: "contactos",
           cantidad,
-          redirectPath: "/dashboard/campaigns/email",
+          redirectPath: "/dashboard/campaigns/sms",
         }),
       });
   
