@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 import Footer from "@/components/Footer";
 import {
@@ -40,12 +40,9 @@ export default function CampaignsSmsClient() {
   const [expandedCampaignId, setExpandedCampaignId] = useState<number | null>(null);
   const [membresiaActiva, setMembresiaActiva] = useState<boolean>(false);
   const [usoSms, setUsoSms] = useState<{ usados: number; limite: number } | null>(null);
-  const [nuevoContacto, setNuevoContacto] = useState({
-    nombre: "",
-    telefono: "",
-    email: "",
-    segmento: "leads",
-  });
+  const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -162,41 +159,47 @@ export default function CampaignsSmsClient() {
     }
   };
 
-  const handleGuardarContacto = async () => {
-    if (!nuevoContacto.telefono || !nuevoContacto.segmento) {
-      alert("Completa los campos obligatorios");
+  const handleSubirCsv = async () => {
+    if (!archivoCsv) return;
+  
+    // Validación básica: ejemplo, tamaño 5MB max y .csv
+    if (archivoCsv.size > 5 * 1024 * 1024 || !archivoCsv.name.endsWith(".csv")) {
+      alert("❌ El archivo debe ser .csv y pesar menos de 5MB");
       return;
     }
-
+  
+    // Validar límite
     if (cantidadContactos >= limiteContactos) {
-      alert("❌ Has alcanzado el límite de contactos permitidos. Compra más para continuar.");
+      alert("❌ Has alcanzado el límite de contactos. Compra más para subir tu lista.");
       return;
     }
-
+  
     try {
-      const res = await fetch(`${BACKEND_URL}/api/contactos/manual`, {
+      const formData = new FormData();
+      formData.append("file", archivoCsv);
+  
+      const res = await fetch(`${BACKEND_URL}/api/contactos`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(nuevoContacto),
+        body: formData,
       });
-
-      const data = await res.json();
-
+  
+      const json = await res.json();
+  
       if (res.ok) {
-        alert("✅ Contacto guardado");
-        setNuevoContacto({ nombre: "", telefono: "", email: "", segmento: "leads" });
-        setContactos((prev) => [...prev, data]);
-        setCantidadContactos((prev) => prev + 1);
+        alert(`✅ ${json.nuevos} contactos agregados`);
+        inputRef.current?.value && (inputRef.current.value = "");
+        setArchivoCsv(null);
+        setCantidadContactos((prev) => prev + json.nuevos);
       } else {
-        alert(`❌ ${data.error || "Error al guardar contacto"}`);
+        alert(`❌ ${json.error || "Error al subir archivo"}`);
       }
     } catch (err) {
-      console.error("❌ Error:", err);
-      alert("❌ Falló la conexión");
+      console.error("❌ Error al subir archivo:", err);
+      alert("❌ Falló la conexión con el servidor");
     }
   };
-
+  
   const eliminarCampana = async (id: number) => {
     if (!confirm("¿Estás seguro de que deseas eliminar esta campaña?")) return;
 
@@ -308,65 +311,30 @@ export default function CampaignsSmsClient() {
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
           <FaAddressBook /> Contactos cargados ({cantidadContactos}/{limiteContactos})
         </h3>
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="font-bold text-white mb-2">Agregar contacto manual</h3>
+      </div>
 
-          {cantidadContactos >= limiteContactos && (
-            <div className="bg-red-600/20 border border-red-500 text-red-300 p-4 rounded mb-4 text-sm">
-              Has alcanzado el límite de contactos. Para subir más, adquiere un paquete adicional:
-              <div className="flex gap-2 mt-3">
-                {[500, 1000].map((extra) => (
-                  <button
-                    key={extra}
-                    onClick={() => comprarMasContactos(extra)}
-                    className="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-white text-sm"
-                  >
-                    +{extra} contactos
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+      <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+        <h3 className="font-bold text-white mb-2">Subir lista de contactos (.CSV)</h3>
 
-          <input
-            type="text"
-            placeholder="Nombre"
-            value={nuevoContacto.nombre}
-            onChange={(e) => setNuevoContacto({ ...nuevoContacto, nombre: e.target.value })}
-            className="w-full mb-2 p-2 rounded bg-white/10 border border-white/20"
-          />
-          <input
-            type="tel"
-            placeholder="Teléfono"
-            value={nuevoContacto.telefono}
-            onChange={(e) => setNuevoContacto({ ...nuevoContacto, telefono: e.target.value })}
-            className="w-full mb-2 p-2 rounded bg-white/10 border border-white/20"
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={nuevoContacto.email}
-            onChange={(e) => setNuevoContacto({ ...nuevoContacto, email: e.target.value })}
-            className="w-full mb-2 p-2 rounded bg-white/10 border border-white/20"
-          />
+        <input
+          type="file"
+          accept=".csv"
+          ref={inputRef}
+          onChange={(e) => {
+            if (e.target.files?.[0]) {
+              setArchivoCsv(e.target.files[0]);
+            }
+          }}
+          className="block w-full mb-3 text-white"
+        />
 
-          <select
-            value={nuevoContacto.segmento}
-            onChange={(e) => setNuevoContacto({ ...nuevoContacto, segmento: e.target.value })}
-            className="w-full mb-3 p-2 rounded bg-white/10 border border-white/20 text-white"
-          >
-            <option value="leads">leads</option>
-            <option value="cliente">cliente</option>
-            <option value="otros">otros</option>
-          </select>
-
-          <button
-            onClick={handleGuardarContacto}
-            className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white"
-          >
-            Guardar contacto
-          </button>
-        </div>
+        <button
+          onClick={handleSubirCsv}
+          className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white"
+          disabled={!archivoCsv}
+        >
+          Subir archivo CSV
+        </button>
       </div>
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
