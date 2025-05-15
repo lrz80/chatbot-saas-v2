@@ -15,6 +15,8 @@ import TrainingHelp from "@/components/TrainingHelp";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { DateTime } from "luxon";
 import { useSearchParams } from "next/navigation";
+import EmailLogViewer from "@/components/EmailLogViewer";
+
 
 export default function CampaignsEmailClient() {
   const [form, setForm] = useState({
@@ -31,6 +33,7 @@ export default function CampaignsEmailClient() {
   const searchParams = useSearchParams();
   const creditoOk = searchParams.get("credito") === "ok";
   const contactosOk = searchParams.get("contactos") === "ok";
+  const [emailLogs, setEmailLogs] = useState<Record<number, any[]>>({});
 
   const [limiteContactos, setLimiteContactos] = useState(500);
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -330,6 +333,22 @@ export default function CampaignsEmailClient() {
     colorBarra = "bg-yellow-400";
   }
 
+  useEffect(() => {
+    const fetchLogs = async () => {
+      const allLogs: Record<number, any[]> = {};
+      for (const c of campaigns) {
+        const res = await fetch(`/api/email-status?campaign_id=${c.id}`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        allLogs[c.id] = data || [];
+      }
+      setEmailLogs(allLogs);
+    };
+  
+    if (campaigns.length > 0) fetchLogs();
+  }, [campaigns]);
+
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -535,84 +554,117 @@ export default function CampaignsEmailClient() {
         <p className="text-white/70">No hay campañas Email registradas aún.</p>
       ) : (
         <ul className="space-y-6 text-white text-sm">
-          {campaigns.map((c) => (
-            <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <div>
-                  <div className="text-lg font-bold text-white mb-1">{c.nombre}</div>
-                  <div className="text-white/80 mb-1">
-                    <SiGooglecalendar className="inline mr-1" />{" "}
-                    {new Date(c.programada_para).toLocaleString("es-ES", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </div>
-                  {c.contenido && (
-                    <div className="text-white/90 italic mb-1">📧 {c.contenido}</div>
-                  )}
-                  {c.link_url && (
-                    <div className="mt-1 text-blue-400 underline text-sm">
-                      <a href={c.link_url} target="_blank" rel="noopener noreferrer">
-                        🔗 Ver enlace
-                      </a>
-                    </div>
-                  )}
-                  {c.imagen_url && (
-                    <div className="mt-2">
-                      <img
-                        src={c.imagen_url}
-                        alt="Imagen campaña"
-                        className="max-h-32 border border-white/10 rounded"
-                      />
-                    </div>
-                  )}
-                  {c.archivo_adjunto_url && (
-                    <div className="mt-2 text-blue-300 underline text-sm">
-                      <a
-                        href={c.archivo_adjunto_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        📎 Ver archivo adjunto
-                      </a>
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-2 mt-2 md:mt-0">
-                  <button
-                    className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
-                    onClick={() =>
-                      setExpandedCampaignId(c.id === expandedCampaignId ? null : c.id)
-                    }
-                  >
-                    {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
-                  </button>
-                  <button
-                    className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
-                    onClick={() => eliminarCampana(c.id)}
-                  >
-                    🗑 Eliminar
-                  </button>
-                </div>
-              </div>
+          {campaigns.map((c) => {
+            const logs = emailLogs[c.id] || [];
+            const enviados = logs.length;
+            const fallidos = logs.filter((l) => l.status === "failed").length;
+            const exitosos = enviados - fallidos;
 
-              {expandedCampaignId === c.id && (
-                <div className="mt-4 border-t border-white/10 pt-3 text-xs text-white/80">
-                  Esta campaña fue enviada por el canal <strong>Email</strong> y está programada
-                  para:{" "}
-                  <span className="text-white font-semibold">
-                    {new Date(c.programada_para).toLocaleString("es-ES", {
-                      dateStyle: "long",
-                      timeStyle: "short",
-                    })}
-                  </span>
-                  .
-                  <br />
-                  Actualmente no se visualiza el estado de entregas como en SMS, pero puedes ver los archivos enviados, enlaces y contenido aquí.
+            return (
+              <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                  <div>
+                    <div className="text-lg font-bold text-white mb-1">{c.nombre}</div>
+                    <div className="text-white/80 mb-1">
+                      <SiGooglecalendar className="inline mr-1" />{" "}
+                      {new Date(c.programada_para).toLocaleString("es-ES", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </div>
+
+                    {logs.length > 0 && (
+                      <div className="text-white/70 text-xs mt-1 space-y-1">
+                        <div>
+                          📤 Enviados:{" "}
+                          <span className="font-semibold">{enviados}</span>
+                        </div>
+                        <div>
+                          ✅ Entregados:{" "}
+                          <span className="text-green-400 font-semibold">{exitosos}</span>
+                        </div>
+                        <div>
+                          ❌ Fallidos:{" "}
+                          <span className="text-red-400 font-semibold">{fallidos}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {c.contenido && (
+                      <div className="text-white/90 italic mb-1">📧 {c.contenido}</div>
+                    )}
+                    {c.link_url && (
+                      <div className="mt-1 text-blue-400 underline text-sm">
+                        <a
+                          href={c.link_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          🔗 Ver enlace
+                        </a>
+                      </div>
+                    )}
+                    {c.imagen_url && (
+                      <div className="mt-2">
+                        <img
+                          src={c.imagen_url}
+                          alt="Imagen campaña"
+                          className="max-h-32 border border-white/10 rounded"
+                        />
+                      </div>
+                    )}
+                    {c.archivo_adjunto_url && (
+                      <div className="mt-2 text-blue-300 underline text-sm">
+                        <a
+                          href={c.archivo_adjunto_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          📎 Ver archivo adjunto
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2 mt-2 md:mt-0">
+                    <button
+                      className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
+                      onClick={() =>
+                        setExpandedCampaignId(
+                          c.id === expandedCampaignId ? null : c.id
+                        )
+                      }
+                    >
+                      {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
+                    </button>
+                    <button
+                      className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
+                      onClick={() => eliminarCampana(c.id)}
+                    >
+                      🗑 Eliminar
+                    </button>
+                  </div>
                 </div>
-              )}
-            </li>
-          ))}
+
+                {expandedCampaignId === c.id && (
+                  <div className="mt-4 border-t border-white/10 pt-3 text-xs text-white/80">
+                    Esta campaña fue enviada por el canal <strong>Email</strong> y está programada para:{" "}
+                    <span className="text-white font-semibold">
+                      {new Date(c.programada_para).toLocaleString("es-ES", {
+                        dateStyle: "long",
+                        timeStyle: "short",
+                      })}
+                    </span>
+                    .
+
+                    <div className="mt-4">
+                      <EmailLogViewer campaignId={c.id} />
+                    </div>
+                  </div>
+                )}
+
+              </li>
+            );
+          })}
         </ul>
       )}
       <Footer />
