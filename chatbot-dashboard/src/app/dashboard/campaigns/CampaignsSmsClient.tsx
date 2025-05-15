@@ -328,8 +328,19 @@ export default function CampaignsSmsClient() {
   const usoContactos = {
     usados: contactos.length || 0,
     limite: limiteContactos || 500,
-  };  
+  };
   
+  const porcentajeContactos = usoContactos.limite > 0
+  ? (usoContactos.usados / usoContactos.limite) * 100
+  : 0;
+
+  let colorBarra = "bg-green-500";
+  if (porcentajeContactos >= 90) {
+    colorBarra = "bg-red-500";
+  } else if (porcentajeContactos >= 70) {
+    colorBarra = "bg-yellow-400";
+  }
+
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -385,10 +396,10 @@ export default function CampaignsSmsClient() {
         <p className="text-white text-sm mb-2">
           {usoContactos.usados} de {usoContactos.limite} contactos usados
         </p>
-        <div className="w-full bg-green-500 h-2 rounded mb-2 overflow-hidden">
+        <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
           <div
-            className="h-full bg-white"
-            style={{ width: `${(usoContactos.usados / usoContactos.limite) * 100}%` }}
+            className={`h-full ${colorBarra} transition-all duration-500`}
+            style={{ width: `${porcentajeContactos}%` }}
           />
         </div>
 
