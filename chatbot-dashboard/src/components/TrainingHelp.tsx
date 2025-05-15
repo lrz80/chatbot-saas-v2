@@ -2,11 +2,12 @@
 "use client";
 
 import { useState } from "react";
-import { Mic, Megaphone, ChevronDown, ChevronUp } from "lucide-react";
+import { Mic, ChevronDown, ChevronUp } from "lucide-react";
 import { SiMeta, SiWhatsapp } from "react-icons/si";
+import { FaSms, FaEnvelope } from "react-icons/fa";
 
 interface Props {
-  context: "training" | "meta" | "voice" | "campaign";
+  context: "training" | "meta" | "voice" | "campaign-sms" | "campaign-email";
 }
 
 export default function TrainingHelp({ context }: Props) {
@@ -18,7 +19,8 @@ export default function TrainingHelp({ context }: Props) {
     training: "¿Cómo entrenar tu asistente?",
     meta: "¿Cómo funciona la integración con Facebook e Instagram?",
     voice: "¿Cómo configurar tu asistente por voz?",
-    campaign: "¿Cómo crear una campaña automatizada?",
+    "campaign-sms": "¿Cómo enviar campañas por SMS?",
+    "campaign-email": "¿Cómo enviar campañas por Email?",
   };
 
   return (
@@ -31,7 +33,10 @@ export default function TrainingHelp({ context }: Props) {
           {context === "training" && <SiWhatsapp className="text-green-400" />}
           {context === "meta" && <SiMeta className="text-blue-500" />}
           {context === "voice" && <Mic className="text-purple-400" />}
-          {context === "campaign" && <Megaphone className="text-pink-400" />}
+          {context === "campaign-sms" && <FaSms className="text-yellow-400" />}
+          {context === "campaign-email" && (
+            <FaEnvelope className="text-teal-300" />
+          )}
           {contextTitles[context]}
         </span>
         {open ? <ChevronUp /> : <ChevronDown />}
@@ -41,86 +46,60 @@ export default function TrainingHelp({ context }: Props) {
         <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-lg text-sm text-white space-y-3">
           {context === "training" && (
             <ul className="list-disc list-inside space-y-2">
-              <li><strong>¿Qué debe hacer tu asistente?</strong> Describe sus funciones principales de tu asistente.</li>
-              <li><strong>Información que el Asistente debe conocer:</strong> Cuales son tus servicios, precios, links, etc. Asegurate de colocar toda informacion que creas relevante.</li>
-              <li><strong>Instrucciones:</strong> Instrucción que el Asistente usa para saber cómo debe hablar, qué información tiene sobre tu negocio (horario, servicios, tono de atención) y cómo responder a tus clientes.</li>
-              <li><strong>Mensaje de bienvenida:</strong> El primer mensaje que ve el usuario.</li>
-              <li><strong>Información del negocio:</strong> Datos esenciales que el Asistente puede usar.</li>
-              <li><strong>Preguntas frecuentes:</strong> Respuestas automáticas a dudas comunes.</li>
-              <li><strong>Entrenamiento por intención:</strong> Enséñale a responder frases específicas.</li>
-              <li><strong>Flujos guiados Interactivos:</strong> Conversaciones paso a paso donde el chatbot guía al usuario con botones o preguntas predefinidas, en lugar de esperar que el usuario escriba libremente. Ejemplo: 
-                Bot: ¿Qué deseas hacer hoy?
-                🔘 Agendar cita
-                🔘 Consultar precios
-                🔘 Ver servicios
-
-                Usuario: 🔘 Agendar cita
-
-                Bot: ¿Para qué servicio quieres la cita?
-                🔘 Facial
-                🔘 Depilación
-                🔘 Uñas
-
-                Usuario: 🔘 Uñas
-
-                Bot: Perfecto. ¿Qué día prefieres? (y así sigue...)</li>
-              <li><strong>Vista previa:</strong> Prueba el comportamiento del Asistente en tiempo real.</li>
+              <li><strong>¿Qué debe hacer tu asistente?</strong> Describe sus funciones principales.</li>
+              <li><strong>Información que el Asistente debe conocer:</strong> Servicios, precios, links, etc.</li>
+              <li><strong>Instrucciones:</strong> Cómo debe hablar y responder el asistente.</li>
+              <li><strong>Mensaje de bienvenida:</strong> Primer mensaje que verá el usuario.</li>
+              <li><strong>Preguntas frecuentes:</strong> Respuestas a dudas comunes.</li>
+              <li><strong>Entrenamiento por intención:</strong> Enseña al bot frases específicas.</li>
+              <li><strong>Flujos guiados:</strong> Conversaciones paso a paso con botones.</li>
+              <li><strong>Vista previa:</strong> Prueba el comportamiento del asistente.</li>
             </ul>
           )}
 
           {context === "meta" && (
             <ul className="list-disc list-inside space-y-2">
-              <li><strong>Conexión:</strong> Vincula tu página de Facebook e Instagram Business.</li>
-              <li><strong>Entrenamiento por intención:</strong> Enséñale a reconocer lo que quiere el usuario, incluso si lo dice con diferentes palabras. Ejemplo: Intención: Pedir precios. Frases de entrenamiento:
-              ¿Cuánto cuesta?
-              ¿Me puedes dar los precios?
-              ¿Qué vale ese servicio?
-              ¿Tienen tarifas?</li>
-              <li><strong>Información que el Asistente debe conocer:</strong> Cuales son tus servicios, precios, links, etc. Asegurate de colocar toda informacion que creas relevante.</li>
-              <li><strong>Mensaje de bienvenida:</strong> Respuesta automática al iniciar conversación.</li>
-              <li><strong>Instrucciones Generadas:</strong> Instrucción que el Asistente usa para saber cómo debe hablar, qué información tiene sobre tu negocio (horario, servicios, tono de atención) y cómo responder a tus clientes.</li>
-              <li><strong>Preguntas frecuentes:</strong> Respuestas automáticas a dudas comunes.</li>
-              <li><strong>Flujos guiados Interactivos:</strong> Conversaciones paso a paso donde el chatbot guía al usuario con botones o preguntas predefinidas, en lugar de esperar que el usuario escriba libremente. Ejemplo: 
-                Bot: ¿Qué deseas hacer hoy?
-                🔘 Agendar cita
-                🔘 Consultar precios
-                🔘 Ver servicios
-
-                Usuario: 🔘 Agendar cita
-
-                Bot: ¿Para qué servicio quieres la cita?
-                🔘 Facial
-                🔘 Depilación
-                🔘 Uñas
-
-                Usuario: 🔘 Uñas
-
-                Bot: Perfecto. ¿Qué día prefieres? (y así sigue...)</li>
-              <li><strong>Vista previa:</strong> Prueba el comportamiento del Asistente en tiempo real.</li>
+              <li><strong>Conexión:</strong> Vincula tu página de Facebook e Instagram.</li>
+              <li><strong>Entrenamiento por intención:</strong> Frases de entrenamiento para reconocer intenciones.</li>
+              <li><strong>Información que el Asistente debe conocer:</strong> Servicios, precios, links, etc.</li>
+              <li><strong>Mensaje de bienvenida:</strong> Primer mensaje automático.</li>
+              <li><strong>Instrucciones:</strong> Cómo responder y qué tono usar.</li>
+              <li><strong>Preguntas frecuentes:</strong> Respuestas automáticas.</li>
+              <li><strong>Flujos guiados:</strong> Conversaciones guiadas con botones.</li>
+              <li><strong>Vista previa:</strong> Prueba cómo responde tu asistente.</li>
             </ul>
           )}
 
           {context === "voice" && (
             <ul className="list-disc list-inside space-y-2">
               <li><strong>Idioma:</strong> Idioma principal para llamadas.</li>
-              <li><strong>Instrucciones del sistema:</strong> Instrucción que el Asistente usa para saber cómo debe hablar, qué información tiene sobre tu negocio (horario, servicios, tono de atención) y cómo responder a tus clientes.</li>
-              <li><strong>Mensaje de bienvenida:</strong> Introducción cuando el usuario llama.</li>
-              <li><strong>Voz de Twilio:</strong> Selección de voz que se usará en las llamadas.</li>
-              <li><strong>Hints:</strong> Palabras clave que debe entender con claridad.</li>
-              <li><strong>Escuchar Voz:</strong> Haz una Llamada de prueba a tu numero asignado para escuchar la voz.</li>
+              <li><strong>Instrucciones del sistema:</strong> Cómo responder y qué debe saber el asistente.</li>
+              <li><strong>Mensaje de bienvenida:</strong> Introducción cuando llaman.</li>
+              <li><strong>Voz de Twilio:</strong> Selección de voz.</li>
+              <li><strong>Hints:</strong> Palabras clave importantes.</li>
+              <li><strong>Escuchar voz:</strong> Haz una llamada de prueba.</li>
             </ul>
           )}
 
-          {context === "campaign" && (
+          {context === "campaign-sms" && (
             <ul className="list-disc list-inside space-y-2">
-              <li><strong>Contactos Cargados:</strong> Muestra cuántos contactos has subido para usar en tus campañas de marketing (WhatsApp, SMS o Email). Los contactos deben incluir: Nombre, Teléfono, Email, Segmento</li>
-              <li><strong>Nombre de la Campaña:</strong> Identifica tu campaña fácilmente.</li>
-              <li><strong>Canal:</strong> WhatsApp, Email o SMS.</li>
-              <li><strong>Contenido del Mensaje:</strong> Contenido que se enviará automáticamente.</li>
-              <li><strong>Imagen:</strong> Si deseas cargar una imagen a tu Campaña.</li>
-              <li><strong>Fecha y Hora de envio:</strong> Define cuándo lanzar la campaña.</li>
-              <li><strong>Elegir Segmentos:</strong> A quién se le enviará (clientes, leads, etc.).</li>
-              <li><strong>Estadísticas:</strong> Visualiza resultados y conversiones.</li>
+              <li><strong>Contactos:</strong> Carga contactos con nombre y número.</li>
+              <li><strong>Segmentos:</strong> Define el público objetivo.</li>
+              <li><strong>Mensaje:</strong> Escribe el texto que se enviará.</li>
+              <li><strong>Programación:</strong> Elige fecha y hora de envío.</li>
+              <li><strong>Estadísticas:</strong> Revisa el rendimiento de la campaña.</li>
+            </ul>
+          )}
+
+          {context === "campaign-email" && (
+            <ul className="list-disc list-inside space-y-2">
+              <li><strong>Contactos:</strong> Carga nombre y correo electrónico.</li>
+              <li><strong>Segmentos:</strong> Selecciona a quién le enviarás el correo.</li>
+              <li><strong>Asunto:</strong> Título atractivo del email.</li>
+              <li><strong>Mensaje:</strong> Redacta el contenido del email.</li>
+              <li><strong>Imagen (opcional):</strong> Puedes incluir una imagen.</li>
+              <li><strong>Programación:</strong> Fecha y hora del envío.</li>
+              <li><strong>Estadísticas:</strong> Tasa de apertura, clics y conversiones.</li>
             </ul>
           )}
         </div>
