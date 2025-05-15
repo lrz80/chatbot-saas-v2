@@ -31,10 +31,6 @@ export default function CampaignsSmsClient() {
   const searchParams = useSearchParams();
   const creditoOk = searchParams.get("credito") === "ok";
   const contactosOk = searchParams.get("contactos") === "ok";
-  const usoContactos = {
-    usados: 320,
-    limite: 500,
-  };  
 
   const [limiteContactos, setLimiteContactos] = useState(500);
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -329,6 +325,11 @@ export default function CampaignsSmsClient() {
     }
   }, [creditoOk, contactosOk]);  
   
+  const usoContactos = {
+    usados: cantidadContactos,
+    limite: limiteContactos,
+  };
+  
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -381,7 +382,6 @@ export default function CampaignsSmsClient() {
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
           <FaAddressBook /> Contactos
         </h3>
-
         <p className="text-white text-sm mb-2">
           {usoContactos.usados} de {usoContactos.limite} contactos usados
         </p>
