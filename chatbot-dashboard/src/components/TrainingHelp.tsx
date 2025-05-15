@@ -88,7 +88,7 @@ export default function TrainingHelp({ context }: Props) {
           {context === "campaign-sms" && (
             <ul className="list-disc list-inside space-y-2">
               <li><strong>Uso mensual de sms:</strong> SMS disponibles.</li>
-              <li><strong>Contactos:</strong> Carga contactos con nombre y número.</li>
+              <li><strong>Contactos:</strong> Carga contactos en formato CSV.</li>
               <li><strong>Nombre de la Campana:</strong> Identifica tu Campana.</li>
               <li><strong>Contenido del SMS:</strong> Escribe el texto que se enviará, puedes incluir un Link.</li>
               <li><strong>Fecha de Envio:</strong> Elige fecha y hora de envío.</li>
@@ -99,7 +99,7 @@ export default function TrainingHelp({ context }: Props) {
 
           {context === "campaign-email" && (
             <ul className="list-disc list-inside space-y-2">
-              <li><strong>Contactos:</strong> Carga nombre y correo electrónico.</li>
+              <li><strong>Contactos:</strong> Carga nombre en formato CSV.</li>
               <li><strong>Segmentos:</strong> Selecciona a quién le enviarás el correo.</li>
               <li><strong>Asunto:</strong> Título atractivo del email.</li>
               <li><strong>Mensaje:</strong> Redacta el contenido del email.</li>

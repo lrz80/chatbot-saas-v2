@@ -341,6 +341,17 @@ export default function CampaignsSmsClient() {
     colorBarra = "bg-yellow-400";
   }
 
+  const porcentajeSms = usoSms && usoSms.limite > 0
+  ? (usoSms.usados / usoSms.limite) * 100
+  : 0;
+
+  let colorBarraSms = "bg-green-500";
+  if (porcentajeSms >= 90) {
+    colorBarraSms = "bg-red-500";
+  } else if (porcentajeSms >= 70) {
+    colorBarraSms = "bg-yellow-400";
+  }
+
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -367,14 +378,15 @@ export default function CampaignsSmsClient() {
             <MdSms /> Uso mensual de SMS
           </h3>
           <p className="text-white text-sm mb-2">
-            {usoSms.usados} de {usoSms.limite} mensajes enviados
+            {usoSms?.usados ?? 0} de {usoSms?.limite ?? 500} mensajes enviados
           </p>
-          <div className="w-full bg-white/20 rounded h-3 overflow-hidden mb-2">
+          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
             <div
-              className="bg-green-500 h-full"
-              style={{ width: `${(usoSms.usados / usoSms.limite) * 100}%` }}
+              className={`h-full ${colorBarraSms} transition-all duration-500`}
+              style={{ width: `${porcentajeSms}%` }}
             />
           </div>
+
           <div className="flex gap-2">
             {[500, 1000, 2000].map((extra) => (
               <button
