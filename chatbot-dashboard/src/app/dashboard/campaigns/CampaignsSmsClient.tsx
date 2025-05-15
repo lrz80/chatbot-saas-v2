@@ -326,9 +326,9 @@ export default function CampaignsSmsClient() {
   }, [creditoOk, contactosOk]);  
   
   const usoContactos = {
-    usados: cantidadContactos,
-    limite: limiteContactos,
-  };
+    usados: contactos.length || 0,
+    limite: limiteContactos || 500,
+  };  
   
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
