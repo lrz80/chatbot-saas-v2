@@ -99,7 +99,7 @@ export default function TrainingHelp({ context }: Props) {
 
           {context === "campaign-email" && (
             <ul className="list-disc list-inside space-y-2">
-              <li><strong>Contactos:</strong> Carga nombre en formato CSV.</li>
+              <li><strong>Contactos:</strong> Carga Contactos en formato CSV.</li>
               <li><strong>Segmentos:</strong> Selecciona a quién le enviarás el correo.</li>
               <li><strong>Asunto:</strong> Título atractivo del email.</li>
               <li><strong>Mensaje:</strong> Redacta el contenido del email.</li>

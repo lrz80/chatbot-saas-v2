@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 import Footer from "@/components/Footer";
 import {
@@ -12,6 +12,9 @@ import {
 } from "react-icons/si";
 import { FaAddressBook, FaPaperclip } from "react-icons/fa";
 import TrainingHelp from "@/components/TrainingHelp";
+import { HiOutlineExclamationTriangle } from "react-icons/hi2";
+import { DateTime } from "luxon";
+import { useSearchParams } from "next/navigation";
 
 export default function CampaignsEmailClient() {
   const [form, setForm] = useState({
@@ -22,28 +25,73 @@ export default function CampaignsEmailClient() {
     link_url: "",
     imagen: null as File | null,
     archivo_adjunto: null as File | null,
+    asunto: "",
   });
 
+  const searchParams = useSearchParams();
+  const creditoOk = searchParams.get("credito") === "ok";
+  const contactosOk = searchParams.get("contactos") === "ok";
+
+  const [limiteContactos, setLimiteContactos] = useState(500);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [contactos, setContactos] = useState<any[]>([]);
   const [cantidadContactos, setCantidadContactos] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [expandedCampaignId, setExpandedCampaignId] = useState<number | null>(null);
+  const [membresiaActiva, setMembresiaActiva] = useState<boolean>(false);
+  const [usoSms, setUsoSms] = useState<{ usados: number; limite: number } | null>(null);
+  const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => {
-        const emailOnly = (data || []).filter((c: any) => c.canal === "email");
-        setCampaigns(emailOnly);
+      .then(async (data) => {
+        const smsOnly = (data || []).filter((c: any) => c.canal === "email");
+
+        const enriched = await Promise.all(
+          smsOnly.map(async (c: any) => {
+            try {
+              const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}/email-status`, {
+                credentials: "include",
+              });
+              const entregas = res.ok ? await res.json() : [];
+              return { ...c, entregas };
+            } catch {
+              return { ...c, entregas: [] };
+            }
+          })
+        );
+
+        setCampaigns(enriched);
       });
+
+    fetch(`${BACKEND_URL}/api/contactos/limite`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        setLimiteContactos(data.limite || 500);
+        setCantidadContactos(data.total || 0);
+      })
+      .catch((err) => console.error("❌ Error cargando límite de contactos:", err));
 
     fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setContactos(data || []));
 
-    fetch(`${BACKEND_URL}/api/contactos/count`, { credentials: "include" })
+    fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setCantidadContactos(data.total || 0));
+      .then((data) => {
+        setMembresiaActiva(data?.membresia_activa === true);
+      })
+      .catch(err => console.error("❌ Error obteniendo membresía:", err));
+
+    fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        const email = (data.usos || []).find((u: any) => u.canal === "email");
+        setUsoSms({ usados: email?.usados ?? 0, limite: email?.limite ?? 500 });
+      })
+      .catch((err) => console.error("❌ Error cargando uso email:", err));
   }, []);
 
   const toggleSegmento = (id: string) => {
@@ -113,6 +161,7 @@ export default function CampaignsEmailClient() {
           link_url: "",
           imagen: null,
           archivo_adjunto: null,
+          asunto: "",
         });
         setCampaigns((prev) => [json, ...prev]);
       } else {
@@ -125,18 +174,237 @@ export default function CampaignsEmailClient() {
     }
   };
 
+  const handleSubirCsv = async () => {
+    if (!archivoCsv) return;
+  
+    // Validación básica: ejemplo, tamaño 5MB max y .csv
+    if (archivoCsv.size > 5 * 1024 * 1024 || !archivoCsv.name.endsWith(".csv")) {
+      alert("❌ El archivo debe ser .csv y pesar menos de 5MB");
+      return;
+    }
+  
+    // Validar límite
+    if (cantidadContactos >= limiteContactos) {
+      alert("❌ Has alcanzado el límite de contactos. Compra más para subir tu lista.");
+      return;
+    }
+  
+    try {
+      const formData = new FormData();
+      formData.append("file", archivoCsv);
+  
+      const res = await fetch(`${BACKEND_URL}/api/contactos`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+  
+      const json = await res.json();
+  
+      if (res.ok) {
+        alert(`✅ ${json.nuevos} contactos agregados`);
+        inputRef.current?.value && (inputRef.current.value = "");
+        setArchivoCsv(null);
+        setCantidadContactos((prev) => prev + json.nuevos);
+      } else {
+        alert(`❌ ${json.error || "Error al subir archivo"}`);
+      }
+    } catch (err) {
+      console.error("❌ Error al subir archivo:", err);
+      alert("❌ Falló la conexión con el servidor");
+    }
+  };
+  
+  const eliminarCampana = async (id: number) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar esta campaña?")) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/campaigns/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) {
+        setCampaigns((prev) => prev.filter((c) => c.id !== id));
+        alert("✅ Campaña eliminada");
+      } else {
+        alert("❌ Error al eliminar campaña");
+      }
+    } catch (err) {
+      console.error("❌ Error al eliminar:", err);
+      alert("❌ Error al conectar con el servidor.");
+    }
+  };
+
+  const handleEliminarContactos = async () => {
+    if (!confirm("¿Estás seguro? Esta acción eliminará todos tus contactos.")) return;
+  
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/contactos`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+  
+      const json = await res.json();
+  
+      if (res.ok) {
+        alert("✅ Contactos eliminados correctamente");
+        setContactos([]);
+        setCantidadContactos(0);
+      } else {
+        alert(`❌ ${json.error || "No se pudo eliminar"}`);
+      }
+    } catch (err) {
+      console.error("❌ Error al eliminar contactos:", err);
+      alert("❌ Error al conectar con el servidor");
+    }
+  };
+
+  const comprarMasContactos = async (cantidad: number) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          canal: "contactos",
+          cantidad,
+          redirectPath: "/dashboard/campaigns/sms",
+        }),
+      });
+  
+      const json = await res.json();
+  
+      if (res.ok && json.url) {
+        window.location.href = json.url;
+      } else {
+        alert("❌ No se pudo iniciar el pago");
+      }
+    } catch (err) {
+      console.error("❌ Error:", err);
+      alert("❌ Falló la solicitud");
+    }
+  };  
+  
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        const usoContactos = (data.usos || []).find((u: any) => u.canal === "contactos");
+        setLimiteContactos(usoContactos?.limite || 500);
+      })
+      .catch((err) => console.error("❌ Error cargando uso de contactos:", err));
+  }, []);
+  
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    let updated = false;
+  
+    if (creditoOk) {
+      url.searchParams.delete("credito");
+      updated = true;
+    }
+  
+    if (contactosOk) {
+      url.searchParams.delete("contactos");
+      updated = true;
+    }
+  
+    if (updated) {
+      window.history.replaceState({}, document.title, url.toString());
+    }
+  }, [creditoOk, contactosOk]);  
+
+  const usoContactos = {
+    usados: contactos.length || 0,
+    limite: limiteContactos || 500,
+  };
+  
+  const porcentajeContactos = usoContactos.limite > 0
+  ? (usoContactos.usados / usoContactos.limite) * 100
+  : 0;
+
+  let colorBarra = "bg-green-500";
+  if (porcentajeContactos >= 90) {
+    colorBarra = "bg-red-500";
+  } else if (porcentajeContactos >= 70) {
+    colorBarra = "bg-yellow-400";
+  }
+
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
         <SiMinutemailer className="text-blue-400 animate-pulse" /> Campañas por Email
       </h1>
+      {contactosOk && (
+        <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
+          ✅ Límite de contactos ampliado exitosamente. Ya puedes cargar más contactos.
+        </div>
+      )}
 
       <TrainingHelp context="campaign-email" />
 
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
-          <FaAddressBook /> Contactos cargados ({cantidadContactos}/1500)
+          <FaAddressBook /> Contactos
         </h3>
+        <p className="text-white text-sm mb-2">
+          {usoContactos.usados} de {usoContactos.limite} contactos usados
+        </p>
+        <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+          <div
+            className={`h-full ${colorBarra} transition-all duration-500`}
+            style={{ width: `${porcentajeContactos}%` }}
+          />
+        </div>
+
+        <div className="flex gap-2 mb-4">
+          {[500, 1000, 2000].map((extra) => (
+            <button
+              key={extra}
+              onClick={() => comprarMasContactos(extra)}
+              className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
+            >
+              +{extra} contactos
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-center gap-3">
+          <button
+            onClick={() => inputRef.current?.click()}
+            className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+          >
+            Seleccionar archivo
+          </button>
+
+          <input
+            type="file"
+            accept=".csv"
+            ref={inputRef}
+            onChange={(e) => {
+              if (e.target.files?.[0]) {
+                setArchivoCsv(e.target.files[0]);
+              }
+            }}
+            className="hidden"
+          />
+
+          <button
+            onClick={handleEliminarContactos}
+            className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+          >
+            Eliminar contactos
+          </button>
+
+          {archivoCsv && (
+            <button
+              onClick={handleSubirCsv}
+              className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+            >
+              Subir contactos
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Campos del formulario */}
@@ -148,6 +416,17 @@ export default function CampaignsEmailClient() {
         value={form.nombre}
         onChange={handleChange}
         placeholder="Nombre de la campaña"
+        className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
+      />
+
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <SiMinutemailer /> Asunto del email
+      </label>
+      <input
+        name="asunto"
+        value={form.asunto}
+        onChange={handleChange}
+        placeholder="Asunto del correo"
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
@@ -233,12 +512,18 @@ export default function CampaignsEmailClient() {
       </div>
 
       <button
-        onClick={handleSubmit}
-        disabled={loading}
-        className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? "Enviando..." : "Programar campaña Email"}
-      </button>
+      onClick={() => {
+        if (!membresiaActiva) {
+          alert("❌ Tu membresía no está activa. Actívala para usar campañas Email.");
+          return;
+        }
+        handleSubmit();
+      }}
+      disabled={loading}
+      className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {loading ? "Enviando..." : "Programar campaña Email"}
+    </button>
 
       <hr className="my-10 border-white/20" />
 
@@ -249,51 +534,87 @@ export default function CampaignsEmailClient() {
       {campaigns.length === 0 ? (
         <p className="text-white/70">No hay campañas Email registradas aún.</p>
       ) : (
-        <ul className="space-y-4 text-white text-sm">
+        <ul className="space-y-6 text-white text-sm">
           {campaigns.map((c) => (
             <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
-              <div className="flex items-center gap-2 mb-1 text-white/80">
-                <SiGooglecalendar /> {new Date(c.programada_para).toLocaleString()}
-              </div>
-              <div className="mb-1">
-                <strong className="text-white">{c.nombre}</strong>
-              </div>
-              <div className="text-white/90">{c.contenido}</div>
-
-              {c.link_url && (
-                <div className="mt-2 text-blue-400 underline text-sm">
-                  <a href={c.link_url} target="_blank" rel="noopener noreferrer">
-                    Ver enlace
-                  </a>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                <div>
+                  <div className="text-lg font-bold text-white mb-1">{c.nombre}</div>
+                  <div className="text-white/80 mb-1">
+                    <SiGooglecalendar className="inline mr-1" />{" "}
+                    {new Date(c.programada_para).toLocaleString("es-ES", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </div>
+                  {c.contenido && (
+                    <div className="text-white/90 italic mb-1">📧 {c.contenido}</div>
+                  )}
+                  {c.link_url && (
+                    <div className="mt-1 text-blue-400 underline text-sm">
+                      <a href={c.link_url} target="_blank" rel="noopener noreferrer">
+                        🔗 Ver enlace
+                      </a>
+                    </div>
+                  )}
+                  {c.imagen_url && (
+                    <div className="mt-2">
+                      <img
+                        src={c.imagen_url}
+                        alt="Imagen campaña"
+                        className="max-h-32 border border-white/10 rounded"
+                      />
+                    </div>
+                  )}
+                  {c.archivo_adjunto_url && (
+                    <div className="mt-2 text-blue-300 underline text-sm">
+                      <a
+                        href={c.archivo_adjunto_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        📎 Ver archivo adjunto
+                      </a>
+                    </div>
+                  )}
                 </div>
-              )}
-
-              {c.imagen_url && (
-                <div className="mt-2">
-                  <img
-                    src={c.imagen_url}
-                    alt="Imagen campaña"
-                    className="max-h-32 border border-white/10 rounded"
-                  />
-                </div>
-              )}
-
-              {c.archivo_adjunto_url && (
-                <div className="mt-2 text-blue-300 underline text-sm">
-                  <a
-                    href={c.archivo_adjunto_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                <div className="flex gap-2 mt-2 md:mt-0">
+                  <button
+                    className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
+                    onClick={() =>
+                      setExpandedCampaignId(c.id === expandedCampaignId ? null : c.id)
+                    }
                   >
-                    📎 Ver archivo adjunto
-                  </a>
+                    {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
+                  </button>
+                  <button
+                    className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
+                    onClick={() => eliminarCampana(c.id)}
+                  >
+                    🗑 Eliminar
+                  </button>
+                </div>
+              </div>
+
+              {expandedCampaignId === c.id && (
+                <div className="mt-4 border-t border-white/10 pt-3 text-xs text-white/80">
+                  Esta campaña fue enviada por el canal <strong>Email</strong> y está programada
+                  para:{" "}
+                  <span className="text-white font-semibold">
+                    {new Date(c.programada_para).toLocaleString("es-ES", {
+                      dateStyle: "long",
+                      timeStyle: "short",
+                    })}
+                  </span>
+                  .
+                  <br />
+                  Actualmente no se visualiza el estado de entregas como en SMS, pero puedes ver los archivos enviados, enlaces y contenido aquí.
                 </div>
               )}
             </li>
           ))}
         </ul>
       )}
-
       <Footer />
     </div>
   );
