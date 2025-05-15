@@ -31,6 +31,10 @@ export default function CampaignsSmsClient() {
   const searchParams = useSearchParams();
   const creditoOk = searchParams.get("credito") === "ok";
   const contactosOk = searchParams.get("contactos") === "ok";
+  const usoContactos = {
+    usados: 320,
+    limite: 500,
+  };  
 
   const [limiteContactos, setLimiteContactos] = useState(500);
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -343,7 +347,7 @@ export default function CampaignsSmsClient() {
         </div>
       )}
 
-      <TrainingHelp context="campaign" />
+      <TrainingHelp context="campaign-sms" />
 
       {usoSms && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
@@ -375,12 +379,18 @@ export default function CampaignsSmsClient() {
 
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
-          <FaAddressBook /> Contactos cargados ({cantidadContactos}/{limiteContactos})
+          <FaAddressBook /> Contactos
         </h3>
 
-        <p className="text-white text-sm mb-3">
-          Tienes {cantidadContactos} contactos cargados. Puedes ampliar tu límite comprando un paquete adicional:
+        <p className="text-white text-sm mb-2">
+          {usoContactos.usados} de {usoContactos.limite} contactos usados
         </p>
+        <div className="w-full bg-green-500 h-2 rounded mb-2 overflow-hidden">
+          <div
+            className="h-full bg-white"
+            style={{ width: `${(usoContactos.usados / usoContactos.limite) * 100}%` }}
+          />
+        </div>
 
         <div className="flex gap-2 mb-4">
           {[500, 1000, 2000].map((extra) => (

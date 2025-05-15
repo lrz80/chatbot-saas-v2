@@ -131,7 +131,7 @@ export default function CampaignsEmailClient() {
         <SiMinutemailer className="text-blue-400 animate-pulse" /> Campañas por Email
       </h1>
 
-      <TrainingHelp context="campaign" />
+      <TrainingHelp context="campaign-email" />
 
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">

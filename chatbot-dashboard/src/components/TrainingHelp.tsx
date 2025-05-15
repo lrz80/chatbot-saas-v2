@@ -48,10 +48,10 @@ export default function TrainingHelp({ context }: Props) {
             <ul className="list-disc list-inside space-y-2">
               <li><strong>¿Qué debe hacer tu asistente?</strong> Describe sus funciones principales.</li>
               <li><strong>Información que el Asistente debe conocer:</strong> Servicios, precios, links, etc.</li>
-              <li><strong>Instrucciones:</strong> Cómo debe hablar y responder el asistente.</li>
               <li><strong>Mensaje de bienvenida:</strong> Primer mensaje que verá el usuario.</li>
+              <li><strong>Instrucciones:</strong> Cómo debe hablar y responder el asistente.</li>
               <li><strong>Preguntas frecuentes:</strong> Respuestas a dudas comunes.</li>
-              <li><strong>Entrenamiento por intención:</strong> Enseña al bot frases específicas.</li>
+              <li><strong>Entrenamiento por intención:</strong> Enseña al asistente frases específicas.</li>
               <li><strong>Flujos guiados:</strong> Conversaciones paso a paso con botones.</li>
               <li><strong>Vista previa:</strong> Prueba el comportamiento del asistente.</li>
             </ul>
@@ -73,21 +73,27 @@ export default function TrainingHelp({ context }: Props) {
           {context === "voice" && (
             <ul className="list-disc list-inside space-y-2">
               <li><strong>Idioma:</strong> Idioma principal para llamadas.</li>
+              <li><strong>¿Qué debe hacer tu asistente?</strong> Describe sus funciones principales.</li>
+              <li><strong>Información clave sobre tu negocio:</strong> Servicios, precios, links, etc.</li>
               <li><strong>Instrucciones del sistema:</strong> Cómo responder y qué debe saber el asistente.</li>
               <li><strong>Mensaje de bienvenida:</strong> Introducción cuando llaman.</li>
-              <li><strong>Voz de Twilio:</strong> Selección de voz.</li>
+              <li><strong>Voz del asistente:</strong> Selección de voz.</li>
               <li><strong>Hints:</strong> Palabras clave importantes.</li>
               <li><strong>Escuchar voz:</strong> Haz una llamada de prueba.</li>
+              <li><strong>Links utiles:</strong> Links con informacion para enviar por sms.</li>
+              <li><strong>Historial de llamadas:</strong> Historial de las llamadas entrantes.</li>
             </ul>
           )}
 
           {context === "campaign-sms" && (
             <ul className="list-disc list-inside space-y-2">
+              <li><strong>Uso mensual de sms:</strong> SMS disponibles.</li>
               <li><strong>Contactos:</strong> Carga contactos con nombre y número.</li>
+              <li><strong>Nombre de la Campana:</strong> Identifica tu Campana.</li>
+              <li><strong>Contenido del SMS:</strong> Escribe el texto que se enviará, puedes incluir un Link.</li>
+              <li><strong>Fecha de Envio:</strong> Elige fecha y hora de envío.</li>
               <li><strong>Segmentos:</strong> Define el público objetivo.</li>
-              <li><strong>Mensaje:</strong> Escribe el texto que se enviará.</li>
-              <li><strong>Programación:</strong> Elige fecha y hora de envío.</li>
-              <li><strong>Estadísticas:</strong> Revisa el rendimiento de la campaña.</li>
+              <li><strong>Campañas programadas/enviadas:</strong> Revisa el rendimiento de la campaña.</li>
             </ul>
           )}
 
