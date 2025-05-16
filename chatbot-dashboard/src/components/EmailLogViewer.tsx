@@ -15,10 +15,26 @@ export default function EmailLogViewer({ campaignId }: Props) {
 
   useEffect(() => {
     fetch(`/api/email-status?campaign_id=${campaignId}`, {
-      credentials: "include", // ✅ esto es correcto
+      credentials: "include",
     })
-      .then((res) => res.json())
-      .then((data) => setLogs(data || []))
+      .then(async (res) => {
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error?.error || "Error desconocido");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setLogs(data);
+        } else {
+          throw new Error("Formato de respuesta inesperado.");
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Error cargando logs:", err.message);
+        setError("No se pudo cargar el historial de envíos.");
+      })
       .finally(() => setLoading(false));
   }, [campaignId]);  
 
