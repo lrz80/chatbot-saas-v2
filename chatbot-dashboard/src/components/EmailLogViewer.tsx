@@ -14,21 +14,32 @@ export default function EmailLogViewer({ campaignId }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!campaignId) return;
+
     fetch(`/api/email-status/?campaign_id=${campaignId}`, {
-      credentials: "include", // ✅ importante para cookies httpOnly
+      credentials: "include", // ✅ obligatorio para cookies HttpOnly
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
         if (Array.isArray(data)) {
           setLogs(data);
+          setError(null);
         } else {
-          console.warn("⚠️ Respuesta inesperada:", data);
           setLogs([]);
+          setError("La respuesta no tiene el formato esperado.");
         }
       })
       .catch((err) => {
-        console.error("❌ Error al obtener logs de email:", err);
+        console.error("❌ Error al obtener logs:", err);
         setLogs([]);
+        if (err.message.includes("401")) {
+          setError("No estás autorizado para ver esta información.");
+        } else {
+          setError("Error al cargar los registros.");
+        }
       })
       .finally(() => setLoading(false));
   }, [campaignId]);
@@ -46,9 +57,7 @@ export default function EmailLogViewer({ campaignId }: Props) {
             Estado:{" "}
             <span
               className={`font-bold ${
-                log.status === "sent"
-                  ? "text-green-400"
-                  : "text-red-400"
+                log.status === "sent" ? "text-green-400" : "text-red-400"
               }`}
             >
               {log.status}

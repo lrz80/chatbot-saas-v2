@@ -336,18 +336,32 @@ export default function CampaignsEmailClient() {
   useEffect(() => {
     const fetchLogs = async () => {
       const allLogs: Record<number, any[]> = {};
+  
       for (const c of campaigns) {
-        const res = await fetch(`/api/email-status?campaign_id=${c.id}`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        allLogs[c.id] = data || [];
+        try {
+          const res = await fetch(`/api/email-status/?campaign_id=${c.id}`, {
+            credentials: "include",
+          });
+  
+          if (!res.ok) {
+            console.warn(`⚠️ Error ${res.status} al obtener logs para campaña ${c.id}`);
+            allLogs[c.id] = [];
+            continue;
+          }
+  
+          const data = await res.json();
+          allLogs[c.id] = Array.isArray(data) ? data : [];
+        } catch (err) {
+          console.error("❌ Error cargando logs de campaña:", err);
+          allLogs[c.id] = [];
+        }
       }
+  
       setEmailLogs(allLogs);
     };
   
     if (campaigns.length > 0) fetchLogs();
-  }, [campaigns]);
+  }, [campaigns]);  
 
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
@@ -557,7 +571,9 @@ export default function CampaignsEmailClient() {
           {campaigns.map((c) => {
             const logs = emailLogs[c.id] || [];
             const enviados = logs.length;
-            const fallidos = logs.filter((l) => l.status === "failed").length;
+            const fallidos = Array.isArray(logs)
+              ? logs.filter((l) => l.status === "failed").length
+              : 0;
             const exitosos = enviados - fallidos;
 
             return (
