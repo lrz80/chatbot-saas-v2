@@ -339,9 +339,9 @@ export default function CampaignsEmailClient() {
   
       for (const c of campaigns) {
         try {
-          const res = await fetch(`/api/email-status/?campaign_id=${c.id}`, {
+          const res = await fetch(`${BACKEND_URL}/api/email-status/?campaign_id=${c.id}`, {
             credentials: "include",
-          });
+          });          
   
           if (!res.ok) {
             console.warn(`⚠️ Error ${res.status} al obtener logs para campaña ${c.id}`);
