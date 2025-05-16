@@ -17,7 +17,6 @@ import { DateTime } from "luxon";
 import { useSearchParams } from "next/navigation";
 import EmailLogViewer from "@/components/EmailLogViewer";
 
-
 export default function CampaignsEmailClient() {
   const [form, setForm] = useState({
     nombre: "",
@@ -50,12 +49,12 @@ export default function CampaignsEmailClient() {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
       .then((res) => res.json())
       .then(async (data) => {
-        const smsOnly = (data || []).filter((c: any) => c.canal === "email");
+        const emailCampaigns = Array.isArray(data) ? data.filter((c: any) => c.canal === "email") : [];
 
         const enriched = await Promise.all(
-          smsOnly.map(async (c: any) => {
+          emailCampaigns.map(async (c: any) => {
             try {
-              const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}/email-status`, {
+              const res = await fetch(`${BACKEND_URL}/api/email-status?campaign_id=${c.id}`, {
                 credentials: "include",
               });
               const entregas = res.ok ? await res.json() : [];
@@ -91,7 +90,8 @@ export default function CampaignsEmailClient() {
     fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
-        const email = (data.usos || []).find((u: any) => u.canal === "email");
+        const usos = Array.isArray(data?.usos) ? data.usos : [];
+        const email = usos.find((u: any) => u.canal === "email");
         setUsoSms({ usados: email?.usados ?? 0, limite: email?.limite ?? 500 });
       })
       .catch((err) => console.error("❌ Error cargando uso email:", err));
