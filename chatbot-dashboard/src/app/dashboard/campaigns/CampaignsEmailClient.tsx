@@ -336,8 +336,9 @@ export default function CampaignsEmailClient() {
   const cargarLogsPorCampaña = async (campaignId: number) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/email-status/?campaign_id=${campaignId}`, {
+
         credentials: "include",
-      });      
+      });
   
       if (!res.ok) {
         console.warn(`⚠️ Error ${res.status} al obtener logs para campaña ${campaignId}`);
