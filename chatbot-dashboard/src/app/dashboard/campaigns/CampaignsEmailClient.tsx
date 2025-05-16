@@ -333,35 +333,27 @@ export default function CampaignsEmailClient() {
     colorBarra = "bg-yellow-400";
   }
 
-  useEffect(() => {
-    const fetchLogs = async () => {
-      const allLogs: Record<number, any[]> = {};
+  const cargarLogsPorCampaña = async (campaignId: number) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/email-status/?campaign_id=${campaignId}`, {
+        credentials: "include",
+      });
   
-      for (const c of campaigns) {
-        try {
-          const res = await fetch(`${BACKEND_URL}/api/email-status/?campaign_id=${c.id}`, {
-            credentials: "include",
-          });          
-  
-          if (!res.ok) {
-            console.warn(`⚠️ Error ${res.status} al obtener logs para campaña ${c.id}`);
-            allLogs[c.id] = [];
-            continue;
-          }
-  
-          const data = await res.json();
-          allLogs[c.id] = Array.isArray(data) ? data : [];
-        } catch (err) {
-          console.error(`❌ Error general al obtener logs para campaña ${c.id}:`, err);
-          allLogs[c.id] = [];
-        }
+      if (!res.ok) {
+        console.warn(`⚠️ Error ${res.status} al obtener logs para campaña ${campaignId}`);
+        setEmailLogs((prev) => ({ ...prev, [campaignId]: [] }));
+        return;
       }
   
-      setEmailLogs(allLogs);
-    };
+      const data = await res.json();
+      const logs = Array.isArray(data) ? data : [];
   
-    if (campaigns.length > 0) fetchLogs();
-  }, [campaigns]);  
+      setEmailLogs((prev) => ({ ...prev, [campaignId]: logs }));
+    } catch (err) {
+      console.error("❌ Error cargando logs por campaña:", err);
+      setEmailLogs((prev) => ({ ...prev, [campaignId]: [] }));
+    }
+  };  
 
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
@@ -644,14 +636,17 @@ export default function CampaignsEmailClient() {
                   <div className="flex gap-2 mt-2 md:mt-0">
                     <button
                       className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
-                      onClick={() =>
-                        setExpandedCampaignId(
-                          c.id === expandedCampaignId ? null : c.id
-                        )
-                      }
+                      onClick={() => {
+                        const isSame = c.id === expandedCampaignId;
+                        setExpandedCampaignId(isSame ? null : c.id);
+                        if (!isSame && !emailLogs[c.id]) {
+                          cargarLogsPorCampaña(c.id); // ✅ solo si no se han cargado antes
+                        }
+                      }}
                     >
                       {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
                     </button>
+
                     <button
                       className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
                       onClick={() => eliminarCampana(c.id)}
