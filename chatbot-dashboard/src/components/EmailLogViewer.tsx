@@ -14,31 +14,13 @@ export default function EmailLogViewer({ campaignId }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const res = await fetch(`/api/email-status?campaign_id=${campaignId}`, {
-          credentials: "include",
-        });
-
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Error ${res.status}: ${text}`);
-        }
-
-        const data = await res.json();
-        if (!Array.isArray(data)) throw new Error("Respuesta inválida del servidor");
-
-        setLogs(data);
-      } catch (err: any) {
-        console.error("❌ Error cargando logs de email:", err.message || err);
-        setError("No se pudieron cargar los registros.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLogs();
-  }, [campaignId]);
+    fetch(`/api/email-status?campaign_id=${campaignId}`, {
+      credentials: "include", // ✅ esto es correcto
+    })
+      .then((res) => res.json())
+      .then((data) => setLogs(data || []))
+      .finally(() => setLoading(false));
+  }, [campaignId]);  
 
   if (loading) return <p className="text-white/50 text-sm">Cargando envíos...</p>;
   if (error) return <p className="text-red-400 text-sm">{error}</p>;
