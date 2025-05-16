@@ -352,7 +352,7 @@ export default function CampaignsEmailClient() {
           const data = await res.json();
           allLogs[c.id] = Array.isArray(data) ? data : [];
         } catch (err) {
-          console.error("❌ Error cargando logs de campaña:", err);
+          console.error(`❌ Error general al obtener logs para campaña ${c.id}:`, err);
           allLogs[c.id] = [];
         }
       }
