@@ -175,6 +175,7 @@ export default function CampaignsEmailClient() {
     data.append("nombre", form.nombre);
     data.append("canal", "email");
     data.append("contenido", form.contenido);
+    data.append("asunto", form.asunto);
     data.append("fecha_envio", form.fecha_envio);
     data.append("segmentos", JSON.stringify(destinatarios));
     data.append("link_url", form.link_url);
@@ -540,11 +541,19 @@ export default function CampaignsEmailClient() {
         className="mb-4"
       />
       {form.imagen && (
-        <img
-          src={URL.createObjectURL(form.imagen)}
-          alt="Preview"
-          className="mb-4 rounded border border-white/20 max-h-48"
-        />
+        <div className="mb-4">
+          <img
+            src={URL.createObjectURL(form.imagen)}
+            alt="Preview"
+            className="rounded border border-white/20 max-h-48 mb-2"
+          />
+          <button
+            onClick={() => setForm((prev) => ({ ...prev, imagen: null }))}
+            className="text-red-400 text-xs underline"
+          >
+            ❌ Eliminar imagen
+          </button>
+        </div>
       )}
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
