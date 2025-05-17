@@ -156,6 +156,7 @@ export default function CampaignsEmailClient() {
   };
 
   const handleSubmit = async () => {
+    console.log("🧪 Asunto que se envía:", form.asunto);
     if (!form.nombre || !form.fecha_envio || form.segmentos.length === 0) {
       alert("Completa todos los campos.");
       return;
