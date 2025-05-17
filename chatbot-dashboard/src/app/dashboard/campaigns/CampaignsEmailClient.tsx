@@ -360,8 +360,18 @@ export default function CampaignsEmailClient() {
 
   const cargarLogsPorCampaña = async (campaignId: number) => {
     try {
+      // Validar sesión nuevamente antes de pedir logs
+      const resCheck = await fetch(`${BACKEND_URL}/api/settings`, {
+        credentials: "include",
+      });
+  
+      if (!resCheck.ok) {
+        console.warn("⚠️ No autorizado para obtener logs de campaña");
+        setEmailLogs((prev) => ({ ...prev, [campaignId]: [] }));
+        return;
+      }
+  
       const res = await fetch(`${BACKEND_URL}/api/email-status/?campaign_id=${campaignId}`, {
-
         credentials: "include",
       });
   
@@ -373,7 +383,6 @@ export default function CampaignsEmailClient() {
   
       const data = await res.json();
       const logs = Array.isArray(data) ? data : [];
-  
       setEmailLogs((prev) => ({ ...prev, [campaignId]: logs }));
     } catch (err) {
       console.error("❌ Error cargando logs por campaña:", err);
