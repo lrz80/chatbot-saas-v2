@@ -1,4 +1,3 @@
-// src/components/EmailLogViewer.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -16,14 +15,24 @@ export default function EmailLogViewer({ campaignId }: Props) {
   useEffect(() => {
     if (!campaignId) return;
 
-    fetch(`/api/email-status/?campaign_id=${campaignId}`, {
-      credentials: "include", // ✅ obligatorio para cookies HttpOnly
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
+    const cargarLogs = async () => {
+      try {
+        let res = await fetch(`/api/email-status/?campaign_id=${campaignId}`, {
+          credentials: "include",
+        });
+
+        // 🔁 Si falla por token, intenta validar sesión y vuelve a hacer fetch
+        if (res.status === 401) {
+          const check = await fetch("/api/settings", { credentials: "include" });
+          if (!check.ok) throw new Error("No autorizado");
+          res = await fetch(`/api/email-status/?campaign_id=${campaignId}`, {
+            credentials: "include",
+          });
+        }
+
+        if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
+        const data = await res.json();
+
         if (Array.isArray(data)) {
           setLogs(data);
           setError(null);
@@ -31,17 +40,20 @@ export default function EmailLogViewer({ campaignId }: Props) {
           setLogs([]);
           setError("La respuesta no tiene el formato esperado.");
         }
-      })
-      .catch((err) => {
+      } catch (err: any) {
         console.error("❌ Error al obtener logs:", err);
-        setLogs([]);
         if (err.message.includes("401")) {
           setError("No estás autorizado para ver esta información.");
         } else {
           setError("Error al cargar los registros.");
         }
-      })
-      .finally(() => setLoading(false));
+        setLogs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarLogs();
   }, [campaignId]);
 
   if (loading) return <p className="text-white/50 text-sm">Cargando envíos...</p>;
