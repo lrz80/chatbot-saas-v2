@@ -44,6 +44,9 @@ export default function CampaignsEmailClient() {
   const [usoEmail, setUsoEmail] = useState<{ usados: number; limite: number } | null>(null);
   const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [cargandoLogsId, setCargandoLogsId] = useState<number | null>(null);
+  const [errorLogsCampana, setErrorLogsCampana] = useState<number | null>(null);
+
 
   const cargarCampañas = async () => {
     try {
@@ -676,16 +679,40 @@ export default function CampaignsEmailClient() {
                   </div>
                   <div className="flex gap-2 mt-2 md:mt-0">
                     <button
-                      className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
-                      onClick={() => {
+                      className={`px-4 py-1 border rounded ${
+                        expandedCampaignId === c.id ? "bg-red-500/10 hover:bg-red-500/20" : "bg-white/10 hover:bg-white/20"
+                      } border-white/20`}
+                      disabled={cargandoLogsId === c.id}
+                      onClick={async () => {
                         const isSame = c.id === expandedCampaignId;
-                        setExpandedCampaignId(isSame ? null : c.id);
-                        if (!isSame && !emailLogs[c.id]) {
-                          cargarLogsPorCampaña(c.id); // ✅ solo si no se han cargado antes
+                        if (isSame) {
+                          setExpandedCampaignId(null);
+                          return;
+                        }
+
+                        if (!emailLogs[c.id]) {
+                          setCargandoLogsId(c.id);
+                          setErrorLogsCampana(null);
+
+                          try {
+                            await cargarLogsPorCampaña(c.id);
+                            setExpandedCampaignId(c.id);
+                          } catch (err) {
+                            setErrorLogsCampana(c.id);
+                            console.error("❌ Error al cargar logs:", err);
+                          } finally {
+                            setCargandoLogsId(null);
+                          }
+                        } else {
+                          setExpandedCampaignId(c.id);
                         }
                       }}
                     >
-                      {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
+                      {cargandoLogsId === c.id
+                        ? "Cargando..."
+                        : expandedCampaignId === c.id
+                        ? "Ocultar"
+                        : "Ver más"}
                     </button>
 
                     <button
@@ -708,12 +735,19 @@ export default function CampaignsEmailClient() {
                     </span>
                     .
 
-                    <div className="mt-4">
-                      <EmailLogViewer campaignId={c.id} />
-                    </div>
+                    {/* 👇 Mensaje de error si falló el fetch de logs */}
+                    {errorLogsCampana === c.id && (
+                      <p className="text-red-400 mt-2">⚠️ No estás autorizado para ver esta información.</p>
+                    )}
+
+                    {/* 👇 Vista del componente de logs si no hubo error */}
+                    {!errorLogsCampana && (
+                      <div className="mt-4">
+                        <EmailLogViewer campaignId={c.id} />
+                      </div>
+                    )}
                   </div>
                 )}
-
               </li>
             );
           })}
