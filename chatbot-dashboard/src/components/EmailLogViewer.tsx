@@ -20,18 +20,14 @@ export default function EmailLogViewer({ campaignId }: Props) {
 
     const cargarLogs = async () => {
       try {
-        const res = await fetch(
-          `${BACKEND_URL}/api/email-status/?campaign_id=${campaignId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            cache: "no-store", // evita sesiones cacheadas mal gestionadas
-            signal: abort.signal,
-          }
-        );
+        const res = await fetch(`${BACKEND_URL}/api/email-status?campaign_id=${campaignId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          cache: "no-store",
+        });        
 
         if (res.status === 401) {
           setError("⚠️ No estás autorizado para ver esta información.");
