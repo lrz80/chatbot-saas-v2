@@ -21,32 +21,32 @@ export default function EmailLogViewer({ campaignId }: Props) {
           credentials: "include",
         });
 
-        // 🔁 Si falla por token, intenta validar sesión y vuelve a hacer fetch
         if (res.status === 401) {
           const check = await fetch("/api/settings", { credentials: "include" });
-          if (!check.ok) throw new Error("No autorizado");
+          if (!check.ok) {
+            setError("⚠️ Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+            setLoading(false);
+            return;
+          }
+
           res = await fetch(`/api/email-status/?campaign_id=${campaignId}`, {
             credentials: "include",
           });
         }
 
         if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
+
         const data = await res.json();
 
         if (Array.isArray(data)) {
           setLogs(data);
           setError(null);
         } else {
-          setLogs([]);
           setError("La respuesta no tiene el formato esperado.");
         }
       } catch (err: any) {
         console.error("❌ Error al obtener logs:", err);
-        if (err.message.includes("401")) {
-          setError("No estás autorizado para ver esta información.");
-        } else {
-          setError("Error al cargar los registros.");
-        }
+        setError("Error al cargar los registros.");
         setLogs([]);
       } finally {
         setLoading(false);
