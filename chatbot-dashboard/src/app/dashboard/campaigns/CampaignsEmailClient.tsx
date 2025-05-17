@@ -41,61 +41,96 @@ export default function CampaignsEmailClient() {
   const [loading, setLoading] = useState(false);
   const [expandedCampaignId, setExpandedCampaignId] = useState<number | null>(null);
   const [membresiaActiva, setMembresiaActiva] = useState<boolean>(false);
-  const [usoSms, setUsoSms] = useState<{ usados: number; limite: number } | null>(null);
+  const [usoEmail, setUsoEmail] = useState<{ usados: number; limite: number } | null>(null);
   const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const cargarCampañas = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" });
+      const data = await res.json();
+      const emailCampaigns = Array.isArray(data) ? data.filter((c: any) => c.canal === "email") : [];
+  
+      const enriched = await Promise.all(
+        emailCampaigns.map(async (c: any) => {
+          try {
+            const res = await fetch(`${BACKEND_URL}/api/email-status?campaign_id=${c.id}`, {
+              credentials: "include",
+            });
+            const entregas = res.ok ? await res.json() : [];
+            return { ...c, entregas };
+          } catch {
+            return { ...c, entregas: [] };
+          }
+        })
+      );
+  
+      setCampaigns(enriched);
+    } catch (err) {
+      console.error("❌ Error cargando campañas:", err);
+    }
+  };
+  
+  const cargarContactos = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" });
+      const data = await res.json();
+      setContactos(data || []);
+    } catch (err) {
+      console.error("❌ Error cargando contactos:", err);
+    }
+  };
+  
+  const cargarLimite = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/contactos/limite`, { credentials: "include" });
+      const data = await res.json();
+      setLimiteContactos(data.limite || 500);
+      setCantidadContactos(data.total || 0);
+    } catch (err) {
+      console.error("❌ Error cargando límite de contactos:", err);
+    }
+  };
+  
+  const cargarUso = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" });
+      const data = await res.json();
+  
+      const email = data.usos?.find((u: any) => u.canal === "email");
+      setUsoEmail({ usados: email?.usados ?? 0, limite: email?.limite ?? 500 });
+  
+      const usoContactos = data.usos?.find((u: any) => u.canal === "contactos");
+      setLimiteContactos(usoContactos?.limite || 500);
+    } catch (err) {
+      console.error("❌ Error cargando uso de email/contactos:", err);
+    }
+  };  
+
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
-      .then((res) => res.json())
-      .then(async (data) => {
-        const emailCampaigns = Array.isArray(data) ? data.filter((c: any) => c.canal === "email") : [];
-
-        const enriched = await Promise.all(
-          emailCampaigns.map(async (c: any) => {
-            try {
-              const res = await fetch(`${BACKEND_URL}/api/email-status?campaign_id=${c.id}`, {
-                credentials: "include",
-              });
-              const entregas = res.ok ? await res.json() : [];
-              return { ...c, entregas };
-            } catch {
-              return { ...c, entregas: [] };
-            }
-          })
-        );
-
-        setCampaigns(enriched);
-      });
-
-    fetch(`${BACKEND_URL}/api/contactos/limite`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        setLimiteContactos(data.limite || 500);
-        setCantidadContactos(data.total || 0);
-      })
-      .catch((err) => console.error("❌ Error cargando límite de contactos:", err));
-
-    fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => setContactos(data || []));
-
-    fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
+    const cargarTodo = async () => {
+      try {
+        // ✅ 1. Validar sesión y membresía
+        const res = await fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" });
+        if (!res.ok) throw new Error("No autorizado");
+  
+        const data = await res.json();
         setMembresiaActiva(data?.membresia_activa === true);
-      })
-      .catch(err => console.error("❌ Error obteniendo membresía:", err));
-
-    fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        const usos = Array.isArray(data?.usos) ? data.usos : [];
-        const email = usos.find((u: any) => u.canal === "email");
-        setUsoSms({ usados: email?.usados ?? 0, limite: email?.limite ?? 500 });
-      })
-      .catch((err) => console.error("❌ Error cargando uso email:", err));
-  }, []);
+  
+        // ✅ 2. Solo si pasa la validación, cargar todo lo demás
+        await Promise.all([
+          cargarCampañas(),
+          cargarContactos(),
+          cargarLimite(),
+          cargarUso()
+        ]);
+      } catch (err) {
+        console.error("❌ Error validando sesión:", err);
+      }
+    };
+  
+    cargarTodo();
+  }, []);  
 
   const toggleSegmento = (id: string) => {
     setForm((prev) => ({
@@ -289,16 +324,6 @@ export default function CampaignsEmailClient() {
   };  
   
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        const usoContactos = (data.usos || []).find((u: any) => u.canal === "contactos");
-        setLimiteContactos(usoContactos?.limite || 500);
-      })
-      .catch((err) => console.error("❌ Error cargando uso de contactos:", err));
-  }, []);
-  
-  useEffect(() => {
     const url = new URL(window.location.href);
     let updated = false;
   
@@ -368,6 +393,12 @@ export default function CampaignsEmailClient() {
       )}
 
       <TrainingHelp context="campaign-email" />
+
+      {usoEmail && (
+        <div className="mb-4 text-sm text-white/80">
+          📧 Has enviado {usoEmail.usados} de {usoEmail.limite} campañas por email este mes.
+        </div>
+      )}
 
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
