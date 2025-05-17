@@ -258,23 +258,28 @@ export default function CampaignsEmailClient() {
   
   const eliminarCampana = async (id: number) => {
     if (!confirm("¿Estás seguro de que deseas eliminar esta campaña?")) return;
-
+  
     try {
       const res = await fetch(`${BACKEND_URL}/api/campaigns/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
+  
+      const data = await res.json();
+  
       if (res.ok) {
-        setCampaigns((prev) => prev.filter((c) => c.id !== id));
-        alert("✅ Campaña eliminada");
+        setCampaigns((prev) => prev.filter((c) => c.id !== data.id));
+        alert(data.message || "✅ Campaña eliminada");
+      } else if (res.status === 404) {
+        alert("❌ La campaña ya fue eliminada o no te pertenece.");
       } else {
-        alert("❌ Error al eliminar campaña");
+        alert(`❌ ${data.error || "Error al eliminar campaña"}`);
       }
     } catch (err) {
       console.error("❌ Error al eliminar:", err);
       alert("❌ Error al conectar con el servidor.");
     }
-  };
+  };  
 
   const handleEliminarContactos = async () => {
     if (!confirm("¿Estás seguro? Esta acción eliminará todos tus contactos.")) return;
