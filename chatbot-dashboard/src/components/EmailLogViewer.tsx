@@ -15,45 +15,41 @@ export default function EmailLogViewer({ campaignId }: Props) {
   useEffect(() => {
     if (!campaignId) return;
 
+    const abort = new AbortController();
+
     const cargarLogs = async () => {
       try {
-        let res = await fetch(`/api/email-status/?campaign_id=${campaignId}`, {
+        const res = await fetch(`/api/email-status/?campaign_id=${campaignId}`, {
           credentials: "include",
+          signal: abort.signal,
         });
 
         if (res.status === 401) {
-          const check = await fetch("/api/settings", { credentials: "include" });
-          if (!check.ok) {
-            setError("⚠️ Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
-            setLoading(false);
-            return;
-          }
-
-          res = await fetch(`/api/email-status/?campaign_id=${campaignId}`, {
-            credentials: "include",
-          });
+          setError("⚠️ No estás autorizado para ver esta información.");
+          return;
         }
 
         if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
 
         const data = await res.json();
-
-        if (Array.isArray(data)) {
-          setLogs(data);
-          setError(null);
-        } else {
-          setError("La respuesta no tiene el formato esperado.");
+        setLogs(Array.isArray(data) ? data : []);
+        setError(null);
+      } catch (err) {
+        if (!abort.signal.aborted) {
+          console.error("❌ Error al obtener logs:", err);
+          setError("Error al cargar los registros.");
+          setLogs([]);
         }
-      } catch (err: any) {
-        console.error("❌ Error al obtener logs:", err);
-        setError("Error al cargar los registros.");
-        setLogs([]);
       } finally {
-        setLoading(false);
+        if (!abort.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     cargarLogs();
+
+    return () => abort.abort();
   }, [campaignId]);
 
   if (loading) return <p className="text-white/50 text-sm">Cargando envíos...</p>;
