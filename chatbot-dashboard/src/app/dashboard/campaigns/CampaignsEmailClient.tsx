@@ -363,36 +363,37 @@ export default function CampaignsEmailClient() {
 
   const cargarLogsPorCampaña = async (campaignId: number) => {
     try {
-      // Validar sesión nuevamente antes de pedir logs
-      const resCheck = await fetch(`${BACKEND_URL}/api/settings`, {
+      let res = await fetch(`${BACKEND_URL}/api/email-status/?campaign_id=${campaignId}`, {
         credentials: "include",
       });
   
-      if (!resCheck.ok) {
-        console.warn("⚠️ No autorizado para obtener logs de campaña");
-        setEmailLogs((prev) => ({ ...prev, [campaignId]: [] }));
-        return;
+      // ⏳ Reintento si da error 401
+      if (res.status === 401) {
+        console.warn("⚠️ Token posiblemente expirado. Revalidando...");
+        const resCheck = await fetch(`${BACKEND_URL}/api/settings`, {
+          credentials: "include",
+        });
+        if (!resCheck.ok) throw new Error("Sesión expirada");
+  
+        // Segundo intento tras validar sesión
+        res = await fetch(`${BACKEND_URL}/api/email-status/?campaign_id=${campaignId}`, {
+          credentials: "include",
+        });
       }
   
-      const res = await fetch(`${BACKEND_URL}/api/email-status/?campaign_id=${campaignId}`, {
-        credentials: "include",
-      });
-  
-      if (!res.ok) {
-        console.warn(`⚠️ Error ${res.status} al obtener logs para campaña ${campaignId}`);
-        setEmailLogs((prev) => ({ ...prev, [campaignId]: [] }));
-        return;
-      }
-  
+      if (!res.ok) throw new Error(`Error ${res.status}`);
       const data = await res.json();
       const logs = Array.isArray(data) ? data : [];
+  
       setEmailLogs((prev) => ({ ...prev, [campaignId]: logs }));
+      setErrorLogsCampana(null); // ✅ limpia error si se resolvió
     } catch (err) {
-      console.error("❌ Error cargando logs por campaña:", err);
+      console.error("❌ Error cargando logs:", err);
+      setErrorLogsCampana(campaignId);
       setEmailLogs((prev) => ({ ...prev, [campaignId]: [] }));
     }
-  };  
-
+  };
+  
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -735,13 +736,9 @@ export default function CampaignsEmailClient() {
                     </span>
                     .
 
-                    {/* 👇 Mensaje de error si falló el fetch de logs */}
-                    {errorLogsCampana === c.id && (
+                    {errorLogsCampana === c.id ? (
                       <p className="text-red-400 mt-2">⚠️ No estás autorizado para ver esta información.</p>
-                    )}
-
-                    {/* 👇 Vista del componente de logs si no hubo error */}
-                    {!errorLogsCampana && (
+                    ) : (
                       <div className="mt-4">
                         <EmailLogViewer campaignId={c.id} />
                       </div>
