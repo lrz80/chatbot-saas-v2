@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
+import { BACKEND_URL } from "@/utils/api";
 
 interface Props {
   campaignId: number;
@@ -13,16 +14,24 @@ export default function EmailLogViewer({ campaignId }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!campaignId) return;
+    if (!campaignId || isNaN(campaignId)) return;
 
     const abort = new AbortController();
 
     const cargarLogs = async () => {
       try {
-        const res = await fetch(`/api/email-status/?campaign_id=${campaignId}`, {
-          credentials: "include",
-          signal: abort.signal,
-        });
+        const res = await fetch(
+          `${BACKEND_URL}/api/email-status/?campaign_id=${campaignId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            cache: "no-store", // evita sesiones cacheadas mal gestionadas
+            signal: abort.signal,
+          }
+        );
 
         if (res.status === 401) {
           setError("⚠️ No estás autorizado para ver esta información.");
@@ -53,8 +62,16 @@ export default function EmailLogViewer({ campaignId }: Props) {
   }, [campaignId]);
 
   if (loading) return <p className="text-white/50 text-sm">Cargando envíos...</p>;
-  if (error) return <p className="text-red-400 text-sm">{error}</p>;
-  if (logs.length === 0) return <p className="text-white/50 text-sm">No hay registros aún.</p>;
+
+  if (error)
+    return (
+      <p className="text-red-400 text-sm flex items-center gap-1">
+        <HiOutlineExclamationTriangle /> {error}
+      </p>
+    );
+
+  if (logs.length === 0)
+    return <p className="text-white/50 text-sm">No hay registros aún.</p>;
 
   return (
     <ul className="mt-4 border-t border-white/10 pt-3 text-xs space-y-2">
