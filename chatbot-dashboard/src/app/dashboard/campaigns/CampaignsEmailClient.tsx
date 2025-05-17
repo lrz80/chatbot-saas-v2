@@ -668,20 +668,24 @@ export default function CampaignsEmailClient() {
                           src={c.imagen_url}
                           alt="Imagen campaña"
                           className="max-h-32 border border-white/10 rounded"
+                          onError={(e) => (e.currentTarget.style.display = "none")}
                         />
                       </div>
                     )}
+
                     {c.archivo_adjunto_url && (
                       <div className="mt-2 text-blue-300 underline text-sm">
                         <a
                           href={c.archivo_adjunto_url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          download
                         >
-                          📎 Ver archivo adjunto
+                          📎 Descargar archivo adjunto
                         </a>
                       </div>
                     )}
+
                   </div>
                   <div className="flex gap-2 mt-2 md:mt-0">
                     <button
