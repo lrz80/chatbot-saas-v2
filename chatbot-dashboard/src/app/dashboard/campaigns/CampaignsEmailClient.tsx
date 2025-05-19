@@ -46,6 +46,7 @@ export default function CampaignsEmailClient() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [cargandoLogsId, setCargandoLogsId] = useState<number | null>(null);
   const [errorLogsCampana, setErrorLogsCampana] = useState<number | null>(null);
+  const [previewHtml, setPreviewHtml] = useState("");
 
 
   const cargarCampañas = async () => {
@@ -400,6 +401,34 @@ export default function CampaignsEmailClient() {
     }
   };
   
+  useEffect(() => {
+    const fetchPreview = async () => {
+      if (!form.contenido) return;
+  
+      const res = await fetch(`${BACKEND_URL}/api/preview-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contenido: form.contenido,
+          nombreNegocio: "Tu Negocio",
+          imagenUrl: form.imagen ? URL.createObjectURL(form.imagen) : undefined,
+          linkUrl: form.link_url,
+          logoUrl: "", // puedes cargarlo dinámicamente si lo deseas
+          email: "test@email.com",
+          tenantId: "preview",
+          nombreContacto: "Nombre del cliente",
+          asunto: form.asunto,
+          tituloVisual: form.titulo_visual,
+        }),
+      });
+  
+      const html = await res.text();
+      setPreviewHtml(html);
+    };
+  
+    fetchPreview();
+  }, [form.contenido, form.asunto, form.link_url, form.titulo_visual, form.imagen]);
+  
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -563,6 +592,19 @@ export default function CampaignsEmailClient() {
           >
             ❌ Eliminar imagen
           </button>
+        </div>
+      )}
+
+      {form.contenido && (
+        <div className="my-10">
+          <h3 className="text-white text-lg font-bold mb-2">🧪 Vista previa del Email</h3>
+          <div className="bg-white rounded shadow p-4 max-h-[600px] overflow-y-auto">
+            <iframe
+              srcDoc={previewHtml}
+              title="Email Preview"
+              className="w-full h-[600px] border"
+            />
+          </div>
         </div>
       )}
 
