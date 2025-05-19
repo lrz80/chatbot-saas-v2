@@ -27,6 +27,7 @@ export default function CampaignsEmailClient() {
     imagen: null as File | null,
     archivo_adjunto: null as File | null,
     asunto: "",
+    titulo_visual: "",
   });
 
   const searchParams = useSearchParams();
@@ -177,6 +178,7 @@ export default function CampaignsEmailClient() {
     data.append("canal", "email");
     data.append("contenido", form.contenido);
     data.append("asunto", form.asunto);
+    data.append("titulo_visual", form.titulo_visual);
     data.append("fecha_envio", form.fecha_envio);
     data.append("segmentos", JSON.stringify(destinatarios));
     data.append("link_url", form.link_url);
@@ -205,6 +207,7 @@ export default function CampaignsEmailClient() {
           imagen: null,
           archivo_adjunto: null,
           asunto: "",
+          titulo_visual: "",
         });
         setCampaigns((prev) => [json, ...prev]);
       } else {
@@ -503,19 +506,18 @@ export default function CampaignsEmailClient() {
         name="asunto"
         value={form.asunto}
         onChange={handleChange}
-        placeholder="Asunto del correo"
+        placeholder="Ej: Bienvenido!"
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
-        <SiLinktree /> Link del Email (opcional)
+        🎯 Título visual del Email
       </label>
       <input
-        type="url"
-        name="link_url"
-        value={form.link_url}
+        name="titulo_visual"
+        value={form.titulo_visual}
         onChange={handleChange}
-        placeholder="https://tusitio.com/oferta"
+        placeholder="Ej: ¡Te tenemos una sorpresa exclusiva!"
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
@@ -531,6 +533,17 @@ export default function CampaignsEmailClient() {
         rows={4}
       />
 
+      <label className="block mb-2 font-medium text-white flex items-center gap-2">
+        <SiLinktree /> Link del Email (opcional)
+      </label>
+      <input
+        type="url"
+        name="link_url"
+        value={form.link_url}
+        onChange={handleChange}
+        placeholder="https://tusitio.com/oferta"
+        className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
+      />
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
         <SiMinutemailer /> Imagen del Email
       </label>
