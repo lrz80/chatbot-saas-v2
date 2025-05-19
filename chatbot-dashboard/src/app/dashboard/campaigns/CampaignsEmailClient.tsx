@@ -334,6 +334,31 @@ export default function CampaignsEmailClient() {
     }
   };  
   
+  const comprarMasCampanas = async (cantidad: number) => {
+    try {
+      const response = await fetch('/api/stripe/checkout-credit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          canal: 'email',
+          cantidad,
+          redirectPath: '/dashboard/campaigns/email',
+        }),
+      });
+  
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error('No se recibió una URL de redirección.');
+      }
+    } catch (error) {
+      console.error('Error al iniciar la compra de campañas:', error);
+    }
+  };
+  
   useEffect(() => {
     const url = new URL(window.location.href);
     let updated = false;
@@ -460,20 +485,17 @@ export default function CampaignsEmailClient() {
         </div>
       )}
 
-      <TrainingHelp context="campaign-email" />
+      <TrainingHelp context="campaign-email" /> SiCampaignmonitor
 
       {usoEmail && (
-        <div className="mb-4 text-sm text-white/80">
-          📧 Has enviado {usoEmail.usados} de {usoEmail.limite} campañas por email este mes.
-        </div>
-      )}
-
-      {usoEmail && (
-        <div className="mb-6">
-          <div className="text-white text-sm mb-1">
-            {usoEmail.usados} de {usoEmail.limite} campañas usadas
-          </div>
-          <div className="w-full bg-white/20 h-2 rounded overflow-hidden">
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
+            <SiMinutemailer /> Campañas por Email
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoEmail.usados} de {usoEmail.limite} campañas usadas este mes
+          </p>
+          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
             <div
               className={`h-full ${
                 usoEmail.usados / usoEmail.limite >= 0.9
@@ -484,6 +506,18 @@ export default function CampaignsEmailClient() {
               } transition-all duration-500`}
               style={{ width: `${(usoEmail.usados / usoEmail.limite) * 100}%` }}
             />
+          </div>
+
+          <div className="flex gap-2 mb-2">
+            {[500, 1000, 2000].map((extra) => (
+              <button
+                key={extra}
+                onClick={() => comprarMasCampanas(extra)}
+                className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
+              >
+                +{extra} campañas
+              </button>
+            ))}
           </div>
         </div>
       )}
