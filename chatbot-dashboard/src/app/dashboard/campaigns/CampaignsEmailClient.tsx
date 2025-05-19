@@ -171,12 +171,13 @@ export default function CampaignsEmailClient() {
     }
 
     const data = new FormData();
+    const fechaEnvioISO = new Date(form.fecha_envio).toISOString();
     data.append("nombre", form.nombre);
     data.append("canal", "email");
     data.append("contenido", form.contenido);
     data.append("asunto", form.asunto);
     data.append("titulo_visual", form.titulo_visual);
-    data.append("fecha_envio", form.fecha_envio);
+    data.append("fecha_envio", fechaEnvioISO);
     data.append("segmentos", JSON.stringify(destinatarios));
     data.append("link_url", form.link_url);
     if (form.imagen) data.append("imagen", form.imagen);
