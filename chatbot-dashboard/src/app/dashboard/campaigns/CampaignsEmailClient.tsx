@@ -6,14 +6,16 @@ import Footer from "@/components/Footer";
 import {
   SiCampaignmonitor,
   SiMinutemailer,
+  SiTarget,
+  SiGoogledocs,
+  SiGooglephotos,
+  SiTestinglibrary,
   SiGooglecalendar,
   SiGoogleanalytics,
   SiLinktree,
 } from "react-icons/si";
 import { FaAddressBook, FaPaperclip } from "react-icons/fa";
 import TrainingHelp from "@/components/TrainingHelp";
-import { HiOutlineExclamationTriangle } from "react-icons/hi2";
-import { DateTime } from "luxon";
 import { useSearchParams } from "next/navigation";
 import EmailLogViewer from "@/components/EmailLogViewer";
 
@@ -47,7 +49,6 @@ export default function CampaignsEmailClient() {
   const [cargandoLogsId, setCargandoLogsId] = useState<number | null>(null);
   const [errorLogsCampana, setErrorLogsCampana] = useState<number | null>(null);
   const [previewHtml, setPreviewHtml] = useState("");
-
 
   const cargarCampañas = async () => {
     try {
@@ -405,29 +406,48 @@ export default function CampaignsEmailClient() {
     const fetchPreview = async () => {
       if (!form.contenido) return;
   
-      const res = await fetch(`${BACKEND_URL}/api/preview-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contenido: form.contenido,
-          nombreNegocio: "Tu Negocio",
-          imagenUrl: form.imagen ? URL.createObjectURL(form.imagen) : undefined,
-          linkUrl: form.link_url,
-          logoUrl: "", // puedes cargarlo dinámicamente si lo deseas
-          email: "test@email.com",
-          tenantId: "preview",
-          nombreContacto: "Nombre del cliente",
-          asunto: form.asunto,
-          tituloVisual: form.titulo_visual,
-        }),
-      });
+      try {
+        // ✅ Obtener logo real y nombre del negocio desde /api/settings
+        const settingsRes = await fetch(`${BACKEND_URL}/api/settings`, {
+          credentials: "include",
+        });
+        const settings = await settingsRes.json();
   
-      const html = await res.text();
-      setPreviewHtml(html);
+        const logoUrl = settings?.logo_url || undefined;
+        const nombreNegocio = settings?.nombre || "Tu Negocio";
+  
+        const res = await fetch(`${BACKEND_URL}/api/preview-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contenido: form.contenido,
+            nombreNegocio,
+            imagenUrl: form.imagen ? URL.createObjectURL(form.imagen) : undefined,
+            linkUrl: form.link_url,
+            logoUrl,
+            email: "test@email.com",
+            tenantId: "preview",
+            nombreContacto: "Nombre del cliente",
+            asunto: form.asunto,
+            tituloVisual: form.titulo_visual,
+          }),
+        });
+  
+        const html = await res.text();
+        setPreviewHtml(html);
+      } catch (err) {
+        console.error("❌ Error generando vista previa:", err);
+      }
     };
   
     fetchPreview();
-  }, [form.contenido, form.asunto, form.link_url, form.titulo_visual, form.imagen]);
+  }, [
+    form.contenido,
+    form.asunto,
+    form.link_url,
+    form.titulo_visual,
+    form.imagen,
+  ]);  
   
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
@@ -536,7 +556,7 @@ export default function CampaignsEmailClient() {
       />
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
-        🎯 Título visual del Email
+        <SiTarget /> Título visual del Email
       </label>
       <input
         name="titulo_visual"
@@ -547,7 +567,7 @@ export default function CampaignsEmailClient() {
       />
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
-        <SiMinutemailer /> Contenido del Email
+        <SiGoogledocs /> Contenido del Email
       </label>
       <textarea
         name="contenido"
@@ -570,7 +590,7 @@ export default function CampaignsEmailClient() {
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
-        <SiMinutemailer /> Imagen del Email
+        <SiGooglephotos /> Imagen del Email
       </label>
       <input
         name="imagen"
@@ -597,7 +617,9 @@ export default function CampaignsEmailClient() {
 
       {form.contenido && (
         <div className="my-10">
-          <h3 className="text-white text-lg font-bold mb-2">🧪 Vista previa del Email</h3>
+          <h3 className="text-white text-lg font-bold mb-2">
+            <SiTestinglibrary /> Vista previa del Email
+          </h3> SiTestinglibrary
           <div className="bg-white rounded shadow p-4 max-h-[600px] overflow-y-auto">
             <iframe
               srcDoc={previewHtml}
