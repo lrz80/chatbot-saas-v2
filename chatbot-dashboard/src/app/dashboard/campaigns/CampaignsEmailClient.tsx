@@ -468,6 +468,26 @@ export default function CampaignsEmailClient() {
         </div>
       )}
 
+      {usoEmail && (
+        <div className="mb-6">
+          <div className="text-white text-sm mb-1">
+            {usoEmail.usados} de {usoEmail.limite} campañas usadas
+          </div>
+          <div className="w-full bg-white/20 h-2 rounded overflow-hidden">
+            <div
+              className={`h-full ${
+                usoEmail.usados / usoEmail.limite >= 0.9
+                  ? "bg-red-500"
+                  : usoEmail.usados / usoEmail.limite >= 0.7
+                  ? "bg-yellow-400"
+                  : "bg-green-500"
+              } transition-all duration-500`}
+              style={{ width: `${(usoEmail.usados / usoEmail.limite) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
         <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
           <FaAddressBook /> Contactos
