@@ -25,7 +25,6 @@ export default function CampaignsEmailClient() {
     segmentos: [] as string[],
     link_url: "",
     imagen: null as File | null,
-    archivo_adjunto: null as File | null,
     asunto: "",
     titulo_visual: "",
   });
@@ -149,9 +148,7 @@ export default function CampaignsEmailClient() {
     const { name, value, files } = e.target;
     if (name === "imagen") {
       setForm((prev) => ({ ...prev, imagen: files[0] }));
-    } else if (name === "archivo_adjunto") {
-      setForm((prev) => ({ ...prev, archivo_adjunto: files[0] }));
-    } else {
+    }else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
@@ -183,7 +180,6 @@ export default function CampaignsEmailClient() {
     data.append("segmentos", JSON.stringify(destinatarios));
     data.append("link_url", form.link_url);
     if (form.imagen) data.append("imagen", form.imagen);
-    if (form.archivo_adjunto) data.append("archivo_adjunto", form.archivo_adjunto);
 
     try {
       setLoading(true);
@@ -205,7 +201,6 @@ export default function CampaignsEmailClient() {
           segmentos: [],
           link_url: "",
           imagen: null,
-          archivo_adjunto: null,
           asunto: "",
           titulo_visual: "",
         });
@@ -571,17 +566,6 @@ export default function CampaignsEmailClient() {
       )}
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
-        <FaPaperclip /> Archivo adjunto (PDF, DOCX, ZIP...)
-      </label>
-      <input
-        name="archivo_adjunto"
-        type="file"
-        accept=".pdf,.doc,.docx,.zip,.xls,.xlsx,.ppt,.pptx"
-        onChange={handleChange}
-        className="mb-4"
-      />
-
-      <label className="block mb-2 font-medium text-white flex items-center gap-2">
         <SiGooglecalendar /> Fecha y hora de envío
       </label>
       <input
@@ -693,19 +677,6 @@ export default function CampaignsEmailClient() {
                           className="max-h-32 border border-white/10 rounded"
                           onError={(e) => (e.currentTarget.style.display = "none")}
                         />
-                      </div>
-                    )}
-
-                    {c.archivo_adjunto_url && (
-                      <div className="mt-2 text-blue-300 underline text-sm">
-                        <a
-                          href={c.archivo_adjunto_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download
-                        >
-                          📎 Descargar archivo adjunto
-                        </a>
                       </div>
                     )}
 
