@@ -554,7 +554,7 @@ export default function CampaignsEmailClient() {
             Subir archivo CSV de contactos
           </label>
 
-          {/* Input visible como botón */}
+          {/* Input estilizado como botón y sin texto al lado */}
           <input
             type="file"
             accept=".csv"
@@ -567,7 +567,12 @@ export default function CampaignsEmailClient() {
                 alert("Por favor selecciona un archivo CSV válido.");
               }
             }}
-            className="file:cursor-pointer file:bg-indigo-600 file:hover:bg-indigo-500 file:text-white file:font-semibold file:px-4 file:py-2 file:rounded bg-white/10 border border-white/20 rounded w-full text-white text-sm overflow-hidden"
+            className="cursor-pointer block w-full text-sm text-white
+                      file:mr-0 file:py-2 file:px-4 file:rounded
+                      file:border-0 file:text-sm file:font-semibold
+                      file:bg-indigo-600 file:text-white
+                      hover:file:bg-indigo-500"
+            style={{ color: 'transparent' }}
           />
 
           {/* Mostrar nombre del archivo y botón para eliminar */}
