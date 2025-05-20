@@ -230,7 +230,7 @@ export default function DashboardHome() {
   if (loading) return <div className="text-white p-10">Cargando...</div>;
 
   return (
-    <div className="p-4 md:p-6 text-white overflow-x-hidden max-w-full">
+    <div className="px-4 md:px-6 py-4 text-white overflow-x-hidden max-w-7xl mx-auto">
       {showSuccess && (
         <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded mb-6 text-center font-medium">
           ✅ ¡Tu membresía fue activada correctamente!
