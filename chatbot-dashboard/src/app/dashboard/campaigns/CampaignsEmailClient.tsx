@@ -549,13 +549,23 @@ export default function CampaignsEmailClient() {
           ))}
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
-          <button
-          onClick={() => inputRef.current?.click()}
-          className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto text-center break-words"
-        >
-          Seleccionar<br />archivo
-        </button>
+        <div className="w-full">
+          <label className="block text-sm text-white mb-1 font-semibold">📁 Subir archivo de contactos (.CSV)</label>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            <button
+              onClick={() => inputRef.current?.click()}
+              className="bg-white/10 hover:bg-white/20 text-sm px-4 py-2 rounded text-white border border-white/20 w-full sm:w-auto"
+            >
+              Seleccionar archivo
+            </button>
+
+            {archivoCsv && (
+              <p className="text-sm text-white/60 truncate max-w-full">
+                {archivoCsv.name}
+              </p>
+            )}
+          </div>
 
           <input
             type="file"
@@ -567,8 +577,8 @@ export default function CampaignsEmailClient() {
               }
             }}
             className="hidden"
-          />
-
+        />
+        
           <button
             onClick={handleEliminarContactos}
             className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
