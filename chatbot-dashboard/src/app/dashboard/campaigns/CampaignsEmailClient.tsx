@@ -552,7 +552,7 @@ export default function CampaignsEmailClient() {
         <div className="w-full">
           <label className="block text-sm text-white mb-1 font-semibold">📁 Subir archivo de contactos (.CSV)</label>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
             <button
               onClick={() => inputRef.current?.click()}
               className="bg-white/10 hover:bg-white/20 text-sm px-4 py-2 rounded text-white border border-white/20 w-full sm:w-auto"
@@ -577,25 +577,26 @@ export default function CampaignsEmailClient() {
               }
             }}
             className="hidden"
-        />
-        
-          <button
-            onClick={handleEliminarContactos}
-            className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
-          >
-            Eliminar contactos
-          </button>
+          />
 
-          {archivoCsv && (
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
-              onClick={handleSubirCsv}
-              className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+              onClick={handleEliminarContactos}
+              className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
             >
-              Subir contactos
+              Eliminar contactos
             </button>
-          )}
+
+            {archivoCsv && (
+              <button
+                onClick={handleSubirCsv}
+                className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
+              >
+                Subir contactos
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
       {/* Campos del formulario */}
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
@@ -654,31 +655,53 @@ export default function CampaignsEmailClient() {
         placeholder="https://tusitio.com/oferta"
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
-      <label className="block mb-2 font-medium text-white flex items-center gap-2">
-        <SiGooglephotos /> Imagen del Email
-      </label>
-      <input
-        name="imagen"
-        type="file"
-        accept="image/*"
-        onChange={handleChange}
-        className="mb-4"
-      />
-      {form.imagen && (
-        <div className="mb-4">
-          <img
-            src={URL.createObjectURL(form.imagen)}
-            alt="Preview"
-            className="rounded border border-white/20 max-h-48 mb-2"
-          />
+      </div>
+
+      <div className="w-full">
+        <label className="block mb-2 font-medium text-white flex items-center gap-2">
+          <SiGooglephotos /> Imagen del Email
+        </label>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
           <button
-            onClick={() => setForm((prev) => ({ ...prev, imagen: null }))}
-            className="text-red-400 text-xs underline"
+            onClick={() => inputRef.current?.click()}
+            className="bg-white/10 hover:bg-white/20 text-sm px-4 py-2 rounded text-white border border-white/20 w-full sm:w-auto"
           >
-            ❌ Eliminar imagen
+            Seleccionar imagen
           </button>
+
+          {form.imagen && (
+            <p className="text-white/60 text-sm truncate">{form.imagen.name}</p>
+          )}
         </div>
-      )}
+
+        <input
+          name="imagen"
+          type="file"
+          accept="image/*"
+          ref={inputRef}
+          onChange={handleChange}
+          className="hidden"
+        />
+
+        {form.imagen && (
+          <div className="mb-4">
+            <img
+              src={URL.createObjectURL(form.imagen)}
+              alt="Preview"
+              className="rounded border border-white/20 max-h-48 mb-2 mx-auto"
+            />
+            <div className="text-center">
+              <button
+                onClick={() => setForm((prev) => ({ ...prev, imagen: null }))}
+                className="text-red-400 text-xs underline"
+              >
+                ❌ Eliminar imagen
+              </button>
+            </div>
+          </div>
+        )}
+      </div> 
 
       {form.contenido && (
         <div className="my-10">
