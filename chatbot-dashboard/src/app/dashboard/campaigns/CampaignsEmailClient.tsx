@@ -549,11 +549,8 @@ export default function CampaignsEmailClient() {
           ))}
         </div>
 
-        <div className="w-full">
-          <label
-            htmlFor="archivoCsv"
-            className="block mb-1 text-sm font-semibold text-white"
-          >
+        <div className="w-full space-y-2">
+          <label className="block text-sm font-semibold text-white">
             Subir archivo CSV de contactos
           </label>
 
@@ -562,6 +559,7 @@ export default function CampaignsEmailClient() {
             type="file"
             accept=".csv"
             multiple={false}
+            ref={inputRef}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file && file.name.toLowerCase().endsWith(".csv")) {
@@ -572,6 +570,22 @@ export default function CampaignsEmailClient() {
             }}
             className="w-full text-sm text-white file:bg-indigo-600 file:hover:bg-indigo-500 file:text-white file:font-semibold file:px-4 file:py-2 file:rounded bg-white/10 border border-white/20 rounded cursor-pointer"
           />
+
+          {/* Mostrar nombre del archivo y botón para eliminar */}
+          {archivoCsv && (
+            <div className="flex items-center justify-between bg-white/10 border border-white/20 rounded px-4 py-2 text-sm text-white">
+              <span className="truncate">{archivoCsv.name}</span>
+              <button
+                onClick={() => {
+                  setArchivoCsv(null);
+                  if (inputRef.current) inputRef.current.value = "";
+                }}
+                className="text-red-400 hover:text-red-600 text-xs font-semibold ml-4"
+              >
+                Eliminar archivo
+              </button>
+            </div>
+          )}
 
           {/* Acciones: eliminar y subir */}
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
