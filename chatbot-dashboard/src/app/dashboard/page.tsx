@@ -230,7 +230,7 @@ export default function DashboardHome() {
   if (loading) return <div className="text-white p-10">Cargando...</div>;
 
   return (
-    <div className="p-4 md:p-6 text-white">
+    <div className="p-4 md:p-6 text-white overflow-x-hidden max-w-full">
       {showSuccess && (
         <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded mb-6 text-center font-medium">
           ✅ ¡Tu membresía fue activada correctamente!
@@ -286,7 +286,7 @@ export default function DashboardHome() {
           </div>
         </div>
         {chartData ? (
-          <div className="bg-white/10 p-4 rounded h-[300px] md:h-[350px]">
+          <div className="bg-white/10 p-4 rounded h-[300px] md:h-[350px] overflow-x-auto">
             <Bar
               data={chartData}
               options={{
@@ -309,7 +309,7 @@ export default function DashboardHome() {
       </div>
 
       <div className="bg-white/10 p-4 rounded mb-6">
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap gap-2 overflow-x-auto">
         {['todos', 'whatsapp', 'voice', 'instagram', 'facebook'].map((c) => (
           <button
             key={c}
@@ -347,7 +347,7 @@ export default function DashboardHome() {
                           <span>{new Date(msg.timestamp).toLocaleString()}</span>
                           <span>{msg.from_number || "anónimo"}</span>
                         </div>
-                        <div className="font-medium text-white">
+                        <div className="font-medium text-white break-words">
                           {msg.sender === "user" ? "👤 Cliente:" : "🤖 Bot:"} {msg.content}
                         </div>
                         {msg.emotion && (
@@ -381,7 +381,7 @@ export default function DashboardHome() {
                         <span>{new Date(msg.timestamp).toLocaleString()}</span>
                         <span>{msg.from_number || "anónimo"}</span>
                       </div>
-                      <div className="font-medium text-white">
+                      <div className="font-medium text-white break-words">
                         {msg.sender === "user" ? "👤 Cliente:" : "🤖 Bot:"} {msg.content}
                       </div>
                       {msg.emotion && (
@@ -406,7 +406,7 @@ export default function DashboardHome() {
       <div className="bg-white/10 p-4 rounded mb-6">
         <h2 className="text-lg md:text-xl mb-2">Palabras clave más frecuentes</h2>
         {keywords.length > 0 ? (
-          <ul className="flex flex-wrap gap-3">
+          <ul className="flex flex-wrap gap-3 overflow-x-auto max-w-full">
             {keywords.map(([word, count]) => (
               <li key={word} className="bg-white/20 px-3 py-1 rounded-full text-sm">
                 {word} ({count})

@@ -486,7 +486,7 @@ export default function CampaignsEmailClient() {
         </div>
       )}
 
-      <TrainingHelp context="campaign-email" /> SiCampaignmonitor
+      <TrainingHelp context="campaign-email" />
 
       {usoEmail && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
