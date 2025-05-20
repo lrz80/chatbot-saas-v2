@@ -562,13 +562,17 @@ export default function CampaignsEmailClient() {
           <input
             type="file"
             accept=".csv"
+            multiple={false}
             ref={inputRef}
+            className="hidden"
             onChange={(e) => {
-              if (e.target.files?.[0]) {
-                setArchivoCsv(e.target.files[0]);
+              const file = e.target.files?.[0];
+              if (file && file.name.endsWith(".csv")) {
+                setArchivoCsv(file);
+              } else {
+                alert("Por favor selecciona un archivo CSV válido.");
               }
             }}
-            className="hidden"
           />
 
           {/* Acciones: eliminar y subir */}
