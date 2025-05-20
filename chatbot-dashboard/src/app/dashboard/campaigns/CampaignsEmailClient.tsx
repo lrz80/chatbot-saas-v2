@@ -555,6 +555,7 @@ export default function CampaignsEmailClient() {
           </label>
 
           <input
+            id="archivoCsv"
             type="file"
             accept=".csv"
             multiple={false}
@@ -567,7 +568,7 @@ export default function CampaignsEmailClient() {
                 alert("Por favor selecciona un archivo CSV válido.");
               }
             }}
-            className="sr-only"
+            className="w-full text-sm text-white file:bg-indigo-600 file:hover:bg-indigo-500 file:text-white file:font-semibold file:px-4 file:py-2 file:rounded bg-white/10 border border-white/20 rounded cursor-pointer"
           />
 
           {/* Mostrar nombre del archivo y botón para eliminar */}
