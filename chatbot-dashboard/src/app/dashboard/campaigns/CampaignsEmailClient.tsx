@@ -563,12 +563,11 @@ export default function CampaignsEmailClient() {
             Seleccionar archivo
           </button>
 
-          {/* Input oculto que funciona pero no muestra texto nativo */}
+          {/* Input visible como botón */}
           <input
             type="file"
             accept=".csv"
             multiple={false}
-            ref={inputRef}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file && file.name.toLowerCase().endsWith(".csv")) {
@@ -577,7 +576,7 @@ export default function CampaignsEmailClient() {
                 alert("Por favor selecciona un archivo CSV válido.");
               }
             }}
-            className="sr-only"
+            className="file:cursor-pointer file:bg-indigo-600 file:hover:bg-indigo-500 file:text-white file:font-semibold file:px-4 file:py-2 file:rounded bg-white/10 border border-white/20 rounded w-full text-white text-sm overflow-hidden"
           />
 
           {/* Mostrar nombre del archivo y botón para eliminar */}
