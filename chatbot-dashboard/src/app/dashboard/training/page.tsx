@@ -603,7 +603,7 @@ export default function TrainingPage() {
             <div ref={bottomRef} />
           </div>
 
-          <div className="flex gap-2 w-full max-w-full">
+          <div className="w-full flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               value={input}
@@ -611,12 +611,12 @@ export default function TrainingPage() {
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Escribe algo..."
               disabled={!settings.membresia_activa}
-              className="flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
+              className="w-full sm:flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
             />
             <button
               onClick={() => bloquearSiNoMembresia(handleSend)}
               disabled={!settings.membresia_activa}
-              className={`px-4 py-2 rounded ${
+              className={`w-full sm:w-auto px-4 py-2 rounded ${
                 settings.membresia_activa
                   ? "bg-indigo-600 hover:bg-indigo-700 text-white"
                   : "bg-gray-600 text-white/50 cursor-not-allowed"
