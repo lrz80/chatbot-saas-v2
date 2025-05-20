@@ -250,7 +250,7 @@ export default function DashboardHome() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 justify-items-center sm:justify-items-stretch">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 px-4">
         <KpiCardWithChart
           title="Interacciones Totales"
           value={kpis.total}
