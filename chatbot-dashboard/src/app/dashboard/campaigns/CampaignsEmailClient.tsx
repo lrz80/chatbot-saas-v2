@@ -336,28 +336,29 @@ export default function CampaignsEmailClient() {
   
   const comprarMasCampanas = async (cantidad: number) => {
     try {
-      const response = await fetch('/api/stripe/checkout-credit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          canal: 'email',
+          canal: "email", // 👈 asegúrate de que el backend lo reconoce
           cantidad,
-          redirectPath: '/dashboard/campaigns/email',
+          redirectPath: "/dashboard/campaigns/email", // 👈 ruta después del pago
         }),
       });
   
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
+      const json = await res.json();
+  
+      if (res.ok && json.url) {
+        window.location.href = json.url;
       } else {
-        console.error('No se recibió una URL de redirección.');
+        alert("❌ No se pudo iniciar el pago");
       }
-    } catch (error) {
-      console.error('Error al iniciar la compra de campañas:', error);
+    } catch (err) {
+      console.error("❌ Error:", err);
+      alert("❌ Falló la solicitud");
     }
-  };
+  };  
   
   useEffect(() => {
     const url = new URL(window.location.href);
