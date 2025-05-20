@@ -561,7 +561,7 @@ export default function CampaignsEmailClient() {
           {/* Input oculto solo acepta CSV */}
           <input
             type="file"
-            accept=".csv,text/csv"
+          //  accept=".csv,text/csv"
             ref={inputRef}
             onChange={(e) => {
               if (e.target.files?.[0]) {
