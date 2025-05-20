@@ -558,16 +558,16 @@ export default function CampaignsEmailClient() {
             Seleccionar archivo
           </button>
 
-          {/* Input oculto pero funcional */}
+          {/* Input oculto visualmente pero compatible */}
           <input
             type="file"
             accept=".csv"
             multiple={false}
             ref={inputRef}
-            className="hidden"
+            className="sr-only"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file && file.name.endsWith(".csv")) {
+              if (file && file.name.toLowerCase().endsWith(".csv")) {
                 setArchivoCsv(file);
               } else {
                 alert("Por favor selecciona un archivo CSV válido.");
