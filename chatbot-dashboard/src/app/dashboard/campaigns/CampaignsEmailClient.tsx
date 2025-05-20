@@ -516,7 +516,7 @@ export default function CampaignsEmailClient() {
                 onClick={() => comprarMasCampanas(extra)}
                 className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
               >
-                +{extra} campañas
+                +{extra}
               </button>
             ))}
           </div>
@@ -544,18 +544,18 @@ export default function CampaignsEmailClient() {
               onClick={() => comprarMasContactos(extra)}
               className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
             >
-              +{extra} contactos
+              +{extra}
             </button>
           ))}
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center gap-3">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
           <button
-            onClick={() => inputRef.current?.click()}
-            className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
-          >
-            Seleccionar archivo
-          </button>
+          onClick={() => inputRef.current?.click()}
+          className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto text-center break-words"
+        >
+          Seleccionar<br />archivo
+        </button>
 
           <input
             type="file"
