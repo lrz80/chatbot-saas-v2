@@ -22,7 +22,7 @@ type Props = {
 
 export default function KpiCardWithChart({ title, value, data, color = 'rgba(168, 85, 247, 1)' }: Props) {
   return (
-    <div className="bg-white/10 p-4 rounded-xl backdrop-blur-md border border-white/20 shadow-sm text-white w-full">
+    <div className="bg-white/10 p-4 rounded-xl backdrop-blur-md border border-white/20 shadow-sm text-white w-full max-w-[360px]">
       <div className="text-sm text-white/70 mb-1">{title}</div>
       <div className="text-3xl font-bold mb-2">{value}</div>
       <div className="h-[60px]">
