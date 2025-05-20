@@ -603,7 +603,7 @@ export default function TrainingPage() {
             <div ref={bottomRef} />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full max-w-full">
             <input
               type="text"
               value={input}
