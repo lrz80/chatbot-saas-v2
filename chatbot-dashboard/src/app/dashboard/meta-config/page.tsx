@@ -1,3 +1,5 @@
+// src/app/dashboard/meta-config/page.tsx
+
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -355,24 +357,24 @@ export default function MetaConfigPage() {
             ))}
           </div>
 
-          <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handlePreviewSend();
-              }
-            }}
-            className="flex-1 p-3 rounded-lg bg-white/10 border border-white/20 text-white"
-            placeholder="Escribe un mensaje..."
-          />
+          <div className="w-full flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handlePreviewSend();
+                }
+              }}
+              className="w-full sm:flex-1 p-3 rounded-lg bg-white/10 border border-white/20 text-white"
+              placeholder="Escribe un mensaje..."
+            />
 
             <button
               onClick={handlePreviewSend}
-              className="px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-all duration-200"
+              className="w-full sm:w-auto px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-all duration-200"
             >
               Enviar
             </button>
