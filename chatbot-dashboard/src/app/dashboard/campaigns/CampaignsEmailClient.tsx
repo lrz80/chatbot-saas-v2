@@ -558,14 +558,17 @@ export default function CampaignsEmailClient() {
             Seleccionar archivo
           </button>
 
-          {/* Input oculto solo acepta CSV */}
+          {/* Input oculto pero funcional */}
           <input
             type="file"
             accept=".csv"
-            style={{ background: 'white', color: 'black' }}
+            ref={inputRef}
             onChange={(e) => {
-              alert(e.target.files?.[0]?.name || 'Ninguno');
+              if (e.target.files?.[0]) {
+                setArchivoCsv(e.target.files[0]);
+              }
             }}
+            className="hidden"
           />
 
           {/* Acciones: eliminar y subir */}
