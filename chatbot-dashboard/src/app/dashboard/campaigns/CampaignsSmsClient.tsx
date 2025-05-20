@@ -422,7 +422,7 @@ export default function CampaignsSmsClient() {
               onClick={() => comprarMasContactos(extra)}
               className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
             >
-              +{extra} contactos
+              +{extra}
             </button>
           ))}
         </div>
