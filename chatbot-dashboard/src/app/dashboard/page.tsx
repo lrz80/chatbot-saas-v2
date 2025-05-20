@@ -230,7 +230,7 @@ export default function DashboardHome() {
   if (loading) return <div className="text-white p-10">Cargando...</div>;
 
   return (
-    <div className="px-4 md:px-6 py-4 text-white overflow-x-hidden max-w-7xl mx-auto">
+    <div className="px-4 md:px-6 py-4 text-white overflow-x-hidden max-w-screen-xl mx-auto">
       {showSuccess && (
         <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded mb-6 text-center font-medium">
           ✅ ¡Tu membresía fue activada correctamente!
@@ -250,7 +250,7 @@ export default function DashboardHome() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 max-w-full px-2 sm:px-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 px-4 sm:px-0">
         <KpiCardWithChart
           title="Interacciones Totales"
           value={kpis.total}
