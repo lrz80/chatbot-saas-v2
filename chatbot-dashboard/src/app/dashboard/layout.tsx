@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (loading) return null;
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0a] text-white">
+    <div className="relative min-h-screen bg-[#0a0a0a] text-white flex flex-col lg:flex-row overflow-x-hidden">
       <Sidebar
         tenant={tenant}
         onLogout={handleLogout}
