@@ -554,15 +554,6 @@ export default function CampaignsEmailClient() {
             Subir archivo CSV de contactos
           </label>
 
-          {/* Botón azul personalizado */}
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
-          >
-            Seleccionar archivo
-          </button>
-
           {/* Input visible como botón */}
           <input
             type="file"
