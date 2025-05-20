@@ -549,22 +549,19 @@ export default function CampaignsEmailClient() {
           ))}
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
-          {/* Botón de selección */}
-          <button
-            onClick={() => inputRef.current?.click()}
-            className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+        <div className="w-full">
+          <label
+            htmlFor="archivoCsv"
+            className="block mb-1 text-sm font-semibold text-white"
           >
-            Seleccionar archivo
-          </button>
+            Subir archivo CSV de contactos
+          </label>
 
-          {/* Input oculto visualmente pero compatible */}
           <input
+            id="archivoCsv"
             type="file"
             accept=".csv"
             multiple={false}
-            ref={inputRef}
-            className="sr-only"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file && file.name.toLowerCase().endsWith(".csv")) {
@@ -573,6 +570,7 @@ export default function CampaignsEmailClient() {
                 alert("Por favor selecciona un archivo CSV válido.");
               }
             }}
+            className="w-full text-sm text-white file:bg-indigo-600 file:hover:bg-indigo-500 file:text-white file:font-semibold file:px-4 file:py-2 file:rounded bg-white/10 border border-white/20 rounded cursor-pointer"
           />
 
           {/* Acciones: eliminar y subir */}
