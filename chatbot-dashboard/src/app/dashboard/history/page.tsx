@@ -1,10 +1,16 @@
-// src/app/dashboard/history/page.tsx
+// ✅ src/app/dashboard/history/page.tsx
 
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
 import { BACKEND_URL } from "@/utils/api";
+import {
+  SiWhatsapp,
+  SiFacebook,
+  SiMinutemailer,
+} from "react-icons/si";
+import { FiGlobe } from "react-icons/fi";
 
 const PAGE_SIZE = 10;
 
@@ -106,28 +112,37 @@ export default function MessageHistory() {
     return () => clearInterval(interval);
   }, [canal]);
 
-  return (
-    <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
-      <h2 className="text-3xl font-bold mb-6 text-indigo-300">🕓 Historial de Interacciones</h2>
+  const canalIcons = {
+    whatsapp: <SiWhatsapp className="inline text-green-400" />,
+    facebook: <SiFacebook className="inline text-blue-400" />,
+    voice: <SiMinutemailer className="inline text-purple-400" />,
+    "": <FiGlobe className="inline text-white/70" />,
+  };
 
-      <div className="mb-4 text-sm text-white/70">
-        📲 WhatsApp ({conteo.whatsapp}) | 💬 Facebook ({conteo.facebook}) | 📞 Voz ({conteo.voice})
+  return (
+    <div className="w-full px-4 sm:px-6 py-6 text-white max-w-6xl mx-auto">
+      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-indigo-300 flex items-center gap-2">
+        {canalIcons[""]} Historial de Interacciones
+      </h2>
+
+      <div className="mb-4 text-sm text-white/70 flex flex-wrap gap-4">
+        <span>{canalIcons.whatsapp} WhatsApp ({conteo.whatsapp})</span>
+        <span>{canalIcons.facebook} Facebook ({conteo.facebook})</span>
+        <span>{canalIcons.voice} Voz ({conteo.voice})</span>
       </div>
 
       <div className="mb-6">
         <label className="text-sm font-medium text-white mr-2">Filtrar por canal:</label>
-        <div className="inline-flex items-center bg-white/10 border border-white/30 rounded">
-          <select
-            value={canal}
-            onChange={(e) => setCanal(e.target.value)}
-            className="bg-transparent text-white px-4 py-2 rounded appearance-none focus:outline-none"
-          >
-            <option value="">🌐 Todos</option>
-            <option value="whatsapp">📲 WhatsApp</option>
-            <option value="facebook">💬 Facebook</option>
-            <option value="voice">📞 Voz</option>
-          </select>
-        </div>
+        <select
+          value={canal}
+          onChange={(e) => setCanal(e.target.value)}
+          className="bg-white/10 border border-white/30 text-white px-4 py-2 rounded-md focus:outline-none"
+        >
+          <option value="">🌐 Todos</option>
+          <option value="whatsapp">📲 WhatsApp</option>
+          <option value="facebook">💬 Facebook</option>
+          <option value="voice">📞 Voz</option>
+        </select>
       </div>
 
       {loading ? (
@@ -136,14 +151,14 @@ export default function MessageHistory() {
         <p className="text-center text-white/50">No hay mensajes recientes.</p>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
             {messages.map((msg, index) => (
               <div
                 key={index}
                 className={`flex ${msg.sender === "user" ? "justify-start" : "justify-end"}`}
               >
                 <div
-                  className={`max-w-xs p-3 rounded-xl shadow text-sm ${
+                  className={`w-full sm:max-w-xs p-3 rounded-xl shadow text-sm ${
                     msg.sender === "user"
                       ? "bg-white/20 text-white"
                       : "bg-indigo-500/70 text-white"
