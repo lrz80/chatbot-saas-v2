@@ -154,26 +154,26 @@ export default function MessageHistory() {
           <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
             {messages.map((msg, index) => (
               <div
-                key={index}
-                className={`flex ${msg.sender === "user" ? "justify-start" : "justify-end"}`}
+              key={index}
+              className={`flex ${msg.sender === "user" ? "justify-start" : "justify-end"}`}
+            >
+              <div
+                className={`w-fit max-w-[90%] sm:max-w-xs p-3 rounded-xl shadow text-sm break-words ${
+                  msg.sender === "user"
+                    ? "bg-white/20 text-white"
+                    : "bg-indigo-500/70 text-white"
+                }`}
               >
-                <div
-                  className={`w-full sm:max-w-xs p-3 rounded-xl shadow text-sm ${
-                    msg.sender === "user"
-                      ? "bg-white/20 text-white"
-                      : "bg-indigo-500/70 text-white"
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                  {msg.sender === "user" && msg.from_number && (
-                    <p className="text-xs text-white/50 mt-1">📞 {msg.from_number}</p>
-                  )}
-                  <p className="text-xs mt-1 text-right text-white/70">
-                    {msg.canal?.toUpperCase() || "WHATSAPP"} •{" "}
-                    {format(new Date(msg.timestamp), "dd/MM/yyyy HH:mm")}
-                  </p>
-                </div>
+                <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                {msg.sender === "user" && msg.from_number && (
+                  <p className="text-xs text-white/50 mt-1">📞 {msg.from_number}</p>
+                )}
+                <p className="text-xs mt-1 text-right text-white/70">
+                  {msg.canal?.toUpperCase() || "WHATSAPP"} •{" "}
+                  {format(new Date(msg.timestamp), "dd/MM/yyyy HH:mm")}
+                </p>
               </div>
+            </div>
             ))}
           </div>
 
