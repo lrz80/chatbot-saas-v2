@@ -15,7 +15,6 @@ export default function FollowUpSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [horasEspera, setHorasEspera] = useState<number>(0);
-  const [diasEspera, setDiasEspera] = useState<number>(0);
   const [mensajePrecio, setMensajePrecio] = useState('');
   const [mensajeAgendar, setMensajeAgendar] = useState('');
   const [mensajeUbicacion, setMensajeUbicacion] = useState('');
@@ -39,8 +38,7 @@ export default function FollowUpSettingsPage() {
       const data = await res.json();
       if (data) {
         const totalMinutos = data.minutos_espera || 60;
-        setDiasEspera(Math.floor(totalMinutos / 1440));
-        setHorasEspera(Math.floor((totalMinutos % 1440) / 60));
+        setHorasEspera(Math.floor(totalMinutos / 60)); // ✅ Solo horas
         setMensajePrecio(data.mensaje_precio || '');
         setMensajeAgendar(data.mensaje_agendar || '');
         setMensajeUbicacion(data.mensaje_ubicacion || '');
@@ -83,7 +81,7 @@ export default function FollowUpSettingsPage() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      const totalMinutos = (diasEspera * 24 * 60) + (horasEspera * 60);
+      const totalMinutos = horasEspera * 60; // ✅ Solo horas
 
       const res = await fetch(`${BACKEND_URL}/api/follow-up-settings`, {
         method: 'POST',
@@ -137,16 +135,6 @@ export default function FollowUpSettingsPage() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm mb-2 font-semibold text-purple-200">Días:</label>
-            <input
-              type="number"
-              min="0"
-              value={diasEspera}
-              onChange={(e) => setDiasEspera(parseInt(e.target.value) || 0)}
-              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white"
-            />
-          </div>
 
           <div>
             <label className="block text-sm mb-2 font-semibold text-purple-200">Horas:</label>
