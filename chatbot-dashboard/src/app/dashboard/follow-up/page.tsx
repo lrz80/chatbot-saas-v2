@@ -143,9 +143,17 @@ export default function FollowUpSettingsPage() {
               min="0"
               max="23"
               value={horasEspera}
-              onChange={(e) => setHorasEspera(parseInt(e.target.value) || 0)}
+              onChange={(e) => {
+                const value = parseInt(e.target.value) || 0;
+                setHorasEspera(value);
+              }}
+              onBlur={() => {
+                if (horasEspera > 23) setHorasEspera(23);
+                if (horasEspera < 0) setHorasEspera(0);
+              }}
               className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white"
             />
+
           </div>
         </div>
       </section>
