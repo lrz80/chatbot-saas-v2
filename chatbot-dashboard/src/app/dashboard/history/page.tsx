@@ -91,21 +91,20 @@ export default function MessageHistory() {
       const nuevos = data.mensajes || [];
   
       if (nuevos.length > 0) {
-        setMessages((prev) => {
-          const existentes = new Set(prev.map((m) => m.id));
-          const únicos = nuevos.filter((m) => !existentes.has(m.id));
-          if (únicos.length > 0) {
-            lastIdRef.current = únicos[únicos.length - 1].id;
-            return [...prev, ...únicos];
-          }
-          return prev;
-        });
-  
+        const existentes = new Set(messages.map((m) => m.id));
+        const únicos = nuevos.filter((m) => !existentes.has(m.id));
+        if (únicos.length > 0) {
+          setMessages((prev) => [...prev, ...únicos]);
+        }
+      
+        // 👇 actualizar lastIdRef aunque sean duplicados
+        lastIdRef.current = nuevos[nuevos.length - 1].id;
+      
         setConteo((prev) => ({
           ...prev,
-          [canal || "whatsapp"]: prev[canal || "whatsapp"] + nuevos.length,
+          [canal || "whatsapp"]: prev[canal || "whatsapp"] + únicos.length,
         }));
-      }
+      }      
     } catch (err) {
       console.error("❌ Error en polling de nuevos mensajes:", err);
     }
