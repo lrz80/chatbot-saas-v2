@@ -21,6 +21,7 @@ export default function MessageHistory() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const lastTimestampRef = useRef<string | null>(null);
+  const lastIdRef = useRef<number | null>(null);
 
   const [conteo, setConteo] = useState({
     whatsapp: 0,
@@ -44,10 +45,17 @@ export default function MessageHistory() {
       if (reset) {
         setMessages(nuevosMensajes);
         setPage(2);
+        if (nuevosMensajes.length > 0) {
+          lastIdRef.current = nuevosMensajes[nuevosMensajes.length - 1].id;
+        }
       } else {
-        setMessages((prev) => [...prev, ...nuevosMensajes]);
+        setMessages((prev) => {
+          const nuevos = [...prev, ...nuevosMensajes];
+          lastIdRef.current = nuevos[nuevos.length - 1]?.id || lastIdRef.current;
+          return nuevos;
+        });
         setPage((prev) => prev + 1);
-      }
+      }      
 
       if (nuevosMensajes.length > 0) {
         lastTimestampRef.current = nuevosMensajes[nuevosMensajes.length - 1].timestamp;
@@ -71,39 +79,37 @@ export default function MessageHistory() {
 
   const fetchMensajesNuevos = async () => {
     try {
-      const desde = lastTimestampRef.current;
-      if (!desde) return;
-
+      if (!lastIdRef.current) return;
+  
       const res = await fetch(
-        `${BACKEND_URL}/api/messages/nuevos?canal=${canal}&desde=${encodeURIComponent(desde)}`,
+        `${BACKEND_URL}/api/messages/nuevos?canal=${canal}&lastId=${lastIdRef.current}`,
         { credentials: "include" }
       );
       if (!res.ok) return;
-
+  
       const data = await res.json();
-      const nuevos = data.mensajes?.sort(
-        (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      ) || [];
-
+      const nuevos = data.mensajes || [];
+  
       if (nuevos.length > 0) {
         setMessages((prev) => {
-          const prevIds = new Set(prev.map((m) => m.id));
-          const unicos = nuevos.filter((m) => !prevIds.has(m.id));
-          return [...prev, ...unicos];
+          const existentes = new Set(prev.map((m) => m.id));
+          const únicos = nuevos.filter((m) => !existentes.has(m.id));
+          if (únicos.length > 0) {
+            lastIdRef.current = únicos[únicos.length - 1].id;
+            return [...prev, ...únicos];
+          }
+          return prev;
         });
-      
-        lastTimestampRef.current = nuevos[nuevos.length - 1].timestamp;
-      
+  
         setConteo((prev) => ({
           ...prev,
           [canal || "whatsapp"]: prev[canal || "whatsapp"] + nuevos.length,
         }));
-      }      
-      
+      }
     } catch (err) {
       console.error("❌ Error en polling de nuevos mensajes:", err);
     }
-  };
+  };  
 
   useEffect(() => {
     setLoading(true);
