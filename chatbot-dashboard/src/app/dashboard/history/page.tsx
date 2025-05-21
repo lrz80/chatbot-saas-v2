@@ -87,9 +87,9 @@ export default function MessageHistory() {
 
       if (nuevos.length > 0) {
         setMessages((prev) => {
-          const idsExistentes = new Set(prev.map((m) => m.id));
-          const nuevosUnicos = nuevos.filter((m) => !idsExistentes.has(m.id));
-          return [...prev, ...nuevosUnicos];
+          const prevIds = new Set(prev.map((m) => m.id));
+          const unicos = nuevos.filter((m) => !prevIds.has(m.id));
+          return [...prev, ...unicos];
         });
       
         lastTimestampRef.current = nuevos[nuevos.length - 1].timestamp;
@@ -98,7 +98,7 @@ export default function MessageHistory() {
           ...prev,
           [canal || "whatsapp"]: prev[canal || "whatsapp"] + nuevos.length,
         }));
-      }
+      }      
       
     } catch (err) {
       console.error("❌ Error en polling de nuevos mensajes:", err);
