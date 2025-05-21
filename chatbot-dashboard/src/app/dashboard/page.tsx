@@ -166,24 +166,26 @@ export default function DashboardHome() {
   useEffect(() => {
     const fetchAllMessages = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/messages?limit=50${canal !== 'todos' ? `&canal=${canal}` : ''}`, {
-          credentials: 'include',
-        });
+        const res = await fetch(
+          `${BACKEND_URL}/api/messages?limit=50${canal !== 'todos' ? `&canal=${canal}` : ''}`,
+          { credentials: 'include' }
+        );
         if (!res.ok) throw new Error("Error al obtener mensajes");
-        const data = await res.json();
-        if (!Array.isArray(data)) throw new Error("Formato inválido de mensajes");
-        setAllMessages(data);
+  
+        const data = (await res.json()) as { mensajes: any[] };
+  
+        setAllMessages(Array.isArray(data.mensajes) ? data.mensajes : []);
       } catch (err) {
         console.error("❌ Error cargando mensajes:", err);
+        setAllMessages([]); // ← Evita errores posteriores
       } finally {
         setLoadingAllMessages(false);
       }
     };
   
     fetchAllMessages();
-  }, [canal]);
+  }, [canal]);  
   
-
   useEffect(() => {
     const fetchGraficos = async () => {
       try {
