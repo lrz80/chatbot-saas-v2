@@ -9,9 +9,15 @@ interface Props {
   idioma: string;
   categoria: string;
   onGenerate: (prompt: string, bienvenida: string) => void;
+  disabled?: boolean; // ✅ NUEVO
 }
 
-export default function VoicePromptGenerator({ idioma, categoria, onGenerate }: Props) {
+export default function VoicePromptGenerator({
+  idioma,
+  categoria,
+  onGenerate,
+  disabled = false, // ✅ valor por defecto
+}: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleGenerate = async () => {
@@ -60,10 +66,10 @@ export default function VoicePromptGenerator({ idioma, categoria, onGenerate }: 
   return (
     <button
       onClick={handleGenerate}
-      disabled={loading}
-      className="bg-blue-600 text-white px-4 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+      disabled={loading || disabled} // ✅ ahora respeta también disabled externo
+      className="bg-blue-600 text-white px-4 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {loading ? "Generando..." : "Generar prompt de voz automáticamente"}
+      {loading ? "Generando..." : "Generar Instrucciones de voz"}
     </button>
   );
 }

@@ -22,6 +22,7 @@ export default function VoiceConfigPage() {
   const [idioma, setIdioma] = useState("es-ES");
   const tenant = useTenant();
   const tenantId = tenant?.id;
+  const tieneMembresia = tenant?.membresia_activa;
   const router = useRouter();
 
   const idiomasDisponibles = [
@@ -224,6 +225,12 @@ export default function VoiceConfigPage() {
         ))}
       </div>
   
+      {!tieneMembresia && (
+        <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-6 text-sm border border-yellow-400">
+          ⚠️ Tu membresía está inactiva. Puedes visualizar la configuración, pero no puedes guardar ni generar cambios hasta activarla.
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="mb-10">
         <input type="hidden" name="idioma" value={idioma} />
         <input type="hidden" name="canal" value="voz" />
@@ -253,6 +260,7 @@ export default function VoiceConfigPage() {
         <VoicePromptGenerator
           idioma={idioma}
           categoria={tenant?.categoria || "general"}
+          disabled={!tieneMembresia}
           onGenerate={(prompt, bienvenida) => {
             (document.querySelector("textarea[name='system_prompt']") as HTMLTextAreaElement).value = prompt;
             (document.querySelector("input[name='welcome_message']") as HTMLInputElement).value = bienvenida;
@@ -261,7 +269,7 @@ export default function VoiceConfigPage() {
   
         <div className="grid grid-cols-1 gap-6 mt-6">
           <div>
-            <label className="block text-white font-semibold mb-1">Prompt del sistema generado</label>
+            <label className="block text-white font-semibold mb-1">Instrucciones de Voz generadas</label>
             <textarea
               name="system_prompt"
               rows={6}
@@ -344,6 +352,7 @@ export default function VoiceConfigPage() {
             type="button"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4"
             onClick={agregarLink}
+            disabled={!tieneMembresia}
           >
             Agregar link útil
           </button>
@@ -373,6 +382,7 @@ export default function VoiceConfigPage() {
             <button
               type="submit"
               className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded shadow"
+              disabled={!tieneMembresia}
             >
               Guardar configuración
             </button>
