@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Tabs as TabsPrimitive } from "@radix-ui/react-tabs";
+import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cva } from "class-variance-authority";
-import { cn } from "@/lib/utils"; // Asegúrate que esta función existe
+import { cn } from "@/lib/utils";
 
+// Variantes de estilo para el trigger (las pestañas)
 const tabsTriggerVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-all",
   {
     variants: {
       variant: {
@@ -20,8 +21,10 @@ const tabsTriggerVariants = cva(
   }
 );
 
+// Raíz del componente de tabs (el contenedor general)
 const Tabs = TabsPrimitive.Root;
 
+// Lista de pestañas
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
@@ -29,7 +32,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
+      "flex w-full sm:w-auto justify-start sm:justify-center overflow-x-auto rounded-lg bg-white/10 p-1",
       className
     )}
     {...props}
@@ -37,6 +40,7 @@ const TabsList = React.forwardRef<
 ));
 TabsList.displayName = "TabsList";
 
+// Pestaña individual
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
@@ -49,6 +53,7 @@ const TabsTrigger = React.forwardRef<
 ));
 TabsTrigger.displayName = "TabsTrigger";
 
+// Contenido de cada pestaña
 const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
@@ -56,7 +61,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      "mt-4 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2",
       className
     )}
     {...props}
@@ -64,4 +69,5 @@ const TabsContent = React.forwardRef<
 ));
 TabsContent.displayName = "TabsContent";
 
+// Exporta los componentes
 export { Tabs, TabsList, TabsTrigger, TabsContent };
