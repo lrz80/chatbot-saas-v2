@@ -152,29 +152,33 @@ export default function MessageHistory() {
       ) : (
         <>
           <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-            {messages.map((msg, index) => (
+          {messages
+            .slice()
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            .map((msg, index) => (
               <div
-              key={index}
-              className={`flex ${msg.sender === "user" ? "justify-start" : "justify-end"}`}
-            >
-              <div
-                className={`w-fit max-w-[90%] sm:max-w-xs p-3 rounded-xl shadow text-sm break-words ${
-                  msg.sender === "user"
-                    ? "bg-white/20 text-white"
-                    : "bg-indigo-500/70 text-white"
-                }`}
+                key={index}
+                className={`flex ${msg.sender === "user" ? "justify-start" : "justify-end"}`}
               >
-                <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                {msg.sender === "user" && msg.from_number && (
-                  <p className="text-xs text-white/50 mt-1">📞 {msg.from_number}</p>
-                )}
-                <p className="text-xs mt-1 text-right text-white/70">
-                  {msg.canal?.toUpperCase() || "WHATSAPP"} •{" "}
-                  {format(new Date(msg.timestamp), "dd/MM/yyyy HH:mm")}
-                </p>
+                <div
+                  className={`w-fit max-w-[90%] sm:max-w-xs p-3 rounded-xl shadow text-sm break-words ${
+                    msg.sender === "user"
+                      ? "bg-white/20 text-white"
+                      : "bg-indigo-500/70 text-white"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                  {msg.sender === "user" && msg.from_number && (
+                    <p className="text-xs text-white/50 mt-1">📞 {msg.from_number}</p>
+                  )}
+                  <p className="text-xs mt-1 text-right text-white/70">
+                    {msg.canal?.toUpperCase() || "WHATSAPP"} •{" "}
+                    {format(new Date(msg.timestamp), "dd/MM/yyyy HH:mm")}
+                  </p>
+                </div>
               </div>
-            </div>
-            ))}
+          ))}
+
           </div>
 
           {hasMore && (
