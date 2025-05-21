@@ -99,7 +99,7 @@ export default function VoiceConfigPage() {
           credentials: "include",
         });
         const data = await res.json();
-        setVoiceMessages(data);
+        setVoiceMessages(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error al cargar historial de voz:", err);
       } finally {
@@ -398,7 +398,7 @@ export default function VoiceConfigPage() {
   
       {loadingHistory ? (
         <div className="text-gray-400 animate-pulse">Cargando historial...</div>
-      ) : voiceMessages.length === 0 ? (
+      ) : !Array.isArray(voiceMessages) || voiceMessages.length === 0 ? (
         <div className="text-gray-400">No hay registros de voz aún.</div>
       ) : (
         <div className="space-y-4 max-h-[300px] overflow-y-auto">
@@ -433,7 +433,6 @@ export default function VoiceConfigPage() {
             ))}
         </div>
       )}
-  
       <Footer />
     </div>
   );
