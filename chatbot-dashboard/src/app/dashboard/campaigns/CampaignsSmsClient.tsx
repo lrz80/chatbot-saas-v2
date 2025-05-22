@@ -449,21 +449,33 @@ export default function CampaignsSmsClient() {
               className="hidden"
             />
 
-          <button
-            onClick={handleEliminarContactos}
-            className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
-          >
-            Eliminar contactos
-          </button>
-
-            {archivoCsv && (
-              <button
-                onClick={handleSubirCsv}
-                className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
-              >
-                Subir contactos
-              </button>
-            )}
+            <button
+              onClick={() => {
+                if (!membresiaActiva) {
+                  window.location.href = "/dashboard/upgrade";
+                  return;
+                }
+                handleEliminarContactos();
+              }}
+              className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+            >
+              Eliminar contactos
+            </button>
+            
+          {archivoCsv && (
+            <button
+              onClick={() => {
+                if (!membresiaActiva) {
+                  window.location.href = "/dashboard/upgrade";
+                  return;
+                }
+                handleSubirCsv();
+              }}
+              className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+            >
+              Subir contactos
+            </button>
+          )}
           </div>
         </div>
       </div>

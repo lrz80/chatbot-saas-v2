@@ -8,7 +8,6 @@ import {
   Clock3,
   Mail,
   SendHorizonal,
-  RefreshCw,
 } from "lucide-react";
 
 export default function FollowUpSettingsPage() {
@@ -24,6 +23,8 @@ export default function FollowUpSettingsPage() {
   const [mensajesEnviados, setMensajesEnviados] = useState<any[]>([]);
   const [loadingMensajes, setLoadingMensajes] = useState(true);
   const [reloadingMensajes, setReloadingMensajes] = useState(false);
+  const [membresiaActiva, setMembresiaActiva] = useState(false);
+
 
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
@@ -43,6 +44,7 @@ export default function FollowUpSettingsPage() {
         setMensajeAgendar(data.mensaje_agendar || '');
         setMensajeUbicacion(data.mensaje_ubicacion || '');
         setMensajeGeneral(data.mensaje_general || '');
+        setMembresiaActiva(data.membresia_activa ?? false);
       }
     } catch (error) {
       console.error('❌ Error al cargar configuración de seguimiento:', error);
@@ -205,13 +207,19 @@ export default function FollowUpSettingsPage() {
         </div>
 
         <div className="pt-6">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-full text-white font-bold w-full transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {saving ? 'Guardando...' : 'Guardar Configuración'}
-          </button>
+        <button
+          onClick={() => {
+            if (!membresiaActiva) {
+              router.push("/upgrade");
+              return;
+            }
+            handleSave();
+          }}
+          disabled={saving}
+          className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-full text-white font-bold w-full transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? 'Guardando...' : 'Guardar Configuración'}
+        </button>
         </div>
       </section>
 

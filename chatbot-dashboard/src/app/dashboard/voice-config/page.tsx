@@ -9,7 +9,6 @@ import {
   User,
   Bot,
   Link,
-  Trash,
 } from "lucide-react";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
@@ -25,6 +24,16 @@ export default function VoiceConfigPage() {
   const tieneMembresia = tenant?.membresia_activa;
   const router = useRouter();
 
+  const verificarMembresia = (e?: Event | React.SyntheticEvent) => {
+    if (!tieneMembresia) {
+      e?.preventDefault();
+      toast.warning("⚠️ Activa tu membresía para usar esta función.");
+      router.push("/upgrade");
+      return false;
+    }
+    return true;
+  };
+  
   const idiomasDisponibles = [
     { label: "Español", value: "es-ES" },
     { label: "English", value: "en-US" },
@@ -231,7 +240,13 @@ export default function VoiceConfigPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="mb-10">
+      <form
+        onSubmit={(e) => {
+          if (verificarMembresia(e)) {
+            handleSubmit(e);
+          }
+        }}
+      className="mb-10">
         <input type="hidden" name="idioma" value={idioma} />
         <input type="hidden" name="canal" value="voz" />
         <input type="hidden" name="tenant_id" value={tenantId} />
@@ -351,7 +366,9 @@ export default function VoiceConfigPage() {
           <button
             type="button"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4"
-            onClick={agregarLink}
+            onClick={(e) => {
+              if (verificarMembresia(e)) agregarLink();
+            }}            
             disabled={!tieneMembresia}
           >
             Agregar link útil

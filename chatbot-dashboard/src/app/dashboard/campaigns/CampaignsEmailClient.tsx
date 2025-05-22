@@ -219,8 +219,14 @@ export default function CampaignsEmailClient() {
   };
 
   const handleSubirCsv = async () => {
+    if (!membresiaActiva) {
+      alert("❌ Tu membresía no está activa. Actívala para subir contactos.");
+      window.location.href = "/dashboard/upgrade";
+      return;
+    }
+    
     if (!archivoCsv) return;
-  
+    
     // Validación básica: ejemplo, tamaño 5MB max y .csv
     if (archivoCsv.size > 5 * 1024 * 1024 || !archivoCsv.name.endsWith(".csv")) {
       alert("❌ El archivo debe ser .csv y pesar menos de 5MB");
@@ -285,6 +291,12 @@ export default function CampaignsEmailClient() {
   };  
 
   const handleEliminarContactos = async () => {
+    if (!membresiaActiva) {
+      alert("❌ Tu membresía no está activa. Actívala para eliminar contactos.");
+      window.location.href = "/dashboard/upgrade";
+      return;
+    }
+    
     if (!confirm("¿Estás seguro? Esta acción eliminará todos tus contactos.")) return;
   
     try {
@@ -309,6 +321,12 @@ export default function CampaignsEmailClient() {
   };
 
   const comprarMasContactos = async (cantidad: number) => {
+    if (!membresiaActiva) {
+      alert("❌ Activa tu membresía para ampliar contactos o campañas.");
+      window.location.href = "/dashboard/upgrade";
+      return;
+    }
+    
     try {
       const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
         method: "POST",
@@ -335,6 +353,12 @@ export default function CampaignsEmailClient() {
   };  
   
   const comprarMasCampanas = async (cantidad: number) => {
+    if (!membresiaActiva) {
+      alert("❌ Activa tu membresía para ampliar contactos o campañas.");
+      window.location.href = "/dashboard/upgrade";
+      return;
+    }
+    
     try {
       const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
         method: "POST",
