@@ -9,6 +9,7 @@ import TrainingHelp from '@/components/TrainingHelp';
 import { BACKEND_URL } from '@/utils/api';
 import { SiMeta, SiFacebook, SiInstagram, SiBookstack, SiBuffer, SiOpenai, SiMinutemailer } from 'react-icons/si';
 import { PlusCircle, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function MetaConfigPage() {
   const [connected, setConnected] = useState(false);
@@ -161,6 +162,16 @@ export default function MetaConfigPage() {
     setIntents(nuevosIntents);
   };
 
+  const router = useRouter();
+
+  function requerirMembresia(callback: () => void) {
+    if (!membresiaActiva) {
+      router.push('/upgrade');
+    } else {
+      callback();
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="max-w-5xl mx-auto flex flex-col gap-8">
@@ -176,24 +187,23 @@ export default function MetaConfigPage() {
           <> 
             <p className="text-purple-300 font-medium">Conecta tu cuenta de Facebook e Instagram para comenzar.</p>
             <button
-              onClick={() => {
-                const appId = '672113805196816';
-                const redirectUri = 'https://api.aamy.ai/api/facebook/oauth-callback';
-
-                const scopes = [
-                  'pages_show_list',
-                  'pages_messaging',
-                  'instagram_basic',
-                  'instagram_manage_messages',
-                  'instagram_manage_comments',
-                ].join(',');
-
-                const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
-                  redirectUri
-                )}&scope=${scopes}&response_type=code&auth_type=rerequest`;
-
-                window.location.href = authUrl;
-              }}
+              onClick={() =>
+                requerirMembresia(() => {
+                  const appId = '672113805196816';
+                  const redirectUri = 'https://api.aamy.ai/api/facebook/oauth-callback';
+                  const scopes = [
+                    'pages_show_list',
+                    'pages_messaging',
+                    'instagram_basic',
+                    'instagram_manage_messages',
+                    'instagram_manage_comments',
+                  ].join(',');
+                  const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
+                    redirectUri
+                  )}&scope=${scopes}&response_type=code&auth_type=rerequest`;
+                  window.location.href = authUrl;
+                })
+              }
               className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm transition"
             >
               Conectar Facebook / Instagram
@@ -237,7 +247,7 @@ export default function MetaConfigPage() {
             setInfoClave={setInfoClaveMeta}
             setFuncionesAsistente={setFuncionesMeta}
             idioma="es"
-            membresiaActiva={true}
+            membresiaActiva={membresiaActiva}
             onPromptGenerated={(nuevoPrompt) => setPromptMeta(nuevoPrompt)}
           />
 
@@ -302,7 +312,7 @@ export default function MetaConfigPage() {
               </button>
             </div>
           ))}
-          <button onClick={agregarFaq} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
+          <button onClick={() => requerirMembresia(agregarFaq)} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
             <PlusCircle /> Agregar Pregunta
           </button>
         </div>
@@ -333,7 +343,7 @@ export default function MetaConfigPage() {
               </button>
             </div>
           ))}
-          <button onClick={agregarIntent} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
+          <button onClick={() => requerirMembresia(agregarIntent)} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
             <PlusCircle /> Agregar Intención
           </button>
         </div>
@@ -373,7 +383,7 @@ export default function MetaConfigPage() {
             />
 
             <button
-              onClick={handlePreviewSend}
+              onClick={() => requerirMembresia(handlePreviewSend)}
               className="w-full sm:w-auto px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-all duration-200"
             >
               Enviar
