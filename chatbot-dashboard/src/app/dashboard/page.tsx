@@ -51,7 +51,12 @@ export default function DashboardHome() {
     default: <MessageCircle className="inline-block text-white/60" size={16} />,
   };  
   
-  const mensajesPorCanal = allMessages.reduce((acc: Record<string, any[]>, msg: any) => {
+  const mensajesUnicos = Array.from(
+    new Map(allMessages.map((m) => [m.message_id, m])).values()
+  );
+  
+  const mensajesPorCanal = mensajesUnicos.reduce((acc: Record<string, any[]>, msg: any) => {
+  
     if (!acc[msg.canal]) acc[msg.canal] = [];
     acc[msg.canal].push(msg);
     return acc;
