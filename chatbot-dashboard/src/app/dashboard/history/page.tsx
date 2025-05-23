@@ -163,12 +163,11 @@ export default function MessageHistory() {
       ) : (
         <>
           <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-            {messages
-              .slice()
-              .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-              .map((msg, index) => (
+          {Array.from(new Map(messages.map(m => [m.id, m])).values())
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            .map((msg) => (
                 <div
-                  key={index}
+                  key={msg.id}
                   className={`flex ${msg.sender === "user" ? "justify-start" : "justify-end"}`}
                 >
                   <div className="w-full sm:max-w-2xl p-4 bg-white/5 border border-white/20 rounded-lg text-sm text-white">
