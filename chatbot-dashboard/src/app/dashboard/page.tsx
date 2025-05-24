@@ -55,6 +55,11 @@ export default function DashboardHome() {
     new Map(allMessages.map((m) => [m.message_id, m])).values()
   );
   
+  // Ordenar por timestamp descendente y mostrar solo los últimos 10
+  const ultimosMensajes = mensajesUnicos
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 10);  
+  
   const mensajesPorCanal = mensajesUnicos.reduce((acc: Record<string, any[]>, msg: any) => {
   
     if (!acc[msg.canal]) acc[msg.canal] = [];
@@ -345,7 +350,9 @@ export default function DashboardHome() {
                     {canalKey}
                   </h3>
                   <div className="space-y-2">
-                    {mensajes.map((msg, i) => (
+                  {ultimosMensajes
+                    .filter(msg => msg.canal === canalKey)
+                    .map((msg, i) => (
                       <div
                         key={i}
                         className="bg-white/5 p-3 rounded border border-white/10 text-sm"
