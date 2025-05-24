@@ -52,13 +52,13 @@ export default function DashboardHome() {
   };  
   
   const mensajesUnicos = Array.from(
-    new Map(allMessages.map((m) => [m.message_id, m])).values()
+    new Map(allMessages.map((m) => [m.id, m])).values()
   );
   
   // Ordenar por timestamp descendente y mostrar solo los últimos 10
   const ultimosMensajes = mensajesUnicos
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-    .slice(0, 10);  
+    .slice(0, 20);  
   
   const mensajesPorCanal = mensajesUnicos.reduce((acc: Record<string, any[]>, msg: any) => {
   
