@@ -8,9 +8,6 @@ import MobileMenuButton from '@/components/MobileMenuButton';
 import { BACKEND_URL } from '@/utils/api';
 import WhatsAppButton from "@/components/WhatsAppButton";
 
-// ✅ Forzar recarga de CSS añadiendo versión
-import '../../styles/globals.css?v=20240524'; // Cambia versión cada vez que actualices CSS
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [tenant, setTenant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
