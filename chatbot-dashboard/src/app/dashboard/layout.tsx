@@ -6,7 +6,6 @@ import Sidebar from '@/components/Sidebar';
 import { TenantContext } from '@/context/TenantContext';
 import MobileMenuButton from '@/components/MobileMenuButton';
 import { BACKEND_URL } from '@/utils/api';
-import WhatsAppButton from "@/components/WhatsAppButton";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [tenant, setTenant] = useState<any>(null);
@@ -36,7 +35,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           ...data.negocio,
           membresia_activa: data.membresia_activa,
           membresia_vigencia: data.membresia_vigencia,
-          whatsapp_number: data.negocio?.whatsapp_number || "+521234567890", // 👈 Cambia el número por defecto si lo deseas
         });
 
         setLoading(false);
@@ -67,17 +65,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <TenantContext.Provider value={tenant}>
         <div className="flex-1 lg:ml-72">
-          {/* Encabezado móvil */}
           <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-white/10">
             <MobileMenuButton onClick={() => setSidebarOpen(true)} />
-            <span className="w-8" />
+            <span className="w-8" /> {/* espacio vacío */}
           </div>
 
-          {/* Contenido principal */}
           <main className="p-6">{children}</main>
-
-          {/* Botón flotante de WhatsApp */}
-          <WhatsAppButton />
         </div>
       </TenantContext.Provider>
     </div>
