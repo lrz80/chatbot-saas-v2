@@ -6,6 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import { TenantContext } from '@/context/TenantContext';
 import MobileMenuButton from '@/components/MobileMenuButton';
 import { BACKEND_URL } from '@/utils/api';
+import WhatsAppButton from "@/components/WhatsAppButton"; 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [tenant, setTenant] = useState<any>(null);
@@ -70,8 +71,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span className="w-8" /> {/* espacio vacío */}
           </div>
           <main className="p-6">{children}</main>
-
         </div>
+
+        {/* Botón flotante de WhatsApp */}
+        <WhatsAppButton />
       </TenantContext.Provider>
     </div>
   );
