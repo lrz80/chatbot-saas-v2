@@ -27,6 +27,7 @@ export default function MetaConfigPage() {
   const [funcionesMeta, setFuncionesMeta] = useState('');
   const [membresiaActiva, setMembresiaActiva] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const previewRef = useRef<HTMLDivElement | null>(null);
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -127,11 +128,16 @@ export default function MetaConfigPage() {
 
   const handlePreviewSend = async () => {
     if (!input.trim()) return;
-
+  
     const mensajeUsuario = input.trim();
     setMessages((prev) => [...prev, { role: 'user', content: mensajeUsuario }]);
     setInput('');
-
+    setIsTyping(true);
+  
+    setTimeout(() => {
+      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 100);
+  
     try {
       const res = await fetch(`${BACKEND_URL}/api/preview`, {
         method: 'POST',
@@ -139,15 +145,20 @@ export default function MetaConfigPage() {
         credentials: 'include',
         body: JSON.stringify({ message: mensajeUsuario, canal: 'preview-meta' }),
       });
-
+  
       const data = await res.json();
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.response || '...' }]);
     } catch (error) {
       console.error('❌ Error en vista previa:', error);
       setMessages((prev) => [...prev, { role: 'assistant', content: '⚠️ Error generando respuesta' }]);
+    } finally {
+      setIsTyping(false);
+      setTimeout(() => {
+        previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 100);
     }
   };
-
+  
   const agregarFaq = () => setFaq([...faq, { pregunta: '', respuesta: '' }]);
   const eliminarFaq = (index: number) => setFaq(faq.filter((_, i) => i !== index));
   const actualizarFaq = (index: number, campo: string, valor: string) => {
@@ -355,11 +366,11 @@ export default function MetaConfigPage() {
           </button>
         </div>
 
-        <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md flex flex-col">
-          <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
-            <SiMinutemailer className="animate-pulse" size={24} />
-            Vista previa del Asistente
-          </h3>
+        <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
+        <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
+          <SiMinutemailer className="animate-pulse" size={24} />
+          Vista previa del Asistente
+        </h3>
 
           <div
             ref={chatContainerRef}
