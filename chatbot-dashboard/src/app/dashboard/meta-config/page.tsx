@@ -172,11 +172,15 @@ export default function MetaConfigPage() {
     }
   }
 
-useEffect(() => {
-  if (previewRef.current) {
-    previewRef.current.scrollTop = previewRef.current.scrollHeight;
-  }
-}, [messages]);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (previewRef.current) {
+        previewRef.current.scrollTop = previewRef.current.scrollHeight;
+      }
+    }, 100); // Espera 100ms para asegurar renderizado
+    return () => clearTimeout(timeout);
+  }, [messages]);
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="max-w-5xl mx-auto flex flex-col gap-8">
@@ -361,8 +365,7 @@ useEffect(() => {
 
           <div
             ref={previewRef}
-            className="overflow-y-auto bg-white/5 rounded-lg p-4 mb-4 space-y-2"
-            style={{ maxHeight: '400px' }} // o usa 'h-96' en Tailwind
+            className="max-h-96 overflow-y-auto bg-white/5 rounded-lg p-4 mb-4 space-y-2"
           >
             {messages.map((msg, idx) => (
               <div
