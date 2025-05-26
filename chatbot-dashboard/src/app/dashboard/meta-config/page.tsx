@@ -26,8 +26,9 @@ export default function MetaConfigPage() {
   const [infoClaveMeta, setInfoClaveMeta] = useState('');
   const [funcionesMeta, setFuncionesMeta] = useState('');
   const [membresiaActiva, setMembresiaActiva] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
 
-  const previewRef = useRef<HTMLDivElement | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
   const fetchConfiguracion = async () => {
     try {
@@ -173,12 +174,8 @@ export default function MetaConfigPage() {
   }
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (previewRef.current) {
-        previewRef.current.scrollTop = previewRef.current.scrollHeight;
-      }
-    }, 100); // Espera 100ms para asegurar renderizado
-    return () => clearTimeout(timeout);
+    if (!chatContainerRef.current) return;
+    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
   }, [messages]);
   
   return (
@@ -364,8 +361,8 @@ export default function MetaConfigPage() {
           </h3>
 
           <div
-            ref={previewRef}
-            style={{ height: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}
+            ref={chatContainerRef}
+            style={{ height: '400px', overflowY: 'auto' }}
             className="bg-white/5 rounded-lg p-4 mb-4 space-y-2"
           >
             {messages.map((msg, idx) => (
@@ -378,6 +375,11 @@ export default function MetaConfigPage() {
                 {msg.content}
               </div>
             ))}
+            {isTyping && (
+              <div className="max-w-xs bg-green-400/20 self-start text-left text-sm text-white px-4 py-2 rounded-lg italic animate-pulse">
+                El asistente está escribiendo...
+              </div>
+            )}
           </div>
 
           <div className="w-full flex flex-col sm:flex-row gap-2">
