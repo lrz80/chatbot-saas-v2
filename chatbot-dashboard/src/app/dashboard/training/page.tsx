@@ -60,13 +60,6 @@ export default function TrainingPage() {
   const isMembershipActive = settings.membresia_activa;
 
   useEffect(() => {
-    const chatDiv = chatContainerRef.current;
-    if (chatDiv) {
-      chatDiv.scrollTop = chatDiv.scrollHeight;
-    }
-  }, [messages, isTyping]);
-
-  useEffect(() => {
     const fetchAll = async () => {
       try {
         const [settingsRes, usageRes, faqRes, intentsRes] = await Promise.all([
