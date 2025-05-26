@@ -579,7 +579,8 @@ export default function TrainingPage() {
 
           <div
             ref={chatContainerRef}
-            className="bg-[#0f0f25]/60 p-4 rounded max-h-[50vh] min-h-[200px] overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10"
+            style={{ height: '400px', overflowY: 'auto' }} // ✅ Altura fija
+            className="bg-[#0f0f25]/60 p-4 rounded flex flex-col gap-3 mb-4 border border-white/10"
           >
             {messages.map((msg, i) => (
               <div
