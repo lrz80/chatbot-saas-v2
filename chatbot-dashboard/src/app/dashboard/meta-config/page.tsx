@@ -365,7 +365,8 @@ export default function MetaConfigPage() {
 
           <div
             ref={previewRef}
-            className="max-h-96 overflow-y-auto bg-white/5 rounded-lg p-4 mb-4 space-y-2"
+            style={{ height: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}
+            className="bg-white/5 rounded-lg p-4 mb-4 space-y-2"
           >
             {messages.map((msg, idx) => (
               <div
