@@ -361,8 +361,8 @@ useEffect(() => {
 
           <div
             ref={previewRef}
-            style={{ maxHeight: '400px', overflowY: 'auto' }} // Ajusta altura máxima si lo deseas
-            className="flex-1 bg-white/5 rounded-lg p-4 mb-4 space-y-2"
+            className="overflow-y-auto bg-white/5 rounded-lg p-4 mb-4 space-y-2"
+            style={{ maxHeight: '400px' }} // o usa 'h-96' en Tailwind
           >
             {messages.map((msg, idx) => (
               <div
