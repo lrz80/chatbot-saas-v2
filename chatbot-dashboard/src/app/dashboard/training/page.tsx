@@ -294,12 +294,6 @@ export default function TrainingPage() {
   };  
 
   if (loading) return <p className="text-center">Cargando configuración...</p>;
-
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
