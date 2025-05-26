@@ -42,7 +42,6 @@ export default function TrainingPage() {
   const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
   const [isTyping, setIsTyping] = useState(false);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [settings, setSettings] = useState({
@@ -88,7 +87,7 @@ export default function TrainingPage() {
             membresia_activa: data.membresia_activa,
             idioma: data.idioma || prev.idioma,
           }));
-          setMessages([{ role: "assistant", content: data.bienvenida || "¡Hola! ¿Cómo puedo ayudarte?" }]);
+          setMessages([{ role: "assistant", content: data.bienvenida != null ? data.bienvenida : "¡Hola! ¿Cómo puedo ayudarte?" }]);
         }
 
         if (usageRes.ok) setUsage(await usageRes.json());

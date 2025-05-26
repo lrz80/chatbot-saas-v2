@@ -53,6 +53,7 @@ export default function MetaConfigPage() {
           setFacebookPageName('');
           setInstagramPageName('');
         }
+        setMessages([{ role: 'assistant', content: data.bienvenida_meta != null ? data.bienvenida_meta : '¡Hola! ¿En qué puedo ayudarte hoy?' }]);
       }
     } catch (error) {
       console.error('Error obteniendo configuración de Meta:', error);
