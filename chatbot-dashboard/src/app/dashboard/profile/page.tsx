@@ -32,7 +32,9 @@ export default function BusinessProfilePage() {
           plan: data.plan,
           fecha_registro: data.fecha_registro,
           owner_name: data.owner_name,
-          email: data.email,
+          email: data.email, // ✅ Correo del ADMIN
+          email_negocio: data.email_negocio || '', // ✅ Correo del negocio
+          telefono_negocio: data.telefono_negocio || '', // ✅ Teléfono del negocio
           membresia_activa: data.membresia_activa,
           membresia_vigencia: data.membresia_vigencia,
         });
@@ -65,6 +67,8 @@ export default function BusinessProfilePage() {
         idioma: formData.idioma,
         logo_url: formData.logo_url || '', // 👈 Nunca dejar undefined o null
         direccion, // 👈 Dirección también se incluye siempre
+        email_negocio: formData.email_negocio || '', // ✅ Incluido
+        telefono_negocio: formData.telefono_negocio || '', // ✅ Incluido
       };
   
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
@@ -222,6 +226,30 @@ export default function BusinessProfilePage() {
             value={formData.email}
             disabled
             className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-gray-400"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-indigo-200 font-semibold">Email del Negocio</label>
+          <input
+            name="email_negocio"
+            type="email"
+            value={formData.email_negocio || ''}
+            onChange={handleChange}
+            placeholder="negocio@ejemplo.com"
+            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-indigo-200 font-semibold">Teléfono del Negocio</label>
+          <input
+            name="telefono_negocio"
+            type="text"
+            value={formData.telefono_negocio || ''}
+            onChange={handleChange}
+            placeholder="1234567890"
+            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           />
         </div>
 
