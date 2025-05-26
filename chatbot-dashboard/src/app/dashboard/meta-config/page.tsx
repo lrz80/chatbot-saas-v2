@@ -172,6 +172,11 @@ export default function MetaConfigPage() {
     }
   }
 
+useEffect(() => {
+  if (previewRef.current) {
+    previewRef.current.scrollTop = previewRef.current.scrollHeight;
+  }
+}, [messages]);
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="max-w-5xl mx-auto flex flex-col gap-8">
@@ -354,7 +359,11 @@ export default function MetaConfigPage() {
             Vista previa del Asistente
           </h3>
 
-          <div className="flex-1 overflow-y-auto bg-white/5 rounded-lg p-4 mb-4 space-y-2" ref={previewRef}>
+          <div
+            ref={previewRef}
+            style={{ maxHeight: '400px', overflowY: 'auto' }} // Ajusta altura máxima si lo deseas
+            className="flex-1 bg-white/5 rounded-lg p-4 mb-4 space-y-2"
+          >
             {messages.map((msg, idx) => (
               <div
                 key={idx}
