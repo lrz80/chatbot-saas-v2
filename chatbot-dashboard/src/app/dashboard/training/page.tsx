@@ -295,6 +295,12 @@ export default function TrainingPage() {
 
   if (loading) return <p className="text-center">Cargando configuración...</p>;
 
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
@@ -600,7 +606,6 @@ export default function TrainingPage() {
                 El asistente está escribiendo...
               </div>
             )}
-            <div ref={bottomRef} />
           </div>
 
           <div className="w-full flex flex-col sm:flex-row gap-2">
