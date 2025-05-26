@@ -377,18 +377,20 @@ export default function MetaConfigPage() {
             style={{ height: '400px', overflowY: 'auto' }}
             className="bg-white/5 rounded-lg p-4 mb-4 space-y-2"
           >
-            {messages.map((msg, idx) => (
+            {messages.map((msg, i) => (
               <div
-                key={idx}
-                className={`p-3 rounded-lg max-w-xs ${
-                  msg.role === 'user' ? 'bg-blue-500/20 ml-auto' : 'bg-green-500/20 mr-auto'
+                key={i}
+                className={`max-w-[80%] p-3 rounded-lg text-sm flex-shrink-0 ${
+                  msg.role === "user"
+                    ? "bg-indigo-400/30 self-end text-right"
+                    : "bg-green-400/30 self-start text-left"
                 }`}
               >
                 {msg.content}
               </div>
             ))}
             {isTyping && (
-              <div className="max-w-xs bg-green-400/20 self-start text-left text-sm text-white px-4 py-2 rounded-lg italic animate-pulse">
+              <div className="max-w-[80%] bg-green-400/20 self-start text-left text-sm text-white px-4 py-2 rounded-lg italic animate-pulse">
                 El asistente está escribiendo...
               </div>
             )}
