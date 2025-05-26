@@ -366,7 +366,7 @@ export default function MetaConfigPage() {
           </button>
         </div>
 
-        <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
+        <div ref={previewRef} className="bg-[#0f0f25]/60 p-4 rounded max-h-[50vh] min-h-[200px] overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10">
         <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
           <SiMinutemailer className="animate-pulse" size={24} />
           Vista previa del Asistente
