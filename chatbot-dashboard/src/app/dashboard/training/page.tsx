@@ -321,13 +321,17 @@ export default function TrainingPage() {
     fetchUsos();
   }, []);
 
-  const calcularPorcentaje = (usados: number, limite: number) => (usados / limite) * 100;
+  const calcularPorcentaje = (usados: number, limite: number) => {
+    if (!limite || limite === 0) return 0;
+    return (usados / limite) * 100;
+  };
+  
   const colorBarra = (porcentaje: number) => {
     if (porcentaje > 80) return "bg-red-500";
     if (porcentaje > 50) return "bg-yellow-500";
     return "bg-green-500";
   };
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
@@ -351,52 +355,44 @@ export default function TrainingPage() {
   
         <TrainingHelp context="training" />
 
-        {usoWhatsapp && (
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <MdWhatsapp /> Uso mensual de WhatsApp
-          </h3>
-          <p className="text-white text-sm mb-2">
-            {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite ?? 1000} mensajes enviados
-          </p>
-          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-            <div
-              className={`h-full ${colorBarra(calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite))} transition-all duration-500`}
-              style={{ width: `${calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite)}%` }}
-            />
+        {usoWhatsapp && usoWhatsapp.limite !== 0 && (
+          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+            <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+              <MdWhatsapp /> Uso mensual de WhatsApp
+            </h3>
+            <p className="text-white text-sm mb-2">
+              {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite ?? 1000} mensajes enviados
+            </p>
+            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+              <div
+                className={`h-full ${colorBarra(
+                  calcularPorcentaje(usoWhatsapp.usados ?? 0, usoWhatsapp.limite ?? 1000)
+                )} transition-all duration-500`}
+                style={{ width: `${calcularPorcentaje(usoWhatsapp.usados ?? 0, usoWhatsapp.limite ?? 1000)}%` }}
+              />
+            </div>
           </div>
-          <div className="flex gap-2">
-            {[500, 1000, 2000].map((extra) => (
-              <button
-                key={extra}
-                onClick={() => alert(`Simular compra +${extra} mensajes`)}
-                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
-              >
-                +{extra}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
 
-      {/* --- TOKENS OPENAI --- */}
-      {usoTokens && (
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiOpenai /> Uso mensual de Tokens OpenAI
-          </h3>
-          <p className="text-white text-sm mb-2">
-            {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
-          </p>
-          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-            <div
-              className={`h-full ${colorBarra(calcularPorcentaje(usoTokens.usados, usoTokens.limite))} transition-all duration-500`}
-              style={{ width: `${calcularPorcentaje(usoTokens.usados, usoTokens.limite)}%` }}
-            />
+        {usoTokens && usoTokens.limite !== 0 && (
+          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+            <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+              <SiOpenai /> Uso mensual de Tokens OpenAI
+            </h3>
+            <p className="text-white text-sm mb-2">
+              {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
+            </p>
+            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+              <div
+                className={`h-full ${colorBarra(
+                  calcularPorcentaje(usoTokens.usados ?? 0, usoTokens.limite ?? 500000)
+                )} transition-all duration-500`}
+                style={{ width: `${calcularPorcentaje(usoTokens.usados ?? 0, usoTokens.limite ?? 500000)}%` }}
+              />
+            </div>
           </div>
-        </div>
-      )}
-  
+        )}
+
         <input
           name="name"
           value={settings.name}
