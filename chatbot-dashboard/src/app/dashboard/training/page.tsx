@@ -307,8 +307,29 @@ export default function TrainingPage() {
   
     alert("Flujos guardados ✅");
   };  
-
   
+  // Agrega esta función dentro del componente
+  const comprarMas = async (canal: string, extra: number) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/usage/comprar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ canal, extra }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ Créditos agregados exitosamente para ${canal}.`);
+        window.location.reload(); // Recargar para actualizar los valores
+      } else {
+        alert("❌ Error al agregar créditos.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("❌ Error en la compra.");
+    }
+  };
+
   useEffect(() => {
     const fetchUsos = async () => {
       const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" });
@@ -356,43 +377,61 @@ export default function TrainingPage() {
   
         <TrainingHelp context="training" />
 
-        {usoWhatsapp && usoWhatsapp.limite !== 0 && (
-          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-            <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-              <MdWhatsapp /> Uso mensual de WhatsApp
-            </h3>
-            <p className="text-white text-sm mb-2">
-              {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite ?? 1000} mensajes enviados
-            </p>
-            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-              <div
-                className={`h-full ${colorBarra(
-                  calcularPorcentaje(usoWhatsapp.usados ?? 0, usoWhatsapp.limite ?? 1000)
-                )} transition-all duration-500`}
-                style={{ width: `${calcularPorcentaje(usoWhatsapp.usados ?? 0, usoWhatsapp.limite ?? 1000)}%` }}
-              />
-            </div>
+        {usoWhatsapp && (
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <MdWhatsapp /> Uso mensual de WhatsApp
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite ?? 1000} mensajes enviados
+          </p>
+          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+            <div
+              className={`h-full ${colorBarra(calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite))} transition-all duration-500`}
+              style={{ width: `${calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite)}%` }}
+            />
           </div>
-        )}
+          <div className="flex gap-2">
+            {[500, 1000, 2000].map((extra) => (
+              <button
+                key={extra}
+                onClick={() => comprarMas("whatsapp", extra)}
+                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+              >
+                +{extra}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
-        {usoTokens && usoTokens.limite !== 0 && (
-          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-            <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-              <SiOpenai /> Uso mensual de Tokens OpenAI
-            </h3>
-            <p className="text-white text-sm mb-2">
-              {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
-            </p>
-            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-              <div
-                className={`h-full ${colorBarra(
-                  calcularPorcentaje(usoTokens.usados ?? 0, usoTokens.limite ?? 500000)
-                )} transition-all duration-500`}
-                style={{ width: `${calcularPorcentaje(usoTokens.usados ?? 0, usoTokens.limite ?? 500000)}%` }}
-              />
-            </div>
+      {usoTokens && (
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <SiOpenai /> Uso mensual de Tokens OpenAI
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
+          </p>
+          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+            <div
+              className={`h-full ${colorBarra(calcularPorcentaje(usoTokens.usados, usoTokens.limite))} transition-all duration-500`}
+              style={{ width: `${calcularPorcentaje(usoTokens.usados, usoTokens.limite)}%` }}
+            />
           </div>
-        )}
+          <div className="flex gap-2">
+            {[50000, 100000, 200000].map((extra) => (
+              <button
+                key={extra}
+                onClick={() => comprarMas("tokens_openai", extra)}
+                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+              >
+                +{extra.toLocaleString()} tokens
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
         <input
           name="name"
