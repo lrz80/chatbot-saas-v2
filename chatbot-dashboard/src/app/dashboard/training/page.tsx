@@ -308,7 +308,6 @@ export default function TrainingPage() {
     alert("Flujos guardados ✅");
   };  
 
-  if (loading) return <p className="text-center">Cargando configuración...</p>;
   
   useEffect(() => {
     const fetchUsos = async () => {
@@ -332,6 +331,8 @@ export default function TrainingPage() {
     return "bg-green-500";
   };
   
+  if (loading) return <p className="text-center">Cargando configuración...</p>;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
