@@ -96,7 +96,19 @@ export default function TrainingPage() {
           setMessages([{ role: "assistant", content: data.bienvenida != null ? data.bienvenida : "¡Hola! ¿Cómo puedo ayudarte?" }]);
         }
 
-        if (usageRes.ok) setUsage(await usageRes.json());
+        if (usageRes.ok) {
+          const data = await usageRes.json();
+          const whatsapp = data.usos.find((u: any) => u.canal === "whatsapp");
+          const porcentaje = whatsapp ? (whatsapp.usados / whatsapp.limite) * 100 : 0;
+          setUsage({
+            used: whatsapp?.usados ?? 0,
+            limit: whatsapp?.limite ?? 1000,
+            porcentaje,
+          });
+          setUsoWhatsapp(whatsapp);
+          setUsoTokens(data.usos.find((u: any) => u.canal === "tokens_openai"));
+        }
+        
         if (faqRes.ok) setFaq(await faqRes.json());
         if (intentsRes.ok) setIntents(await intentsRes.json());
       } catch (err) {
