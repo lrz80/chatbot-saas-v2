@@ -47,6 +47,8 @@ export default function TrainingPage() {
   const [usoWhatsapp, setUsoWhatsapp] = useState<any>(null);
   const [porcentajeWhatsapp, setPorcentajeWhatsapp] = useState(0);
   const [colorBarraWhatsapp, setColorBarraWhatsapp] = useState("bg-green-500");
+  const [usos, setUsos] = useState<any[]>([]);
+  const [usoTokens, setUsoTokens] = useState<any>(null);
 
   const [settings, setSettings] = useState({
     name: "",
@@ -297,39 +299,21 @@ export default function TrainingPage() {
   if (loading) return <p className="text-center">Cargando configuración...</p>;
   
   useEffect(() => {
-    const fetchUso = async () => {
+    const fetchUsos = async () => {
       const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" });
       const data = await res.json();
-      const whatsapp = data.find((item: any) => item.canal === "whatsapp");
-      if (whatsapp) {
-        setUsoWhatsapp(whatsapp);
-        const porcentaje = (whatsapp.usados / whatsapp.limite) * 100;
-        setPorcentajeWhatsapp(porcentaje);
-        if (porcentaje > 80) setColorBarraWhatsapp("bg-red-500");
-        else if (porcentaje > 50) setColorBarraWhatsapp("bg-yellow-500");
-        else setColorBarraWhatsapp("bg-green-500");
-      }
+      setUsos(data.usos || []);
+      setUsoWhatsapp(data.usos.find((u: any) => u.canal === "whatsapp"));
+      setUsoTokens(data.usos.find((u: any) => u.canal === "tokens_openai"));
     };
-    fetchUso();
+    fetchUsos();
   }, []);
 
-  const comprarMasWhatsapp = async (extra: number) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/usage/comprar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ canal: "whatsapp", extra })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert(`✅ Créditos agregados exitosamente. Ya puedes usarlos.`);
-        // Refrescar el uso actualizado
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error(error);
-    }
+  const calcularPorcentaje = (usados: number, limite: number) => (usados / limite) * 100;
+  const colorBarra = (porcentaje: number) => {
+    if (porcentaje > 80) return "bg-red-500";
+    if (porcentaje > 50) return "bg-yellow-500";
+    return "bg-green-500";
   };
 
   return (
@@ -365,16 +349,15 @@ export default function TrainingPage() {
           </p>
           <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
             <div
-              className={`h-full ${colorBarraWhatsapp} transition-all duration-500`}
-              style={{ width: `${porcentajeWhatsapp}%` }}
+              className={`h-full ${colorBarra(calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite))} transition-all duration-500`}
+              style={{ width: `${calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite)}%` }}
             />
           </div>
-
           <div className="flex gap-2">
             {[500, 1000, 2000].map((extra) => (
               <button
                 key={extra}
-                onClick={() => comprarMasWhatsapp(extra)}
+                onClick={() => alert(`Simular compra +${extra} mensajes`)}
                 className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
               >
                 +{extra}
@@ -382,7 +365,25 @@ export default function TrainingPage() {
             ))}
           </div>
         </div>
-        )}
+      )}
+
+      {/* --- TOKENS OPENAI --- */}
+      {usoTokens && (
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <SiOpenai /> Uso mensual de Tokens OpenAI
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
+          </p>
+          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+            <div
+              className={`h-full ${colorBarra(calcularPorcentaje(usoTokens.usados, usoTokens.limite))} transition-all duration-500`}
+              style={{ width: `${calcularPorcentaje(usoTokens.usados, usoTokens.limite)}%` }}
+            />
+          </div>
+        </div>
+      )}
   
         <input
           name="name"
