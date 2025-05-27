@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { Save, } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
 import { SiWhatsapp, SiBookstack, SiOpenai, SiMinutemailer, SiBuffer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
-
+import { MdWhatsapp } from "react-icons/md";
 
 type FlowOption = {
   texto: string;
@@ -43,6 +43,10 @@ export default function TrainingPage() {
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
   const [isTyping, setIsTyping] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const [limitInfo, setLimitInfo] = useState<any[]>([]);
+  const [usoWhatsapp, setUsoWhatsapp] = useState<any>(null);
+  const [porcentajeWhatsapp, setPorcentajeWhatsapp] = useState(0);
+  const [colorBarraWhatsapp, setColorBarraWhatsapp] = useState("bg-green-500");
 
   const [settings, setSettings] = useState({
     name: "",
@@ -292,6 +296,42 @@ export default function TrainingPage() {
 
   if (loading) return <p className="text-center">Cargando configuración...</p>;
   
+  useEffect(() => {
+    const fetchUso = async () => {
+      const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" });
+      const data = await res.json();
+      const whatsapp = data.find((item: any) => item.canal === "whatsapp");
+      if (whatsapp) {
+        setUsoWhatsapp(whatsapp);
+        const porcentaje = (whatsapp.usados / whatsapp.limite) * 100;
+        setPorcentajeWhatsapp(porcentaje);
+        if (porcentaje > 80) setColorBarraWhatsapp("bg-red-500");
+        else if (porcentaje > 50) setColorBarraWhatsapp("bg-yellow-500");
+        else setColorBarraWhatsapp("bg-green-500");
+      }
+    };
+    fetchUso();
+  }, []);
+
+  const comprarMasWhatsapp = async (extra: number) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/usage/comprar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ canal: "whatsapp", extra })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ Créditos agregados exitosamente. Ya puedes usarlos.`);
+        // Refrescar el uso actualizado
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
@@ -314,6 +354,35 @@ export default function TrainingPage() {
         )}
   
         <TrainingHelp context="training" />
+
+        {usoWhatsapp && (
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <MdWhatsapp /> Uso mensual de WhatsApp
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite ?? 1000} mensajes enviados
+          </p>
+          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+            <div
+              className={`h-full ${colorBarraWhatsapp} transition-all duration-500`}
+              style={{ width: `${porcentajeWhatsapp}%` }}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            {[500, 1000, 2000].map((extra) => (
+              <button
+                key={extra}
+                onClick={() => comprarMasWhatsapp(extra)}
+                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+              >
+                +{extra}
+              </button>
+            ))}
+          </div>
+        </div>
+        )}
   
         <input
           name="name"
