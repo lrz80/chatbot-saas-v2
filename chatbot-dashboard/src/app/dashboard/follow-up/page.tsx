@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
-import { SiSpeedtest } from 'react-icons/si';
+import { SiSpeedtest, SiOpenai } from 'react-icons/si';
 import {
   Clock3,
   Mail,
@@ -24,7 +24,7 @@ export default function FollowUpSettingsPage() {
   const [loadingMensajes, setLoadingMensajes] = useState(true);
   const [reloadingMensajes, setReloadingMensajes] = useState(false);
   const [membresiaActiva, setMembresiaActiva] = useState(false);
-
+  const [usoFollowup, setUsoFollowup] = useState<any>(null);
 
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
@@ -118,11 +118,89 @@ export default function FollowUpSettingsPage() {
     return <div className="text-white p-10">Cargando configuración...</div>;
   }
 
+  useEffect(() => {
+    const fetchUsos = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setUsoFollowup(data.usos.find((u: any) => u.canal === 'followup'));
+        }
+      } catch (error) {
+        console.error("Error obteniendo uso de seguimiento:", error);
+      }
+    };
+    fetchUsos();
+  }, []);
+
+  const comprarMas = async (canal: string, cantidad: number) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          canal,
+          cantidad,
+          redirectPath: "/dashboard/follow-up",
+        }),
+      });
+  
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("❌ Error al iniciar la compra.");
+      }
+    } catch (error) {
+      console.error("❌ Error al procesar la compra:", error);
+      alert("❌ Error al procesar la compra.");
+    }
+  };
+  
+  const calcularPorcentaje = (usados: number, limite: number) => {
+    return limite > 0 ? (usados / limite) * 100 : 0;
+  };
+  
+  const colorBarra = (porcentaje: number) => {
+    if (porcentaje > 80) return "bg-red-500";
+    if (porcentaje > 50) return "bg-yellow-500";
+    return "bg-green-500";
+  };
+  
   return (
     <div className="p-4 md:p-6 text-white">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
         <SiSpeedtest size={36} className="text-sky-400 animate-pulse" /> Seguimiento de Leads
       </h1>
+
+      {usoFollowup && (
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <SiOpenai /> Seguimiento de Leads (Follow-up)
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoFollowup.usados ?? 0} de {usoFollowup.limite ?? 1000} seguimientos realizados
+          </p>
+          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+            <div
+              className={`h-full ${colorBarra(calcularPorcentaje(usoFollowup.usados, usoFollowup.limite))} transition-all duration-500`}
+              style={{ width: `${calcularPorcentaje(usoFollowup.usados, usoFollowup.limite)}%` }}
+            />
+          </div>
+          <div className="flex gap-2">
+            {[500, 1000, 2000].map((extra) => (
+              <button
+                key={extra}
+                onClick={() => comprarMas("followup", extra)}
+                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+              >
+                +{extra}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {showSuccess && (
         <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded-xl mb-8 text-center font-medium animate-pulse">
