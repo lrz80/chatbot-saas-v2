@@ -43,12 +43,8 @@ export default function TrainingPage() {
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
   const [isTyping, setIsTyping] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
-  const [limitInfo, setLimitInfo] = useState<any[]>([]);
   const [usoWhatsapp, setUsoWhatsapp] = useState<any>(null);
-  const [porcentajeWhatsapp, setPorcentajeWhatsapp] = useState(0);
-  const [colorBarraWhatsapp, setColorBarraWhatsapp] = useState("bg-green-500");
   const [usos, setUsos] = useState<any[]>([]);
-  const [usoTokens, setUsoTokens] = useState<any>(null);
 
   const [settings, setSettings] = useState({
     name: "",
@@ -106,7 +102,6 @@ export default function TrainingPage() {
             porcentaje,
           });
           setUsoWhatsapp(whatsapp);
-          setUsoTokens(data.usos.find((u: any) => u.canal === "tokens_openai"));
         }
         
         if (faqRes.ok) setFaq(await faqRes.json());
@@ -340,7 +335,6 @@ export default function TrainingPage() {
       const data = await res.json();
       setUsos(data.usos || []);
       setUsoWhatsapp(data.usos.find((u: any) => u.canal === "whatsapp"));
-      setUsoTokens(data.usos.find((u: any) => u.canal === "tokens_openai"));
     };
     fetchUsos();
   }, []);
@@ -403,34 +397,6 @@ export default function TrainingPage() {
                 className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
               >
                 +{extra}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {usoTokens && (
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiOpenai /> Uso de Tokens
-          </h3>
-          <p className="text-white text-sm mb-2">
-            {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
-          </p>
-          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-            <div
-              className={`h-full ${colorBarra(calcularPorcentaje(usoTokens.usados, usoTokens.limite))} transition-all duration-500`}
-              style={{ width: `${calcularPorcentaje(usoTokens.usados, usoTokens.limite)}%` }}
-            />
-          </div>
-          <div className="flex gap-2">
-            {[50000, 100000, 200000].map((extra) => (
-              <button
-                key={extra}
-                onClick={() => comprarMas("tokens_openai", extra)}
-                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
-              >
-                +{extra.toLocaleString()} tokens
               </button>
             ))}
           </div>
