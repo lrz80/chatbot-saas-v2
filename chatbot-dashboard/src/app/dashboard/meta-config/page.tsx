@@ -29,7 +29,6 @@ export default function MetaConfigPage() {
   const [isTyping, setIsTyping] = useState(false);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [usoMeta, setUsoMeta] = useState<any>(null);
-  const [usoTokens, setUsoTokens] = useState<any>(null);
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -199,7 +198,6 @@ export default function MetaConfigPage() {
         if (res.ok) {
           const data = await res.json();
           setUsoMeta(data.usos.find((u: any) => u.canal === 'meta'));
-          setUsoTokens(data.usos.find((u: any) => u.canal === 'tokens_openai'));
         }
       } catch (error) {
         console.error("Error obteniendo uso:", error);
@@ -324,34 +322,6 @@ export default function MetaConfigPage() {
                   className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
                 >
                   +{extra}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {usoTokens && (
-          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-            <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-              <SiOpenai /> Uso de Tokens
-            </h3>
-            <p className="text-white text-sm mb-2">
-              {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
-            </p>
-            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-              <div
-                className={`h-full ${colorBarra(calcularPorcentaje(usoTokens.usados, usoTokens.limite))} transition-all duration-500`}
-                style={{ width: `${calcularPorcentaje(usoTokens.usados, usoTokens.limite)}%` }}
-              />
-            </div>
-            <div className="flex gap-2">
-              {[50000, 100000, 200000].map((extra) => (
-                <button
-                  key={extra}
-                  onClick={() => comprarMas("tokens_openai", extra)}
-                  className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
-                >
-                  +{extra.toLocaleString()} tokens
                 </button>
               ))}
             </div>
