@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
-import { SiSpeedtest, SiOpenai } from 'react-icons/si';
+import { SiSpeedtest } from 'react-icons/si';
 import {
   Clock3,
   Mail,
@@ -177,7 +177,7 @@ export default function FollowUpSettingsPage() {
       {usoFollowup && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
           <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiOpenai /> Seguimiento de Leads (Follow-up)
+            <SiSpeedtest /> Seguimiento de Leads (Follow-up)
           </h3>
           <p className="text-white text-sm mb-2">
             {usoFollowup.usados ?? 0} de {usoFollowup.limite ?? 1000} seguimientos realizados
