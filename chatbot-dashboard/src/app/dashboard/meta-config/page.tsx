@@ -28,6 +28,8 @@ export default function MetaConfigPage() {
   const [membresiaActiva, setMembresiaActiva] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const previewRef = useRef<HTMLDivElement | null>(null);
+  const [usoMeta, setUsoMeta] = useState<any>(null);
+  const [usoTokens, setUsoTokens] = useState<any>(null);
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -190,14 +192,37 @@ export default function MetaConfigPage() {
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
   }, [messages]);
   
-  const comprarMasMeta = async (cantidad: number) => {
+  useEffect(() => {
+    const fetchUsos = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setUsoMeta(data.usos.find((u: any) => u.canal === 'meta'));
+          setUsoTokens(data.usos.find((u: any) => u.canal === 'tokens_openai'));
+        }
+      } catch (error) {
+        console.error("Error obteniendo uso:", error);
+      }
+    };
+    fetchUsos();
+  }, []);
+
+  const calcularPorcentaje = (usados: number, limite: number) => (usados / limite) * 100;
+  const colorBarra = (porcentaje: number) => {
+    if (porcentaje > 80) return "bg-red-500";
+    if (porcentaje > 50) return "bg-yellow-500";
+    return "bg-green-500";
+  };
+
+  const comprarMas = async (canal: string, cantidad: number) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          canal: "meta",
+          canal,
           cantidad,
           redirectPath: "/dashboard/meta-config",
         }),
@@ -210,7 +235,7 @@ export default function MetaConfigPage() {
         alert("❌ Error al iniciar la compra.");
       }
     } catch (error) {
-      console.error("❌ Error al procesar la compra de Meta:", error);
+      console.error("❌ Error al procesar la compra:", error);
       alert("❌ Error al procesar la compra.");
     }
   };
@@ -277,25 +302,61 @@ export default function MetaConfigPage() {
 
         <TrainingHelp context="meta" />
 
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiMeta /> Compra de créditos Meta (Facebook & Instagram)
-          </h3>
-          <p className="text-white text-sm mb-2">
-            Compra créditos adicionales para tus campañas de Meta (Facebook e Instagram).
-          </p>
-          <div className="flex gap-2">
-            {[500, 1000, 2000].map((extra) => (
-              <button
-                key={extra}
-                onClick={() => comprarMasMeta(extra)}
-                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
-              >
-                +{extra}
-              </button>
-            ))}
+        {usoMeta && (
+          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+            <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+              <SiMeta /> Uso de Meta (FB & IG)
+            </h3>
+            <p className="text-white text-sm mb-2">
+              {usoMeta.usados ?? 0} de {usoMeta.limite ?? 1000} mensajes utilizados
+            </p>
+            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+              <div
+                className={`h-full ${colorBarra(calcularPorcentaje(usoMeta.usados, usoMeta.limite))} transition-all duration-500`}
+                style={{ width: `${calcularPorcentaje(usoMeta.usados, usoMeta.limite)}%` }}
+              />
+            </div>
+            <div className="flex gap-2">
+              {[500, 1000, 2000].map((extra) => (
+                <button
+                  key={extra}
+                  onClick={() => comprarMas("meta", extra)}
+                  className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+                >
+                  +{extra}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {usoTokens && (
+          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+            <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+              <SiOpenai /> Uso de Tokens OpenAI
+            </h3>
+            <p className="text-white text-sm mb-2">
+              {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
+            </p>
+            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+              <div
+                className={`h-full ${colorBarra(calcularPorcentaje(usoTokens.usados, usoTokens.limite))} transition-all duration-500`}
+                style={{ width: `${calcularPorcentaje(usoTokens.usados, usoTokens.limite)}%` }}
+              />
+            </div>
+            <div className="flex gap-2">
+              {[50000, 100000, 200000].map((extra) => (
+                <button
+                  key={extra}
+                  onClick={() => comprarMas("tokens_openai", extra)}
+                  className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+                >
+                  +{extra.toLocaleString()} tokens
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
           <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
