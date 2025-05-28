@@ -190,6 +190,31 @@ export default function MetaConfigPage() {
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
   }, [messages]);
   
+  const comprarMasMeta = async (cantidad: number) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          canal: "meta",
+          cantidad,
+          redirectPath: "/dashboard/meta-config",
+        }),
+      });
+  
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;  // Redirige a Stripe Checkout
+      } else {
+        alert("❌ Error al iniciar la compra.");
+      }
+    } catch (error) {
+      console.error("❌ Error al procesar la compra de Meta:", error);
+      alert("❌ Error al procesar la compra.");
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="max-w-5xl mx-auto flex flex-col gap-8">
@@ -251,6 +276,26 @@ export default function MetaConfigPage() {
         </div>
 
         <TrainingHelp context="meta" />
+
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <SiMeta /> Compra de créditos Meta (Facebook & Instagram)
+          </h3>
+          <p className="text-white text-sm mb-2">
+            Compra créditos adicionales para tus campañas de Meta (Facebook e Instagram).
+          </p>
+          <div className="flex gap-2">
+            {[500, 1000, 2000].map((extra) => (
+              <button
+                key={extra}
+                onClick={() => comprarMasMeta(extra)}
+                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+              >
+                +{extra}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
           <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
