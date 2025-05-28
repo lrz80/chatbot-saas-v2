@@ -333,7 +333,7 @@ export default function MetaConfigPage() {
         {usoTokens && (
           <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
             <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-              <SiOpenai /> Uso de Tokens OpenAI
+              <SiOpenai /> Uso de Tokens
             </h3>
             <p className="text-white text-sm mb-2">
               {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
