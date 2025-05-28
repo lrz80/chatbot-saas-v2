@@ -14,7 +14,7 @@ import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
 import Footer from "@/components/Footer";
-import { SiAudioboom, SiOpenai } from "react-icons/si";
+import { SiAudioboom } from "react-icons/si";
 import VoicePlayer from "@/components/VoicePlayer";
 
 export default function VoiceConfigPage() {
@@ -275,10 +275,13 @@ export default function VoiceConfigPage() {
       {usoVoz && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
           <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiOpenai /> Uso de Voz (minutos)
+            <SiAudioboom /> Uso de Voz (tokens)
           </h3>
           <p className="text-white text-sm mb-2">
-            {usoVoz.usados ?? 0} de {usoVoz.limite ?? 500} minutos utilizados
+            {usoVoz.usados ?? 0} de {usoVoz.limite ?? 50000} tokens utilizados
+          </p>
+          <p className="text-white text-sm mb-2">
+            Equivalente a {(usoVoz.usados ?? 0) / 200} de {(usoVoz.limite ?? 50000) / 200} minutos
           </p>
           <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
             <div
@@ -287,41 +290,13 @@ export default function VoiceConfigPage() {
             />
           </div>
           <div className="flex gap-2">
-            {[500, 1000, 2000].map((extra) => (
+            {[50000, 100000, 200000].map((extra) => (
               <button
                 key={extra}
                 onClick={() => comprarMas("voz", extra)}
                 className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
               >
-                +{extra} minutos
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {usoTokens && (
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiOpenai /> Uso de Tokens
-          </h3>
-          <p className="text-white text-sm mb-2">
-            {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
-          </p>
-          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-            <div
-              className={`h-full ${colorBarra(calcularPorcentaje(usoTokens.usados, usoTokens.limite))} transition-all duration-500`}
-              style={{ width: `${calcularPorcentaje(usoTokens.usados, usoTokens.limite)}%` }}
-            />
-          </div>
-          <div className="flex gap-2">
-            {[50000, 100000, 200000].map((extra) => (
-              <button
-                key={extra}
-                onClick={() => comprarMas("tokens_openai", extra)}
-                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
-              >
-                +{extra.toLocaleString()} tokens
+                +{extra.toLocaleString()} tokens (+{extra / 200} min)
               </button>
             ))}
           </div>
