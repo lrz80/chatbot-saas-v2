@@ -110,15 +110,6 @@ export default function FollowUpSettingsPage() {
   };
 
   useEffect(() => {
-    fetchSettings();
-    fetchMensajesEnviados();
-  }, []);
-
-  if (loading) {
-    return <div className="text-white p-10">Cargando configuración...</div>;
-  }
-
-  useEffect(() => {
     const fetchUsos = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
@@ -168,6 +159,15 @@ export default function FollowUpSettingsPage() {
     return "bg-green-500";
   };
   
+  useEffect(() => {
+    fetchSettings();
+    fetchMensajesEnviados();
+  }, []);
+
+  if (loading) {
+    return <div className="text-white p-10">Cargando configuración...</div>;
+  }
+
   return (
     <div className="p-4 md:p-6 text-white">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
