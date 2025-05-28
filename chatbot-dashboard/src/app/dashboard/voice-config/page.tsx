@@ -14,7 +14,7 @@ import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
 import Footer from "@/components/Footer";
-import { SiAudioboom } from "react-icons/si";
+import { SiAudioboom, SiOpenai } from "react-icons/si";
 import VoicePlayer from "@/components/VoicePlayer";
 
 export default function VoiceConfigPage() {
@@ -46,6 +46,8 @@ export default function VoiceConfigPage() {
   const [nuevoLink, setNuevoLink] = useState({ tipo: "", nombre: "", url: "" });
   const [audioDemoUrl, setAudioDemoUrl] = useState<string>("");
   const [linksParaEliminar, setLinksParaEliminar] = useState<number[]>([]);
+  const [usoVoz, setUsoVoz] = useState<any>(null);
+  const [usoTokens, setUsoTokens] = useState<any>(null);
 
   useEffect(() => {
     const fetchVoiceConfig = async () => {
@@ -214,6 +216,54 @@ export default function VoiceConfigPage() {
     }
   };
 
+  useEffect(() => {
+    const fetchUsos = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setUsoVoz(data.usos.find((u: any) => u.canal === 'voz'));
+          setUsoTokens(data.usos.find((u: any) => u.canal === 'tokens_openai'));
+        }
+      } catch (error) {
+        console.error("Error obteniendo uso:", error);
+      }
+    };
+    fetchUsos();
+  }, []);
+
+  const comprarMas = async (canal: string, cantidad: number) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          canal,
+          cantidad,
+          redirectPath: "/dashboard/voice-config",
+        }),
+      });
+  
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("❌ Error al iniciar la compra.");
+      }
+    } catch (error) {
+      console.error("❌ Error al procesar la compra:", error);
+      alert("❌ Error al procesar la compra.");
+    }
+  };  
+
+  const calcularPorcentaje = (usados: number, limite: number) => (usados / limite) * 100;
+  const colorBarra = (porcentaje: number) => {
+    if (porcentaje > 80) return "bg-red-500";
+    if (porcentaje > 50) return "bg-yellow-500";
+    return "bg-green-500";
+  };
+
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
@@ -221,7 +271,63 @@ export default function VoiceConfigPage() {
       </h1>
   
       <TrainingHelp context="voice" />
-  
+
+      {usoVoz && (
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <SiOpenai /> Uso de Voz (minutos)
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoVoz.usados ?? 0} de {usoVoz.limite ?? 500} minutos utilizados
+          </p>
+          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+            <div
+              className={`h-full ${colorBarra(calcularPorcentaje(usoVoz.usados, usoVoz.limite))} transition-all duration-500`}
+              style={{ width: `${calcularPorcentaje(usoVoz.usados, usoVoz.limite)}%` }}
+            />
+          </div>
+          <div className="flex gap-2">
+            {[500, 1000, 2000].map((extra) => (
+              <button
+                key={extra}
+                onClick={() => comprarMas("voz", extra)}
+                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+              >
+                +{extra} minutos
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {usoTokens && (
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <SiOpenai /> Uso de Tokens
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
+          </p>
+          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+            <div
+              className={`h-full ${colorBarra(calcularPorcentaje(usoTokens.usados, usoTokens.limite))} transition-all duration-500`}
+              style={{ width: `${calcularPorcentaje(usoTokens.usados, usoTokens.limite)}%` }}
+            />
+          </div>
+          <div className="flex gap-2">
+            {[50000, 100000, 200000].map((extra) => (
+              <button
+                key={extra}
+                onClick={() => comprarMas("tokens_openai", extra)}
+                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+              >
+                +{extra.toLocaleString()} tokens
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex space-x-4 mb-6">
         {idiomasDisponibles.map((lang) => (
           <button
