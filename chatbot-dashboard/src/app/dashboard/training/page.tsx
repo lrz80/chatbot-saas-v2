@@ -309,26 +309,30 @@ export default function TrainingPage() {
   };  
   
   // Agrega esta función dentro del componente
-  const comprarMas = async (canal: string, extra: number) => {
+  const comprarMas = async (canal: string, cantidad: number) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/usage/comprar`, {
+      const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ canal, extra }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          canal,
+          cantidad,
+          redirectPath: "/dashboard/training",  // Puedes ajustar si necesitas otro path
+        }),
       });
+  
       const data = await res.json();
-      if (data.success) {
-        alert(`✅ Créditos agregados exitosamente para ${canal}.`);
-        window.location.reload(); // Recargar para actualizar los valores
+      if (data.url) {
+        window.location.href = data.url;  // Redirige a Stripe Checkout
       } else {
-        alert("❌ Error al agregar créditos.");
+        alert("❌ Error al iniciar la compra.");
       }
     } catch (error) {
-      console.error(error);
-      alert("❌ Error en la compra.");
+      console.error("❌ Error al comprar créditos:", error);
+      alert("❌ Error al procesar la compra.");
     }
-  };
+  };  
 
   useEffect(() => {
     const fetchUsos = async () => {
@@ -380,7 +384,7 @@ export default function TrainingPage() {
         {usoWhatsapp && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
           <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <MdWhatsapp /> Uso mensual de WhatsApp
+            <MdWhatsapp /> Uso de WhatsApp
           </h3>
           <p className="text-white text-sm mb-2">
             {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite ?? 1000} mensajes enviados
@@ -408,7 +412,7 @@ export default function TrainingPage() {
       {usoTokens && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
           <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiOpenai /> Uso mensual de Tokens OpenAI
+            <SiOpenai /> Uso de Tokens
           </h3>
           <p className="text-white text-sm mb-2">
             {usoTokens.usados ?? 0} de {usoTokens.limite ?? 500000} tokens utilizados
