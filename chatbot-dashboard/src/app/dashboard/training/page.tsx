@@ -68,13 +68,12 @@ export default function TrainingPage() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [settingsRes, usageRes, faqRes, intentsRes] = await Promise.all([
+        const [settingsRes, faqRes, intentsRes] = await Promise.all([
           fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" }),
-          fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faq`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents`, { credentials: "include" }),
         ]);
-
+  
         if (settingsRes.ok) {
           const data = await settingsRes.json();
           setSettings((prev) => ({
@@ -90,20 +89,9 @@ export default function TrainingPage() {
             idioma: data.idioma || prev.idioma,
           }));
           setMessages([{ role: "assistant", content: data.bienvenida != null ? data.bienvenida : "¡Hola! ¿Cómo puedo ayudarte?" }]);
+          setUsos(data.limites || {});  // 🚀 Ahora guardamos límites completos por canal
         }
-
-        if (usageRes.ok) {
-          const data = await usageRes.json();
-          const whatsapp = data.usos.find((u: any) => u.canal === "whatsapp");
-          const porcentaje = whatsapp ? (whatsapp.usados / whatsapp.limite) * 100 : 0;
-          setUsage({
-            used: whatsapp?.usados ?? 0,
-            limit: whatsapp?.limite ?? 1000,
-            porcentaje,
-          });
-          setUsoWhatsapp(whatsapp);
-        }
-        
+  
         if (faqRes.ok) setFaq(await faqRes.json());
         if (intentsRes.ok) setIntents(await intentsRes.json());
       } catch (err) {
@@ -112,10 +100,10 @@ export default function TrainingPage() {
         setLoading(false);
       }
     };
-
+  
     fetchAll();
   }, [router]);
-
+  
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
   };
@@ -376,32 +364,37 @@ export default function TrainingPage() {
         <TrainingHelp context="training" />
 
         {usoWhatsapp && (
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <MdWhatsapp /> Uso de WhatsApp
-          </h3>
-          <p className="text-white text-sm mb-2">
-            {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite ?? 1000} mensajes enviados
-          </p>
-          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-            <div
-              className={`h-full ${colorBarra(calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite))} transition-all duration-500`}
-              style={{ width: `${calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite)}%` }}
-            />
+          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+            <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+              <MdWhatsapp /> Uso de WhatsApp
+            </h3>
+            <p className="text-white text-sm mb-2">
+              {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite} mensajes enviados (incluye créditos extra)
+            </p>
+            {usoWhatsapp.limite > 500 && (
+              <p className="text-green-300 text-sm">
+                Incluye {usoWhatsapp.limite - 500} mensajes extra comprados.
+              </p>
+            )}
+            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+              <div
+                className={`h-full ${colorBarra(calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite))} transition-all duration-500`}
+                style={{ width: `${calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite)}%` }}
+              />
+            </div>
+            <div className="flex gap-2">
+              {[500, 1000, 2000].map((extra) => (
+                <button
+                  key={extra}
+                  onClick={() => comprarMas("whatsapp", extra)}
+                  className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+                >
+                  +{extra}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2">
-            {[500, 1000, 2000].map((extra) => (
-              <button
-                key={extra}
-                onClick={() => comprarMas("whatsapp", extra)}
-                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
-              >
-                +{extra}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
 
         <input
           name="name"
