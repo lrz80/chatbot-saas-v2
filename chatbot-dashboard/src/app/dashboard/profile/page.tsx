@@ -12,42 +12,44 @@ export default function BusinessProfilePage() {
   const router = useRouter();
   const [direccion, setDireccion] = useState('');
 
+  // 🚀 Mover fetchSettings fuera del useEffect
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
+        credentials: 'include',
+        cache: 'no-store',  // 🚀 Evitar cache
+      });
+      if (!res.ok) throw new Error('Error al obtener settings');
+      const data = await res.json();
+      setFormData({
+        tenant_id: data.tenant_id,
+        nombre_negocio: data.name,
+        horario_atencion: data.horario_atencion,
+        categoria: data.categoria,
+        idioma: data.idioma,
+        logo_url: data.logo_url,
+        twilio_number: data.twilio_number,
+        twilio_sms_number: data.twilio_sms_number,
+        twilio_voice_number: data.twilio_voice_number,
+        plan: data.plan,
+        fecha_registro: data.fecha_registro,
+        owner_name: data.owner_name,
+        email: data.email,
+        email_negocio: data.email_negocio || '',
+        telefono_negocio: data.telefono_negocio || '',
+        membresia_activa: data.membresia_activa,
+        membresia_vigencia: data.membresia_vigencia,
+      });
+      setDireccion(data.direccion || '');
+    } catch (error) {
+      console.error('❌ Error al obtener settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/settings`, {
-          credentials: 'include',
-          cache: 'no-store',  // 🚀 Evitar cache
-        });
-        if (!res.ok) throw new Error('Error al obtener settings');
-        const data = await res.json();
-        setFormData({
-          tenant_id: data.tenant_id,  // 👈 Guardar el tenant_id
-          nombre_negocio: data.name,
-          horario_atencion: data.horario_atencion,
-          categoria: data.categoria,
-          idioma: data.idioma,
-          logo_url: data.logo_url,
-          twilio_number: data.twilio_number,
-          twilio_sms_number: data.twilio_sms_number,
-          twilio_voice_number: data.twilio_voice_number,
-          plan: data.plan,
-          fecha_registro: data.fecha_registro,
-          owner_name: data.owner_name,
-          email: data.email, // ✅ Correo del ADMIN
-          email_negocio: data.email_negocio || '', // ✅ Correo del negocio
-          telefono_negocio: data.telefono_negocio || '', // ✅ Teléfono del negocio
-          membresia_activa: data.membresia_activa,
-          membresia_vigencia: data.membresia_vigencia,
-        });
-        setDireccion(data.direccion || '');
-      } catch (error) {
-        console.error('❌ Error al obtener settings:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSettings();
+    fetchSettings();  // Llamada inicial
   }, []);
 
   const handleChange = (e: any) => {
@@ -102,9 +104,7 @@ export default function BusinessProfilePage() {
       const data = await res.json();
       if (res.ok) {
         alert("✅ Plan cancelado correctamente.");
-        // 🚀 Mejor opción: Forzar recarga limpia del router
-        router.refresh();
-        // O si quieres: fetchSettings(); para obtener datos nuevos
+        await fetchSettings();  // 🚀 Recargar los datos actualizados
       } else {
         alert(`❌ Error: ${data.error}`);
       }
