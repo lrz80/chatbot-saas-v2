@@ -278,10 +278,15 @@ export default function VoiceConfigPage() {
             <SiAudioboom /> Uso de Voz (tokens)
           </h3>
           <p className="text-white text-sm mb-2">
-            {usoVoz.usados ?? 0} de {usoVoz.limite ?? 50000} tokens utilizados
+            {usoVoz.usados ?? 0} de {usoVoz.limite} tokens utilizados (incluye créditos adicionales vigentes)
           </p>
+          {usoVoz.limite > 50000 && (
+            <p className="text-green-300 text-sm">
+              Incluye {usoVoz.limite - 50000} tokens extra comprados.
+            </p>
+          )}
           <p className="text-white text-sm mb-2">
-            Equivalente a {(usoVoz.usados ?? 0) / 200} de {(usoVoz.limite ?? 50000) / 200} minutos
+            Equivalente a {(usoVoz.usados ?? 0) / 200} de {usoVoz.limite / 200} minutos
           </p>
           <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
             <div
