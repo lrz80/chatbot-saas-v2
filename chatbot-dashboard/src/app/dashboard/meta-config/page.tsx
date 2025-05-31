@@ -306,8 +306,13 @@ export default function MetaConfigPage() {
               <SiMeta /> Uso de Meta (FB & IG)
             </h3>
             <p className="text-white text-sm mb-2">
-              {usoMeta.usados ?? 0} de {usoMeta.limite ?? 1000} mensajes utilizados
+              {usoMeta.usados ?? 0} de {usoMeta.limite} mensajes utilizados (incluye créditos extra)
             </p>
+            {usoMeta.limite > 500 && (
+              <p className="text-green-300 text-sm">
+                Incluye {usoMeta.limite - 500} mensajes extra comprados.
+              </p>
+            )}
             <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
               <div
                 className={`h-full ${colorBarra(calcularPorcentaje(usoMeta.usados, usoMeta.limite))} transition-all duration-500`}
