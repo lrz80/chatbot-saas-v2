@@ -378,15 +378,19 @@ export default function CampaignsSmsClient() {
             <MdSms /> Uso mensual de SMS
           </h3>
           <p className="text-white text-sm mb-2">
-            {usoSms?.usados ?? 0} de {usoSms?.limite ?? 500} mensajes enviados
+            {usoSms.usados ?? 0} de {usoSms.limite} mensajes enviados (incluye créditos extra)
           </p>
+          {usoSms.limite > 500 && (
+            <p className="text-green-300 text-sm">
+              Incluye {usoSms.limite - 500} mensajes extra comprados.
+            </p>
+          )}
           <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
             <div
               className={`h-full ${colorBarraSms} transition-all duration-500`}
               style={{ width: `${porcentajeSms}%` }}
             />
           </div>
-
           <div className="flex gap-2">
             {[500, 1000, 2000].map((extra) => (
               <button
@@ -401,34 +405,38 @@ export default function CampaignsSmsClient() {
         </div>
       )}
 
-      <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-        <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
-          <FaAddressBook /> Contactos
-        </h3>
-        <p className="text-white text-sm mb-2">
-          {usoContactos.usados} de {usoContactos.limite} contactos usados
-        </p>
-        <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-          <div
-            className={`h-full ${colorBarra} transition-all duration-500`}
-            style={{ width: `${porcentajeContactos}%` }}
-          />
-        </div>
+      {usoContactos && (
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
+            <FaAddressBook /> Contactos
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoContactos.usados} de {usoContactos.limite} contactos usados (incluye créditos extra)
+          </p>
+          {usoContactos.limite > 500 && (
+            <p className="text-green-300 text-sm">
+              Incluye {usoContactos.limite - 500} contactos extra comprados.
+            </p>
+          )}
+          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+            <div
+              className={`h-full ${colorBarra} transition-all duration-500`}
+              style={{ width: `${porcentajeContactos}%` }}
+            />
+          </div>
+          <div className="flex gap-2 mb-4">
+            {[500, 1000, 2000].map((extra) => (
+              <button
+                key={extra}
+                onClick={() => comprarMasContactos(extra)}
+                className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
+              >
+                +{extra}
+              </button>
+            ))}
+          </div>
 
-        <div className="flex gap-2 mb-4">
-          {[500, 1000, 2000].map((extra) => (
-            <button
-              key={extra}
-              onClick={() => comprarMasContactos(extra)}
-              className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
-            >
-              +{extra}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-center gap-3">
-          
+          <div className="flex flex-col md:flex-row md:items-center gap-3">
             <button
               onClick={() => inputRef.current?.click()}
               className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
@@ -436,49 +444,50 @@ export default function CampaignsSmsClient() {
               Seleccionar archivo
             </button>
 
-          <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
-            <input
-              type="file"
-              accept=".csv"
-              ref={inputRef}
-              onChange={(e) => {
-                if (e.target.files?.[0]) {
-                  setArchivoCsv(e.target.files[0]);
-                }
-              }}
-              className="hidden"
-            />
+            <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
+              <input
+                type="file"
+                accept=".csv"
+                ref={inputRef}
+                onChange={(e) => {
+                  if (e.target.files?.[0]) {
+                    setArchivoCsv(e.target.files[0]);
+                  }
+                }}
+                className="hidden"
+              />
 
-            <button
-              onClick={() => {
-                if (!membresiaActiva) {
-                  window.location.href = "/dashboard/upgrade";
-                  return;
-                }
-                handleEliminarContactos();
-              }}
-              className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
-            >
-              Eliminar contactos
-            </button>
-            
-          {archivoCsv && (
-            <button
-              onClick={() => {
-                if (!membresiaActiva) {
-                  window.location.href = "/dashboard/upgrade";
-                  return;
-                }
-                handleSubirCsv();
-              }}
-              className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
-            >
-              Subir contactos
-            </button>
-          )}
+              <button
+                onClick={() => {
+                  if (!membresiaActiva) {
+                    window.location.href = "/dashboard/upgrade";
+                    return;
+                  }
+                  handleEliminarContactos();
+                }}
+                className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+              >
+                Eliminar contactos
+              </button>
+
+              {archivoCsv && (
+                <button
+                  onClick={() => {
+                    if (!membresiaActiva) {
+                      window.location.href = "/dashboard/upgrade";
+                      return;
+                    }
+                    handleSubirCsv();
+                  }}
+                  className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
+                >
+                  Subir contactos
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
         <SiCampaignmonitor /> Nombre de la campaña

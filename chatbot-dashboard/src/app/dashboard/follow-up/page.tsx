@@ -175,32 +175,37 @@ export default function FollowUpSettingsPage() {
       </h1>
 
       {usoFollowup && (
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiSpeedtest /> Seguimiento de Leads (Follow-up)
-          </h3>
-          <p className="text-white text-sm mb-2">
-            {usoFollowup.usados ?? 0} de {usoFollowup.limite ?? 1000} seguimientos realizados
-          </p>
-          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-            <div
-              className={`h-full ${colorBarra(calcularPorcentaje(usoFollowup.usados, usoFollowup.limite))} transition-all duration-500`}
-              style={{ width: `${calcularPorcentaje(usoFollowup.usados, usoFollowup.limite)}%` }}
-            />
+          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+            <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+              <SiSpeedtest /> Seguimiento de Leads (Follow-up)
+            </h3>
+            <p className="text-white text-sm mb-2">
+              {usoFollowup.usados ?? 0} de {usoFollowup.limite} seguimientos realizados (incluye créditos extra)
+            </p>
+            {usoFollowup.limite > 500 && (
+              <p className="text-green-300 text-sm">
+                Incluye {usoFollowup.limite - 500} seguimientos extra comprados.
+              </p>
+            )}
+            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+              <div
+                className={`h-full ${colorBarra(calcularPorcentaje(usoFollowup.usados, usoFollowup.limite))} transition-all duration-500`}
+                style={{ width: `${calcularPorcentaje(usoFollowup.usados, usoFollowup.limite)}%` }}
+              />
+            </div>
+            <div className="flex gap-2">
+              {[500, 1000, 2000].map((extra) => (
+                <button
+                  key={extra}
+                  onClick={() => comprarMas("followup", extra)}
+                  className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+                >
+                  +{extra}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2">
-            {[500, 1000, 2000].map((extra) => (
-              <button
-                key={extra}
-                onClick={() => comprarMas("followup", extra)}
-                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
-              >
-                +{extra}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        )}
 
       {showSuccess && (
         <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded-xl mb-8 text-center font-medium animate-pulse">
