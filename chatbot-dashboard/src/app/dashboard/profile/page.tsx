@@ -21,6 +21,7 @@ export default function BusinessProfilePage() {
         if (!res.ok) throw new Error('Error al obtener settings');
         const data = await res.json();
         setFormData({
+          tenant_id: data.tenant_id,  // 👈 Guardar el tenant_id
           nombre_negocio: data.name,
           horario_atencion: data.horario_atencion,
           categoria: data.categoria,
@@ -94,18 +95,23 @@ export default function BusinessProfilePage() {
       const res = await fetch(`${BACKEND_URL}/api/stripe/cancel`, {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId: formData.tenant_id,  // 👈 Ahora usamos el ID correcto
+        }),
       });
       if (res.ok) {
         alert("✅ Plan cancelado correctamente.");
         window.location.reload();
       } else {
-        alert("❌ Error al cancelar el plan.");
+        const data = await res.json();
+        alert(`❌ Error: ${data.error}`);
       }
     } catch (err) {
       console.error("❌ Error:", err);
       alert("❌ Hubo un problema al cancelar el plan.");
     }
-  };
+  };  
 
   if (loading) return <p className="text-center text-white">Cargando información del negocio...</p>;
 
