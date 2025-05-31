@@ -17,6 +17,7 @@ export default function BusinessProfilePage() {
       try {
         const res = await fetch(`${BACKEND_URL}/api/settings`, {
           credentials: 'include',
+          cache: 'no-store',  // 🚀 Evitar cache
         });
         if (!res.ok) throw new Error('Error al obtener settings');
         const data = await res.json();
@@ -96,15 +97,15 @@ export default function BusinessProfilePage() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tenantId: formData.tenant_id,  // 👈 Ahora usamos el ID correcto
-        }),
+        body: JSON.stringify({ tenantId: formData.tenant_id }),
       });
+      const data = await res.json();
       if (res.ok) {
         alert("✅ Plan cancelado correctamente.");
-        window.location.reload();
+        // 🚀 Mejor opción: Forzar recarga limpia del router
+        router.refresh();
+        // O si quieres: fetchSettings(); para obtener datos nuevos
       } else {
-        const data = await res.json();
         alert(`❌ Error: ${data.error}`);
       }
     } catch (err) {
