@@ -501,140 +501,145 @@ export default function CampaignsEmailClient() {
   
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
-      <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
-        <SiMinutemailer className="text-blue-400 animate-pulse" /> Campañas por Email
-      </h1>
-      {contactosOk && (
-        <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
-          ✅ Límite de contactos ampliado exitosamente. Ya puedes cargar más contactos.
-        </div>
-      )}
-
-      <TrainingHelp context="campaign-email" />
-
-      {usoEmail && (
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
-            <SiMinutemailer /> Campañas por Email
-          </h3>
-          <p className="text-white text-sm mb-2">
-            {usoEmail.usados} de {usoEmail.limite} campañas usadas este mes
-          </p>
-          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-            <div
-              className={`h-full ${
-                usoEmail.usados / usoEmail.limite >= 0.9
-                  ? "bg-red-500"
-                  : usoEmail.usados / usoEmail.limite >= 0.7
-                  ? "bg-yellow-400"
-                  : "bg-green-500"
-              } transition-all duration-500`}
-              style={{ width: `${(usoEmail.usados / usoEmail.limite) * 100}%` }}
-            />
+        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
+          <SiMinutemailer className="text-blue-400 animate-pulse" /> Campañas por Email
+        </h1>
+        {contactosOk && (
+          <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
+            ✅ Límite de contactos ampliado exitosamente. Ya puedes cargar más contactos.
           </div>
+        )}
 
-          <div className="flex gap-2 mb-2">
-            {[500, 1000, 2000].map((extra) => (
-              <button
-                key={extra}
-                onClick={() => comprarMasCampanas(extra)}
-                className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
-              >
-                +{extra}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        <TrainingHelp context="campaign-email" />
 
-      <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-        <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
-          <FaAddressBook /> Contactos
-        </h3>
-        <p className="text-white text-sm mb-2">
-          {usoContactos.usados} de {usoContactos.limite} contactos usados
-        </p>
-        <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-          <div
-            className={`h-full ${colorBarra} transition-all duration-500`}
-            style={{ width: `${porcentajeContactos}%` }}
-          />
-        </div>
-
-        <div className="flex gap-2 mb-4">
-          {[500, 1000, 2000].map((extra) => (
-            <button
-              key={extra}
-              onClick={() => comprarMasContactos(extra)}
-              className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
-            >
-              +{extra}
-            </button>
-          ))}
-        </div>
-
-        <div className="w-full space-y-2">
-          <label className="block text-sm font-semibold text-white">
-            Subir archivo CSV de contactos
-          </label>
-
-          {/* Input estilizado como botón y sin texto al lado */}
-          <input
-            type="file"
-            accept=".csv"
-            multiple={false}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file && file.name.toLowerCase().endsWith(".csv")) {
-                setArchivoCsv(file);
-              } else {
-                alert("Por favor selecciona un archivo CSV válido.");
-              }
-            }}
-            className="cursor-pointer block w-full text-sm text-white
-                      file:mr-0 file:py-2 file:px-4 file:rounded
-                      file:border-0 file:text-sm file:font-semibold
-                      file:bg-indigo-600 file:text-white
-                      hover:file:bg-indigo-500"
-            style={{ color: 'transparent' }}
-          />
-
-          {/* Mostrar nombre del archivo y botón para eliminar */}
-          {archivoCsv && (
-            <div className="flex items-center justify-between bg-white/10 border border-white/20 rounded px-4 py-2 text-sm text-white">
-              <span className="truncate">{archivoCsv.name}</span>
-              <button
-                onClick={() => {
-                  setArchivoCsv(null);
-                  if (inputRef.current) inputRef.current.value = "";
-                }}
-                className="text-red-400 hover:text-red-600 text-xs font-semibold ml-4"
-              >
-                Eliminar archivo
-              </button>
-            </div>
-          )}
-
-          {/* Acciones: eliminar y subir */}
-          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-            <button
-              onClick={handleEliminarContactos}
-              className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
-            >
-              Eliminar contactos
-            </button>
-
-            {archivoCsv && (
-              <button
-                onClick={handleSubirCsv}
-                className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
-              >
-                Subir contactos
-              </button>
+        {usoEmail && (
+          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+            <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
+              <SiMinutemailer /> Campañas por Email
+            </h3>
+            <p className="text-white text-sm mb-2">
+              {usoEmail.usados} de {usoEmail.limite} campañas usadas este mes (incluye créditos extra)
+            </p>
+            {usoEmail.limite > 2000 && (
+              <p className="text-green-300 text-sm">
+                Incluye {usoEmail.limite - 2000} campañas extra compradas.
+              </p>
             )}
+            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+              <div
+                className={`h-full ${
+                  usoEmail.usados / usoEmail.limite >= 0.9
+                    ? "bg-red-500"
+                    : usoEmail.usados / usoEmail.limite >= 0.7
+                    ? "bg-yellow-400"
+                    : "bg-green-500"
+                } transition-all duration-500`}
+                style={{ width: `${(usoEmail.usados / usoEmail.limite) * 100}%` }}
+              />
+            </div>
+            <div className="flex gap-2 mb-2">
+              {[500, 1000, 2000].map((extra) => (
+                <button
+                  key={extra}
+                  onClick={() => comprarMasCampanas(extra)}
+                  className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
+                >
+                  +{extra}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
+        {usoContactos && (
+          <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+            <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
+              <FaAddressBook /> Contactos
+            </h3>
+            <p className="text-white text-sm mb-2">
+              {usoContactos.usados} de {usoContactos.limite} contactos usados (incluye créditos extra)
+            </p>
+            {usoContactos.limite > 500 && (
+              <p className="text-green-300 text-sm">
+                Incluye {usoContactos.limite - 500} contactos extra comprados.
+              </p>
+            )}
+            <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
+              <div
+                className={`h-full ${colorBarra} transition-all duration-500`}
+                style={{ width: `${porcentajeContactos}%` }}
+              />
+            </div>
+            <div className="flex gap-2 mb-4">
+              {[500, 1000, 2000].map((extra) => (
+                <button
+                  key={extra}
+                  onClick={() => comprarMasContactos(extra)}
+                  className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm"
+                >
+                  +{extra}
+                </button>
+              ))}
+            </div>
+
+            <div className="w-full space-y-2">
+              <label className="block text-sm font-semibold text-white">
+                Subir archivo CSV de contactos
+              </label>
+              <input
+                type="file"
+                accept=".csv"
+                multiple={false}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file && file.name.toLowerCase().endsWith(".csv")) {
+                    setArchivoCsv(file);
+                  } else {
+                    alert("Por favor selecciona un archivo CSV válido.");
+                  }
+                }}
+                className="cursor-pointer block w-full text-sm text-white
+                          file:mr-0 file:py-2 file:px-4 file:rounded
+                          file:border-0 file:text-sm file:font-semibold
+                          file:bg-indigo-600 file:text-white
+                          hover:file:bg-indigo-500"
+                style={{ color: "transparent" }}
+              />
+              {archivoCsv && (
+                <div className="flex items-center justify-between bg-white/10 border border-white/20 rounded px-4 py-2 text-sm text-white">
+                  <span className="truncate">{archivoCsv.name}</span>
+                  <button
+                    onClick={() => {
+                      setArchivoCsv(null);
+                      if (inputRef.current) inputRef.current.value = "";
+                    }}
+                    className="text-red-400 hover:text-red-600 text-xs font-semibold ml-4"
+                  >
+                    Eliminar archivo
+                  </button>
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <button
+                  onClick={handleEliminarContactos}
+                  className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
+                >
+                  Eliminar contactos
+                </button>
+                {archivoCsv && (
+                  <button
+                    onClick={handleSubirCsv}
+                    className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
+                  >
+                    Subir contactos
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      <div>
+    
       {/* Campos del formulario */}
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
         <SiCampaignmonitor /> Nombre de la campaña
