@@ -318,9 +318,17 @@ export default function BusinessProfilePage() {
         <div className="md:col-span-2">
           <p className="text-sm text-indigo-200 font-semibold">Estado de la Membresía</p>
           {formData.membresia_activa ? (
-            <p className="text-green-400 font-semibold">
-              ✅ Activa hasta {new Date(formData.membresia_vigencia).toLocaleDateString()}
-            </p>
+            <>
+              {formData.es_trial ? (
+                <p className="text-yellow-400 font-semibold">
+                  🟡 Activa - Período de Prueba hasta {new Date(formData.membresia_vigencia).toLocaleDateString()}
+                </p>
+              ) : (
+                <p className="text-green-400 font-semibold">
+                  ✅ Activa - Plan Pro hasta {new Date(formData.membresia_vigencia).toLocaleDateString()}
+                </p>
+              )}
+            </>
           ) : (
             <p className="text-red-400 font-semibold">❌ Vencida</p>
           )}
