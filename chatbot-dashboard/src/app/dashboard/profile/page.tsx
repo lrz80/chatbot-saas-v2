@@ -40,6 +40,7 @@ export default function BusinessProfilePage() {
         membresia_activa: data.membresia_activa,
         membresia_vigencia: data.membresia_vigencia,
         es_trial: data.es_trial,
+        estado_membresia_texto: data.estado_membresia_texto,  // 👈 Agregado campo dinámico
       });
       setDireccion(data.direccion || '');
     } catch (error) {
@@ -48,7 +49,7 @@ export default function BusinessProfilePage() {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchSettings();  // Llamada inicial
   }, []);
@@ -318,13 +319,17 @@ export default function BusinessProfilePage() {
 
         <div className="md:col-span-2">
           <p className="text-sm text-indigo-200 font-semibold">Estado de la Membresía</p>
-          <p className={
-            formData.estado_membresia_texto?.includes('🟡') ? 'text-yellow-400 font-semibold' :
-            formData.estado_membresia_texto?.includes('✅') ? 'text-green-400 font-semibold' :
-            'text-red-400 font-semibold'
-          }>
-            {formData.estado_membresia_texto}
-          </p>
+          {formData.estado_membresia_texto ? (
+            <p className={
+              formData.estado_membresia_texto.includes('🟡') ? 'text-yellow-400 font-semibold' :
+              formData.estado_membresia_texto.includes('✅') ? 'text-green-400 font-semibold' :
+              'text-red-400 font-semibold'
+            }>
+              {formData.estado_membresia_texto}
+            </p>
+          ) : (
+            <p className="text-red-400 font-semibold">❌ Sin información</p>
+          )}
         </div>
       </div>
 
