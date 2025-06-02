@@ -32,54 +32,39 @@ export default function MetaConfigPage() {
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
+  // 🔄 fetchConfiguracion simplificado:
   const fetchConfiguracion = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include' });
+      const res = await fetch(`${BACKEND_URL}/api/meta-config`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-
-        setPromptMeta(data.prompt_meta || '');
-        setBienvenidaMeta(data.bienvenida_meta || '');
+        setPromptMeta(data.prompt || '');
+        setBienvenidaMeta(data.bienvenida || '');
         setFuncionesMeta(data.funciones_asistente || '');
         setInfoClaveMeta(data.info_clave || '');
-        setFaq(data.faq || []);
-        setIntents(data.intents || []);
-        setMembresiaActiva(data.membresia_activa);
-
-        if (data.facebook_page_id && data.facebook_access_token) {
-          setConnected(true);
-          setFacebookPageName(data.facebook_page_name || '');
-          setInstagramPageName(data.instagram_page_name || '');
-        } else {
-          setConnected(false);
-          setFacebookPageName('');
-          setInstagramPageName('');
-        }
-        setMessages([{ role: 'assistant', content: data.bienvenida_meta != null ? data.bienvenida_meta : '¡Hola! ¿En qué puedo ayudarte hoy?' }]);
+        setMembresiaActiva(true); // Si la membresía viene de otro lado, ponlo aquí
+        setMessages([{ role: 'assistant', content: data.bienvenida || '¡Hola! ¿En qué puedo ayudarte hoy?' }]);
       }
     } catch (error) {
       console.error('Error obteniendo configuración de Meta:', error);
     }
   };
 
-  useEffect(() => {
-    fetchConfiguracion();
-  }, []);
-
+  // 🔄 handleGuardar solo envía los campos correctos:
   const handleGuardar = async () => {
     setSaving(true);
     setSaved(false);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/settings`, {
+      const res = await fetch(`${BACKEND_URL}/api/meta-config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          prompt_meta: promptMeta,
-          bienvenida_meta: bienvenidaMeta,
-          faq,
-          intents,
-          canal: 'facebook',
+          funciones_asistente: funcionesMeta,
+          info_clave: infoClaveMeta,
+          prompt: promptMeta,
+          bienvenida: bienvenidaMeta,
+          idioma: 'es', // O usa un selector si es dinámico
         }),
       });
       if (res.ok) setSaved(true);
