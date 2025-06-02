@@ -38,17 +38,17 @@ export default function MetaConfigPage() {
       const res = await fetch(`${BACKEND_URL}/api/meta-config`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        setPromptMeta(data.prompt || '');
-        setBienvenidaMeta(data.bienvenida || '');
+        setPromptMeta(data.prompt_meta || '');             // 👈 Cambiar aquí
+        setBienvenidaMeta(data.bienvenida_meta || '');     // 👈 Cambiar aquí
         setFuncionesMeta(data.funciones_asistente || '');
         setInfoClaveMeta(data.info_clave || '');
-        setMembresiaActiva(true); // Si la membresía viene de otro lado, ponlo aquí
-        setMessages([{ role: 'assistant', content: data.bienvenida || '¡Hola! ¿En qué puedo ayudarte hoy?' }]);
+        setMembresiaActiva(true);
+        setMessages([{ role: 'assistant', content: data.bienvenida_meta || '¡Hola! ¿En qué puedo ayudarte hoy?' }]); // 👈 Cambiar aquí
       }
     } catch (error) {
       console.error('Error obteniendo configuración de Meta:', error);
     }
-  };
+  };  
 
   // 🔄 handleGuardar solo envía los campos correctos:
   const handleGuardar = async () => {
@@ -63,20 +63,20 @@ export default function MetaConfigPage() {
         body: JSON.stringify({
           funciones_asistente: funcionesMeta,
           info_clave: infoClaveMeta,
-          prompt: promptMeta,
-          bienvenida: bienvenidaMeta,
-          idioma: 'es', // O usa un selector si es dinámico
+          prompt_meta: promptMeta,               // 👈 Cambiar aquí
+          bienvenida_meta: bienvenidaMeta,       // 👈 Cambiar aquí
+          idioma: 'es',
         }),
       });
-
+  
       console.log('📤 Enviando datos:', {
         funciones_asistente: funcionesMeta,
         info_clave: infoClaveMeta,
-        prompt: promptMeta,
-        bienvenida: bienvenidaMeta,
+        prompt_meta: promptMeta,               // 👈 Cambiar aquí
+        bienvenida_meta: bienvenidaMeta,       // 👈 Cambiar aquí
         idioma: 'es',
-      });      
-
+      });
+  
       if (res.ok) setSaved(true);
       else alert('❌ Error al guardar configuración.');
     } catch (error) {
@@ -86,7 +86,7 @@ export default function MetaConfigPage() {
       setSaving(false);
     }
   };
-
+  
   const handleDesconectar = async () => {
     console.log('⚠️ Botón "Desconectar Facebook" presionado');
     if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
