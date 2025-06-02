@@ -186,6 +186,7 @@ export default function MetaConfigPage() {
   }, [messages]);
   
   useEffect(() => {
+    fetchConfiguracion();
     const fetchUsos = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
