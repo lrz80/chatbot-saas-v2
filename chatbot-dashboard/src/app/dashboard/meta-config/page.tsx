@@ -88,6 +88,7 @@ export default function MetaConfigPage() {
   };
 
   const handleDesconectar = async () => {
+    console.log('⚠️ Botón "Desconectar Facebook" presionado');
     if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
 
     try {
