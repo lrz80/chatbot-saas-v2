@@ -9,6 +9,7 @@ import {
   SiWhatsapp,
   SiFacebook,
   SiMinutemailer,
+  SiInstagram,
 } from "react-icons/si";
 import { FiGlobe } from "react-icons/fi";
 
@@ -26,8 +27,9 @@ export default function MessageHistory() {
   const [conteo, setConteo] = useState({
     whatsapp: 0,
     facebook: 0,
+    instagram: 0,
     voice: 0,
-  });
+  });  
 
   const fetchMessages = async (reset = false) => {
     try {
@@ -67,9 +69,10 @@ export default function MessageHistory() {
       setConteo({
         whatsapp: allMessages.filter((m) => m.canal === "whatsapp").length,
         facebook: allMessages.filter((m) => m.canal === "facebook").length,
+        instagram: allMessages.filter((m) => m.canal === "instagram").length,
         voice: allMessages.filter((m) => m.canal === "voice").length,
       });
-
+      
       setLoading(false);
     } catch (error) {
       console.error("❌ Error al obtener mensajes:", error);
@@ -126,6 +129,7 @@ export default function MessageHistory() {
   const canalIcons = {
     whatsapp: <SiWhatsapp className="inline text-green-400" />,
     facebook: <SiFacebook className="inline text-blue-400" />,
+    instagram: <SiInstagram className="inline text-pink-400" />,
     voice: <SiMinutemailer className="inline text-purple-400" />,
     "": <FiGlobe className="inline text-white/70" />,
   };
@@ -139,6 +143,7 @@ export default function MessageHistory() {
       <div className="mb-4 text-sm text-white/70 flex flex-wrap gap-4">
         <span>{canalIcons.whatsapp} WhatsApp ({conteo.whatsapp})</span>
         <span>{canalIcons.facebook} Facebook ({conteo.facebook})</span>
+        <span>{canalIcons.instagram} Instagram ({conteo.instagram})</span>
         <span>{canalIcons.voice} Voz ({conteo.voice})</span>
       </div>
 
@@ -152,6 +157,7 @@ export default function MessageHistory() {
           <option value="">🌐 Todos</option>
           <option value="whatsapp">📲 WhatsApp</option>
           <option value="facebook">💬 Facebook</option>
+          <option value="instagram">📸 Instagram</option>
           <option value="voice">📞 Voz</option>
         </select>
       </div>
