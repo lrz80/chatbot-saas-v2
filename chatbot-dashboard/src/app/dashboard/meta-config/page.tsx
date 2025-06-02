@@ -67,6 +67,15 @@ export default function MetaConfigPage() {
           idioma: 'es', // O usa un selector si es dinámico
         }),
       });
+
+      console.log('📤 Enviando datos:', {
+        funciones_asistente: funcionesMeta,
+        info_clave: infoClaveMeta,
+        prompt: promptMeta,
+        bienvenida: bienvenidaMeta,
+        idioma: 'es',
+      });      
+
       if (res.ok) setSaved(true);
       else alert('❌ Error al guardar configuración.');
     } catch (error) {
