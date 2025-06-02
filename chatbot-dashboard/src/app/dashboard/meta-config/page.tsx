@@ -52,6 +52,7 @@ export default function MetaConfigPage() {
 
   // 🔄 handleGuardar solo envía los campos correctos:
   const handleGuardar = async () => {
+    console.log('✅ Botón "Guardar Configuración" presionado');
     setSaving(true);
     setSaved(false);
     try {
