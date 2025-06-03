@@ -183,8 +183,13 @@ export default function MessageHistory() {
                     </div>
 
                     <div className="font-medium text-white break-words whitespace-pre-wrap">
-                      {msg.sender === "user" ? "👤 Cliente:" : "🤖 Bot:"} {msg.content}
+                      {msg.sender?.toLowerCase() === "user" 
+                        ? "👤 Cliente:" 
+                        : msg.sender?.toLowerCase() === "bot" 
+                          ? "🤖 Bot:" 
+                          : "❓ Desconocido:"} {msg.content}
                     </div>
+
 
                     {msg.emotion && (
                       <div className="text-purple-300 text-xs mt-1">
