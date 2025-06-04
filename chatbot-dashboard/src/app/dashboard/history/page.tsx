@@ -44,49 +44,41 @@ export default function MessageHistory() {
         (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
   
-      let mensajesActualizados: any[] = [];
+      let mensajesTotales: any[] = [];
   
       if (reset) {
-        mensajesActualizados = [...nuevosMensajes];
         setMessages(nuevosMensajes);
         setPage(2);
-        if (nuevosMensajes.length > 0) {
-          lastIdRef.current = nuevosMensajes[nuevosMensajes.length - 1].id;
-        }
+        mensajesTotales = nuevosMensajes;
       } else {
-        const actualizados = await new Promise<any[]>((resolve) => {
-          setMessages((prev) => {
-            const todos = [...prev, ...nuevosMensajes];
-            resolve(todos);
-            return todos;
-          });
-        });
-        mensajesActualizados = [...actualizados];
+        const mensajesActuales = [...messages, ...nuevosMensajes];
+        const unicos = Array.from(new Map(mensajesActuales.map(m => [m.id, m])).values());
+        setMessages(unicos);
         setPage((prev) => prev + 1);
-        lastIdRef.current = mensajesActualizados[mensajesActualizados.length - 1]?.id || lastIdRef.current;
+        mensajesTotales = unicos;
       }
   
       if (nuevosMensajes.length > 0) {
+        lastIdRef.current = nuevosMensajes[nuevosMensajes.length - 1].id;
         lastTimestampRef.current = nuevosMensajes[nuevosMensajes.length - 1].timestamp;
       }
   
       setHasMore(nuevosMensajes.length === PAGE_SIZE);
   
-      // 🔁 Consolidar mensajes únicos por ID y normalizar campo canal
-      const mensajesLimpios = Array.from(
-        new Map(mensajesActualizados.map((m) => [m.id, {
-          ...m,
-          canal: (m.canal || '').toString().trim().toLowerCase(),
-        }])).values()
-      );
+      // Limpieza y conteo real
+      const mensajesLimpios = mensajesTotales.map((m) => ({
+        ...m,
+        canal: (m.canal || '').toString().trim().toLowerCase(),
+      }));
   
-      setConteo({
-        whatsapp: mensajesLimpios.filter((m) => m.canal === "whatsapp").length,
-        facebook: mensajesLimpios.filter((m) => m.canal === "facebook").length,
-        instagram: mensajesLimpios.filter((m) => m.canal === "instagram").length,
-        voice: mensajesLimpios.filter((m) => m.canal === "voice").length,
-      });
+      const conteo = {
+        whatsapp: mensajesLimpios.filter((m) => m.canal === 'whatsapp').length,
+        facebook: mensajesLimpios.filter((m) => m.canal === 'facebook').length,
+        instagram: mensajesLimpios.filter((m) => m.canal === 'instagram').length,
+        voice: mensajesLimpios.filter((m) => m.canal === 'voice').length,
+      };
   
+      setConteo(conteo);
       setLoading(false);
     } catch (error) {
       console.error("❌ Error al obtener mensajes:", error);
