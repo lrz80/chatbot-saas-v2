@@ -71,14 +71,6 @@ export default function MessageHistory() {
 
       setMessages(mensajesFiltrados);
 
-      // ✅ conteo real, independiente del filtro activo
-      setConteo({
-        whatsapp: mensajesUnicos.filter((m) => m.canal === "whatsapp").length,
-        facebook: mensajesUnicos.filter((m) => m.canal === "facebook").length,
-        instagram: mensajesUnicos.filter((m) => m.canal === "instagram").length,
-        voice: mensajesUnicos.filter((m) => m.canal === "voice").length,
-      });
-
       setLoading(false);
     } catch (error) {
       console.error("❌ Error al obtener mensajes:", error);
