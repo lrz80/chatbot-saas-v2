@@ -86,6 +86,19 @@ export default function MessageHistory() {
     }
   };
     
+  const fetchConteoGlobal = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/messages/conteo`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Error al obtener conteo global");
+      const data = await res.json();
+      setConteo(data);
+    } catch (err) {
+      console.error("❌ Error en conteo global:", err);
+    }
+  };
+  
   const fetchMensajesNuevos = async () => {
     try {
       if (!lastIdRef.current) return;
@@ -100,7 +113,7 @@ export default function MessageHistory() {
       const nuevos = data.mensajes || [];
   
       if (nuevos.length > 0) {
-        const todos = [...messages, ...nuevos];
+        const todos = [...mensajesGlobalesRef.current, ...nuevos];
         const mensajesUnicos = Array.from(
           new Map(todos.map(m => [m.id, {
             ...m,
@@ -108,17 +121,16 @@ export default function MessageHistory() {
           }])).values()
         );
   
-        const filtradosPorCanal = mensajesUnicos.filter(m => m.canal === canal || canal === "");
+        const filtradosPorCanal = canal
+          ? mensajesUnicos.filter(m => m.canal === canal)
+          : mensajesUnicos;
   
+        mensajesGlobalesRef.current = mensajesUnicos;
         setMessages(filtradosPorCanal);
         lastIdRef.current = nuevos[nuevos.length - 1].id;
   
-        setConteo({
-          whatsapp: filtradosPorCanal.filter((m) => m.canal === "whatsapp").length,
-          facebook: filtradosPorCanal.filter((m) => m.canal === "facebook").length,
-          instagram: filtradosPorCanal.filter((m) => m.canal === "instagram").length,
-          voice: filtradosPorCanal.filter((m) => m.canal === "voice").length,
-        });
+        // ✅ Actualiza conteo desde backend real
+        await fetchConteoGlobal();
       }
     } catch (err) {
       console.error("❌ Error en polling de nuevos mensajes:", err);
@@ -130,6 +142,7 @@ export default function MessageHistory() {
     setMessages([]); // 🧼 limpia mensajes anteriores al cambiar de canal
     lastIdRef.current = null;
     fetchMessages(true);
+    fetchConteoGlobal();
   }, [canal]);  
 
   useEffect(() => {
