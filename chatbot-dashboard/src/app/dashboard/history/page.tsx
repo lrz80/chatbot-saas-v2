@@ -49,13 +49,13 @@ export default function MessageHistory() {
       if (reset) {
         setMessages(nuevosMensajes);
         setPage(2);
-        mensajesTotales = nuevosMensajes;
+        mensajesTotales = [...nuevosMensajes];
       } else {
-        const mensajesActuales = [...messages, ...nuevosMensajes];
-        const unicos = Array.from(new Map(mensajesActuales.map(m => [m.id, m])).values());
+        const combinados = [...messages, ...nuevosMensajes];
+        const unicos = Array.from(new Map(combinados.map(m => [m.id, m])).values());
         setMessages(unicos);
         setPage((prev) => prev + 1);
-        mensajesTotales = unicos;
+        mensajesTotales = [...unicos];
       }
   
       if (nuevosMensajes.length > 0) {
@@ -65,20 +65,21 @@ export default function MessageHistory() {
   
       setHasMore(nuevosMensajes.length === PAGE_SIZE);
   
-      // Limpieza y conteo real
+      // Normalizar canal para evitar errores
       const mensajesLimpios = mensajesTotales.map((m) => ({
         ...m,
         canal: (m.canal || '').toString().trim().toLowerCase(),
       }));
   
-      const conteo = {
+      // Agrupar por canal sin importar el filtro actual
+      const conteoPorCanal = {
         whatsapp: mensajesLimpios.filter((m) => m.canal === 'whatsapp').length,
         facebook: mensajesLimpios.filter((m) => m.canal === 'facebook').length,
         instagram: mensajesLimpios.filter((m) => m.canal === 'instagram').length,
         voice: mensajesLimpios.filter((m) => m.canal === 'voice').length,
       };
   
-      setConteo(conteo);
+      setConteo(conteoPorCanal);
       setLoading(false);
     } catch (error) {
       console.error("❌ Error al obtener mensajes:", error);
