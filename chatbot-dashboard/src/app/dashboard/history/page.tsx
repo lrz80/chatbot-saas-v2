@@ -103,10 +103,16 @@ export default function MessageHistory() {
         // 👇 actualizar lastIdRef aunque sean duplicados
         lastIdRef.current = nuevos[nuevos.length - 1].id;
       
-        setConteo((prev) => ({
-          ...prev,
-          [canal || "whatsapp"]: prev[canal || "whatsapp"] + únicos.length,
-        }));
+        const todos = [...messages, ...únicos];
+        const mensajesUnicos = Array.from(new Map(todos.map(m => [m.id, m])).values());
+
+        setConteo({
+        whatsapp: mensajesUnicos.filter((m) => m.canal === "whatsapp").length,
+        facebook: mensajesUnicos.filter((m) => m.canal === "facebook").length,
+        instagram: mensajesUnicos.filter((m) => m.canal === "instagram").length,
+        voice: mensajesUnicos.filter((m) => m.canal === "voice").length,
+      });
+
       }      
     } catch (err) {
       console.error("❌ Error en polling de nuevos mensajes:", err);
