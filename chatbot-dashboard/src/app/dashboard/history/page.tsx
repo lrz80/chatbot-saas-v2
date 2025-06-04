@@ -92,7 +92,7 @@ export default function MessageHistory() {
       console.error("❌ Error al obtener mensajes:", error);
       setLoading(false);
     }
-  };
+  };  
   
   const fetchMensajesNuevos = async () => {
     try {
