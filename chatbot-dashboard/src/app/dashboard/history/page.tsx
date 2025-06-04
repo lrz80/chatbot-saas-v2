@@ -31,6 +31,8 @@ export default function MessageHistory() {
     voice: 0,
   });  
 
+  const mensajesGlobalesRef = useRef<any[]>([]); // ✅ global
+
   const fetchMessages = async (reset = false) => {
     try {
       const res = await fetch(
@@ -38,55 +40,52 @@ export default function MessageHistory() {
         { credentials: "include" }
       );
       if (!res.ok) throw new Error("Error al obtener mensajes");
-  
+
       const data = await res.json();
       const nuevosMensajes = data.mensajes.sort(
         (a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      );
-  
-      let mensajesTotales: any[] = [];
-  
-      if (reset) {
-        setMessages(nuevosMensajes);
-        setPage(2);
-        mensajesTotales = [...nuevosMensajes];
-      } else {
-        const combinados = [...messages, ...nuevosMensajes];
-        const unicos = Array.from(new Map(combinados.map(m => [m.id, m])).values());
-        setMessages(unicos);
-        setPage((prev) => prev + 1);
-        mensajesTotales = [...unicos];
-      }
-  
+      ).map(m => ({
+        ...m,
+        canal: (m.canal || '').toString().trim().toLowerCase(), // normalizar
+      }));
+
+      let mensajesActuales = reset ? [...nuevosMensajes] : [...mensajesGlobalesRef.current, ...nuevosMensajes];
+
+      // ✅ quitar duplicados por ID
+      const mensajesUnicos = Array.from(new Map(mensajesActuales.map(m => [m.id, m])).values());
+
+      mensajesGlobalesRef.current = mensajesUnicos; // actualizar referencia global
+      setPage(reset ? 2 : page + 1);
+
       if (nuevosMensajes.length > 0) {
         lastIdRef.current = nuevosMensajes[nuevosMensajes.length - 1].id;
         lastTimestampRef.current = nuevosMensajes[nuevosMensajes.length - 1].timestamp;
       }
-  
+
       setHasMore(nuevosMensajes.length === PAGE_SIZE);
-  
-      // Normalizar canal para evitar errores
-      const mensajesLimpios = mensajesTotales.map((m) => ({
-        ...m,
-        canal: (m.canal || '').toString().trim().toLowerCase(),
-      }));
-  
-      // Agrupar por canal sin importar el filtro actual
-      const conteoPorCanal = {
-        whatsapp: mensajesLimpios.filter((m) => m.canal === 'whatsapp').length,
-        facebook: mensajesLimpios.filter((m) => m.canal === 'facebook').length,
-        instagram: mensajesLimpios.filter((m) => m.canal === 'instagram').length,
-        voice: mensajesLimpios.filter((m) => m.canal === 'voice').length,
-      };
-  
-      setConteo(conteoPorCanal);
+
+      // ✅ aplicar filtro activo
+      const mensajesFiltrados = canal
+        ? mensajesUnicos.filter((m) => m.canal === canal)
+        : mensajesUnicos;
+
+      setMessages(mensajesFiltrados);
+
+      // ✅ conteo real, independiente del filtro activo
+      setConteo({
+        whatsapp: mensajesUnicos.filter((m) => m.canal === "whatsapp").length,
+        facebook: mensajesUnicos.filter((m) => m.canal === "facebook").length,
+        instagram: mensajesUnicos.filter((m) => m.canal === "instagram").length,
+        voice: mensajesUnicos.filter((m) => m.canal === "voice").length,
+      });
+
       setLoading(false);
     } catch (error) {
       console.error("❌ Error al obtener mensajes:", error);
       setLoading(false);
     }
-  };  
-  
+  };
+    
   const fetchMensajesNuevos = async () => {
     try {
       if (!lastIdRef.current) return;
