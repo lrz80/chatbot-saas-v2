@@ -38,12 +38,24 @@ export default function MetaConfigPage() {
       const res = await fetch(`${BACKEND_URL}/api/meta-config`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        setPromptMeta(data.prompt_meta || '');             // 👈 Cambiar aquí
-        setBienvenidaMeta(data.bienvenida_meta || '');     // 👈 Cambiar aquí
+  
+        setPromptMeta(data.prompt_meta || '');
+        setBienvenidaMeta(data.bienvenida_meta || '');
         setFuncionesMeta(data.funciones_asistente || '');
         setInfoClaveMeta(data.info_clave || '');
         setMembresiaActiva(true);
-        setMessages([{ role: 'assistant', content: data.bienvenida_meta || '¡Hola! ¿En qué puedo ayudarte hoy?' }]); // 👈 Cambiar aquí
+        setMessages([{ role: 'assistant', content: data.bienvenida_meta || '¡Hola! ¿En qué puedo ayudarte hoy?' }]);
+  
+        // ✅ Detectar si Meta está conectado
+        if (data.facebook_page_id || data.instagram_page_id) {
+          setConnected(true);
+          setFacebookPageName(data.facebook_page_name || '');
+          setInstagramPageName(data.instagram_page_name || '');
+        } else {
+          setConnected(false);
+          setFacebookPageName('');
+          setInstagramPageName('');
+        }
       }
     } catch (error) {
       console.error('Error obteniendo configuración de Meta:', error);
