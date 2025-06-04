@@ -65,12 +65,14 @@ export default function MessageHistory() {
 
       setHasMore(nuevosMensajes.length === PAGE_SIZE);
 
-      const allMessages = reset ? nuevosMensajes : [...messages, ...nuevosMensajes];
+      const allMessages = reset ? [...nuevosMensajes] : [...messages, ...nuevosMensajes];
+      const mensajesUnicos = Array.from(new Map(allMessages.map(m => [m.id, m])).values());
+
       setConteo({
-        whatsapp: allMessages.filter((m) => m.canal === "whatsapp").length,
-        facebook: allMessages.filter((m) => m.canal === "facebook").length,
-        instagram: allMessages.filter((m) => m.canal === "instagram").length,
-        voice: allMessages.filter((m) => m.canal === "voice").length,
+        whatsapp: mensajesUnicos.filter((m) => m.canal === "whatsapp").length,
+        facebook: mensajesUnicos.filter((m) => m.canal === "facebook").length,
+        instagram: mensajesUnicos.filter((m) => m.canal === "instagram").length,
+        voice: mensajesUnicos.filter((m) => m.canal === "voice").length,
       });
       
       setLoading(false);
