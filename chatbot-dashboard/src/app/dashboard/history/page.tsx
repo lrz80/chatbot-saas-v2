@@ -101,35 +101,37 @@ export default function MessageHistory() {
       const nuevos = data.mensajes || [];
   
       if (nuevos.length > 0) {
-        const existentes = new Set(messages.map((m) => m.id));
-        const únicos = nuevos.filter((m) => !existentes.has(m.id));
-        if (únicos.length > 0) {
-          setMessages((prev) => [...prev, ...únicos]);
-        }
-      
-        // 👇 actualizar lastIdRef aunque sean duplicados
+        const todos = [...messages, ...nuevos];
+        const mensajesUnicos = Array.from(
+          new Map(todos.map(m => [m.id, {
+            ...m,
+            canal: (m.canal || '').toString().trim().toLowerCase(),
+          }])).values()
+        );
+  
+        const filtradosPorCanal = mensajesUnicos.filter(m => m.canal === canal || canal === "");
+  
+        setMessages(filtradosPorCanal);
         lastIdRef.current = nuevos[nuevos.length - 1].id;
-      
-        const todos = [...messages, ...únicos];
-        const mensajesUnicos = Array.from(new Map(todos.map(m => [m.id, m])).values());
-
+  
         setConteo({
-        whatsapp: mensajesUnicos.filter((m) => m.canal === "whatsapp").length,
-        facebook: mensajesUnicos.filter((m) => m.canal === "facebook").length,
-        instagram: mensajesUnicos.filter((m) => m.canal === "instagram").length,
-        voice: mensajesUnicos.filter((m) => m.canal === "voice").length,
-      });
-
-      }      
+          whatsapp: filtradosPorCanal.filter((m) => m.canal === "whatsapp").length,
+          facebook: filtradosPorCanal.filter((m) => m.canal === "facebook").length,
+          instagram: filtradosPorCanal.filter((m) => m.canal === "instagram").length,
+          voice: filtradosPorCanal.filter((m) => m.canal === "voice").length,
+        });
+      }
     } catch (err) {
       console.error("❌ Error en polling de nuevos mensajes:", err);
     }
   };  
-
+  
   useEffect(() => {
     setLoading(true);
+    setMessages([]); // 🧼 limpia mensajes anteriores al cambiar de canal
+    lastIdRef.current = null;
     fetchMessages(true);
-  }, [canal]);
+  }, [canal]);  
 
   useEffect(() => {
     const interval = setInterval(() => {
