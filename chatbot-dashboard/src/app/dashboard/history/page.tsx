@@ -47,20 +47,23 @@ export default function MessageHistory() {
       let mensajesActualizados: any[] = [];
   
       if (reset) {
-        setMessages(nuevosMensajes);
         mensajesActualizados = [...nuevosMensajes];
+        setMessages(nuevosMensajes);
         setPage(2);
         if (nuevosMensajes.length > 0) {
           lastIdRef.current = nuevosMensajes[nuevosMensajes.length - 1].id;
         }
       } else {
-        setMessages((prev) => {
-          const nuevos = [...prev, ...nuevosMensajes];
-          lastIdRef.current = nuevos[nuevos.length - 1]?.id || lastIdRef.current;
-          mensajesActualizados = [...nuevos];
-          return nuevos;
+        const actualizados = await new Promise<any[]>((resolve) => {
+          setMessages((prev) => {
+            const todos = [...prev, ...nuevosMensajes];
+            resolve(todos);
+            return todos;
+          });
         });
+        mensajesActualizados = [...actualizados];
         setPage((prev) => prev + 1);
+        lastIdRef.current = mensajesActualizados[mensajesActualizados.length - 1]?.id || lastIdRef.current;
       }
   
       if (nuevosMensajes.length > 0) {
@@ -69,16 +72,13 @@ export default function MessageHistory() {
   
       setHasMore(nuevosMensajes.length === PAGE_SIZE);
   
-      // 🔁 Consolidar todos los mensajes únicos por ID
-      const todos = reset
-        ? [...nuevosMensajes]
-        : Array.from(new Map([...messages, ...nuevosMensajes].map(m => [m.id, m])).values());
-  
-      // ✨ Limpieza del campo canal y conteo preciso
-      const mensajesLimpios = todos.map((m) => ({
-        ...m,
-        canal: (m.canal || '').toString().trim().toLowerCase(),
-      }));
+      // 🔁 Consolidar mensajes únicos por ID y normalizar campo canal
+      const mensajesLimpios = Array.from(
+        new Map(mensajesActualizados.map((m) => [m.id, {
+          ...m,
+          canal: (m.canal || '').toString().trim().toLowerCase(),
+        }])).values()
+      );
   
       setConteo({
         whatsapp: mensajesLimpios.filter((m) => m.canal === "whatsapp").length,
