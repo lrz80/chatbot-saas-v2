@@ -106,7 +106,7 @@ export default function MetaConfigPage() {
   if (!confirmacion) return;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/api/meta-config/disconnect`, {
+    const res = await fetch(`${BACKEND_URL}/api/meta-config`, {
       method: 'POST',
       credentials: 'include',
     });
