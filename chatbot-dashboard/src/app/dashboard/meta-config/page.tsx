@@ -62,7 +62,7 @@ export default function MetaConfigPage() {
     }
   };  
 
-  
+
   // 🔄 handleGuardar solo envía los campos correctos:
   const handleGuardar = async () => {
     console.log('✅ Botón "Guardar Configuración" presionado');
@@ -101,40 +101,30 @@ export default function MetaConfigPage() {
   };
   
   const handleDesconectar = async () => {
-    console.log('⚠️ Botón "Desconectar Facebook" presionado');
-    if (!confirm('¿Seguro que deseas desconectar Facebook e Instagram?')) return;
+  console.log('⚠️ Botón "Desconectar Facebook" presionado');
+  const confirmacion = confirm('¿Estás seguro de que deseas desconectar tus cuentas de Facebook e Instagram?');
+  if (!confirmacion) return;
 
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/settings`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          facebook_page_id: null,
-          facebook_page_name: null,
-          facebook_access_token: null,
-          instagram_business_account_id: null,
-          instagram_page_id: null,
-          instagram_page_name: null,
-          prompt_meta: promptMeta,
-          bienvenida_meta: bienvenidaMeta,
-          faq,
-          intents,
-          canal: 'facebook',
-        }),
-      });
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/meta-config/disconnect`, {
+      method: 'POST',
+      credentials: 'include',
+    });
 
-      if (res.ok) {
-        alert('✅ Facebook e Instagram desconectados.');
-        await fetchConfiguracion();
-      } else {
-        alert('❌ Error al desconectar.');
-      }
-    } catch (error) {
-      console.error('Error desconectando:', error);
-      alert('❌ Error al desconectar.');
+    if (res.ok) {
+      alert('Cuentas desconectadas exitosamente');
+      setFacebookPageName('');
+      setInstagramPageName('');
+      setConnected(false);
+    } else {
+      const data = await res.json();
+      alert(`Error al desconectar: ${data.error || 'Error desconocido'}`);
     }
-  };
+  } catch (err) {
+    console.error('❌ Error al desconectar:', err);
+    alert('Hubo un problema al intentar desconectar las cuentas');
+  }
+};
 
   const handlePreviewSend = async () => {
     if (!input.trim()) return;
