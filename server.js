@@ -42,7 +42,7 @@ app.post("/chatbot", async (req, res) => {
       if (plan === "free") {
         const countRes = await db.query(
           `SELECT COUNT(*) FROM messages
-           WHERE tenant_id = $1 AND sender = 'user'
+           WHERE tenant_id = $1 AND role = 'user'
            AND timestamp >= date_trunc('month', CURRENT_DATE)`,
           [tenant_id]
         );
@@ -68,11 +68,11 @@ app.post("/chatbot", async (req, res) => {
   
       // 4. Guardar ambos mensajes
       await db.query(
-        "INSERT INTO messages (tenant_id, sender, content) VALUES ($1, 'user', $2)",
+        "INSERT INTO messages (tenant_id, role, content) VALUES ($1, 'user', $2)",
         [tenant_id, mensaje]
       );
       await db.query(
-        "INSERT INTO messages (tenant_id, sender, content) VALUES ($1, 'bot', $2)",
+        "INSERT INTO messages (tenant_id, role, content) VALUES ($1, 'bot', $2)",
         [tenant_id, respuestaBot]
       );
   
@@ -104,7 +104,7 @@ app.post("/webhook", async (req, res) => {
 
         // Guardar mensaje del cliente
         await db.query(
-            "INSERT INTO messages (tenant_id, sender, content) VALUES ($1, $2, $3)",
+            "INSERT INTO messages (tenant_id, role, content) VALUES ($1, $2, $3)",
             [tenant_id, "user", incomingMsg]
         );
 
@@ -121,7 +121,7 @@ app.post("/webhook", async (req, res) => {
 
         // Guardar mensaje del bot
         await db.query(
-            "INSERT INTO messages (tenant_id, sender, content) VALUES ($1, $2, $3)",
+            "INSERT INTO messages (tenant_id, role, content) VALUES ($1, $2, $3)",
             [tenant_id, "bot", botResponse]
         );
 
