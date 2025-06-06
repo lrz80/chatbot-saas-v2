@@ -188,42 +188,46 @@ export default function MessageHistory() {
       ) : (
         <>
           <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-          {Array.from(new Map(messages.map(m => [m.id, m])).values())
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-            .map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.role === "user" ? "justify-start" : "justify-end"}`}
-                >
-                  <div className="w-full sm:max-w-2xl p-4 bg-white/5 border border-white/20 rounded-lg text-sm text-white">
-                    <div className="flex justify-between text-white/60 text-xs mb-1">
-                      <span>{format(new Date(msg.timestamp), "dd/MM/yyyy, HH:mm:ss")}</span>
-                      <span>{msg.from_number || "anónimo"}</span>
-                    </div>
+            {Array.from(new Map(messages.map(m => [m.id, m])).values())
+              .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+              .map((msg) => {
+                const isUser = msg.role?.toLowerCase() === "user";
+                const isBot = msg.role?.toLowerCase() === "assistant";
+                const icono = isUser ? "👤" : isBot ? "🤖" : "❓";
+                const remitente = isUser
+                  ? msg.nombre_cliente || "Cliente"
+                  : isBot
+                    ? "Amy"
+                    : "Desconocido";
 
-                    <div className="font-medium text-white break-words whitespace-pre-wrap">
-                      {msg.role?.toLowerCase() === "user" 
-                        ? "👤 Cliente:" 
-                        : msg.role?.toLowerCase() === "assistant" 
-                          ? "🤖 Assistant:" 
-                          : "❓ Desconocido:"} {msg.content}
-                    </div>
-
-
-                    {msg.emotion && (
-                      <div className="text-purple-300 text-xs mt-1">
-                        Emoción detectada: <span className="font-semibold">{msg.emotion}</span>
+                return (
+                  <div key={msg.id} className={`flex ${isUser ? "justify-start" : "justify-end"}`}>
+                    <div className="w-full sm:max-w-2xl p-4 bg-white/5 border border-white/20 rounded-lg text-sm text-white">
+                      <div className="flex justify-between text-white/60 text-xs mb-1">
+                        <span>{format(new Date(msg.timestamp), "dd/MM/yyyy, HH:mm:ss")}</span>
+                        {/* Solo mostrar el número si no hay nombre del cliente */}
+                        <span>{!msg.nombre_cliente ? msg.from_number || "anónimo" : ""}</span>
                       </div>
-                    )}
 
-                    {msg.intencion && (
-                      <div className="text-green-400 text-xs mt-1">
-                        🧠 Intención detectada: <span className="font-semibold">{msg.intencion}</span> (Nivel {msg.nivel_interes})
+                      <div className="font-medium text-white break-words whitespace-pre-wrap">
+                        {icono} {remitente}: {msg.content}
                       </div>
-                    )}
+
+                      {msg.emotion && (
+                        <div className="text-purple-300 text-xs mt-1">
+                          Emoción detectada: <span className="font-semibold">{msg.emotion}</span>
+                        </div>
+                      )}
+
+                      {msg.intencion && (
+                        <div className="text-green-400 text-xs mt-1">
+                          🧠 Intención detectada: <span className="font-semibold">{msg.intencion}</span> (Nivel {msg.nivel_interes})
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-            ))}
+                );
+              })}
           </div>
           {hasMore && (
             <div className="text-center mt-6">
