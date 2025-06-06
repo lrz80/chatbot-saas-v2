@@ -193,7 +193,7 @@ export default function MessageHistory() {
             .map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex ${msg.sender === "user" ? "justify-start" : "justify-end"}`}
+                  className={`flex ${msg.role === "user" ? "justify-start" : "justify-end"}`}
                 >
                   <div className="w-full sm:max-w-2xl p-4 bg-white/5 border border-white/20 rounded-lg text-sm text-white">
                     <div className="flex justify-between text-white/60 text-xs mb-1">
@@ -202,10 +202,10 @@ export default function MessageHistory() {
                     </div>
 
                     <div className="font-medium text-white break-words whitespace-pre-wrap">
-                      {msg.sender?.toLowerCase() === "user" 
+                      {msg.role?.toLowerCase() === "user" 
                         ? "👤 Cliente:" 
-                        : msg.sender?.toLowerCase() === "bot" 
-                          ? "🤖 Bot:" 
+                        : msg.role?.toLowerCase() === "assistant" 
+                          ? "🤖 Assistant:" 
                           : "❓ Desconocido:"} {msg.content}
                     </div>
 

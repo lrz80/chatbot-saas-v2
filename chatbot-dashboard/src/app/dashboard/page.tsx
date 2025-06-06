@@ -362,7 +362,7 @@ export default function DashboardHome() {
                           <span>{msg.from_number || "anónimo"}</span>
                         </div>
                         <div className="font-medium text-white break-words">
-                          {msg.sender === "user" ? "👤 Cliente:" : "🤖 Bot:"} {msg.content}
+                          {msg.role === "user" ? "👤 Cliente:" : "🤖 Assistant:"} {msg.content}
                         </div>
                         {msg.emotion && (
                           <div className="text-purple-300 text-xs mt-1">
@@ -396,7 +396,7 @@ export default function DashboardHome() {
                         <span>{msg.from_number || "anónimo"}</span>
                       </div>
                       <div className="font-medium text-white break-words">
-                        {msg.sender === "user" ? "👤 Cliente:" : "🤖 Bot:"} {msg.content}
+                        {msg.role === "user" ? "👤 Cliente:" : "🤖 Asistant:"} {msg.content}
                       </div>
                       {msg.emotion && (
                         <div className="text-purple-300 text-xs mt-1">

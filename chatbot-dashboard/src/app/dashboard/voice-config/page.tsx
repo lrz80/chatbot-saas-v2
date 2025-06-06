@@ -517,7 +517,7 @@ export default function VoiceConfigPage() {
                   {new Date(msg.timestamp).toLocaleString()} — {msg.from_number || "anónimo"}
                 </div>
                 <div className="font-semibold text-white">
-                  {msg.sender === "user" ? (
+                  {msg.role === "user" ? (
                     <>
                       <User className="inline-block w-4 h-4 mr-1 text-white/70" /> Cliente: {msg.content}
                     </>
@@ -527,7 +527,7 @@ export default function VoiceConfigPage() {
                     </>
                   )}
                 </div>
-                {msg.sender === "user" && msg.emotion && (
+                {msg.role === "user" && msg.emotion && (
                   <div className="text-sm mt-1 text-purple-300">
                     Emoción detectada: <span className="font-medium">{msg.emotion}</span>
                   </div>
