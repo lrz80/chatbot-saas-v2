@@ -436,58 +436,62 @@ export default function CampaignsSmsClient() {
             ))}
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center gap-3">
-            <button
-              onClick={() => inputRef.current?.click()}
-              className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
-            >
-              Seleccionar archivo
-            </button>
-
-            <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
+          <div className="w-full space-y-2">
+              <label className="block text-sm font-semibold text-white">
+                Subir archivo CSV de contactos
+              </label>
               <input
                 type="file"
                 accept=".csv"
-                ref={inputRef}
+                multiple={false}
                 onChange={(e) => {
-                  if (e.target.files?.[0]) {
-                    setArchivoCsv(e.target.files[0]);
+                  const file = e.target.files?.[0];
+                  if (file && file.name.toLowerCase().endsWith(".csv")) {
+                    setArchivoCsv(file);
+                  } else {
+                    alert("Por favor selecciona un archivo CSV válido.");
                   }
                 }}
-                className="hidden"
+                className="cursor-pointer block w-full text-sm text-white
+                          file:mr-0 file:py-2 file:px-4 file:rounded
+                          file:border-0 file:text-sm file:font-semibold
+                          file:bg-indigo-600 file:text-white
+                          hover:file:bg-indigo-500"
+                style={{ color: "transparent" }}
               />
-
-              <button
-                onClick={() => {
-                  if (!membresiaActiva) {
-                    window.location.href = "/dashboard/upgrade";
-                    return;
-                  }
-                  handleEliminarContactos();
-                }}
-                className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
-              >
-                Eliminar contactos
-              </button>
-
               {archivoCsv && (
-                <button
-                  onClick={() => {
-                    if (!membresiaActiva) {
-                      window.location.href = "/dashboard/upgrade";
-                      return;
-                    }
-                    handleSubirCsv();
-                  }}
-                  className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full md:w-auto"
-                >
-                  Subir contactos
-                </button>
+                <div className="flex items-center justify-between bg-white/10 border border-white/20 rounded px-4 py-2 text-sm text-white">
+                  <span className="truncate">{archivoCsv.name}</span>
+                  <button
+                    onClick={() => {
+                      setArchivoCsv(null);
+                      if (inputRef.current) inputRef.current.value = "";
+                    }}
+                    className="text-red-400 hover:text-red-600 text-xs font-semibold ml-4"
+                  >
+                    Eliminar archivo
+                  </button>
+                </div>
               )}
+              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <button
+                  onClick={handleEliminarContactos}
+                  className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
+                >
+                  Eliminar contactos
+                </button>
+                {archivoCsv && (
+                  <button
+                    onClick={handleSubirCsv}
+                    className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
+                  >
+                    Subir contactos
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
         <SiCampaignmonitor /> Nombre de la campaña

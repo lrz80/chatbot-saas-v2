@@ -259,6 +259,7 @@ export default function MetaConfigPage() {
           <> 
             <p className="text-purple-300 font-medium">Conecta tu cuenta de Facebook e Instagram para comenzar.</p>
             <button
+              disabled={!membresiaActiva}
               onClick={() =>
                 requerirMembresia(() => {
                   const appId = '672113805196816';
@@ -276,10 +277,15 @@ export default function MetaConfigPage() {
                   window.location.href = authUrl;
                 })
               }
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm transition"
+              className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition ${
+                membresiaActiva
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               Conectar Facebook / Instagram
             </button>
+
           </>
         ) : (
           <>
