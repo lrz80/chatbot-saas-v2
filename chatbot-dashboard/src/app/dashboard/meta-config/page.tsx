@@ -43,7 +43,6 @@ export default function MetaConfigPage() {
         setBienvenidaMeta(data.bienvenida_meta || '');
         setFuncionesMeta(data.funciones_asistente || '');
         setInfoClaveMeta(data.info_clave || '');
-        setMembresiaActiva(true);
         setMessages([{ role: 'assistant', content: data.bienvenida_meta || '¡Hola! ¿En qué puedo ayudarte hoy?' }]);
   
         // ✅ Detectar si Meta está conectado
@@ -56,12 +55,19 @@ export default function MetaConfigPage() {
           setFacebookPageName('');
           setInstagramPageName('');
         }
+  
+        // ✅ Estado real de la membresía desde backend (importante)
+        if (typeof data.membresia_activa !== 'undefined') {
+          setMembresiaActiva(data.membresia_activa);
+        } else {
+          setMembresiaActiva(false); // fallback en caso de error
+        }
       }
     } catch (error) {
       console.error('Error obteniendo configuración de Meta:', error);
+      setMembresiaActiva(false); // fallback si falla
     }
   };  
-
 
   // 🔄 handleGuardar solo envía los campos correctos:
   const handleGuardar = async () => {
