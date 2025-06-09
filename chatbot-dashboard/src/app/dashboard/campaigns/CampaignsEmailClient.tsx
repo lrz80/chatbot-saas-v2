@@ -499,6 +499,17 @@ export default function CampaignsEmailClient() {
     form.imagen,
   ]);  
   
+  const requerirMembresia = (callback?: () => void) => {
+    if (!membresiaActiva) {
+      const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
+      if (confirmar) {
+        window.location.href = "/upgrade";
+      }
+    } else {
+      if (callback) callback();
+    }
+  };
+  
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
         <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -620,20 +631,28 @@ export default function CampaignsEmailClient() {
                 </div>
               )}
               <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+              <button
+                onClick={() => {
+                  if (!membresiaActiva) return requerirMembresia();
+                  handleEliminarContactos();
+                }}
+                className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
+              >
+                Eliminar contactos
+              </button>
+
+              {archivoCsv && (
                 <button
-                  onClick={handleEliminarContactos}
-                  className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
+                  onClick={() => {
+                    if (!membresiaActiva) return requerirMembresia();
+                    handleSubirCsv();
+                  }}
+                  className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
                 >
-                  Eliminar contactos
+                  Subir contactos
                 </button>
-                {archivoCsv && (
-                  <button
-                    onClick={handleSubirCsv}
-                    className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
-                  >
-                    Subir contactos
-                  </button>
-                )}
+              )}
+
               </div>
             </div>
           </div>
@@ -789,18 +808,18 @@ export default function CampaignsEmailClient() {
       </div>
 
       <button
-      onClick={() => {
-        if (!membresiaActiva) {
-          alert("❌ Tu membresía no está activa. Actívala para usar campañas Email.");
-          return;
-        }
-        handleSubmit();
-      }}
-      disabled={loading}
-      className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {loading ? "Enviando..." : "Programar campaña Email"}
-    </button>
+        onClick={() => {
+          if (!membresiaActiva) {
+            requerirMembresia();
+            return;
+          }
+          handleSubmit();
+        }}
+        disabled={loading}
+        className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {loading ? "Enviando..." : "Programar campaña Email"}
+      </button>
 
       <hr className="my-10 border-white/20" />
 
