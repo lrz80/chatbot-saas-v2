@@ -189,7 +189,7 @@ export default function MessageHistory() {
         <>
           <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
             {Array.from(new Map(messages.map(m => [m.id, m])).values())
-              .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+              .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
               .map((msg) => {
                 const isUser = msg.role?.toLowerCase() === "user";
                 const isBot = msg.role?.toLowerCase() === "assistant";
