@@ -24,6 +24,16 @@ type Flow = {
   opciones: FlowOption[];
 };
 
+type FaqSugerida = {
+  id: number;
+  pregunta: string;
+  respuesta_sugerida: string;
+};
+
+const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
+
+const [faqSugeridas, setFaqSugeridas] = useState<FaqSugerida[]>([]);
+
 export default function TrainingPage() {
   const router = useRouter();
   const bloquearSiNoMembresia = (callback: () => void) => {
@@ -340,6 +350,46 @@ export default function TrainingPage() {
   
   if (loading) return <p className="text-center">Cargando configuración...</p>;
 
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/sugeridas?canal=${canal}`, {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => setFaqSugeridas(data))
+      .catch((err) => console.error('Error cargando sugerencias', err));
+  }, []);
+
+  const aprobarFaq = async (id: number) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/aprobar`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+  
+      if (res.ok) {
+        setFaqSugeridas((prev) => prev.filter((f) => f.id !== id));
+      }
+    } catch (err) {
+      console.error('Error al aprobar FAQ:', err);
+    }
+  };  
+
+  const rechazarFaq = async (id: number) => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/rechazar`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      setFaqSugeridas((prev) => prev.filter((f) => f.id !== id));
+    } catch (err) {
+      console.error("Error al rechazar FAQ:", err);
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
@@ -503,7 +553,36 @@ export default function TrainingPage() {
         >
           Guardar FAQs
         </button>
-  
+
+        {faqSugeridas.length > 0 && (
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6 mt-8">
+            <h2 className="text-white text-xl font-bold mb-4">💡 FAQs sugeridas por clientes</h2>
+
+            {faqSugeridas.map((faq) => (
+              <div key={faq.id} className="mb-4 p-4 rounded bg-white/10 border border-white/20">
+                <p className="text-white/80">❓ <strong>{faq.pregunta}</strong></p>
+                <p className="text-green-300 mt-1">🧠 {faq.respuesta_sugerida}</p>
+                <div className="mt-3 flex gap-3">
+                  <button
+                    onClick={() => aprobarFaq(faq.id)}
+                    className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded"
+                  >
+                    ✅ Aprobar
+                  </button>
+                  {/* Opcional: futuro botón para editar */}
+                  {/* <button className="px-3 py-1 bg-blue-600 text-white rounded">🖊️ Editar</button> */}
+                  <button
+                    onClick={() => rechazarFaq(faq.id)}
+                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded"
+                  >
+                    ❌ Rechazar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
           <SiOpenai className="animate-pulse" size={24} />
           Entrenamiento por Intención
