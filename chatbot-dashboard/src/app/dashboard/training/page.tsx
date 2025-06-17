@@ -58,6 +58,8 @@ export default function TrainingPage() {
   useEffect(() => {
     setClientOnly(true);
   }, []);
+  const [faqEditando, setFaqEditando] = useState<FaqSugerida | null>(null);
+  const [nuevaRespuesta, setNuevaRespuesta] = useState("");
 
   const [settings, setSettings] = useState({
     name: "",
@@ -395,6 +397,30 @@ export default function TrainingPage() {
     }
   };
   
+  const aprobarConEdicion = async () => {
+    if (!faqEditando) return;
+  
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/aprobar`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: faqEditando.id,
+          respuesta_editada: nuevaRespuesta,
+        }),
+      });
+  
+      if (res.ok) {
+        setFaqSugeridas((prev) => prev.filter((f) => f.id !== faqEditando.id));
+        setFaqEditando(null);
+        setNuevaRespuesta("");
+      }
+    } catch (err) {
+      console.error("❌ Error aprobando con edición:", err);
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
@@ -569,10 +595,13 @@ export default function TrainingPage() {
                 <p className="text-green-300 mt-1">🧠 {faq.respuesta_sugerida}</p>
                 <div className="mt-3 flex gap-3">
                   <button
-                    onClick={() => aprobarFaq(faq.id)}
+                    onClick={() => {
+                      setFaqEditando(faq);
+                      setNuevaRespuesta(faq.respuesta_sugerida);
+                    }}
                     className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded"
                   >
-                    ✅ Aprobar
+                    ✏️ Editar y aprobar
                   </button>
                   {/* Opcional: futuro botón para editar */}
                   {/* <button className="px-3 py-1 bg-blue-600 text-white rounded">🖊️ Editar</button> */}
@@ -585,6 +614,35 @@ export default function TrainingPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {faqEditando && (
+          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+            <div className="bg-[#1a1a2e] p-6 rounded-xl max-w-lg w-full border border-white/10 shadow-xl">
+              <h3 className="text-xl font-bold text-white mb-4">✏️ Editar respuesta sugerida</h3>
+              <p className="text-white/80 mb-2">❓ {faqEditando.pregunta}</p>
+              <textarea
+                className="w-full p-3 rounded bg-white/10 text-white border border-white/20"
+                rows={4}
+                value={nuevaRespuesta}
+                onChange={(e) => setNuevaRespuesta(e.target.value)}
+              />
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  onClick={() => setFaqEditando(null)}
+                  className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700 text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={aprobarConEdicion}
+                  className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white"
+                >
+                  ✅ Guardar y aprobar
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
