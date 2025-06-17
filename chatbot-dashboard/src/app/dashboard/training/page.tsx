@@ -54,6 +54,10 @@ export default function TrainingPage() {
   const [usoWhatsapp, setUsoWhatsapp] = useState<any>(null);
   const [usos, setUsos] = useState<any[]>([]);
   const [faqSugeridas, setFaqSugeridas] = useState<FaqSugerida[]>([]);
+  const [clientOnly, setClientOnly] = useState(false);
+  useEffect(() => {
+    setClientOnly(true);
+  }, []);
 
   const [settings, setSettings] = useState({
     name: "",
@@ -350,13 +354,15 @@ export default function TrainingPage() {
   if (loading) return <p className="text-center">Cargando configuración...</p>;
 
   useEffect(() => {
+    if (!clientOnly) return;
+  
     fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=${canal}`, {
       credentials: 'include',
     })
       .then((res) => res.json())
       .then((data) => setFaqSugeridas(data))
       .catch((err) => console.error('Error cargando sugerencias', err));
-  }, []);
+  }, [clientOnly]);  
 
   const aprobarFaq = async (id: number) => {
     try {
