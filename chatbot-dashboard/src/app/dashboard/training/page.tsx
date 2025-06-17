@@ -74,6 +74,17 @@ export default function TrainingPage() {
   const isMembershipActive = settings.membresia_activa;
 
   useEffect(() => {
+    if (!clientOnly) return;
+  
+    fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=${canal}`, {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => setFaqSugeridas(data))
+      .catch((err) => console.error('Error cargando sugerencias', err));
+  }, [clientOnly]);
+  
+  useEffect(() => {
     if (!chatContainerRef.current) return;
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
   }, [messages]);
@@ -352,8 +363,6 @@ export default function TrainingPage() {
   };
   
   if (loading) return <p className="text-center">Cargando configuración...</p>;
-
-  
 
   const aprobarFaq = async (id: number) => {
     try {
