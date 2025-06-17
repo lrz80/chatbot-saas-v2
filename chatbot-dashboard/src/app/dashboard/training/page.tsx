@@ -350,7 +350,7 @@ export default function TrainingPage() {
   if (loading) return <p className="text-center">Cargando configuración...</p>;
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/sugeridas?canal=${canal}`, {
+    fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=${canal}`, {
       credentials: 'include',
     })
       .then((res) => res.json())
@@ -360,7 +360,7 @@ export default function TrainingPage() {
 
   const aprobarFaq = async (id: number) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/aprobar`, {
+      const res = await fetch(`${BACKEND_URL}/api/faqs/aprobar`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -377,7 +377,7 @@ export default function TrainingPage() {
 
   const rechazarFaq = async (id: number) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/rechazar`, {
+      await fetch(`${BACKEND_URL}/api/faqs/rechazar`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
