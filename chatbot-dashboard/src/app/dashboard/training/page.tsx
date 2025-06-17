@@ -32,8 +32,6 @@ type FaqSugerida = {
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
-const [faqSugeridas, setFaqSugeridas] = useState<FaqSugerida[]>([]);
-
 export default function TrainingPage() {
   const router = useRouter();
   const bloquearSiNoMembresia = (callback: () => void) => {
@@ -55,6 +53,7 @@ export default function TrainingPage() {
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const [usoWhatsapp, setUsoWhatsapp] = useState<any>(null);
   const [usos, setUsos] = useState<any[]>([]);
+  const [faqSugeridas, setFaqSugeridas] = useState<FaqSugerida[]>([]);
 
   const [settings, setSettings] = useState({
     name: "",
