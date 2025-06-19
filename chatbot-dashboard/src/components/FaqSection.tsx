@@ -48,20 +48,6 @@ export default function FaqSection({
 
   const addFaq = () => setFaqs([...faqs, { pregunta: "", respuesta: "" }]);
 
-  const aprobarFaq = async (id: number) => {
-    try {
-      const res = await fetch(`/api/faqs/aprobar`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-      if (res.ok) setFaqSugeridas((prev) => prev.filter((f) => f.id !== id));
-    } catch (err) {
-      console.error("❌ Error al aprobar FAQ:", err);
-    }
-  };
-
   const rechazarFaq = async (id: number) => {
     try {
       await fetch(`/api/faqs/rechazar`, {

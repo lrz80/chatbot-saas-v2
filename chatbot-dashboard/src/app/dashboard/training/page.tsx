@@ -9,6 +9,7 @@ import { Save, } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
 import { SiWhatsapp, SiBookstack, SiOpenai, SiMinutemailer, SiBuffer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
 import { MdWhatsapp } from "react-icons/md";
+import FaqSection from "@/components/FaqSection";
 
 type FlowOption = {
   texto: string;
@@ -22,12 +23,6 @@ type FlowOption = {
 type Flow = {
   mensaje: string;
   opciones: FlowOption[];
-};
-
-type FaqSugerida = {
-  id: number;
-  pregunta: string;
-  respuesta_sugerida: string;
 };
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
@@ -53,13 +48,10 @@ export default function TrainingPage() {
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const [usoWhatsapp, setUsoWhatsapp] = useState<any>(null);
   const [usos, setUsos] = useState<any[]>([]);
-  const [faqSugeridas, setFaqSugeridas] = useState<FaqSugerida[]>([]);
   const [clientOnly, setClientOnly] = useState(false);
   useEffect(() => {
     setClientOnly(true);
   }, []);
-  const [faqEditando, setFaqEditando] = useState<FaqSugerida | null>(null);
-  const [nuevaRespuesta, setNuevaRespuesta] = useState("");
 
   const [settings, setSettings] = useState({
     name: "",
@@ -74,17 +66,6 @@ export default function TrainingPage() {
   });
 
   const isMembershipActive = settings.membresia_activa;
-
-  useEffect(() => {
-    if (!clientOnly) return;
-  
-    fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=${canal}`, {
-      credentials: 'include',
-    })
-      .then((res) => res.json())
-      .then((data) => setFaqSugeridas(data))
-      .catch((err) => console.error('Error cargando sugerencias', err));
-  }, [clientOnly]);
   
   useEffect(() => {
     if (!chatContainerRef.current) return;
@@ -365,61 +346,6 @@ export default function TrainingPage() {
   };
   
   if (loading) return <p className="text-center">Cargando configuración...</p>;
-
-  const aprobarFaq = async (id: number) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/faqs/aprobar`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-  
-      if (res.ok) {
-        setFaqSugeridas((prev) => prev.filter((f) => f.id !== id));
-      }
-    } catch (err) {
-      console.error('Error al aprobar FAQ:', err);
-    }
-  };  
-
-  const rechazarFaq = async (id: number) => {
-    try {
-      await fetch(`${BACKEND_URL}/api/faqs/rechazar`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      setFaqSugeridas((prev) => prev.filter((f) => f.id !== id));
-    } catch (err) {
-      console.error("Error al rechazar FAQ:", err);
-    }
-  };
-  
-  const aprobarConEdicion = async () => {
-    if (!faqEditando) return;
-  
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/aprobar`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: faqEditando.id,
-          respuesta_editada: nuevaRespuesta,
-        }),
-      });
-  
-      if (res.ok) {
-        setFaqSugeridas((prev) => prev.filter((f) => f.id !== faqEditando.id));
-        setFaqEditando(null);
-        setNuevaRespuesta("");
-      }
-    } catch (err) {
-      console.error("❌ Error aprobando con edición:", err);
-    }
-  };
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
@@ -541,110 +467,13 @@ export default function TrainingPage() {
           <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
         </button>
   
-        <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
-          <SiBookstack className="animate-pulse" size={24} />
-          Preguntas Frecuentes
-        </h3>
-
-        {faq.map((item, i) => (
-          <div key={i} className="mb-4">
-            <input
-              type="text"
-              value={item.pregunta}
-              onChange={(e) => handleFaqChange(i, "pregunta", e.target.value)}
-              className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
-              placeholder="Pregunta"
-              disabled={!settings.membresia_activa}
-            />
-            <textarea
-              value={item.respuesta}
-              onChange={(e) => handleFaqChange(i, "respuesta", e.target.value)}
-              rows={2}
-              className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-              placeholder="Respuesta"
-              disabled={!settings.membresia_activa}
-            />
-          </div>
-        ))}
-        <button
-          onClick={addFaq}
-          disabled={!settings.membresia_activa}
-          className={`text-white/70 mb-2 ${!settings.membresia_activa && "cursor-not-allowed opacity-50"}`}
-        >
-          + Agregar
-        </button>
-        <button
-          onClick={() => bloquearSiNoMembresia(saveFaq)}
-          disabled={!settings.membresia_activa}
-          className={`px-4 py-2 rounded text-white ${
-            settings.membresia_activa
-              ? "bg-green-600 hover:bg-green-700"
-              : "bg-gray-600 text-white/50 cursor-not-allowed"
-          }`}
-        >
-          Guardar FAQs
-        </button>
-
-        {faqSugeridas.length > 0 && (
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 mt-8">
-            <h2 className="text-white text-xl font-bold mb-4">💡 FAQs sugeridas por clientes</h2>
-
-            {faqSugeridas.map((faq) => (
-              <div key={faq.id} className="mb-4 p-4 rounded bg-white/10 border border-white/20">
-                <p className="text-white/80">❓ <strong>{faq.pregunta}</strong></p>
-                <p className="text-green-300 mt-1">🧠 {faq.respuesta_sugerida}</p>
-                <div className="mt-3 flex gap-3">
-                  <button
-                    onClick={() => {
-                      setFaqEditando(faq);
-                      setNuevaRespuesta(faq.respuesta_sugerida);
-                    }}
-                    className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded"
-                  >
-                    ✏️ Editar y aprobar
-                  </button>
-                  {/* Opcional: futuro botón para editar */}
-                  {/* <button className="px-3 py-1 bg-blue-600 text-white rounded">🖊️ Editar</button> */}
-                  <button
-                    onClick={() => rechazarFaq(faq.id)}
-                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded"
-                  >
-                    ❌ Rechazar
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {faqEditando && (
-          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-            <div className="bg-[#1a1a2e] p-6 rounded-xl max-w-lg w-full border border-white/10 shadow-xl">
-              <h3 className="text-xl font-bold text-white mb-4">✏️ Editar respuesta sugerida</h3>
-              <p className="text-white/80 mb-2">❓ {faqEditando.pregunta}</p>
-              <textarea
-                className="w-full p-3 rounded bg-white/10 text-white border border-white/20"
-                rows={4}
-                value={nuevaRespuesta}
-                onChange={(e) => setNuevaRespuesta(e.target.value)}
-              />
-              <div className="flex justify-end gap-3 mt-4">
-                <button
-                  onClick={() => setFaqEditando(null)}
-                  className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700 text-white"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={aprobarConEdicion}
-                  className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white"
-                >
-                  ✅ Guardar y aprobar
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <FaqSection
+          faqs={faq}
+          setFaqs={setFaq}
+          canal="whatsapp"
+          membresiaActiva={settings.membresia_activa}
+          onSave={async () => bloquearSiNoMembresia(() => saveFaq())}
+        />
 
         <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
           <SiOpenai className="animate-pulse" size={24} />
