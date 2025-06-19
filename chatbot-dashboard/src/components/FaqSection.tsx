@@ -151,7 +151,7 @@ export default function FaqSection({
       {faqSugeridas.length > 0 && (
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 mt-8">
           <h2 className="text-white text-xl font-bold mb-4 flex items-center gap-2">
-            <Lightbulb className="text-yellow-400" /> FAQs sugeridas por clientes
+            <Lightbulb className="text-yellow-400" /> FAQs sugeridas
           </h2>
 
           {faqSugeridas.map((faq) => (
