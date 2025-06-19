@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MessageSquare, Bot, Pencil, XCircle, Lightbulb, Brain } from "lucide-react";
 
 export type Faq = {
   pregunta: string;
@@ -101,7 +102,9 @@ export default function FaqSection({
 
   return (
     <div className="mt-12">
-      <h3 className="text-xl font-bold mb-2 text-green-400">🧠 Preguntas Frecuentes</h3>
+      <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
+        <Brain className="text-green-400" size={20} /> Preguntas Frecuentes
+      </h3>
 
       {faqs.map((faq, i) => (
         <div key={i} className="mb-4">
@@ -147,27 +150,35 @@ export default function FaqSection({
 
       {faqSugeridas.length > 0 && (
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 mt-8">
-          <h2 className="text-white text-xl font-bold mb-4">💡 FAQs sugeridas por clientes</h2>
+          <h2 className="text-white text-xl font-bold mb-4 flex items-center gap-2">
+            <Lightbulb className="text-yellow-400" /> FAQs sugeridas por clientes
+          </h2>
 
           {faqSugeridas.map((faq) => (
             <div key={faq.id} className="mb-4 p-4 rounded bg-white/10 border border-white/20">
-              <p className="text-white/80">❓ <strong>{faq.pregunta}</strong></p>
-              <p className="text-green-300 mt-1">🧠 {faq.respuesta_sugerida}</p>
-              <div className="mt-3 flex gap-3">
-                <button
-                  onClick={() => {
-                    setFaqEditando(faq);
-                    setNuevaRespuesta(faq.respuesta_sugerida);
-                  }}
-                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded"
-                >
-                  ✏️ Editar y aprobar
+            <p className="text-white/80 flex items-center gap-2">
+              <MessageSquare className="text-pink-400" size={18} />
+              <strong>{faq.pregunta}</strong>
+            </p>
+            <p className="text-green-300 mt-1 flex items-center gap-2">
+              <Bot className="text-green-400" size={18} />
+              {faq.respuesta_sugerida}
+            </p>
+            <div className="mt-3 flex gap-3">
+              <button
+                onClick={() => {
+                  setFaqEditando(faq);
+                  setNuevaRespuesta(faq.respuesta_sugerida);
+                }}
+                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded flex items-center gap-2"
+              >
+                  <Pencil size={16} /> Editar y aprobar
                 </button>
                 <button
                   onClick={() => rechazarFaq(faq.id)}
                   className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded"
                 >
-                  ❌ Rechazar
+                  <XCircle size={16} /> Rechazar
                 </button>
               </div>
             </div>
@@ -178,8 +189,12 @@ export default function FaqSection({
       {faqEditando && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
           <div className="bg-[#1a1a2e] p-6 rounded-xl max-w-lg w-full border border-white/10 shadow-xl">
-            <h3 className="text-xl font-bold text-white mb-4">✏️ Editar respuesta sugerida</h3>
-            <p className="text-white/80 mb-2">❓ {faqEditando.pregunta}</p>
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Pencil /> Editar respuesta sugerida
+            </h3>
+            <p className="text-white/80 mb-2 flex items-center gap-2">
+              <MessageSquare size={18} className="text-pink-400" /> {faqEditando.pregunta}
+            </p>
             <textarea
               className="w-full p-3 rounded bg-white/10 text-white border border-white/20"
               rows={4}
