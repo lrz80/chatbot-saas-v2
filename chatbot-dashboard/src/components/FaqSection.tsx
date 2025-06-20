@@ -11,7 +11,7 @@ export type Faq = {
 export type FaqSugerida = {
   id: number;
   pregunta: string;
-  respuesta_sugerida: string;
+  respuesta_sugerida: string | null;
 };
 
 type Props = {
@@ -140,7 +140,7 @@ export default function FaqSection({
             <Lightbulb className="text-yellow-400" /> FAQs sugeridas
           </h2>
 
-          {faqSugeridas.map((faq) => (
+          {faqSugeridas.filter(f => f.respuesta_sugerida).map((faq) => (
             <div key={faq.id} className="mb-4 p-4 rounded bg-white/10 border border-white/20">
             <p className="text-white/80 flex items-center gap-2">
               <MessageSquare className="text-pink-400" size={18} />
@@ -154,7 +154,7 @@ export default function FaqSection({
               <button
                 onClick={() => {
                   setFaqEditando(faq);
-                  setNuevaRespuesta(faq.respuesta_sugerida);
+                  setNuevaRespuesta(faq.respuesta_sugerida || "");
                 }}
                 className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded flex items-center gap-2"
               >
