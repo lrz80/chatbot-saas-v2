@@ -36,9 +36,12 @@ export default function FaqSection({
   useEffect(() => {
     fetch(`/api/faqs/sugeridas?canal=${canal}`, { credentials: "include" })
       .then((res) => res.json())
-      .then(setFaqSugeridas)
+      .then((data) => {
+        console.log("📥 FAQ sugeridas cargadas:", data);
+        setFaqSugeridas(data.filter((f: FaqSugerida) => f.respuesta_sugerida));
+      })
       .catch((err) => console.error("❌ Error cargando sugeridas:", err));
-  }, [canal]);
+  }, [canal]);  
 
   const handleChange = (index: number, field: keyof Faq, value: string) => {
     const nuevas = [...faqs];
