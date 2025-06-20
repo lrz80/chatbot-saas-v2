@@ -154,7 +154,7 @@ export default function FaqSection({
               <button
                 onClick={() => {
                   setFaqEditando(faq);
-                  setNuevaRespuesta(faq.respuesta_sugerida || "");
+                  setNuevaRespuesta(faq.respuesta_sugerida ?? "");
                 }}
                 className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded flex items-center gap-2"
               >
