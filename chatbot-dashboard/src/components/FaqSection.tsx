@@ -38,7 +38,11 @@ export default function FaqSection({
       .then((res) => res.json())
       .then((data) => {
         console.log("📥 FAQ sugeridas cargadas:", data);
-        setFaqSugeridas(data.filter((f: FaqSugerida) => f.respuesta_sugerida));
+  
+        const conRespuesta = data.filter((f: FaqSugerida) => f.respuesta_sugerida);
+        console.log("✅ Filtradas con respuesta:", conRespuesta);
+  
+        setFaqSugeridas(conRespuesta);
       })
       .catch((err) => console.error("❌ Error cargando sugeridas:", err));
   }, [canal]);  
