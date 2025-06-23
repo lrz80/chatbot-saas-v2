@@ -80,7 +80,7 @@ export default function FaqSection({
             body: JSON.stringify({
               id: faqEditando.id,
               respuesta_editada: nuevaRespuesta,
-            }),  
+            }),   
       });
 
       if (res.ok) {
@@ -93,6 +93,7 @@ export default function FaqSection({
     }
   };
 
+  
   return (
     <div className="mt-12">
       <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
