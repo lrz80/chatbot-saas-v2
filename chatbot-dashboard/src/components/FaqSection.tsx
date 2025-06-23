@@ -84,15 +84,30 @@ export default function FaqSection({
       });
 
       if (res.ok) {
+        await recargarFaqs(); // 🔄 vuelve a cargar desde el backend
         setFaqSugeridas((prev) => prev.filter((f) => f.id !== faqEditando.id));
         setFaqEditando(null);
         setNuevaRespuesta("");
       }
+      
     } catch (err) {
       console.error("❌ Error aprobando con edición:", err);
     }
   };
 
+  const recargarFaqs = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs?canal=${canal}`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFaqs(data); // 🔄 actualiza el estado visible
+      }
+    } catch (err) {
+      console.error("❌ Error recargando FAQs:", err);
+    }
+  };
   
   return (
     <div className="mt-12">
