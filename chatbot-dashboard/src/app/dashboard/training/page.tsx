@@ -41,7 +41,6 @@ export default function TrainingPage() {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [faq, setFaq] = useState<{ pregunta: string; respuesta: string }[]>([]);
   const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
   const [isTyping, setIsTyping] = useState(false);
@@ -52,7 +51,14 @@ export default function TrainingPage() {
   useEffect(() => {
     setClientOnly(true);
   }, []);
-
+  type Faq = {
+    id: number;
+    pregunta: string;
+    respuesta: string;
+  };
+  
+  const [faq, setFaq] = useState<Faq[]>([]);
+  
   const [settings, setSettings] = useState({
     name: "",
     categoria: "",
@@ -182,14 +188,6 @@ export default function TrainingPage() {
       previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }, 100);
   };
-
-  const handleFaqChange = (index: number, field: string, value: string) => {
-    const newFaq = [...faq];
-    newFaq[index][field] = value;
-    setFaq(newFaq);
-  };
-
-  const addFaq = () => setFaq([...faq, { pregunta: "", respuesta: "" }]);
 
   const saveFaq = async () => {
     if (!isMembershipActive) return;

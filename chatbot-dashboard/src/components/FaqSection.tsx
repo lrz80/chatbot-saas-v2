@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { MessageSquare, Bot, Pencil, XCircle, Lightbulb, Brain } from "lucide-react";
 
 export type Faq = {
+  id: number;
   pregunta: string;
   respuesta: string;
 };
@@ -47,13 +48,24 @@ export default function FaqSection({
       .catch((err) => console.error("❌ Error cargando sugeridas:", err));
   }, [canal]);  
 
-  const handleChange = (index: number, field: keyof Faq, value: string) => {
+  const handleChange = (
+    index: number,
+    field: "pregunta" | "respuesta", // 🔒 limitado solo a campos editables
+    value: string
+  ) => {
     const nuevas = [...faqs];
     nuevas[index][field] = value;
     setFaqs(nuevas);
-  };
+  };  
 
-  const addFaq = () => setFaqs([...faqs, { pregunta: "", respuesta: "" }]);
+  const addFaq = () => {
+    const nuevoFaq: Faq = {
+      id: Date.now(), // ID temporal
+      pregunta: "",
+      respuesta: "",
+    };
+    setFaqs([...faqs, nuevoFaq]);
+  };  
 
   const rechazarFaq = async (id: number) => {
     try {
@@ -109,6 +121,27 @@ export default function FaqSection({
     }
   };
   
+  const eliminarFaq = async (index: number) => {
+    const faq = faqs[index];
+  
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/eliminar`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: faq.id }), // ✅ usa el id
+      });
+  
+      const nuevas = [...faqs];
+      nuevas.splice(index, 1);
+      setFaqs(nuevas);
+    } catch (err) {
+      console.error("❌ Error eliminando FAQ:", err);
+    }
+  };  
+  
   return (
     <div className="mt-12">
       <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
@@ -116,7 +149,15 @@ export default function FaqSection({
       </h3>
 
       {faqs.map((faq, i) => (
-        <div key={i} className="mb-4">
+        <div key={i} className="mb-4 relative">
+          <button
+            onClick={() => eliminarFaq(i)}
+            className="absolute top-0 right-0 text-red-400 hover:text-red-600"
+            title="Eliminar FAQ"
+          >
+            <XCircle size={18} />
+          </button>
+
           <input
             type="text"
             value={faq.pregunta}
