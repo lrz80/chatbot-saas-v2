@@ -34,7 +34,7 @@ export default function FaqSection({
   const [nuevaRespuesta, setNuevaRespuesta] = useState("");
 
   useEffect(() => {
-    fetch(`/api/faqs/sugeridas?canal=${canal}`, { credentials: "include" })
+    fetch(`https://api.aamy.ai/api/faqs/sugeridas?canal=${canal}`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         console.log("📥 FAQ sugeridas cargadas:", data);
@@ -57,12 +57,12 @@ export default function FaqSection({
 
   const rechazarFaq = async (id: number) => {
     try {
-      await fetch(`/api/faqs/rechazar`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/rechazar`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          });
       setFaqSugeridas((prev) => prev.filter((f) => f.id !== id));
     } catch (err) {
       console.error("❌ Error al rechazar FAQ:", err);
@@ -73,14 +73,14 @@ export default function FaqSection({
     if (!faqEditando) return;
 
     try {
-      const res = await fetch(`/api/faqs/aprobar`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: faqEditando.id,
-          respuesta_editada: nuevaRespuesta,
-        }),
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/aprobar`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: faqEditando.id,
+              respuesta_editada: nuevaRespuesta,
+            }),  
       });
 
       if (res.ok) {
