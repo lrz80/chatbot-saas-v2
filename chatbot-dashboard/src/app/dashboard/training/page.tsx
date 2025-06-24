@@ -190,6 +190,20 @@ export default function TrainingPage() {
     }, 100);
   };
 
+  const recargarFaqs = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/faq?canal=whatsapp`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFaq(data);
+      }
+    } catch (error) {
+      console.error("Error recargando FAQs:", error);
+    }
+  };
+  
   const saveFaq = async () => {
     if (!isMembershipActive) return;
   
@@ -202,6 +216,9 @@ export default function TrainingPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ faqs: faqsLimpios }),
     });
+  
+    // ✅ Cargar desde backend los FAQs ya con ID real
+    recargarFaqs(); // <-- esta función ya la tienes definida
   
     alert("Preguntas frecuentes guardadas ✅");
   };  
