@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { MessageSquare, Bot, Pencil, XCircle, Lightbulb, Brain } from "lucide-react";
 
 export type Faq = {
-  id: number;
+  id?: number;
   pregunta: string;
   respuesta: string;
 };
@@ -60,7 +60,6 @@ export default function FaqSection({
 
   const addFaq = () => {
     const nuevoFaq: Faq = {
-      id: Date.now(), // ID temporal
       pregunta: "",
       respuesta: "",
     };
@@ -123,28 +122,33 @@ export default function FaqSection({
   
   const eliminarFaq = async (index: number) => {
     const faq = faqs[index];
-    console.log("🗑 Eliminando FAQ con ID:", faq.id); // Debug
+    console.log("🗑 Eliminando FAQ con ID:", faq.id);
   
+    const nuevas = [...faqs];
+    nuevas.splice(index, 1);
+    setFaqs(nuevas);
+  
+    // Solo eliminar del backend si tiene un ID real
     if (!faq.id || typeof faq.id !== "number") {
-      console.error("❌ ID inválido para eliminar:", faq.id);
+      console.warn("ℹ️ Pregunta aún no guardada en backend. Eliminada solo del frontend.");
       return;
     }
   
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/eliminar`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/eliminar`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: Number(faq.id) }),
+        body: JSON.stringify({ id: faq.id }),
       });
   
-      const nuevas = [...faqs];
-      nuevas.splice(index, 1);
-      setFaqs(nuevas);
+      if (!res.ok) {
+        console.error("❌ Falló eliminación en backend");
+      }
     } catch (err) {
-      console.error("❌ Error eliminando FAQ:", err);
+      console.error("❌ Error al eliminar FAQ del backend:", err);
     }
   };  
   

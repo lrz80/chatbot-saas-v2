@@ -11,6 +11,7 @@ import { SiWhatsapp, SiBookstack, SiOpenai, SiMinutemailer, SiBuffer, SiChatbot,
 import { MdWhatsapp } from "react-icons/md";
 import FaqSection from "@/components/FaqSection";
 
+
 type FlowOption = {
   texto: string;
   respuesta?: string;
@@ -52,7 +53,7 @@ export default function TrainingPage() {
     setClientOnly(true);
   }, []);
   type Faq = {
-    id: number;
+    id?: number;
     pregunta: string;
     respuesta: string;
   };
