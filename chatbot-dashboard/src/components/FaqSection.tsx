@@ -123,6 +123,12 @@ export default function FaqSection({
   
   const eliminarFaq = async (index: number) => {
     const faq = faqs[index];
+    console.log("🗑 Eliminando FAQ con ID:", faq.id); // Debug
+  
+    if (!faq.id || typeof faq.id !== "number") {
+      console.error("❌ ID inválido para eliminar:", faq.id);
+      return;
+    }
   
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/eliminar`, {
@@ -131,7 +137,7 @@ export default function FaqSection({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: faq.id }), // ✅ usa el id
+        body: JSON.stringify({ id: Number(faq.id) }),
       });
   
       const nuevas = [...faqs];
