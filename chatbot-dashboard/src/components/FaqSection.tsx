@@ -152,7 +152,8 @@ export default function FaqSection({
     const nuevas = [...faqs];
     const faqAEliminar = nuevas[index];
   
-    if (!faqAEliminar || typeof faqAEliminar.id !== "number") {
+    // ✅ Validación robusta del ID
+    if (!faqAEliminar?.id || isNaN(Number(faqAEliminar.id))) {
       console.warn("⚠️ Esta FAQ no tiene un ID válido. No se eliminará del backend.");
       nuevas.splice(index, 1); // eliminar del frontend
       setFaqs(nuevas);
@@ -161,15 +162,15 @@ export default function FaqSection({
   
     console.log("🗑 Eliminando FAQ con ID:", faqAEliminar.id);
   
-    nuevas.splice(index, 1);
-    setFaqs(nuevas);
+    nuevas.splice(index, 1); // eliminar del array local
+    setFaqs(nuevas);         // actualizar estado
   
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/eliminar`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: faqAEliminar.id }),
+        body: JSON.stringify({ id: Number(faqAEliminar.id) }), // ✅ asegura que se mande como número
       });
   
       if (!res.ok) {
@@ -178,7 +179,7 @@ export default function FaqSection({
     } catch (err) {
       console.error("❌ Error al eliminar FAQ del backend:", err);
     }
-  };
+  };  
   
   return (
     <div className="mt-12">
