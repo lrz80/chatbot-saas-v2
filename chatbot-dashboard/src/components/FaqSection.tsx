@@ -153,6 +153,7 @@ export default function FaqSection({
     const faqAEliminar = nuevas[index];
   
     // ✅ Validación robusta del ID
+    console.log("📌 ID detectado:", faqAEliminar.id, "Tipo:", typeof faqAEliminar.id);
     if (!faqAEliminar?.id || isNaN(Number(faqAEliminar.id))) {
       console.warn("⚠️ Esta FAQ no tiene un ID válido. No se eliminará del backend.");
       nuevas.splice(index, 1); // eliminar del frontend
