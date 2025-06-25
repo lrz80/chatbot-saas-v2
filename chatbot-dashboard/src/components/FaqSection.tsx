@@ -120,28 +120,56 @@ export default function FaqSection({
     }
   };
   
-  const eliminarFaq = async (index: number) => {
-    const faq = faqs[index];
-    console.log("🗑 Eliminando FAQ con ID:", faq.id);
+  const guardarFaqs = async () => {
+    const faqsLimpios = faqs.filter((f) => f.pregunta.trim() && f.respuesta.trim());
   
-    const nuevas = [...faqs];
-    nuevas.splice(index, 1);
-    setFaqs(nuevas);
-  
-    // Solo eliminar del backend si tiene un ID real
-    if (!faq.id || typeof faq.id !== "number") {
-      console.warn("ℹ️ Pregunta aún no guardada en backend. Eliminada solo del frontend.");
+    if (faqsLimpios.length === 0) {
+      alert("❌ Agrega al menos una FAQ válida.");
       return;
     }
+  
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ faqs: faqsLimpios, canal }),
+      });
+  
+      if (res.ok) {
+        await recargarFaqs(); // recarga con IDs desde backend
+        alert("Preguntas frecuentes guardadas ✅");
+      } else {
+        alert("❌ Error al guardar FAQs");
+      }
+    } catch (error) {
+      console.error("❌ Error al guardar FAQs:", error);
+      alert("❌ Error al guardar FAQs.");
+    }
+  };
+  
+  const eliminarFaq = async (index: number) => {
+    const nuevas = [...faqs];
+    const faqAEliminar = nuevas[index];
+  
+    if (!faqAEliminar || typeof faqAEliminar.id !== "number") {
+      console.warn("⚠️ Esta FAQ no tiene un ID válido. No se eliminará del backend.");
+      nuevas.splice(index, 1); // eliminar del frontend
+      setFaqs(nuevas);
+      return;
+    }
+  
+    console.log("🗑 Eliminando FAQ con ID:", faqAEliminar.id);
+  
+    nuevas.splice(index, 1);
+    setFaqs(nuevas);
   
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/eliminar`, {
         method: "POST",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: faq.id }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: faqAEliminar.id }),
       });
   
       if (!res.ok) {
@@ -150,7 +178,7 @@ export default function FaqSection({
     } catch (err) {
       console.error("❌ Error al eliminar FAQ del backend:", err);
     }
-  };  
+  };
   
   return (
     <div className="mt-12">
@@ -196,7 +224,7 @@ export default function FaqSection({
           + Agregar FAQ
         </button>
         <button
-          onClick={onSave}
+          onClick={guardarFaqs}
           disabled={!membresiaActiva}
           className={`px-4 py-2 rounded text-white ${
             membresiaActiva
@@ -206,6 +234,7 @@ export default function FaqSection({
         >
           Guardar FAQs
         </button>
+
       </div>
 
       {faqSugeridas.length > 0 && (

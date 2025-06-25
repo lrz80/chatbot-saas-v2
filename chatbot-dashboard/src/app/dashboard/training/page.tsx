@@ -57,8 +57,8 @@ export default function TrainingPage() {
     pregunta: string;
     respuesta: string;
   };
-  
-  const [faq, setFaq] = useState<{ id?: number, pregunta: string, respuesta: string }[]>([]);
+
+  const [faq, setFaq] = useState<Faq[]>([]); // Usa el tipo importado de FaqSection si prefieres
   
   const [settings, setSettings] = useState({
     name: "",
@@ -189,34 +189,6 @@ export default function TrainingPage() {
       previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }, 100);
   };
-
-  const recargarFaqs = async () => {
-    const res = await fetch(`${BACKEND_URL}/api/faq?canal=whatsapp`, {
-      credentials: 'include',
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setFaq(data); // ✅ Aquí sí vendrán con su campo `id`
-    }
-  };  
-  
-  const saveFaq = async () => {
-    if (!isMembershipActive) return;
-  
-    const faqsLimpios = faq.filter((f) => f.pregunta.trim() && f.respuesta.trim());
-    if (faqsLimpios.length === 0) return alert("❌ Agrega al menos una FAQ válida.");
-  
-    await fetch(`${BACKEND_URL}/api/faq`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ faqs: faqsLimpios }),
-    });
-  
-    await recargarFaqs(); // ✅ Aquí cargas FAQs con sus IDs desde el backend
-  
-    alert("Preguntas frecuentes guardadas ✅");
-  };  
 
   const handleIntentChange = (i: number, field: string, value: string) => {
     const updated = [...intents];
@@ -483,7 +455,7 @@ export default function TrainingPage() {
           setFaqs={setFaq}
           canal="whatsapp"
           membresiaActiva={settings.membresia_activa}
-          onSave={async () => bloquearSiNoMembresia(() => saveFaq())}
+          onSave={async () => bloquearSiNoMembresia(() => {})}
         />
 
         <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
