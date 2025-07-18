@@ -134,7 +134,7 @@ export default function TrainingPage() {
       bienvenida: settings.bienvenida,
       informacion_negocio: settings.informacion_negocio,
       funciones_asistente: settings.funciones_asistente?.trim() || undefined,
-      info_clave: settings.info_clave?.trim() || undefined,
+      info_clave: settings.info_clave?.replace(/\r\n/g, '\n').replace(/\n{2,}/g, '\n').trim() || undefined,
     };    
 
     console.log("📤 Enviando payload a /api/settings:", payload);
