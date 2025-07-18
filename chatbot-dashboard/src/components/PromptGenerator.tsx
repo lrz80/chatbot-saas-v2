@@ -94,6 +94,7 @@ export default function PromptGenerator({
         className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
         placeholder="Ej: Servicios, links, ubicación, precios..."
         disabled={!membresiaActiva}
+        style={{ whiteSpace: 'pre-line' }}
       />
   
       <button
