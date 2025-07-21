@@ -35,45 +35,50 @@ export default function FaqSection({
   const [nuevaRespuesta, setNuevaRespuesta] = useState("");
 
   useEffect(() => {
-    fetch(`https://api.aamy.ai/api/faqs/sugeridas?canal=${canal}`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("📥 FAQ sugeridas cargadas:", data);
-  
-        const conRespuesta = data.filter((f: FaqSugerida) => f.respuesta_sugerida);
-        console.log("✅ Filtradas con respuesta:", conRespuesta);
-  
+    const cargarTodo = async () => {
+      try {
+        // Cargar sugeridas
+        const sugeridasRes = await fetch(`https://api.aamy.ai/api/faqs/sugeridas?canal=${canal}`, {
+          credentials: "include",
+        });
+        const sugeridasData = await sugeridasRes.json();
+        const conRespuesta = sugeridasData.filter((f: FaqSugerida) => f.respuesta_sugerida);
         setFaqSugeridas(conRespuesta);
-      })
-      .catch((err) => console.error("❌ Error cargando sugeridas:", err));
-  }, [canal]);  
+        console.log("📥 Sugeridas cargadas:", conRespuesta);
+
+        // Cargar oficiales
+        await recargarFaqs();
+      } catch (err) {
+        console.error("❌ Error cargando FAQs:", err);
+      }
+    };
+
+    cargarTodo();
+  }, [canal]);
 
   const handleChange = (
     index: number,
-    field: "pregunta" | "respuesta", // 🔒 limitado solo a campos editables
+    field: "pregunta" | "respuesta",
     value: string
   ) => {
     const nuevas = [...faqs];
     nuevas[index][field] = value;
     setFaqs(nuevas);
-  };  
+  };
 
   const addFaq = () => {
-    const nuevoFaq: Faq = {
-      pregunta: "",
-      respuesta: "",
-    };
+    const nuevoFaq: Faq = { pregunta: "", respuesta: "" };
     setFaqs([...faqs, nuevoFaq]);
-  };  
+  };
 
   const rechazarFaq = async (id: number) => {
     try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/rechazar`, {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id }),
-          });
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/rechazar`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
       setFaqSugeridas((prev) => prev.filter((f) => f.id !== id));
     } catch (err) {
       console.error("❌ Error al rechazar FAQ:", err);
@@ -84,23 +89,22 @@ export default function FaqSection({
     if (!faqEditando) return;
 
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/aprobar`, {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              id: faqEditando.id,
-              respuesta_editada: nuevaRespuesta,
-            }),   
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/aprobar`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: faqEditando.id,
+          respuesta_editada: nuevaRespuesta,
+        }),
       });
 
       if (res.ok) {
-        await recargarFaqs(); // 🔄 vuelve a cargar desde el backend
+        await recargarFaqs();
         setFaqSugeridas((prev) => prev.filter((f) => f.id !== faqEditando.id));
         setFaqEditando(null);
         setNuevaRespuesta("");
       }
-      
     } catch (err) {
       console.error("❌ Error aprobando con edición:", err);
     }
@@ -113,21 +117,21 @@ export default function FaqSection({
       });
       if (res.ok) {
         const data = await res.json();
-        setFaqs(data); // 🔄 actualiza el estado visible
+        setFaqs(data);
+        console.log("✅ FAQs oficiales cargadas:", data);
       }
     } catch (err) {
       console.error("❌ Error recargando FAQs:", err);
     }
   };
-  
+
   const guardarFaqs = async () => {
     const faqsLimpios = faqs.filter((f) => f.pregunta.trim() && f.respuesta.trim());
-  
     if (faqsLimpios.length === 0) {
       alert("❌ Agrega al menos una FAQ válida.");
       return;
     }
-  
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs`, {
         method: "POST",
@@ -135,9 +139,9 @@ export default function FaqSection({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ faqs: faqsLimpios, canal }),
       });
-  
+
       if (res.ok) {
-        await recargarFaqs(); // recarga con IDs desde backend
+        await recargarFaqs();
         alert("Preguntas frecuentes guardadas ✅");
       } else {
         alert("❌ Error al guardar FAQs");
@@ -147,30 +151,22 @@ export default function FaqSection({
       alert("❌ Error al guardar FAQs.");
     }
   };
-  
+
   const eliminarFaq = async (index: number) => {
     const nuevas = [...faqs];
     const faqAEliminar = nuevas[index];
-  
-    // 🧪 Mostrar en consola el ID y su tipo
-    console.log("📌 ID detectado:", faqAEliminar?.id, "Tipo:", typeof faqAEliminar?.id);
-  
-    // ✅ Validación robusta del ID
     const idNumerico = parseInt(faqAEliminar?.id as any);
-  
+
     if (!idNumerico || isNaN(idNumerico)) {
       console.warn("⚠️ Esta FAQ no tiene un ID válido. No se eliminará del backend.");
-      nuevas.splice(index, 1); // eliminar del frontend de todas formas
+      nuevas.splice(index, 1);
       setFaqs(nuevas);
       return;
     }
-  
-    console.log("🗑 Eliminando FAQ con ID:", idNumerico);
-  
-    // Eliminar del frontend primero
+
     nuevas.splice(index, 1);
     setFaqs(nuevas);
-  
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/eliminar`, {
         method: "POST",
@@ -178,14 +174,14 @@ export default function FaqSection({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: idNumerico }),
       });
-  
+
       if (!res.ok) {
         console.error("❌ Falló eliminación en backend");
       }
     } catch (err) {
       console.error("❌ Error al eliminar FAQ del backend:", err);
     }
-  };  
+  };
   
   return (
     <div className="mt-12">
