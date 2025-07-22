@@ -193,6 +193,12 @@ export default function FaqSection({
     return resultado;
   };
 
+  const formatearTexto = (texto: string): string => {
+    if (!texto) return '';
+    const textoFormateado = texto.charAt(0).toUpperCase() + texto.slice(1);
+    return /[.!?]$/.test(textoFormateado.trim()) ? textoFormateado : textoFormateado + '.';
+  };
+  
     return (
     <div className="mt-12">
       <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
@@ -264,7 +270,7 @@ export default function FaqSection({
             </p>
             <p className="text-green-300 mt-1 flex items-center gap-2">
               <Bot className="text-green-400" size={18} />
-              {faq.respuesta_sugerida}
+              {formatearTexto(faq.respuesta_sugerida || "")}
             </p>
             <div className="mt-3 flex gap-3">
               <button
