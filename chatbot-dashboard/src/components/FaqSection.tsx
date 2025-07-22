@@ -182,8 +182,18 @@ export default function FaqSection({
       console.error("❌ Error al eliminar FAQ del backend:", err);
     }
   };
-  
-  return (
+
+  // Capitaliza y agrega punto final si falta
+  const formatearPregunta = (texto: string): string => {
+    if (!texto) return '';
+    let resultado = texto.charAt(0).toUpperCase() + texto.slice(1);
+    if (!/[.!?]$/.test(resultado.trim())) {
+      resultado += '.';
+    }
+    return resultado;
+  };
+
+    return (
     <div className="mt-12">
       <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
         <Brain className="text-green-400" size={20} /> Preguntas Frecuentes
@@ -250,7 +260,7 @@ export default function FaqSection({
             <div key={faq.id} className="mb-4 p-4 rounded bg-white/10 border border-white/20">
             <p className="text-white/80 flex items-center gap-2">
               <MessageSquare className="text-pink-400" size={18} />
-              <strong>{faq.pregunta}</strong>
+              <strong>{formatearPregunta(faq.pregunta)}</strong>
             </p>
             <p className="text-green-300 mt-1 flex items-center gap-2">
               <Bot className="text-green-400" size={18} />
