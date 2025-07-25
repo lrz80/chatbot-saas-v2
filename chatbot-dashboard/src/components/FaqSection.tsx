@@ -268,10 +268,11 @@ export default function FaqSection({
               <MessageSquare className="text-pink-400" size={18} />
               <strong>{formatearPregunta(faq.pregunta)}</strong>
             </p>
-            <p className="text-green-300 mt-1 flex items-center gap-2">
-              <Bot className="text-green-400" size={18} />
-              {formatearTexto(faq.respuesta_sugerida || "")}
-            </p>
+            <div className="text-green-300 mt-1 whitespace-pre-wrap flex gap-2">
+              <Bot className="text-green-400 mt-1" size={18} />
+              <span>{formatearTexto(faq.respuesta_sugerida || "")}</span>
+            </div>
+
             <div className="mt-3 flex gap-3">
               <button
                 onClick={() => {
