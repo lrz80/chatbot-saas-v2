@@ -270,7 +270,7 @@ export default function FaqSection({
             </p>
             <div className="text-green-300 mt-1 whitespace-pre-wrap flex gap-2">
               <Bot className="text-green-400 mt-1" size={18} />
-              <span>{formatearTexto(faq.respuesta_sugerida || "")}</span>
+              <span>{faq.respuesta_sugerida}</span>
             </div>
 
             <div className="mt-3 flex gap-3">
