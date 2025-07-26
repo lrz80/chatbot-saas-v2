@@ -69,6 +69,26 @@ export default function MetaConfigPage() {
     }
   };  
 
+  const fetchFaqs = async () => {
+    try {
+      const [resIG, resFB] = await Promise.all([
+        fetch(`${BACKEND_URL}/api/faq?canal=instagram`, { credentials: 'include' }),
+        fetch(`${BACKEND_URL}/api/faq?canal=facebook`, { credentials: 'include' })
+      ]);
+  
+      const dataIG = resIG.ok ? await resIG.json() : [];
+      const dataFB = resFB.ok ? await resFB.json() : [];
+  
+      const combinadas = [...dataIG, ...dataFB];
+      setFaq(combinadas);
+    } catch (err) {
+      console.error("❌ Error cargando FAQs de Meta:", err);
+    }
+  };
+  
+  fetchConfiguracion();
+  fetchFaqs(); // ⬅️ agrégalo aquí
+  
   // 🔄 handleGuardar solo envía los campos correctos:
   const handleGuardar = async () => {
     console.log('✅ Botón "Guardar Configuración" presionado');
