@@ -18,7 +18,7 @@ export default function MetaConfigPage() {
   const [instagramPageName, setInstagramPageName] = useState('');
   const [promptMeta, setPromptMeta] = useState('');
   const [bienvenidaMeta, setBienvenidaMeta] = useState('');
-  const [faq, setFaq] = useState<{ pregunta: string; respuesta: string }[]>([]);
+  const [faq, setFaq] = useState<Faq[]>([]);
   const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -30,9 +30,18 @@ export default function MetaConfigPage() {
   const [isTyping, setIsTyping] = useState(false);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [usoMeta, setUsoMeta] = useState<any>(null);
-  const [faqSugeridas, setFaqSugeridas] = useState<any[]>([]);
+  const [clientOnly, setClientOnly] = useState(false);
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setClientOnly(true);
+  }, []);
+  type Faq = {
+    id?: number;
+    pregunta: string;
+    respuesta: string;
+  };
 
   // 🔄 fetchConfiguracion simplificado:
   const fetchConfiguracion = async () => {
@@ -90,25 +99,6 @@ export default function MetaConfigPage() {
   
   fetchConfiguracion();
   fetchFaqs(); // ⬅️ agrégalo aquí
-
-  const fetchFaqSugeridas = async () => {
-  try {
-    const [resIG, resFB] = await Promise.all([
-      fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=instagram`, { credentials: 'include' }),
-      fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=facebook`, { credentials: 'include' })
-    ]);
-
-    const dataIG = resIG.ok ? await resIG.json() : [];
-    const dataFB = resFB.ok ? await resFB.json() : [];
-
-    const combinadas = [...dataIG, ...dataFB];
-    setFaqSugeridas(combinadas); // ⚠️ asegúrate que `setFaqSugeridas` existe
-  } catch (err) {
-    console.error("❌ Error cargando FAQs sugeridas de Meta:", err);
-  }
-};
-
-fetchFaqSugeridas();
 
   // 🔄 handleGuardar solo envía los campos correctos:
   const handleGuardar = async () => {
@@ -204,14 +194,6 @@ fetchFaqSugeridas();
         previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
       }, 100);
     }
-  };
-  
-  const agregarFaq = () => setFaq([...faq, { pregunta: '', respuesta: '' }]);
-  const eliminarFaq = (index: number) => setFaq(faq.filter((_, i) => i !== index));
-  const actualizarFaq = (index: number, campo: string, valor: string) => {
-    const nuevasFaq = [...faq];
-    (nuevasFaq[index] as any)[campo] = valor;
-    setFaq(nuevasFaq);
   };
 
   const agregarIntent = () => setIntents([...intents, { nombre: '', ejemplos: [], respuesta: '' }]);
