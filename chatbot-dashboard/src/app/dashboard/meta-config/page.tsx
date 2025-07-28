@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import PromptGenerator from '@/components/PromptGenerator';
 import TrainingHelp from '@/components/TrainingHelp';
 import { BACKEND_URL } from '@/utils/api';
-import { SiMeta, SiFacebook, SiInstagram, SiBookstack, SiBuffer, SiOpenai, SiMinutemailer } from 'react-icons/si';
+import { SiMeta, SiFacebook, SiInstagram, SiBuffer, SiOpenai, SiMinutemailer } from 'react-icons/si';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import FaqSection from "@/components/FaqSection";
@@ -82,20 +82,16 @@ export default function MetaConfigPage() {
 
   const fetchFaqs = async () => {
     try {
-      const [resIG, resFB] = await Promise.all([
-        fetch(`${BACKEND_URL}/api/faq?canal=instagram`, { credentials: 'include' }),
-        fetch(`${BACKEND_URL}/api/faq?canal=facebook`, { credentials: 'include' })
-      ]);
+      const res = await fetch(`${BACKEND_URL}/api/faqs?canal=facebook`, {
+        credentials: 'include',
+      });
   
-      const dataIG = resIG.ok ? await resIG.json() : [];
-      const dataFB = resFB.ok ? await resFB.json() : [];
-  
-      const combinadas = [...dataIG, ...dataFB];
-      setFaq(combinadas);
+      const data = res.ok ? await res.json() : [];
+      setFaq(data);
     } catch (err) {
       console.error("❌ Error cargando FAQs de Meta:", err);
     }
-  };
+  };  
   
   fetchConfiguracion();
   fetchFaqs(); // ⬅️ agrégalo aquí
@@ -423,7 +419,7 @@ export default function MetaConfigPage() {
         <FaqSection
           faqs={faq}
           setFaqs={setFaq}
-          canal="whatsapp"
+          canal="facebook"
           membresiaActiva={membresiaActiva}
           onSave={async () => requerirMembresia(() => {})}
         />
