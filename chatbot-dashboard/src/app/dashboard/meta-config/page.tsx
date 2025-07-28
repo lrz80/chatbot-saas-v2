@@ -10,6 +10,7 @@ import { BACKEND_URL } from '@/utils/api';
 import { SiMeta, SiFacebook, SiInstagram, SiBookstack, SiBuffer, SiOpenai, SiMinutemailer } from 'react-icons/si';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import FaqSection from "@/components/FaqSection";
 
 export default function MetaConfigPage() {
   const [connected, setConnected] = useState(false);
@@ -29,6 +30,7 @@ export default function MetaConfigPage() {
   const [isTyping, setIsTyping] = useState(false);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [usoMeta, setUsoMeta] = useState<any>(null);
+  const [faqSugeridas, setFaqSugeridas] = useState<any[]>([]);
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -88,7 +90,26 @@ export default function MetaConfigPage() {
   
   fetchConfiguracion();
   fetchFaqs(); // ⬅️ agrégalo aquí
-  
+
+  const fetchFaqSugeridas = async () => {
+  try {
+    const [resIG, resFB] = await Promise.all([
+      fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=instagram`, { credentials: 'include' }),
+      fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=facebook`, { credentials: 'include' })
+    ]);
+
+    const dataIG = resIG.ok ? await resIG.json() : [];
+    const dataFB = resFB.ok ? await resFB.json() : [];
+
+    const combinadas = [...dataIG, ...dataFB];
+    setFaqSugeridas(combinadas); // ⚠️ asegúrate que `setFaqSugeridas` existe
+  } catch (err) {
+    console.error("❌ Error cargando FAQs sugeridas de Meta:", err);
+  }
+};
+
+fetchFaqSugeridas();
+
   // 🔄 handleGuardar solo envía los campos correctos:
   const handleGuardar = async () => {
     console.log('✅ Botón "Guardar Configuración" presionado');
@@ -417,36 +438,13 @@ export default function MetaConfigPage() {
 
         </div>
 
-        <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-          <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
-            <SiBookstack className="animate-pulse" size={24} />
-            Preguntas Frecuentes
-          </h3>
-          {faq.map((item, index) => (
-            <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
-              <input
-                type="text"
-                placeholder="Pregunta"
-                value={item.pregunta}
-                onChange={(e) => actualizarFaq(index, 'pregunta', e.target.value)}
-                className="p-2 bg-white/10 border border-white/20 rounded"
-              />
-              <input
-                type="text"
-                placeholder="Respuesta"
-                value={item.respuesta}
-                onChange={(e) => actualizarFaq(index, 'respuesta', e.target.value)}
-                className="p-2 bg-white/10 border border-white/20 rounded"
-              />
-              <button onClick={() => eliminarFaq(index)} className="text-red-400 text-xs flex items-center gap-1">
-                <Trash2 size={16} /> Eliminar
-              </button>
-            </div>
-          ))}
-          <button onClick={() => requerirMembresia(agregarFaq)} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
-            <PlusCircle /> Agregar Pregunta
-          </button>
-        </div>
+        <FaqSection
+          faqs={faq}
+          setFaqs={setFaq}
+          canal="whatsapp"
+          membresiaActiva={membresiaActiva}
+          onSave={async () => requerirMembresia(() => {})}
+        />
 
         <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
           <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
