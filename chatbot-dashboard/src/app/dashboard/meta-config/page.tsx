@@ -419,7 +419,7 @@ export default function MetaConfigPage() {
         <FaqSection
           faqs={faq}
           setFaqs={setFaq}
-          canal="facebook"
+          canal="meta"
           membresiaActiva={membresiaActiva}
           onSave={async () => requerirMembresia(() => {})}
         />
