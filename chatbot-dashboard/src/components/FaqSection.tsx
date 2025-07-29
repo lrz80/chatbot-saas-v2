@@ -18,7 +18,7 @@ export type FaqSugerida = {
 type Props = {
   faqs: Faq[];
   setFaqs: (faqs: Faq[]) => void;
-  canal: "whatsapp" | "facebook" | "instagram" | "voz";
+  canal: "whatsapp" | "facebook" | "instagram" | "meta" | "voz";
   membresiaActiva: boolean;
   onSave: () => Promise<void>;
 };
@@ -35,6 +35,7 @@ export default function FaqSection({
   const [nuevaRespuesta, setNuevaRespuesta] = useState("");
 
   useEffect(() => {
+    console.log("📌 canal recibido:", canal);
     const cargarTodo = async () => {
       try {
         // Cargar sugeridas
