@@ -84,7 +84,7 @@ export default function TrainingPage() {
       try {
         const [settingsRes, faqRes, intentsRes] = await Promise.all([
           fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" }),
-          fetch(`${BACKEND_URL}/api/faq`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/faqs`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents`, { credentials: "include" }),
         ]);
   
