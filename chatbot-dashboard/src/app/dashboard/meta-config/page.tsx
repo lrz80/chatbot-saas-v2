@@ -93,8 +93,10 @@ export default function MetaConfigPage() {
     }
   };  
   
-  fetchConfiguracion();
-  fetchFaqs(); // ⬅️ agrégalo aquí
+  useEffect(() => {
+    fetchConfiguracion();
+    fetchFaqs();
+  }, []);  
 
   // 🔄 handleGuardar solo envía los campos correctos:
   const handleGuardar = async () => {
