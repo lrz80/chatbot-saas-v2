@@ -8,34 +8,31 @@ import { BACKEND_URL } from "@/utils/api";
 interface Props {
   idioma: string;
   categoria: string;
+  funciones: string;
+  infoClave: string;
   onGenerate: (prompt: string, bienvenida: string) => void;
-  disabled?: boolean; // ✅ NUEVO
+  disabled?: boolean;
 }
 
 export default function VoicePromptGenerator({
   idioma,
   categoria,
+  funciones,
+  infoClave,
   onGenerate,
-  disabled = false, // ✅ valor por defecto
+  disabled = false,
 }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleGenerate = async () => {
+    if (!funciones.trim() || !infoClave.trim()) {
+      toast.warn("Por favor completa ambos campos antes de generar el prompt.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const funcionesTextarea = document.querySelector("textarea[name='funciones_asistente']") as HTMLTextAreaElement | null;
-      const infoTextarea = document.querySelector("textarea[name='info_clave']") as HTMLTextAreaElement | null;
-
-      const funciones = funcionesTextarea?.value.trim() || "";
-      const info = infoTextarea?.value.trim() || "";
-
-      if (!funciones || !info) {
-        toast.warn("Por favor completa ambos campos antes de generar el prompt.");
-        setLoading(false);
-        return;
-      }
-
       const res = await fetch(`${BACKEND_URL}/api/voice-prompt`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,8 +40,8 @@ export default function VoicePromptGenerator({
         body: JSON.stringify({
           idioma,
           categoria,
-          funciones_asistente: funciones,
-          info_clave: info,
+          funciones_asistente: funciones.trim(),
+          info_clave: infoClave.trim(),
         }),
       });
 
@@ -66,7 +63,7 @@ export default function VoicePromptGenerator({
   return (
     <button
       onClick={handleGenerate}
-      disabled={loading || disabled} // ✅ ahora respeta también disabled externo
+      disabled={loading || disabled}
       className="bg-blue-600 text-white px-4 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {loading ? "Generando..." : "Generar Instrucciones de voz"}

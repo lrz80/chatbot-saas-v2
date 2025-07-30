@@ -23,6 +23,11 @@ export default function VoiceConfigPage() {
   const tenantId = tenant?.id;
   const tieneMembresia = tenant?.membresia_activa;
   const router = useRouter();
+  const [funcionesVoz, setFuncionesVoz] = useState('');
+  const [infoClaveVoz, setInfoClaveVoz] = useState('');
+  const [promptVoz, setPromptVoz] = useState('');
+  const [bienvenidaVoz, setBienvenidaVoz] = useState('');
+
 
   const verificarMembresia = (e?: Event | React.SyntheticEvent) => {
     if (!tieneMembresia) {
@@ -342,17 +347,22 @@ export default function VoiceConfigPage() {
             <label className="block text-white font-semibold mb-1">¿Qué debe hacer tu asistente?</label>
             <textarea
               name="funciones_asistente"
+              value={funcionesVoz}
+              onChange={(e) => setFuncionesVoz(e.target.value)}
               rows={3}
-              placeholder="Ejemplo: Atender llamadas, agendar citas, responder preguntas..."
+              placeholder="Ejemplo: Atender llamadas, agendar citas..."
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
+
           </div>
           <div>
             <label className="block text-white font-semibold mb-1">Información clave sobre tu negocio</label>
             <textarea
               name="info_clave"
+              value={infoClaveVoz}
+              onChange={(e) => setInfoClaveVoz(e.target.value)}
               rows={3}
-              placeholder="Ejemplo: Servicios, horarios, ubicación, promociones..."
+              placeholder="Ejemplo: servicios, precios, ubicación..."
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
           </div>
@@ -360,11 +370,13 @@ export default function VoiceConfigPage() {
   
         <VoicePromptGenerator
           idioma={idioma}
-          categoria={tenant?.categoria || "general"}
-          disabled={!tieneMembresia}
-          onGenerate={(prompt, bienvenida) => {
-            (document.querySelector("textarea[name='system_prompt']") as HTMLTextAreaElement).value = prompt;
-            (document.querySelector("input[name='welcome_message']") as HTMLInputElement).value = bienvenida;
+          categoria="voz"
+          funciones={funcionesVoz}
+          infoClave={infoClaveVoz}
+          disabled={tieneMembresia}
+          onGenerate={(nuevoPrompt, nuevaBienvenida) => {
+            setPromptVoz(nuevoPrompt);
+            setBienvenidaVoz(nuevaBienvenida);
           }}
         />
   
@@ -373,10 +385,11 @@ export default function VoiceConfigPage() {
             <label className="block text-white font-semibold mb-1">Instrucciones de Voz generadas</label>
             <textarea
               name="system_prompt"
+              value={promptVoz}
+              onChange={(e) => setPromptVoz(e.target.value)}
               rows={6}
-              placeholder="Este es el comportamiento del asistente de voz..."
+              placeholder="Este es el comportamiento del asistente..."
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
-              required
             />
           </div>
   
@@ -385,9 +398,10 @@ export default function VoiceConfigPage() {
             <input
               type="text"
               name="welcome_message"
-              placeholder="Hola, soy Amy. Bienvenido a..."
+              value={bienvenidaVoz}
+              onChange={(e) => setBienvenidaVoz(e.target.value)}
+              placeholder="Hola, soy Amy..."
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
-              required
             />
   
             <label className="block text-white font-semibold mt-4 mb-1">Seleccionar voz</label>
