@@ -373,7 +373,7 @@ export default function VoiceConfigPage() {
           categoria="voz"
           funciones={funcionesVoz}
           infoClave={infoClaveVoz}
-          disabled={tieneMembresia}
+          disabled={!tieneMembresia}
           onGenerate={(nuevoPrompt, nuevaBienvenida) => {
             setPromptVoz(nuevoPrompt);
             setBienvenidaVoz(nuevaBienvenida);
