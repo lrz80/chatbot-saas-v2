@@ -363,6 +363,25 @@ export default function CampaignsSmsClient() {
     }
   };
   
+  // Deja un solo registro (el más reciente) por message_sid
+  const compactarEntregas = (entregas: any[] = []) => {
+    const bySid = new Map<string, any>();
+    for (const e of entregas) {
+      const sid = e.message_sid || e.messageSid || `${e.telefono}-${e.timestamp}`;
+      const ts  = DateTime.fromISO(e.timestamp).toMillis() || 0;
+      const prev = bySid.get(sid);
+      if (!prev || ts > DateTime.fromISO(prev.timestamp).toMillis()) {
+        bySid.set(sid, e);
+      }
+    }
+    // ordena del más reciente al más viejo
+    return Array.from(bySid.values()).sort(
+      (a, b) =>
+        (DateTime.fromISO(b.timestamp).toMillis() || 0) -
+        (DateTime.fromISO(a.timestamp).toMillis() || 0)
+    );
+  };
+
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -594,116 +613,116 @@ export default function CampaignsSmsClient() {
         <p className="text-white/70">No hay campañas SMS registradas aún.</p>
       ) : (
         <ul className="space-y-6 text-white text-sm">
-          {campaigns.map((c) => (
-            <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <div>
-                  <div className="text-lg font-bold text-white mb-1">{c.nombre}</div>
-                  <div className="text-white/80 mb-1">
-                    <SiGooglecalendar className="inline mr-1" />{" "}
-                    {DateTime.fromISO(c.programada_para)
-                      .setZone("America/New_York")
-                      .toLocaleString(DateTime.DATETIME_MED)}
+          {campaigns.map((c) => {
+            // ✅ compacta: 1 registro por mensaje (último estado)
+            const entregasCompactas = compactarEntregas(c.entregas || []);
+            const lower = (s?: string) => (s || "").toLowerCase();
+
+            // ✅ contadores correctos
+            const enviados = entregasCompactas.filter((e: any) =>
+              ["queued", "sent", "delivered", "failed", "undelivered"].includes(lower(e.status))
+            ).length;
+            const entregados = entregasCompactas.filter((e: any) => lower(e.status) === "delivered").length;
+            const fallidos = entregasCompactas.filter((e: any) =>
+              ["failed", "undelivered"].includes(lower(e.status))
+            ).length;
+
+            return (
+              <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                  <div>
+                    <div className="text-lg font-bold text-white mb-1">{c.nombre}</div>
+                    <div className="text-white/80 mb-1">
+                      <SiGooglecalendar className="inline mr-1" />{" "}
+                      {DateTime.fromISO(c.programada_para)
+                        .setZone("America/New_York")
+                        .toLocaleString(DateTime.DATETIME_MED)}
+                    </div>
+                    <span className="flex items-center gap-1">
+                      <SiMinutemailer /> Enviados: {enviados}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <SiCheckmarx className="text-green-400" /> Entregados: {entregados}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <SiProbot className="text-red-400" /> Fallidos: {fallidos}
+                    </span>
                   </div>
-                  <span className="flex items-center gap-1">
-                    <SiMinutemailer /> Enviados: {c.entregas?.length ?? 0}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <SiCheckmarx className="text-green-400" /> Entregados:{" "}
-                    {c.entregas?.filter((e: any) => e.status === "delivered").length ?? 0}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <SiProbot className="text-red-400" /> Fallidos:{" "}
-                    {c.entregas?.filter((e: any) => e.status === "failed").length ?? 0}
-                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
+                      onClick={() =>
+                        setExpandedCampaignId(c.id === expandedCampaignId ? null : c.id)
+                      }
+                    >
+                      {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
+                    </button>
+                    <button
+                      className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
+                      onClick={() => eliminarCampana(c.id)}
+                    >
+                      <SiProbot className="inline mr-1" /> Eliminar
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
-                    onClick={() =>
-                      setExpandedCampaignId(c.id === expandedCampaignId ? null : c.id)
-                    }
-                  >
-                    {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
-                  </button>
-                  <button
-                    className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
-                    onClick={() => eliminarCampana(c.id)}
-                  >
-                    <SiProbot className="inline mr-1" /> Eliminar
-                  </button>
-                </div>
-              </div>
 
-              {expandedCampaignId === c.id && (
-                <ul className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs">
-                  {(c.entregas || []).map((e: any, i: number) => {
-                    console.log("📦 Entrega completa:", e);
-                    const normalizar = (num: string | undefined | null) =>
-                      typeof num === "string" ? num.replace(/\D/g, "").replace(/^1/, "") : "";
-                    
-                    const limpiarTwilio = (num: string | undefined | null) =>
-                      typeof num === "string" ? num.replace(/^tel:/, "") : "";
+                {expandedCampaignId === c.id && (
+                  <ul className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs">
+                    {entregasCompactas.map((e: any, i: number) => {
+                      const normalizar = (num: string | undefined | null) =>
+                        typeof num === "string" ? num.replace(/\D/g, "").replace(/^1/, "") : "";
+                      const telefonoLimpio = (e.telefono || "").replace(/^tel:/, "");
+                      const contacto = contactos.find(
+                        (con: any) => normalizar(con.telefono) === normalizar(telefonoLimpio)
+                      );
+                      const segmento = contacto?.segmento || "Desconocido";
+                      const st = lower(e.status);
 
-                    const telefonoLimpio = limpiarTwilio(e.telefono || "");                    
-
-                    console.log("📤 Número limpio:", telefonoLimpio);
-                    console.log("📒 Contactos disponibles:", contactos.map(c => c.telefono));
-
-                    const contacto = contactos.find(
-                      (con: any) => normalizar(con.telefono) === normalizar(telefonoLimpio)
-                    );
-                    
-                    if (!contacto) {
-                      console.warn("❌ No se encontró segmento para:", telefonoLimpio);
-                    } else {
-                      console.log("✅ Match encontrado:", contacto.telefono, contacto.segmento);
-                    }
-                    
-                    const segmento = contacto?.segmento || "Desconocido";
-
-                    return (
-                      <li key={i} className="border-b border-white/10 pb-2">
-                        <div className="flex items-center gap-1 text-white/90">
-                        <MdSms />
-                          <span className="font-mono text-sm">{telefonoLimpio}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <SiStatuspal />
-                          Estado:{" "}
-                          <span
-                            className={`font-semibold ${
-                              e.status === "delivered"
-                                ? "text-green-400"
-                                : e.status === "failed"
-                                ? "text-red-400"
-                                : "text-yellow-400"
-                            }`}
-                          >
-                            {e.status}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          🏷️ Segmento:{" "}
-                          <span className="italic text-white/80">{segmento}</span>
-                        </div>
-                        {e.error_message && (
-                          <div className="flex items-center gap-1 text-red-400">
-                            <HiOutlineExclamationTriangle /> {e.error_message}
+                      return (
+                        <li
+                          key={e.message_sid || e.messageSid || `${telefonoLimpio}-${e.timestamp}` || i}
+                          className="border-b border-white/10 pb-2"
+                        >
+                          <div className="flex items-center gap-1 text-white/90">
+                            <MdSms />
+                            <span className="font-mono text-sm">{telefonoLimpio}</span>
                           </div>
-                        )}
-                        <div className="text-white/40">
-                          {DateTime.fromISO(e.timestamp)
-                            .setZone("America/New_York")
-                            .toLocaleString(DateTime.DATETIME_MED)}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </li>
-          ))}
+                          <div className="flex items-center gap-1">
+                            <SiStatuspal />
+                            Estado:{" "}
+                            <span
+                              className={`font-semibold ${
+                                st === "delivered"
+                                  ? "text-green-400"
+                                  : st === "failed" || st === "undelivered"
+                                  ? "text-red-400"
+                                  : "text-yellow-400"
+                              }`}
+                            >
+                              {e.status}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            🏷️ Segmento: <span className="italic text-white/80">{segmento}</span>
+                          </div>
+                          {e.error_message && (
+                            <div className="flex items-center gap-1 text-red-400">
+                              <HiOutlineExclamationTriangle /> {e.error_message}
+                            </div>
+                          )}
+                          <div className="text-white/40">
+                            {DateTime.fromISO(e.timestamp)
+                              .setZone("America/New_York")
+                              .toLocaleString(DateTime.DATETIME_MED)}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
       <Footer />
