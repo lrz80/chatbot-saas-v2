@@ -31,6 +31,9 @@ export default function MetaConfigPage() {
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [usoMeta, setUsoMeta] = useState<any>(null);
   const [clientOnly, setClientOnly] = useState(false);
+  const [flows, setFlows] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>({});
+
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -93,11 +96,23 @@ export default function MetaConfigPage() {
     }
   };  
   
+  const fetchFlows = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/flows?canal=meta`, {
+        credentials: 'include',
+      });
+      const data = res.ok ? await res.json() : [];
+      setFlows(data || []);
+    } catch (err) {
+      console.error("❌ Error cargando Flows de Meta:", err);
+    }
+  };
   useEffect(() => {
     fetchConfiguracion();
     fetchFaqs();
+    fetchFlows();
   }, []);  
-
+  
   // 🔄 handleGuardar solo envía los campos correctos:
   const handleGuardar = async () => {
     console.log('✅ Botón "Guardar Configuración" presionado');
@@ -194,6 +209,73 @@ export default function MetaConfigPage() {
     }
   };
 
+  const handleFlowChange = (
+    i: number,
+    campo: string,
+    valor: string,
+    path: number[] = []
+  ) => {
+    const newFlows = [...flows];
+    let obj = newFlows[i];
+  
+    for (let p = 1; p < path.length; p++) {
+      obj = obj.opciones[path[p]];
+    }
+  
+    obj[campo] = valor;
+    setFlows(newFlows);
+  };  
+
+  const addOpcion = (i) => {
+    const newFlows = [...flows];
+    newFlows[i].opciones.push({ texto: "", respuesta: "" });
+    setFlows(newFlows);
+  };
+
+  const addSubmenu = (i, j) => {
+    const newFlows = [...flows];
+    newFlows[i].opciones[j].submenu = {
+      mensaje: "",
+      opciones: [],
+    };
+    delete newFlows[i].opciones[j].respuesta;
+    setFlows(newFlows);
+  };
+
+  const handleSubmenuMessage = (i, j, value) => {
+    const newFlows = [...flows];
+    newFlows[i].opciones[j].submenu.mensaje = value;
+    setFlows(newFlows);
+  };
+
+  const handleSubOpcionChange = (i, j, k, campo, valor) => {
+    const newFlows = [...flows];
+    newFlows[i].opciones[j].submenu.opciones[k][campo] = valor;
+    setFlows(newFlows);
+  };
+
+  const addSubOpcion = (i, j) => {
+    const newFlows = [...flows];
+    newFlows[i].opciones[j].submenu.opciones.push({
+      texto: "",
+      respuesta: "",
+    });
+    setFlows(newFlows);
+  };
+
+  const removeSubOpcion = (i, j, k) => {
+    const newFlows = [...flows];
+    newFlows[i].opciones[j].submenu.opciones.splice(k, 1);
+    setFlows(newFlows);
+  };
+
+  const removeSubmenu = (i, j) => {
+    const newFlows = [...flows];
+    delete newFlows[i].opciones[j].submenu;
+    newFlows[i].opciones[j].respuesta = "";
+    setFlows(newFlows);
+  };
+  
   const agregarIntent = () => setIntents([...intents, { nombre: '', ejemplos: [], respuesta: '' }]);
   const eliminarIntent = (index: number) => setIntents(intents.filter((_, i) => i !== index));
   const actualizarIntent = (index: number, campo: string, valor: string) => {
@@ -263,6 +345,28 @@ export default function MetaConfigPage() {
       console.error("❌ Error al procesar la compra:", error);
       alert("❌ Error al procesar la compra.");
     }
+  };
+  
+  const saveFlows = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/flows?canal=meta`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(flows),
+      });
+      if (!res.ok) alert('❌ Error al guardar los flujos');
+    } catch (err) {
+      console.error('❌ Error al guardar flows:', err);
+    }
+  };
+  
+  const bloquearSiNoMembresia = (cb: () => void) => {
+    if (!settings.membresia_activa) {
+      alert('Debes tener una membresía activa para usar esta función.');
+      return;
+    }
+    cb();
   };
   
   return (
@@ -426,36 +530,149 @@ export default function MetaConfigPage() {
           onSave={async () => requerirMembresia(() => {})}
         />
 
-        <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-          <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
-            <SiBuffer className="animate-pulse" size={24} />
-            Flujos Guiados Interactivos
-          </h3>
-          {intents.map((item, index) => (
-            <div key={index} className="flex flex-col gap-2 mb-4 bg-white/5 p-4 rounded-lg">
-              <input
-                type="text"
-                placeholder="Nombre de intención"
-                value={item.nombre}
-                onChange={(e) => actualizarIntent(index, 'nombre', e.target.value)}
-                className="p-2 bg-white/10 border border-white/20 rounded"
-              />
-              <input
-                type="text"
-                placeholder="Respuesta"
-                value={item.respuesta}
-                onChange={(e) => actualizarIntent(index, 'respuesta', e.target.value)}
-                className="p-2 bg-white/10 border border-white/20 rounded"
-              />
-              <button onClick={() => eliminarIntent(index)} className="text-red-400 text-xs flex items-center gap-1">
-                <Trash2 size={16} /> Eliminar
-              </button>
-            </div>
-          ))}
-          <button onClick={() => requerirMembresia(agregarIntent)} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg mt-4">
-            <PlusCircle /> Agregar Intención
-          </button>
-        </div>
+        <div className="mt-12">
+                <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
+                  <SiBuffer className="animate-pulse" size={24} />
+                  Flujos Guiados Interactivos
+                </h3>
+
+                  <p className="text-sm text-white/70 mb-4">
+                    Define botones con posibles subniveles. Si el usuario elige una opción, se responde automáticamente. Si no, el asistente usará IA.
+                  </p>
+          
+                  {flows.map((flow, i) => (
+                    <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
+                      <input
+                        type="text"
+                        value={flow.mensaje}
+                        onChange={(e) => handleFlowChange(i, "mensaje", e.target.value)}
+                        className="w-full p-2 border rounded mb-3 bg-white/10 border-white/20 text-white"
+                        placeholder="Mensaje del bot (nivel principal)"
+                        disabled={!settings.membresia_activa}
+                      />
+          
+                      {flow.opciones.map((opcion, j) => (
+                        <div key={j} className="mb-4">
+                          <input
+                            type="text"
+                            value={opcion.texto}
+                            onChange={(e) => handleFlowChange(j, "texto", e.target.value, [i])}
+                            className="w-full p-2 mb-1 bg-white/10 text-white border border-white/20 rounded"
+                            placeholder="Texto del botón"
+                            disabled={!settings.membresia_activa}
+                          />
+          
+                          {opcion.submenu ? (
+                          <div className="bg-white/5 border border-white/10 rounded p-3 mt-2">
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <span className="text-white/80 text-sm">Submenú</span>
+                              <button
+                                type="button"
+                                onClick={() => removeSubmenu(i, j)}
+                                className="text-xs text-red-300 hover:text-red-200"
+                                disabled={!settings.membresia_activa}
+                              >
+                                Quitar submenú
+                              </button>
+                            </div>
+
+                            <input
+                              type="text"
+                              value={opcion.submenu?.mensaje || ""}
+                              onChange={(e) => handleSubmenuMessage(i, j, e.target.value)}
+                              className="w-full p-2 mb-3 bg-white/10 text-white border border-white/20 rounded"
+                              placeholder="Título del submenú (pregunta)"
+                              disabled={!settings.membresia_activa}
+                            />
+
+                            {opcion.submenu?.opciones?.map((sop, k) => (
+                              <div key={k} className="mb-3 bg-white/5 p-2 rounded border border-white/10">
+                                <input
+                                  type="text"
+                                  value={sop.texto}
+                                  onChange={(e) => handleSubOpcionChange(i, j, k, "texto", e.target.value)}
+                                  className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
+                                  placeholder="Texto del botón del submenú"
+                                  disabled={!settings.membresia_activa}
+                                />
+                                <textarea
+                                  value={sop.respuesta || ""}
+                                  onChange={(e) => handleSubOpcionChange(i, j, k, "respuesta", e.target.value)}
+                                  rows={2}
+                                  className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
+                                  placeholder="Respuesta directa (o deja vacío si habrá otro submenú)"
+                                  disabled={!settings.membresia_activa}
+                                />
+                                <div className="flex justify-end mt-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => removeSubOpcion(i, j, k)}
+                                    className="text-xs text-white/60 hover:text-white"
+                                    disabled={!settings.membresia_activa}
+                                  >
+                                    Eliminar opción
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+
+                            <button
+                              type="button"
+                              onClick={() => addSubOpcion(i, j)}
+                              className="text-white/80 text-sm hover:underline"
+                              disabled={!settings.membresia_activa}
+                            >
+                              + Agregar opción de submenú
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <textarea
+                              value={opcion.respuesta || ""}
+                              onChange={(e) => handleFlowChange(j, "respuesta", e.target.value, [i])}
+                              rows={2}
+                              className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
+                              placeholder="Respuesta directa del asistente"
+                              disabled={!settings.membresia_activa}
+                            />
+                            <div className="mt-1">
+                              <button
+                                type="button"
+                                onClick={() => addSubmenu(i, j)}
+                                className="text-xs text-white/70 hover:underline"
+                                disabled={!settings.membresia_activa}
+                              >
+                                + Convertir en submenú
+                              </button>
+                            </div>
+                          </>
+                        )}
+
+                        </div>
+                      ))}
+          
+                      <button
+                        onClick={() => addOpcion(i)}
+                        className="text-white/70 text-sm hover:underline"
+                        disabled={!settings.membresia_activa}
+                      >
+                        + Agregar opción
+                      </button>
+                    </div>
+                  ))}
+          
+                  <button
+                    onClick={() => bloquearSiNoMembresia(saveFlows)}
+                    disabled={!settings.membresia_activa}
+                    className={`px-4 py-2 rounded mt-2 ${
+                      settings.membresia_activa
+                        ? "bg-pink-600 hover:bg-pink-700 text-white"
+                        : "bg-gray-600 text-white/50 cursor-not-allowed"
+                    }`}
+                  >
+                    Guardar Flujos
+                  </button>
+                </div>
 
         <div ref={previewRef} className="bg-[#0f0f25]/60 p-4 rounded max-h-[50vh] min-h-[200px] overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10">
         <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
