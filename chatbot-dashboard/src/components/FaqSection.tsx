@@ -265,14 +265,7 @@ export default function FaqSection({
           </h2>
 
           {faqsSugeridas
-            .filter((f: FaqSugerida & { canal?: string }) => {
-              if (!f.respuesta_sugerida) return false;
-              if (canal === "meta") {
-                return f.canal === "facebook" || f.canal === "instagram";
-              } else {
-                return f.canal === canal;
-              }
-            })
+            .filter(f => f.respuesta_sugerida)
             .map((faq) => (
             <div key={faq.id} className="mb-4 p-4 rounded bg-white/10 border border-white/20">
             <p className="text-white/80 flex items-center gap-2">
