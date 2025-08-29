@@ -22,49 +22,26 @@ type Props = {
   canal: "whatsapp" | "facebook" | "instagram" | "meta" | "voz";
   membresiaActiva: boolean;
   onSave: () => Promise<void>;
+  faqsSugeridas?: FaqSugerida[]; // ✅ Agrega esta línea
+  setFaqsSugeridas?: React.Dispatch<React.SetStateAction<FaqSugerida[]>>; // ✅ Agrega esta también si planeas editar
 };
 
 export default function FaqSection({
   faqs,
   setFaqs,
+  faqsSugeridas,
+  setFaqsSugeridas,
   canal,
   membresiaActiva,
   onSave,
 }: Props) {
-  const [faqSugeridas, setFaqSugeridas] = useState<FaqSugerida[]>([]);
   const [faqEditando, setFaqEditando] = useState<FaqSugerida | null>(null);
   const [nuevaRespuesta, setNuevaRespuesta] = useState("");
 
   useEffect(() => {
     console.log("📌 canal recibido:", canal);
-    const cargarTodo = async () => {
-      try {
-        // Cargar sugeridas
-        const sugeridasRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/sugeridas?canal=${canal}`, {
-          credentials: "include",
-        });
-        const sugeridasData = await sugeridasRes.json();
-        const conRespuesta = sugeridasData.filter(
-          (f: FaqSugerida & { canal?: string }) =>
-            f.respuesta_sugerida && (
-              canal === 'meta'
-                ? f.canal === 'facebook' || f.canal === 'instagram'
-                : f.canal === canal
-            )
-        );
-        
-        setFaqSugeridas(conRespuesta);
-        console.log("📥 Sugeridas cargadas:", conRespuesta);
-
-        // Cargar oficiales
-        await recargarFaqs();
-      } catch (err) {
-        console.error("❌ Error cargando FAQs:", err);
-      }
-    };
-
-    cargarTodo();
-  }, [canal]);
+    recargarFaqs();
+  }, [canal]);  
 
   const handleChange = (
     index: number,
@@ -89,15 +66,15 @@ export default function FaqSection({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
-      setFaqSugeridas((prev) => prev.filter((f) => f.id !== id));
+      setFaqsSugeridas?.((prev) => prev.filter((f) => f.id !== id));
     } catch (err) {
       console.error("❌ Error al rechazar FAQ:", err);
     }
   };
-
+  
   const aprobarConEdicion = async () => {
     if (!faqEditando) return;
-
+  
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/aprobar`, {
         method: "POST",
@@ -108,17 +85,17 @@ export default function FaqSection({
           respuesta_editada: nuevaRespuesta,
         }),
       });
-
+  
       if (res.ok) {
         await recargarFaqs();
-        setFaqSugeridas((prev) => prev.filter((f) => f.id !== faqEditando.id));
+        setFaqsSugeridas?.((prev) => prev.filter((f) => f.id !== faqEditando.id));
         setFaqEditando(null);
         setNuevaRespuesta("");
       }
     } catch (err) {
       console.error("❌ Error aprobando con edición:", err);
     }
-  };
+  };  
 
   const recargarFaqs = async () => {
     try {
@@ -266,13 +243,15 @@ export default function FaqSection({
 
       </div>
 
-      {faqSugeridas.length > 0 && (
+      {faqsSugeridas && faqsSugeridas.length > 0 && (
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 mt-8">
           <h2 className="text-white text-xl font-bold mb-4 flex items-center gap-2">
             <Lightbulb className="text-yellow-400" /> FAQs sugeridas
           </h2>
 
-          {faqSugeridas.filter(f => f.respuesta_sugerida).map((faq) => (
+          {faqsSugeridas
+            .filter(f => f.respuesta_sugerida)
+            .map((faq) => (
             <div key={faq.id} className="mb-4 p-4 rounded bg-white/10 border border-white/20">
             <p className="text-white/80 flex items-center gap-2">
               <MessageSquare className="text-pink-400" size={18} />

@@ -10,7 +10,7 @@ import { BACKEND_URL } from "@/utils/api";
 import { SiWhatsapp, SiBookstack, SiOpenai, SiMinutemailer, SiBuffer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
 import { MdWhatsapp } from "react-icons/md";
 import FaqSection from "@/components/FaqSection";
-
+import type { FaqSugerida } from "@/components/FaqSection";
 
 type FlowOption = {
   texto: string;
@@ -59,6 +59,7 @@ export default function TrainingPage() {
   };
 
   const [faq, setFaq] = useState<Faq[]>([]); // Usa el tipo importado de FaqSection si prefieres
+  const [faqSugeridas, setFaqSugeridas] = useState<FaqSugerida[]>([]);
   
   const [settings, setSettings] = useState({
     name: "",
@@ -82,10 +83,11 @@ export default function TrainingPage() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [settingsRes, faqRes, intentsRes] = await Promise.all([
-          fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" }),
-          fetch(`${BACKEND_URL}/api/faqs`, { credentials: "include" }),
-          fetch(`${BACKEND_URL}/api/intents`, { credentials: "include" }),
+        const [settingsRes, faqRes, intentsRes, sugeridasRes] = await Promise.all([
+          fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/faqs?canal=whatsapp`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/intents?canal=whatsapp`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=whatsapp`, { credentials: "include" }),
         ]);
   
         if (settingsRes.ok) {
@@ -108,6 +110,7 @@ export default function TrainingPage() {
   
         if (faqRes.ok) setFaq(await faqRes.json());
         if (intentsRes.ok) setIntents(await intentsRes.json());
+        if (sugeridasRes.ok) setFaqSugeridas(await sugeridasRes.json());
       } catch (err) {
         console.error("❌ Error cargando configuración:", err);
       } finally {
@@ -544,11 +547,13 @@ export default function TrainingPage() {
         </button>
   
         <FaqSection
+          faqsSugeridas={faqSugeridas}
+          setFaqsSugeridas={setFaqSugeridas}
           faqs={faq}
           setFaqs={setFaq}
           canal="whatsapp"
           membresiaActiva={settings.membresia_activa}
-          onSave={async () => bloquearSiNoMembresia(() => {})}
+          onSave={async () => bloquearSiNoMembresia(handleSave)}
         />
 
         <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
