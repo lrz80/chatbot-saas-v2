@@ -1,42 +1,53 @@
-// src/app/dashboard/meta-config/page.tsx
+"use client";
 
-'use client';
-
-import { useEffect, useRef, useState } from 'react';
 import Footer from '@/components/Footer';
-import PromptGenerator from '@/components/PromptGenerator';
-import TrainingHelp from '@/components/TrainingHelp';
-import { BACKEND_URL } from '@/utils/api';
-import { SiMeta, SiFacebook, SiInstagram, SiBuffer, SiOpenai, SiMinutemailer } from 'react-icons/si';
-import { PlusCircle, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from "react";
+import TrainingHelp from "@/components/TrainingHelp";
+import PromptGenerator from "@/components/PromptGenerator";
+import { useRouter } from "next/navigation";
+import { Save, } from "lucide-react";
+import { BACKEND_URL } from "@/utils/api";
+import { SiMeta, SiOpenai, SiMinutemailer, SiBuffer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
 import FaqSection from "@/components/FaqSection";
 
-export default function MetaConfigPage() {
-  const [connected, setConnected] = useState(false);
-  const [facebookPageName, setFacebookPageName] = useState('');
-  const [instagramPageName, setInstagramPageName] = useState('');
-  const [promptMeta, setPromptMeta] = useState('');
-  const [bienvenidaMeta, setBienvenidaMeta] = useState('');
-  const [faq, setFaq] = useState<Faq[]>([]);
-  const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
-  const [infoClaveMeta, setInfoClaveMeta] = useState('');
-  const [funcionesMeta, setFuncionesMeta] = useState('');
-  const [membresiaActiva, setMembresiaActiva] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
+
+type FlowOption = {
+  texto: string;
+  respuesta?: string;
+  submenu?: {
+    mensaje: string;
+    opciones: FlowOption[];
+  };
+};
+
+type Flow = {
+  mensaje: string;
+  opciones: FlowOption[];
+};
+
+const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
+
+export default function TrainingPage() {
+  const router = useRouter();
+  const bloquearSiNoMembresia = (callback: () => void) => {
+    if (!settings.membresia_activa) {
+      router.push("/upgrade"); // Redirige al usuario para activar su plan
+      return;
+    }
+    callback(); // Si tiene membresía activa, ejecuta la acción real
+  };
   const previewRef = useRef<HTMLDivElement | null>(null);
-  const [usoMeta, setUsoMeta] = useState<any>(null);
-  const [clientOnly, setClientOnly] = useState(false);
-  const [flows, setFlows] = useState<any[]>([]);
-  const [settings, setSettings] = useState<any>({});
-
-
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
+  const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
+  const [isTyping, setIsTyping] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
-
+  const [usoMeta, setUsoMeta] = useState<any>(null);
+  const [usos, setUsos] = useState<any[]>([]);
+  const [clientOnly, setClientOnly] = useState(false);
   useEffect(() => {
     setClientOnly(true);
   }, []);
@@ -46,282 +57,297 @@ export default function MetaConfigPage() {
     respuesta: string;
   };
 
-  // 🔄 fetchConfiguracion simplificado:
-  const fetchConfiguracion = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/meta-config`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
+  const [faq, setFaq] = useState<Faq[]>([]); // Usa el tipo importado de FaqSection si prefieres
   
-        setPromptMeta(data.prompt_meta || '');
-        setBienvenidaMeta(data.bienvenida_meta || '');
-        setFuncionesMeta(data.funciones_asistente || '');
-        setInfoClaveMeta(data.info_clave || '');
-        setMessages([{ role: 'assistant', content: data.bienvenida_meta || '¡Hola! ¿En qué puedo ayudarte hoy?' }]);
-  
-        // ✅ Detectar si Meta está conectado
-        if (data.facebook_page_id || data.instagram_page_id) {
-          setConnected(true);
-          setFacebookPageName(data.facebook_page_name || '');
-          setInstagramPageName(data.instagram_page_name || '');
-        } else {
-          setConnected(false);
-          setFacebookPageName('');
-          setInstagramPageName('');
-        }
-  
-        // ✅ Estado real de la membresía desde backend (importante)
-        if (typeof data.membresia_activa !== 'undefined') {
-          setMembresiaActiva(data.membresia_activa);
-        } else {
-          setMembresiaActiva(false); // fallback en caso de error
-        }
-      }
-    } catch (error) {
-      console.error('Error obteniendo configuración de Meta:', error);
-      setMembresiaActiva(false); // fallback si falla
-    }
-  };  
+  const [settings, setSettings] = useState({
+    name: "",
+    categoria: "",
+    prompt: "Eres un asistente útil.",
+    bienvenida: "¡Hola! ¿En qué puedo ayudarte hoy?",
+    membresia_activa: true,
+    informacion_negocio: "",
+    funciones_asistente: "",
+    info_clave: "",
+    idioma: "es",
+  });
 
-  const fetchFaqs = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/faqs?canal=facebook`, {
-        credentials: 'include',
-      });
+  const isMembershipActive = settings.membresia_activa;
   
-      const data = res.ok ? await res.json() : [];
-      setFaq(data);
-    } catch (err) {
-      console.error("❌ Error cargando FAQs de Meta:", err);
-    }
-  };  
-  
-  const fetchFlows = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/flows?canal=meta`, {
-        credentials: 'include',
-      });
-      const data = res.ok ? await res.json() : [];
-      setFlows(data || []);
-    } catch (err) {
-      console.error("❌ Error cargando Flows de Meta:", err);
-    }
-  };
-  useEffect(() => {
-    fetchConfiguracion();
-    fetchFaqs();
-    fetchFlows();
-  }, []);  
-  
-  // 🔄 handleGuardar solo envía los campos correctos:
-  const handleGuardar = async () => {
-    console.log('✅ Botón "Guardar Configuración" presionado');
-    setSaving(true);
-    setSaved(false);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/meta-config`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          funciones_asistente: funcionesMeta,
-          info_clave: infoClaveMeta,
-          prompt_meta: promptMeta,               // 👈 Cambiar aquí
-          bienvenida_meta: bienvenidaMeta,       // 👈 Cambiar aquí
-          idioma: 'es',
-        }),
-      });
-  
-      console.log('📤 Enviando datos:', {
-        funciones_asistente: funcionesMeta,
-        info_clave: infoClaveMeta,
-        prompt_meta: promptMeta,               // 👈 Cambiar aquí
-        bienvenida_meta: bienvenidaMeta,       // 👈 Cambiar aquí
-        idioma: 'es',
-      });
-  
-      if (res.ok) setSaved(true);
-      else alert('❌ Error al guardar configuración.');
-    } catch (error) {
-      console.error('Error guardando configuración:', error);
-      alert('❌ Error al guardar configuración.');
-    } finally {
-      setSaving(false);
-    }
-  };
-  
-  const handleDesconectar = async () => {
-  console.log('⚠️ Botón "Desconectar Facebook" presionado');
-  const confirmacion = confirm('¿Estás seguro de que deseas desconectar tus cuentas de Facebook e Instagram?');
-  if (!confirmacion) return;
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/meta-config/disconnect`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-
-    if (res.ok) {
-      alert('Cuentas desconectadas exitosamente');
-      setFacebookPageName('');
-      setInstagramPageName('');
-      setConnected(false);
-    } else {
-      const data = await res.json();
-      alert(`Error al desconectar: ${data.error || 'Error desconocido'}`);
-    }
-  } catch (err) {
-    console.error('❌ Error al desconectar:', err);
-    alert('Hubo un problema al intentar desconectar las cuentas');
-  }
-};
-
-  const handlePreviewSend = async () => {
-    if (!input.trim()) return;
-  
-    const mensajeUsuario = input.trim();
-    setMessages((prev) => [...prev, { role: 'user', content: mensajeUsuario }]);
-    setInput('');
-    setIsTyping(true);
-  
-    setTimeout(() => {
-      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }, 100);
-  
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/preview`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ message: mensajeUsuario, canal: 'preview-meta' }),
-      });
-  
-      const data = await res.json();
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.response || '...' }]);
-    } catch (error) {
-      console.error('❌ Error en vista previa:', error);
-      setMessages((prev) => [...prev, { role: 'assistant', content: '⚠️ Error generando respuesta' }]);
-    } finally {
-      setIsTyping(false);
-      setTimeout(() => {
-        previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-      }, 100);
-    }
-  };
-
-  const handleFlowChange = (
-    i: number,
-    campo: string,
-    valor: string,
-    path: number[] = []
-  ) => {
-    const newFlows = [...flows];
-    let obj = newFlows[i];
-  
-    for (let p = 1; p < path.length; p++) {
-      obj = obj.opciones[path[p]];
-    }
-  
-    obj[campo] = valor;
-    setFlows(newFlows);
-  };  
-
-  const addOpcion = (i) => {
-    const newFlows = [...flows];
-    newFlows[i].opciones.push({ texto: "", respuesta: "" });
-    setFlows(newFlows);
-  };
-
-  const addSubmenu = (i, j) => {
-    const newFlows = [...flows];
-    newFlows[i].opciones[j].submenu = {
-      mensaje: "",
-      opciones: [],
-    };
-    delete newFlows[i].opciones[j].respuesta;
-    setFlows(newFlows);
-  };
-
-  const handleSubmenuMessage = (i, j, value) => {
-    const newFlows = [...flows];
-    newFlows[i].opciones[j].submenu.mensaje = value;
-    setFlows(newFlows);
-  };
-
-  const handleSubOpcionChange = (i, j, k, campo, valor) => {
-    const newFlows = [...flows];
-    newFlows[i].opciones[j].submenu.opciones[k][campo] = valor;
-    setFlows(newFlows);
-  };
-
-  const addSubOpcion = (i, j) => {
-    const newFlows = [...flows];
-    newFlows[i].opciones[j].submenu.opciones.push({
-      texto: "",
-      respuesta: "",
-    });
-    setFlows(newFlows);
-  };
-
-  const removeSubOpcion = (i, j, k) => {
-    const newFlows = [...flows];
-    newFlows[i].opciones[j].submenu.opciones.splice(k, 1);
-    setFlows(newFlows);
-  };
-
-  const removeSubmenu = (i, j) => {
-    const newFlows = [...flows];
-    delete newFlows[i].opciones[j].submenu;
-    newFlows[i].opciones[j].respuesta = "";
-    setFlows(newFlows);
-  };
-  
-  const agregarIntent = () => setIntents([...intents, { nombre: '', ejemplos: [], respuesta: '' }]);
-  const eliminarIntent = (index: number) => setIntents(intents.filter((_, i) => i !== index));
-  const actualizarIntent = (index: number, campo: string, valor: string) => {
-    const nuevosIntents = [...intents];
-    (nuevosIntents[index] as any)[campo] = valor;
-    setIntents(nuevosIntents);
-  };
-
-  const router = useRouter();
-
-  function requerirMembresia(callback: () => void) {
-    if (!membresiaActiva) {
-      router.push('/upgrade');
-    } else {
-      callback();
-    }
-  }
-
   useEffect(() => {
     if (!chatContainerRef.current) return;
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
   }, [messages]);
   
   useEffect(() => {
-    fetchConfiguracion();
-    const fetchUsos = async () => {
+    const fetchAll = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          setUsoMeta(data.usos.find((u: any) => u.canal === 'meta'));
+        const [settingsRes, faqRes, intentsRes] = await Promise.all([
+          fetch(`${BACKEND_URL}/api/settings?canal=meta`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/faqs?canal=meta`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/intents?canal=meta`, { credentials: "include" }),
+        ]);    
+  
+        if (settingsRes.ok) {
+          const data = await settingsRes.json();
+          setSettings((prev) => ({
+            ...prev,
+            name: data.name || prev.name,
+            categoria: data.categoria || prev.categoria,
+            prompt: data.prompt || prev.prompt,
+            bienvenida: data.bienvenida || prev.bienvenida,
+            informacion_negocio: data.informacion_negocio || prev.informacion_negocio,
+            funciones_asistente: data.funciones_asistente || prev.funciones_asistente,
+            info_clave: data.info_clave || prev.info_clave,
+            membresia_activa: data.membresia_activa,
+            idioma: data.idioma || prev.idioma,
+          }));
+          setMessages([{ role: "assistant", content: data.bienvenida != null ? data.bienvenida : "¡Hola! ¿Cómo puedo ayudarte?" }]);
+          setUsos(data.limites || {});  // 🚀 Ahora guardamos límites completos por canal
         }
-      } catch (error) {
-        console.error("Error obteniendo uso:", error);
+  
+        if (faqRes.ok) setFaq(await faqRes.json());
+        if (intentsRes.ok) setIntents(await intentsRes.json());
+      } catch (err) {
+        console.error("❌ Error cargando configuración:", err);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchUsos();
-  }, []);
-
-  const calcularPorcentaje = (usados: number, limite: number) => (usados / limite) * 100;
-  const colorBarra = (porcentaje: number) => {
-    if (porcentaje > 80) return "bg-red-500";
-    if (porcentaje > 50) return "bg-yellow-500";
-    return "bg-green-500";
+  
+    fetchAll();
+  }, [router]);
+  
+  const handleChange = (e: any) => {
+    setSettings({ ...settings, [e.target.name]: e.target.value });
   };
 
+  const handleSave = async () => {
+    if (!isMembershipActive) return;
+    setSaving(true);
+
+    const payload = {
+      nombre_negocio: settings.name,
+      categoria: settings.categoria,
+      idioma: settings.idioma,
+      prompt: settings.prompt,
+      bienvenida: settings.bienvenida,
+      informacion_negocio: settings.informacion_negocio,
+      funciones_asistente: settings.funciones_asistente?.trim() || undefined,
+      info_clave: (settings.info_clave ?? '').replace(/\r\n/g, '\n').replace(/\n{2,}/g, '\n').trim(),
+    };    
+
+    console.log("📤 Enviando payload a /api/settings:", payload);
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/settings?canal=meta`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      console.log("✅ Respuesta del servidor:", data);
+
+      if (!res.ok) {
+        alert("❌ Error al guardar: " + data?.error || "Error desconocido");
+      } else {
+        alert("Configuración del bot guardada ✅");
+      }
+    } catch (err) {
+      console.error("❌ Error en handleSave:", err);
+      alert("Error al guardar la configuración.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!isMembershipActive || !input.trim()) return;
+
+    setMessages((prev) => [...prev, { role: "user", content: input }]);
+    setInput("");
+    setIsTyping(true);
+
+    setTimeout(() => {
+      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 100);
+
+    const res = await fetch(`${BACKEND_URL}/api/preview?canal=meta`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: input, canal: 'preview-meta' }),
+    });
+
+    const data = await res.json();
+    setMessages((prev) => [...prev, { role: "assistant", content: data.response || "..." }]);
+    setIsTyping(false);
+
+    setTimeout(() => {
+      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 100);
+  };
+
+  const handleIntentChange = (i: number, field: string, value: string) => {
+    const updated = [...intents];
+    updated[i][field] = field === "ejemplos" ? value.split("\n").filter(Boolean) : value;
+    setIntents(updated);
+  };
+  
+  const addIntent = () =>
+    setIntents([...intents, { nombre: "", ejemplos: [], respuesta: "" }]);
+  
+  const saveIntents = async () => {
+    if (!isMembershipActive) return;
+  
+    const intencionesLimpias = intents.filter(
+      (i) => i.nombre.trim() && i.ejemplos.length > 0 && i.respuesta.trim()
+    );
+  
+    if (intencionesLimpias.length === 0) return alert("❌ Agrega al menos una intención válida.");
+  
+    await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ intents: intencionesLimpias }),
+    });
+  
+    alert("Intenciones guardadas ✅");
+  };  
+  
+  const [flows, setFlows] = useState<Flow[]>([
+    {
+      mensaje: "¿Qué deseas hacer?",
+      opciones: [
+        {
+          texto: "Reservar",
+          submenu: {
+            mensaje: "¿Qué deseas reservar?",
+            opciones: [
+              { texto: "Facial", respuesta: "Agenda tu facial aquí: [link]" },
+              { texto: "Masaje", respuesta: "Perfecto, masaje disponible aquí: [link]" },
+            ],
+          },
+        },
+        {
+          texto: "Ver precios",
+          respuesta: "Nuestros precios están en este link: [link]",
+        },
+      ],
+    },
+  ]);  
+  
+  // Crear submenú si no existe
+  const addSubmenu = (i: number, j: number) => {
+    const copy = structuredClone(flows);
+    const op = copy[i].opciones[j];
+    op.submenu = op.submenu ?? { mensaje: "¿Qué deseas?", opciones: [{ texto: "", respuesta: "" }] };
+    setFlows(copy);
+  };
+
+  // Quitar submenú
+  const removeSubmenu = (i: number, j: number) => {
+    const copy = structuredClone(flows);
+    delete copy[i].opciones[j].submenu;
+    setFlows(copy);
+  };
+
+  // Editar título del submenú
+  const handleSubmenuMessage = (i: number, j: number, value: string) => {
+    const copy = structuredClone(flows);
+    if (!copy[i].opciones[j].submenu) return;
+    copy[i].opciones[j].submenu!.mensaje = value;
+    setFlows(copy);
+  };
+
+  // Agregar opción al submenú
+  const addSubOpcion = (i: number, j: number) => {
+    const copy = structuredClone(flows);
+    const sm = copy[i].opciones[j].submenu;
+    if (!sm) return;
+    sm.opciones.push({ texto: "", respuesta: "" });
+    setFlows(copy);
+  };
+
+  // Editar una opción del submenú
+  const handleSubOpcionChange = (
+    i: number, j: number, k: number,
+    field: keyof FlowOption, value: string
+  ) => {
+    const copy = structuredClone(flows);
+    const sm = copy[i].opciones[j].submenu;
+    if (!sm) return;
+    (sm.opciones[k] as any)[field] = value;
+    setFlows(copy);
+  };
+
+  // Eliminar una opción del submenú
+  const removeSubOpcion = (i: number, j: number, k: number) => {
+    const copy = structuredClone(flows);
+    const sm = copy[i].opciones[j].submenu;
+    if (!sm) return;
+    sm.opciones.splice(k, 1);
+    setFlows(copy);
+  };
+
+  const handleFlowChange = (
+    nivel: number,
+    key: keyof FlowOption | keyof Flow,
+    value: any,
+    path: number[] = []
+  ) => {
+  
+    const copy = JSON.parse(JSON.stringify(flows));
+    let ref = copy;
+    path.forEach((i) => ref = (ref[i].submenu?.opciones ?? ref[i].opciones) as FlowOption[]);
+    (ref[nivel] as any)[key] = value;
+    setFlows(copy);
+  };
+  
+  const addOpcion = (nivel: number = 0, path: number[] = []) => {
+    const copy = JSON.parse(JSON.stringify(flows));
+    let ref = copy;
+    path.forEach((i) => ref = (ref[i].submenu?.opciones ?? ref[i].opciones) as FlowOption[]);
+    ref[nivel].opciones.push({ texto: "", respuesta: "" });
+    setFlows(copy);
+  };
+  
+  const saveFlows = async () => {
+    if (!settings.membresia_activa) return;
+  
+    const flowsValidos = flows.filter(
+      (f) => f.mensaje.trim() && f.opciones.some((o) => o.texto.trim() && (o.respuesta?.trim() || o.submenu))
+    );
+    if (flowsValidos.length === 0) return alert("❌ Agrega al menos un flujo válido.");
+  
+    // El backend acepta { flows } con 'mensaje' o 'pregunta'
+    const res = await fetch(`${BACKEND_URL}/api/flows?canal=meta`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ flows: flowsValidos }),
+    });
+  
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return alert(`❌ Error al guardar: ${err.error || 'desconocido'}`);
+    }
+  
+    alert("Flujos guardados ✅");
+  
+    // 🔄 volver a cargar desde DB
+    // (mueve fetchFlows a scope superior o duplica aquí)
+    const reload = await fetch(`${BACKEND_URL}/api/flows?canal=meta`, { credentials: "include" });
+    const { data } = await reload.json();
+    const parsed = Array.isArray(data)
+      ? data.map((f: any) => ({ mensaje: f.pregunta ?? "", opciones: f.opciones || [] }))
+      : [];
+    setFlows(parsed);
+  };  
+  
+  // Agrega esta función dentro del componente
   const comprarMas = async (canal: string, cantidad: number) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/stripe/checkout-credit`, {
@@ -331,7 +357,7 @@ export default function MetaConfigPage() {
         body: JSON.stringify({
           canal,
           cantidad,
-          redirectPath: "/dashboard/meta-config",
+          redirectPath: "/dashboard/meta-config",  // Puedes ajustar si necesitas otro path
         }),
       });
   
@@ -342,108 +368,90 @@ export default function MetaConfigPage() {
         alert("❌ Error al iniciar la compra.");
       }
     } catch (error) {
-      console.error("❌ Error al procesar la compra:", error);
+      console.error("❌ Error al comprar créditos:", error);
       alert("❌ Error al procesar la compra.");
     }
+  };  
+
+  useEffect(() => {
+    const fetchUsos = async () => {
+      const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" });
+      const data = await res.json();
+      setUsos(data.usos || []);
+      setUsoMeta(data.usos.find((u: any) => u.canal === "meta"));
+    };
+    fetchUsos();
+  }, []);
+
+  const calcularPorcentaje = (usados: number, limite: number) => {
+    if (!limite || limite === 0) return 0;
+    return (usados / limite) * 100;
   };
   
-  const saveFlows = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/flows?canal=meta`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(flows),
-      });
-      if (!res.ok) alert('❌ Error al guardar los flujos');
-    } catch (err) {
-      console.error('❌ Error al guardar flows:', err);
-    }
+  const colorBarra = (porcentaje: number) => {
+    if (porcentaje > 80) return "bg-red-500";
+    if (porcentaje > 50) return "bg-yellow-500";
+    return "bg-green-500";
   };
   
-  const bloquearSiNoMembresia = (cb: () => void) => {
-    if (!settings.membresia_activa) {
-      alert('Debes tener una membresía activa para usar esta función.');
-      return;
-    }
-    cb();
-  };
+  useEffect(() => {
+    const fetchFlows = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/flows?canal=meta`, {
+          credentials: "include",
+          headers: { "Accept": "application/json" },
+        });
+        if (!res.ok) throw new Error("Error al cargar flujos");
+        const { data } = await res.json(); // backend devuelve { data: [...] }
+  
+        // El backend usa 'pregunta'; el front usa 'mensaje'
+        const parsed = Array.isArray(data)
+          ? data.map((f: any) => ({
+              mensaje: f.pregunta ?? f.mensaje ?? "",
+              opciones: Array.isArray(f.opciones) ? f.opciones : [],
+            }))
+          : [];
+  
+        setFlows(parsed);
+      } catch (e) {
+        console.error("❌ Error fetch /api/flows:", e);
+      }
+    };
+    fetchFlows();
+  }, []);
+  
+  if (loading) return <p className="text-center">Cargando configuración...</p>;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
-      <div className="max-w-5xl mx-auto flex flex-col gap-8">
-
-        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
-        <SiMeta size={36} className="text-sky-400 animate-pulse" /> Configuración de Facebook e Instagram
-        </h1>
-
-        {/* Estado de Conexión Facebook / Instagram */}
-        <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white/5 border border-white/20 rounded-xl p-4 shadow-md">
-
-        {!connected ? (
-          <> 
-            <p className="text-purple-300 font-medium">Conecta tu cuenta de Facebook e Instagram para comenzar.</p>
-            <button
-              disabled={!membresiaActiva}
-              onClick={() =>
-                requerirMembresia(() => {
-                  const appId = '672113805196816';
-                  const redirectUri = 'https://api.aamy.ai/api/facebook/oauth-callback';
-                  const scopes = [
-                    'pages_show_list',
-                    'pages_messaging',
-                    'instagram_basic',
-                    'instagram_manage_messages',
-                    'instagram_manage_comments',
-                  ].join(',');
-                  const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
-                    redirectUri
-                  )}&scope=${scopes}&response_type=code&auth_type=rerequest`;
-                  window.location.href = authUrl;
-                })
-              }
-              className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition ${
-                membresiaActiva
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              Conectar Facebook / Instagram
-            </button>
-
-          </>
-        ) : (
-          <>
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 bg-green-600/10 border border-green-400 text-green-300 rounded-lg px-4 py-2 text-sm font-medium min-w-[240px]">
-              <SiFacebook className="text-blue-500" /> Página conectada: {facebookPageName}
-              </div>
-
-              <div className="flex items-center gap-2 bg-green-600/10 border border-green-400 text-green-300 rounded-lg px-4 py-2 text-sm font-medium min-w-[240px]">
-              <SiInstagram className="text-pink-500" /> Instagram conectado: @{instagramPageName}
-              </div>
-            </div>
-
-            <button
-              onClick={handleDesconectar}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold text-sm px-5 py-2 rounded-lg transition-all h-fit"
-            >
-              Desconectar
-            </button>
-
-          </>
+      <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
+  
+        {!settings.membresia_activa && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
+            ⚠ Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.
+          </div>
         )}
-        </div>
-
-        <TrainingHelp context="meta" />
+  
+        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
+          <SiMeta size={36} className="text-green-400 animate-pulse" />
+          Configuración del Asistente de Facebook e Instagram
+        </h1>
+  
+        {usage.porcentaje >= 80 && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
+            ⚠ Estás utilizando el <strong>{usage.porcentaje}%</strong> de tu límite mensual ({usage.used}/{usage.limit} mensajes).<br />Considera actualizar tu plan para evitar interrupciones.
+          </div>
+        )}
+  
+        <TrainingHelp context="training" />
 
         {usoMeta && (
           <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
             <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-              <SiMeta /> Uso de Meta (FB & IG)
+              <SiMeta /> Uso de Facebook / Instagram
             </h3>
             <p className="text-white text-sm mb-2">
-              {usoMeta.usados ?? 0} de {usoMeta.limite} mensajes utilizados (incluye créditos extra)
+              {usoMeta.usados ?? 0} de {usoMeta.limite} mensajes enviados (incluye créditos extra)
             </p>
             {usoMeta.limite > 500 && (
               <p className="text-green-300 text-sm">
@@ -470,211 +478,296 @@ export default function MetaConfigPage() {
           </div>
         )}
 
-        <div className="bg-white/10 rounded-xl p-6 border border-white/20 shadow-md">
-          <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
-            <SiOpenai className="animate-pulse" size={24} />
-            Entrenamiento por Intención
-          </h3>
-
-          {/* Prompt Generator */}
-          <PromptGenerator
-            infoClave={infoClaveMeta}
-            funcionesAsistente={funcionesMeta}
-            setInfoClave={setInfoClaveMeta}
-            setFuncionesAsistente={setFuncionesMeta}
-            idioma="es"
-            membresiaActiva={membresiaActiva}
-            onPromptGenerated={(nuevoPrompt) => setPromptMeta(nuevoPrompt)}
-          />
-
-          {/* Mensaje de bienvenida */}
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-purple-300 mb-1"> Mensaje de bienvenida</label>
-            <input
-              list="sugerencias-bienvenida"
-              value={bienvenidaMeta}
-              onChange={(e) => setBienvenidaMeta(e.target.value)}
-              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400"
-              placeholder="Escribe o selecciona una sugerencia"
-            />
-
-            <datalist id="sugerencias-bienvenida">
-              <option value="Hola 👋 Soy Amy, tu asistente virtual. ¿En qué puedo ayudarte hoy?" />
-              <option value="¡Bienvenido a nuestro estudio! ¿En qué te puedo asistir?" />
-              <option value="Hola, soy Amy. ¿Te ayudo a reservar una cita o responder preguntas?" />
-              <option value="¡Hola! Estoy aquí para ayudarte con precios, horarios y reservas." />
-              <option value="Hola, ¿qué servicio te interesa hoy?" />
-            </datalist>
-
-          </div>
-
-          {/* Prompt generado */}
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-purple-300 mb-1"> Instrucciones generadas</label>
-            <textarea
-              rows={6}
-              value={promptMeta}
-              onChange={(e) => setPromptMeta(e.target.value)}
-              className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400"
-              placeholder="Aquí aparecerá el prompt generado por el sistema..."
-            />
-          </div>
-
-        </div>
-
+        <input
+          name="name"
+          value={settings.name}
+          readOnly
+          placeholder="Nombre del negocio"
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+        />
+  
+        <select
+          name="idioma"
+          value={settings.idioma}
+          onChange={handleChange}
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          disabled={!settings.membresia_activa}
+        >
+          <option value="es">Español</option>
+          <option value="en">Inglés</option>
+          <option value="pt">Portugués</option>
+          <option value="fr">Francés</option>
+        </select>
+  
+        <PromptGenerator
+          infoClave={settings.info_clave}
+          funcionesAsistente={settings.funciones_asistente}
+          setInfoClave={(value) => setSettings((prev) => ({ ...prev, info_clave: value }))}
+          setFuncionesAsistente={(value) =>
+            setSettings((prev) => ({ ...prev, funciones_asistente: value }))
+          }
+          idioma={settings.idioma}
+          membresiaActiva={settings.membresia_activa}
+          onPromptGenerated={(prompt) => setSettings((prev) => ({ ...prev, prompt }))}
+        />
+  
+        <input
+          name="bienvenida"
+          value={settings.bienvenida}
+          onChange={handleChange}
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          placeholder="Mensaje de bienvenida"
+          disabled={!settings.membresia_activa}
+        />
+  
+        <textarea
+          name="prompt"
+          value={settings.prompt}
+          onChange={handleChange}
+          rows={3}
+          className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
+          placeholder="Prompt del sistema"
+          disabled={!settings.membresia_activa}
+        />
+  
+        <button
+          onClick={() => bloquearSiNoMembresia(handleSave)}
+          disabled={!settings.membresia_activa}
+          className={`px-6 py-2 rounded-lg flex items-center gap-2 mb-10 ${
+            settings.membresia_activa
+              ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+              : "bg-gray-600 text-white/50 cursor-not-allowed"
+          }`}
+        >
+          <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
+        </button>
+  
         <FaqSection
           faqs={faq}
           setFaqs={setFaq}
           canal="meta"
-          membresiaActiva={membresiaActiva}
-          onSave={async () => requerirMembresia(() => {})}
+          membresiaActiva={settings.membresia_activa}
+          onSave={async () => bloquearSiNoMembresia(() => {})}
         />
 
+        <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
+          <SiOpenai className="animate-pulse" size={24} />
+          Entrenamiento por Intención
+        </h3>
+
+        <p className="text-sm text-white/70 mb-4">
+          Define intenciones específicas para que el asistente pueda reconocer patrones en los mensajes del usuario y responder con mayor precisión. <br />
+          <strong>Ejemplo:</strong> Intención: Reservar cita | Ejemplos: “Quiero agendar”, “Reserva para hoy” | Respuesta: “¡Claro! ¿Qué día prefieres?”
+        </p>
+  
+        {intents.map((item, i) => (
+          <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
+            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
+              <SiTarget /> Intención
+            </label>
+            <input
+              type="text"
+              className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
+              value={item.nombre}
+              onChange={(e) => handleIntentChange(i, "nombre", e.target.value)}
+              disabled={!settings.membresia_activa}
+            />
+  
+            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
+              <SiPaperspace /> Frases de ejemplo (una por línea)
+            </label>
+            <textarea
+              className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
+              value={item.ejemplos.join("\n")}
+              onChange={(e) => handleIntentChange(i, "ejemplos", e.target.value)}
+              rows={3}
+              disabled={!settings.membresia_activa}
+            />
+  
+            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
+              <SiChatbot /> Respuesta del Asistente
+            </label>
+            <textarea
+              className="w-full p-2 border rounded bg-white/10 border-white/20 text-white"
+              value={item.respuesta}
+              onChange={(e) => handleIntentChange(i, "respuesta", e.target.value)}
+              rows={2}
+              disabled={!settings.membresia_activa}
+            />
+          </div>
+        ))}
+  
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={addIntent}
+            disabled={!settings.membresia_activa}
+            className={`px-4 py-2 rounded ${
+              settings.membresia_activa
+                ? "bg-white/10 text-white hover:bg-white/20"
+                : "bg-gray-600 text-white/50 cursor-not-allowed"
+            }`}
+          >
+            ➕ Agregar intención
+          </button>
+  
+          <button
+            onClick={() => bloquearSiNoMembresia(saveIntents)}
+            disabled={!settings.membresia_activa}
+            className={`px-4 py-2 rounded ${
+              settings.membresia_activa
+                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                : "bg-gray-600 text-white/50 cursor-not-allowed"
+            }`}
+          >
+            Guardar Intenciones
+          </button>
+        </div>
+  
         <div className="mt-12">
-                <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
-                  <SiBuffer className="animate-pulse" size={24} />
-                  Flujos Guiados Interactivos
-                </h3>
+        <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
+          <SiBuffer className="animate-pulse" size={24} />
+          Flujos Guiados Interactivos
+        </h3>
 
-                  <p className="text-sm text-white/70 mb-4">
-                    Define botones con posibles subniveles. Si el usuario elige una opción, se responde automáticamente. Si no, el asistente usará IA.
-                  </p>
-          
-                  {flows.map((flow, i) => (
-                    <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
-                      <input
-                        type="text"
-                        value={flow.mensaje}
-                        onChange={(e) => handleFlowChange(i, "mensaje", e.target.value)}
-                        className="w-full p-2 border rounded mb-3 bg-white/10 border-white/20 text-white"
-                        placeholder="Mensaje del bot (nivel principal)"
-                        disabled={!settings.membresia_activa}
-                      />
-          
-                      {flow.opciones.map((opcion, j) => (
-                        <div key={j} className="mb-4">
-                          <input
-                            type="text"
-                            value={opcion.texto}
-                            onChange={(e) => handleFlowChange(j, "texto", e.target.value, [i])}
-                            className="w-full p-2 mb-1 bg-white/10 text-white border border-white/20 rounded"
-                            placeholder="Texto del botón"
-                            disabled={!settings.membresia_activa}
-                          />
-          
-                          {opcion.submenu ? (
-                          <div className="bg-white/5 border border-white/10 rounded p-3 mt-2">
-                            <div className="flex items-center justify-between gap-2 mb-2">
-                              <span className="text-white/80 text-sm">Submenú</span>
-                              <button
-                                type="button"
-                                onClick={() => removeSubmenu(i, j)}
-                                className="text-xs text-red-300 hover:text-red-200"
-                                disabled={!settings.membresia_activa}
-                              >
-                                Quitar submenú
-                              </button>
-                            </div>
-
-                            <input
-                              type="text"
-                              value={opcion.submenu?.mensaje || ""}
-                              onChange={(e) => handleSubmenuMessage(i, j, e.target.value)}
-                              className="w-full p-2 mb-3 bg-white/10 text-white border border-white/20 rounded"
-                              placeholder="Título del submenú (pregunta)"
-                              disabled={!settings.membresia_activa}
-                            />
-
-                            {opcion.submenu?.opciones?.map((sop, k) => (
-                              <div key={k} className="mb-3 bg-white/5 p-2 rounded border border-white/10">
-                                <input
-                                  type="text"
-                                  value={sop.texto}
-                                  onChange={(e) => handleSubOpcionChange(i, j, k, "texto", e.target.value)}
-                                  className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
-                                  placeholder="Texto del botón del submenú"
-                                  disabled={!settings.membresia_activa}
-                                />
-                                <textarea
-                                  value={sop.respuesta || ""}
-                                  onChange={(e) => handleSubOpcionChange(i, j, k, "respuesta", e.target.value)}
-                                  rows={2}
-                                  className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-                                  placeholder="Respuesta directa (o deja vacío si habrá otro submenú)"
-                                  disabled={!settings.membresia_activa}
-                                />
-                                <div className="flex justify-end mt-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => removeSubOpcion(i, j, k)}
-                                    className="text-xs text-white/60 hover:text-white"
-                                    disabled={!settings.membresia_activa}
-                                  >
-                                    Eliminar opción
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-
-                            <button
-                              type="button"
-                              onClick={() => addSubOpcion(i, j)}
-                              className="text-white/80 text-sm hover:underline"
-                              disabled={!settings.membresia_activa}
-                            >
-                              + Agregar opción de submenú
-                            </button>
-                          </div>
-                        ) : (
-                          <>
-                            <textarea
-                              value={opcion.respuesta || ""}
-                              onChange={(e) => handleFlowChange(j, "respuesta", e.target.value, [i])}
-                              rows={2}
-                              className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-                              placeholder="Respuesta directa del asistente"
-                              disabled={!settings.membresia_activa}
-                            />
-                            <div className="mt-1">
-                              <button
-                                type="button"
-                                onClick={() => addSubmenu(i, j)}
-                                className="text-xs text-white/70 hover:underline"
-                                disabled={!settings.membresia_activa}
-                              >
-                                + Convertir en submenú
-                              </button>
-                            </div>
-                          </>
-                        )}
-
-                        </div>
-                      ))}
-          
+          <p className="text-sm text-white/70 mb-4">
+            Define botones con posibles subniveles. Si el usuario elige una opción, se responde automáticamente. Si no, el asistente usará IA.
+          </p>
+  
+          {flows.map((flow, i) => (
+            <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
+              <input
+                type="text"
+                value={flow.mensaje}
+                onChange={(e) => handleFlowChange(i, "mensaje", e.target.value)}
+                className="w-full p-2 border rounded mb-3 bg-white/10 border-white/20 text-white"
+                placeholder="Mensaje del bot (nivel principal)"
+                disabled={!settings.membresia_activa}
+              />
+  
+              {flow.opciones.map((opcion, j) => (
+                <div key={j} className="mb-4">
+                  <input
+                    type="text"
+                    value={opcion.texto}
+                    onChange={(e) => handleFlowChange(j, "texto", e.target.value, [i])}
+                    className="w-full p-2 mb-1 bg-white/10 text-white border border-white/20 rounded"
+                    placeholder="Texto del botón"
+                    disabled={!settings.membresia_activa}
+                  />
+  
+                  {opcion.submenu ? (
+                  <div className="bg-white/5 border border-white/10 rounded p-3 mt-2">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-white/80 text-sm">Submenú</span>
                       <button
-                        onClick={() => addOpcion(i)}
-                        className="text-white/70 text-sm hover:underline"
+                        type="button"
+                        onClick={() => removeSubmenu(i, j)}
+                        className="text-xs text-red-300 hover:text-red-200"
                         disabled={!settings.membresia_activa}
                       >
-                        + Agregar opción
+                        Quitar submenú
                       </button>
                     </div>
-                  ))}
-          
-                  <button
-                    onClick={() => bloquearSiNoMembresia(saveFlows)}
-                    disabled={!settings.membresia_activa}
-                    className={`px-4 py-2 rounded mt-2 ${
-                      settings.membresia_activa
-                        ? "bg-pink-600 hover:bg-pink-700 text-white"
-                        : "bg-gray-600 text-white/50 cursor-not-allowed"
-                    }`}
-                  >
-                    Guardar Flujos
-                  </button>
-                </div>
 
-        <div ref={previewRef} className="bg-[#0f0f25]/60 p-4 rounded max-h-[50vh] min-h-[200px] overflow-y-auto flex flex-col gap-3 mb-4 border border-white/10">
+                    <input
+                      type="text"
+                      value={opcion.submenu?.mensaje || ""}
+                      onChange={(e) => handleSubmenuMessage(i, j, e.target.value)}
+                      className="w-full p-2 mb-3 bg-white/10 text-white border border-white/20 rounded"
+                      placeholder="Título del submenú (pregunta)"
+                      disabled={!settings.membresia_activa}
+                    />
+
+                    {opcion.submenu?.opciones?.map((sop, k) => (
+                      <div key={k} className="mb-3 bg-white/5 p-2 rounded border border-white/10">
+                        <input
+                          type="text"
+                          value={sop.texto}
+                          onChange={(e) => handleSubOpcionChange(i, j, k, "texto", e.target.value)}
+                          className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
+                          placeholder="Texto del botón del submenú"
+                          disabled={!settings.membresia_activa}
+                        />
+                        <textarea
+                          value={sop.respuesta || ""}
+                          onChange={(e) => handleSubOpcionChange(i, j, k, "respuesta", e.target.value)}
+                          rows={2}
+                          className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
+                          placeholder="Respuesta directa (o deja vacío si habrá otro submenú)"
+                          disabled={!settings.membresia_activa}
+                        />
+                        <div className="flex justify-end mt-1">
+                          <button
+                            type="button"
+                            onClick={() => removeSubOpcion(i, j, k)}
+                            className="text-xs text-white/60 hover:text-white"
+                            disabled={!settings.membresia_activa}
+                          >
+                            Eliminar opción
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() => addSubOpcion(i, j)}
+                      className="text-white/80 text-sm hover:underline"
+                      disabled={!settings.membresia_activa}
+                    >
+                      + Agregar opción de submenú
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <textarea
+                      value={opcion.respuesta || ""}
+                      onChange={(e) => handleFlowChange(j, "respuesta", e.target.value, [i])}
+                      rows={2}
+                      className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
+                      placeholder="Respuesta directa del asistente"
+                      disabled={!settings.membresia_activa}
+                    />
+                    <div className="mt-1">
+                      <button
+                        type="button"
+                        onClick={() => addSubmenu(i, j)}
+                        className="text-xs text-white/70 hover:underline"
+                        disabled={!settings.membresia_activa}
+                      >
+                        + Convertir en submenú
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                </div>
+              ))}
+  
+              <button
+                onClick={() => addOpcion(i)}
+                className="text-white/70 text-sm hover:underline"
+                disabled={!settings.membresia_activa}
+              >
+                + Agregar opción
+              </button>
+            </div>
+          ))}
+  
+          <button
+            onClick={() => bloquearSiNoMembresia(saveFlows)}
+            disabled={!settings.membresia_activa}
+            className={`px-4 py-2 rounded mt-2 ${
+              settings.membresia_activa
+                ? "bg-pink-600 hover:bg-pink-700 text-white"
+                : "bg-gray-600 text-white/50 cursor-not-allowed"
+            }`}
+          >
+            Guardar Flujos
+          </button>
+        </div>
+  
+        <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
         <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
           <SiMinutemailer className="animate-pulse" size={24} />
           Vista previa del Asistente
@@ -682,8 +775,8 @@ export default function MetaConfigPage() {
 
           <div
             ref={chatContainerRef}
-            style={{ height: '400px', overflowY: 'auto' }}
-            className="bg-white/5 rounded-lg p-4 mb-4 space-y-2"
+            style={{ height: '400px', overflowY: 'auto' }} // ✅ Altura fija
+            className="bg-[#0f0f25]/60 p-4 rounded flex flex-col gap-3 mb-4 border border-white/10"
           >
             {messages.map((msg, i) => (
               <div
@@ -709,49 +802,26 @@ export default function MetaConfigPage() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handlePreviewSend();
-                }
-              }}
-              className="w-full sm:flex-1 p-3 rounded-lg bg-white/10 border border-white/20 text-white"
-              placeholder="Escribe un mensaje..."
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Escribe algo..."
+              disabled={!settings.membresia_activa}
+              className="w-full sm:flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
             />
-
             <button
-              onClick={() => requerirMembresia(handlePreviewSend)}
-              className="w-full sm:w-auto px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-all duration-200"
+              onClick={() => bloquearSiNoMembresia(handleSend)}
+              disabled={!settings.membresia_activa}
+              className={`w-full sm:w-auto px-4 py-2 rounded ${
+                settings.membresia_activa
+                  ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                  : "bg-gray-600 text-white/50 cursor-not-allowed"
+              }`}
             >
               Enviar
             </button>
           </div>
         </div>
-
-        <div className="flex justify-center mt-8">
-        <button
-          onClick={handleGuardar}
-          className={`px-6 py-2 rounded-md font-semibold transition-all ${
-            membresiaActiva
-              ? "bg-green-600 hover:bg-green-700 text-white"
-              : "bg-gray-600 text-white/50 cursor-not-allowed"
-          }`}
-          disabled={!membresiaActiva}
-        >
-          {membresiaActiva ? "Guardar Configuración" : "Acción restringida por membresía"}
-        </button>
-
-        </div>
-
-        {saved && (
-          <div className="text-green-400 text-center mt-4 font-medium">
-            ✅ Configuración guardada exitosamente.
-          </div>
-        )}
-
       </div>
-
       <Footer />
     </div>
-  );
-}
+  ); 
+} 
