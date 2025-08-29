@@ -38,6 +38,13 @@ export default function FaqSection({
   const [faqEditando, setFaqEditando] = useState<FaqSugerida | null>(null);
   const [nuevaRespuesta, setNuevaRespuesta] = useState("");
 
+  const [filtro, setFiltro] = useState("");
+
+  const faqsFiltrados = faqs.filter((f) =>
+    f.pregunta.toLowerCase().includes(filtro.toLowerCase()) ||
+    f.respuesta.toLowerCase().includes(filtro.toLowerCase())
+  );
+  
   useEffect(() => {
     console.log("📌 canal recibido:", canal);
     recargarFaqs();
@@ -192,7 +199,15 @@ export default function FaqSection({
         <Brain className="text-green-400" size={20} /> Preguntas Frecuentes
       </h3>
 
-      {faqs.map((faq, i) => (
+      <input
+        type="text"
+        placeholder="Filtrar por palabra clave..."
+        value={filtro}
+        onChange={(e) => setFiltro(e.target.value)}
+        className="w-full mb-4 p-2 bg-white/10 text-white border border-white/20 rounded"
+      />
+
+      {faqsFiltrados.map((faq, i) => (
         <div key={i} className="mb-4 relative">
           <button
             onClick={() => eliminarFaq(i)}
@@ -250,7 +265,14 @@ export default function FaqSection({
           </h2>
 
           {faqsSugeridas
-            .filter(f => f.respuesta_sugerida)
+            .filter((f: FaqSugerida & { canal?: string }) => {
+              if (!f.respuesta_sugerida) return false;
+              if (canal === "meta") {
+                return f.canal === "facebook" || f.canal === "instagram";
+              } else {
+                return f.canal === canal;
+              }
+            })
             .map((faq) => (
             <div key={faq.id} className="mb-4 p-4 rounded bg-white/10 border border-white/20">
             <p className="text-white/80 flex items-center gap-2">
