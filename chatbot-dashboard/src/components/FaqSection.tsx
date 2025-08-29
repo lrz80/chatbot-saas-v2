@@ -1,3 +1,4 @@
+//src/components/FaqSection.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -43,7 +44,15 @@ export default function FaqSection({
           credentials: "include",
         });
         const sugeridasData = await sugeridasRes.json();
-        const conRespuesta = sugeridasData.filter((f: FaqSugerida) => f.respuesta_sugerida);
+        const conRespuesta = sugeridasData.filter(
+          (f: FaqSugerida & { canal?: string }) =>
+            f.respuesta_sugerida && (
+              canal === 'meta'
+                ? f.canal === 'facebook' || f.canal === 'instagram'
+                : f.canal === canal
+            )
+        );
+        
         setFaqSugeridas(conRespuesta);
         console.log("📥 Sugeridas cargadas:", conRespuesta);
 
