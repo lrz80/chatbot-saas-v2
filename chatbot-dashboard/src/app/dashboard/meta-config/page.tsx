@@ -58,6 +58,7 @@ export default function TrainingPage() {
   };
 
   const [faq, setFaq] = useState<Faq[]>([]); // Usa el tipo importado de FaqSection si prefieres
+  const [faqSugeridas, setFaqSugeridas] = useState<Faq[]>([]);
   
   const [settings, setSettings] = useState({
     name: "",
@@ -85,6 +86,7 @@ export default function TrainingPage() {
           fetch(`${BACKEND_URL}/api/settings?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents?canal=meta`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=meta`, { credentials: "include" }),
         ]);    
   
         if (settingsRes.ok) {

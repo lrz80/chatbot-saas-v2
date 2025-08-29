@@ -40,7 +40,7 @@ export default function FaqSection({
     const cargarTodo = async () => {
       try {
         // Cargar sugeridas
-        const sugeridasRes = await fetch(`https://api.aamy.ai/api/faqs/sugeridas?canal=${canal}`, {
+        const sugeridasRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/faqs/sugeridas?canal=${canal}`, {
           credentials: "include",
         });
         const sugeridasData = await sugeridasRes.json();
