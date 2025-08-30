@@ -186,13 +186,15 @@ export default function FaqSection({
     }
     return resultado;
   };
-
-  const formatearTexto = (texto: string): string => {
-    if (!texto) return '';
-    const textoFormateado = texto.charAt(0).toUpperCase() + texto.slice(1);
-    return /[.!?]$/.test(textoFormateado.trim()) ? textoFormateado : textoFormateado + '.';
-  };
   
+  // arriba del return()
+  const sugeridasConRespuesta =
+  Array.isArray(faqsSugeridas)
+    ? faqsSugeridas.filter(
+        (f) => typeof f.respuesta_sugerida === "string" && f.respuesta_sugerida.trim().length > 0
+      )
+    : [];
+
     return (
     <div className="mt-12">
       <h3 className="text-xl font-bold mb-2 text-green-400 flex items-center gap-2">
@@ -258,33 +260,31 @@ export default function FaqSection({
 
       </div>
 
-      {faqsSugeridas && faqsSugeridas.length > 0 && (
+      {sugeridasConRespuesta.length > 0 && (
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 mt-8">
           <h2 className="text-white text-xl font-bold mb-4 flex items-center gap-2">
             <Lightbulb className="text-yellow-400" /> FAQs sugeridas
           </h2>
 
-          {faqsSugeridas
-            .filter(f => f.respuesta_sugerida)
-            .map((faq) => (
+          {sugeridasConRespuesta.map((faq) => (
             <div key={faq.id} className="mb-4 p-4 rounded bg-white/10 border border-white/20">
-            <p className="text-white/80 flex items-center gap-2">
-              <MessageSquare className="text-pink-400" size={18} />
-              <strong>{formatearPregunta(faq.pregunta)}</strong>
-            </p>
-            <div className="text-green-300 mt-1 whitespace-pre-wrap flex gap-2">
-              <Bot className="text-green-400 mt-1" size={18} />
-              <span>{faq.respuesta_sugerida}</span>
-            </div>
+              <p className="text-white/80 flex items-center gap-2">
+                <MessageSquare className="text-pink-400" size={18} />
+                <strong>{formatearPregunta(faq.pregunta)}</strong>
+              </p>
+              <div className="text-green-300 mt-1 whitespace-pre-wrap flex gap-2">
+                <Bot className="text-green-400 mt-1" size={18} />
+                <span>{faq.respuesta_sugerida}</span>
+              </div>
 
-            <div className="mt-3 flex gap-3">
-              <button
-                onClick={() => {
-                  setFaqEditando(faq);
-                  setNuevaRespuesta(faq.respuesta_sugerida ?? "");
-                }}
-                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded flex items-center gap-2"
-              >
+              <div className="mt-3 flex gap-3">
+                <button
+                  onClick={() => {
+                    setFaqEditando(faq);
+                    setNuevaRespuesta(faq.respuesta_sugerida ?? "");
+                  }}
+                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded flex items-center gap-2"
+                >
                   <Pencil size={16} /> Editar y aprobar
                 </button>
                 <button
