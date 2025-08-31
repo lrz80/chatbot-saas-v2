@@ -14,6 +14,7 @@ export type FaqSugerida = {
   id: number;
   pregunta: string;
   respuesta_sugerida: string | null;
+  canal?: string; // ✅ AÑADE ESTE CAMPO
 };
 
 type Props = {
@@ -191,8 +192,11 @@ export default function FaqSection({
   const sugeridasConRespuesta = Array.isArray(faqsSugeridas)
   ? faqsSugeridas.filter(
       (f) =>
-        typeof f.respuesta_sugerida === "string" &&
-        f.respuesta_sugerida.trim().length > 0
+        f.respuesta_sugerida &&
+        (
+          f.canal === canal ||
+          (canal === "meta" && ["facebook", "instagram"].includes(f.canal || ""))
+        )
     )
   : [];
 
