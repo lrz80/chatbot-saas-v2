@@ -11,6 +11,8 @@ import { SiWhatsapp, SiBookstack, SiOpenai, SiMinutemailer, SiBuffer, SiChatbot,
 import { MdWhatsapp } from "react-icons/md";
 import FaqSection from "@/components/FaqSection";
 import type { FaqSugerida } from "@/components/FaqSection";
+import FlowSection from "@/components/FlowSection";
+
 
 type FlowOption = {
   texto: string;
@@ -351,6 +353,23 @@ export default function TrainingPage() {
     setFlows(parsed);
   };  
   
+  async function guardarFlujos() {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/flows`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ flows }),
+      });
+  
+      if (!res.ok) throw new Error("Error al guardar los flujos");
+    } catch (err) {
+      console.error("❌ Error al guardar flujos:", err);
+    }
+  }
+  
   // Agrega esta función dentro del componente
   const comprarMas = async (canal: string, cantidad: number) => {
     try {
@@ -629,150 +648,14 @@ export default function TrainingPage() {
           </button>
         </div>
   
-        <div className="mt-12">
-        <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
-          <SiBuffer className="animate-pulse" size={24} />
-          Flujos Guiados Interactivos
-        </h3>
+        <FlowSection
+          flows={flows}
+          setFlows={setFlows}
+          canal="whatsapp" // o "meta"
+          membresiaActiva={settings.membresia_activa}
+          onSave={async () => bloquearSiNoMembresia(guardarFlujos)}
+        />
 
-          <p className="text-sm text-white/70 mb-4">
-            Define botones con posibles subniveles. Si el usuario elige una opción, se responde automáticamente. Si no, el asistente usará IA.
-          </p>
-  
-          {flows.map((flow, i) => (
-            <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
-              <input
-                type="text"
-                value={flow.mensaje}
-                onChange={(e) => handleFlowChange(i, "mensaje", e.target.value)}
-                className="w-full p-2 border rounded mb-3 bg-white/10 border-white/20 text-white"
-                placeholder="Mensaje del bot (nivel principal)"
-                disabled={!settings.membresia_activa}
-              />
-  
-              {flow.opciones.map((opcion, j) => (
-                <div key={j} className="mb-4">
-                  <input
-                    type="text"
-                    value={opcion.texto}
-                    onChange={(e) => handleFlowChange(j, "texto", e.target.value, [i])}
-                    className="w-full p-2 mb-1 bg-white/10 text-white border border-white/20 rounded"
-                    placeholder="Texto del botón"
-                    disabled={!settings.membresia_activa}
-                  />
-  
-                  {opcion.submenu ? (
-                  <div className="bg-white/5 border border-white/10 rounded p-3 mt-2">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="text-white/80 text-sm">Submenú</span>
-                      <button
-                        type="button"
-                        onClick={() => removeSubmenu(i, j)}
-                        className="text-xs text-red-300 hover:text-red-200"
-                        disabled={!settings.membresia_activa}
-                      >
-                        Quitar submenú
-                      </button>
-                    </div>
-
-                    <input
-                      type="text"
-                      value={opcion.submenu?.mensaje || ""}
-                      onChange={(e) => handleSubmenuMessage(i, j, e.target.value)}
-                      className="w-full p-2 mb-3 bg-white/10 text-white border border-white/20 rounded"
-                      placeholder="Título del submenú (pregunta)"
-                      disabled={!settings.membresia_activa}
-                    />
-
-                    {opcion.submenu?.opciones?.map((sop, k) => (
-                      <div key={k} className="mb-3 bg-white/5 p-2 rounded border border-white/10">
-                        <input
-                          type="text"
-                          value={sop.texto}
-                          onChange={(e) => handleSubOpcionChange(i, j, k, "texto", e.target.value)}
-                          className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
-                          placeholder="Texto del botón del submenú"
-                          disabled={!settings.membresia_activa}
-                        />
-                        <textarea
-                          value={sop.respuesta || ""}
-                          onChange={(e) => handleSubOpcionChange(i, j, k, "respuesta", e.target.value)}
-                          rows={2}
-                          className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-                          placeholder="Respuesta directa (o deja vacío si habrá otro submenú)"
-                          disabled={!settings.membresia_activa}
-                        />
-                        <div className="flex justify-end mt-1">
-                          <button
-                            type="button"
-                            onClick={() => removeSubOpcion(i, j, k)}
-                            className="text-xs text-white/60 hover:text-white"
-                            disabled={!settings.membresia_activa}
-                          >
-                            Eliminar opción
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-
-                    <button
-                      type="button"
-                      onClick={() => addSubOpcion(i, j)}
-                      className="text-white/80 text-sm hover:underline"
-                      disabled={!settings.membresia_activa}
-                    >
-                      + Agregar opción de submenú
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <textarea
-                      value={opcion.respuesta || ""}
-                      onChange={(e) => handleFlowChange(j, "respuesta", e.target.value, [i])}
-                      rows={2}
-                      className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-                      placeholder="Respuesta directa del asistente"
-                      disabled={!settings.membresia_activa}
-                    />
-                    <div className="mt-1">
-                      <button
-                        type="button"
-                        onClick={() => addSubmenu(i, j)}
-                        className="text-xs text-white/70 hover:underline"
-                        disabled={!settings.membresia_activa}
-                      >
-                        + Convertir en submenú
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                </div>
-              ))}
-  
-              <button
-                onClick={() => addOpcion(i)}
-                className="text-white/70 text-sm hover:underline"
-                disabled={!settings.membresia_activa}
-              >
-                + Agregar opción
-              </button>
-            </div>
-          ))}
-  
-          <button
-            onClick={() => bloquearSiNoMembresia(saveFlows)}
-            disabled={!settings.membresia_activa}
-            className={`px-4 py-2 rounded mt-2 ${
-              settings.membresia_activa
-                ? "bg-pink-600 hover:bg-pink-700 text-white"
-                : "bg-gray-600 text-white/50 cursor-not-allowed"
-            }`}
-          >
-            Guardar Flujos
-          </button>
-        </div>
-  
         <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
         <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
           <SiMinutemailer className="animate-pulse" size={24} />
