@@ -188,12 +188,13 @@ export default function FaqSection({
   };
   
   // arriba del return()
-  const sugeridasConRespuesta =
-  Array.isArray(faqsSugeridas)
-    ? faqsSugeridas.filter(
-        (f) => typeof f.respuesta_sugerida === "string" && f.respuesta_sugerida.trim().length > 0
-      )
-    : [];
+  const sugeridasConRespuesta = Array.isArray(faqsSugeridas)
+  ? faqsSugeridas.filter(
+      (f) =>
+        typeof f.respuesta_sugerida === "string" &&
+        f.respuesta_sugerida.trim().length > 0
+    )
+  : [];
 
     return (
     <div className="mt-12">
