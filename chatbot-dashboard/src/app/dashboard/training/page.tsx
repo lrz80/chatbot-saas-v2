@@ -85,11 +85,12 @@ export default function TrainingPage() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [settingsRes, faqRes, intentsRes, sugeridasRes] = await Promise.all([
+        const [settingsRes, faqRes, intentsRes, sugeridasRes, flowsRes] = await Promise.all([
           fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs?canal=whatsapp`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents?canal=whatsapp`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=whatsapp`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/flows?canal=whatsapp`, { credentials: "include", cache: "no-store" }),
         ]);
   
         if (settingsRes.ok) {
@@ -106,13 +107,25 @@ export default function TrainingPage() {
             membresia_activa: data.membresia_activa,
             idioma: data.idioma || prev.idioma,
           }));
-          setMessages([{ role: "assistant", content: data.bienvenida != null ? data.bienvenida : "¡Hola! ¿Cómo puedo ayudarte?" }]);
-          setUsos(data.limites || {});  // 🚀 Ahora guardamos límites completos por canal
+          setMessages([{ role: "assistant", content: data.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?" }]);
+          setUsos(data.limites || {});
         }
   
         if (faqRes.ok) setFaq(await faqRes.json());
         if (intentsRes.ok) setIntents(await intentsRes.json());
         if (sugeridasRes.ok) setFaqSugeridas(await sugeridasRes.json());
+  
+        // 🔹 GET /api/flows devuelve **un array directo** (no {data})
+        if (flowsRes.ok) {
+          const arr = await flowsRes.json();
+          const parsed = Array.isArray(arr)
+            ? arr.map((f: any) => ({
+                mensaje: f?.pregunta ?? f?.mensaje ?? "",
+                opciones: Array.isArray(f?.opciones) ? f.opciones : [],
+              }))
+            : [];
+          setFlows(parsed);
+        }
       } catch (err) {
         console.error("❌ Error cargando configuración:", err);
       } finally {
@@ -121,7 +134,7 @@ export default function TrainingPage() {
     };
   
     fetchAll();
-  }, [router]);
+  }, [router]);  
   
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
@@ -323,52 +336,55 @@ export default function TrainingPage() {
   const saveFlows = async () => {
     if (!settings.membresia_activa) return;
   
+    // Validación mínima
     const flowsValidos = flows.filter(
-      (f) => f.mensaje.trim() && f.opciones.some((o) => o.texto.trim() && (o.respuesta?.trim() || o.submenu))
+      (f) =>
+        f.mensaje.trim() &&
+        f.opciones.some((o) => o.texto.trim() && (o.respuesta?.trim() || o.submenu))
     );
     if (flowsValidos.length === 0) return alert("❌ Agrega al menos un flujo válido.");
   
-    // El backend acepta { flows } con 'mensaje' o 'pregunta'
-    const res = await fetch(`${BACKEND_URL}/api/flows`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ flows: flowsValidos }),
-    });
+    // Normalización a contrato del backend: mensaje -> pregunta
+    const payload = flowsValidos.map((f) => ({
+      pregunta: f.mensaje.toString().trim(),
+      opciones: Array.isArray(f.opciones) ? f.opciones : [],
+    }));
   
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      return alert(`❌ Error al guardar: ${err.error || 'desconocido'}`);
-    }
-  
-    alert("Flujos guardados ✅");
-  
-    // 🔄 volver a cargar desde DB
-    // (mueve fetchFlows a scope superior o duplica aquí)
-    const reload = await fetch(`${BACKEND_URL}/api/flows`, { credentials: "include" });
-    const { data } = await reload.json();
-    const parsed = Array.isArray(data)
-      ? data.map((f: any) => ({ mensaje: f.pregunta ?? "", opciones: f.opciones || [] }))
-      : [];
-    setFlows(parsed);
-  };  
-  
-  async function guardarFlujos() {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/flows`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const res = await fetch(`${BACKEND_URL}/api/flows?canal=${canal}`, {
+        method: "PUT",                       // ⬅️ PUT (no POST)
         credentials: "include",
-        body: JSON.stringify({ flows }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),       // ⬅️ backend acepta array directo
       });
   
-      if (!res.ok) throw new Error("Error al guardar los flujos");
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return alert(`❌ Error al guardar: ${json?.error || "desconocido"}`);
+      }
+  
+      alert("Flujos guardados ✅");
+  
+      // Recarga desde DB (GET devuelve un array directo)
+      const reload = await fetch(`${BACKEND_URL}/api/flows?canal=${canal}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (reload.ok) {
+        const arr = await reload.json();
+        const parsed = Array.isArray(arr)
+          ? arr.map((f: any) => ({
+              mensaje: f.pregunta ?? f.mensaje ?? "",
+              opciones: Array.isArray(f.opciones) ? f.opciones : [],
+            }))
+          : [];
+        setFlows(parsed);
+      }
     } catch (err) {
       console.error("❌ Error al guardar flujos:", err);
+      alert("❌ Error al guardar flujos.");
     }
-  }
+  };  
   
   // Agrega esta función dentro del componente
   const comprarMas = async (canal: string, cantidad: number) => {
@@ -416,32 +432,6 @@ export default function TrainingPage() {
     if (porcentaje > 50) return "bg-yellow-500";
     return "bg-green-500";
   };
-  
-  useEffect(() => {
-    const fetchFlows = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/flows`, {
-          credentials: "include",
-          headers: { "Accept": "application/json" },
-        });
-        if (!res.ok) throw new Error("Error al cargar flujos");
-        const { data } = await res.json(); // backend devuelve { data: [...] }
-  
-        // El backend usa 'pregunta'; el front usa 'mensaje'
-        const parsed = Array.isArray(data)
-          ? data.map((f: any) => ({
-              mensaje: f.pregunta ?? f.mensaje ?? "",
-              opciones: Array.isArray(f.opciones) ? f.opciones : [],
-            }))
-          : [];
-  
-        setFlows(parsed);
-      } catch (e) {
-        console.error("❌ Error fetch /api/flows:", e);
-      }
-    };
-    fetchFlows();
-  }, []);
   
   if (loading) return <p className="text-center">Cargando configuración...</p>;
   
@@ -653,7 +643,7 @@ export default function TrainingPage() {
           setFlows={setFlows}
           canal="whatsapp" // o "meta"
           membresiaActiva={settings.membresia_activa}
-          onSave={async () => bloquearSiNoMembresia(guardarFlujos)}
+          onSave={async () => bloquearSiNoMembresia(saveFlows)}
         />
 
         <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
