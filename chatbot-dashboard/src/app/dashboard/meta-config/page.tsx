@@ -30,12 +30,14 @@ const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
 
 export default function TrainingPage() {
   const router = useRouter();
-  const bloquearSiNoMembresia = (callback: () => void) => {
+  const bloquearSiNoMembresia = async (
+    callback: () => Promise<void> | void
+  ): Promise<void> => {
     if (!settings.membresia_activa) {
-      router.push("/upgrade"); // Redirige al usuario para activar su plan
+      router.push("/upgrade");
       return;
     }
-    callback(); // Si tiene membresía activa, ejecuta la acción real
+    await callback();
   };
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
@@ -233,6 +235,50 @@ export default function TrainingPage() {
   
     alert("Intenciones guardadas ✅");
   };  
+  
+  const saveFaqs = async () => {
+    if (!settings.membresia_activa) return;
+  
+    // Normaliza/valida
+    const faqsValidas = (faq ?? [])
+      .map(f => ({
+        pregunta: (f.pregunta || "").trim(),
+        respuesta: (f.respuesta || "").trim(),
+      }))
+      .filter(f => f.pregunta && f.respuesta);
+  
+    if (!faqsValidas.length) {
+      alert("❌ Agrega al menos una FAQ válida.");
+      return;
+    }
+  
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/faqs?canal=${canal}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ faqs: faqsValidas }),
+      });
+  
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(`❌ Error al guardar FAQs: ${json?.error || res.statusText}`);
+        return;
+      }
+  
+      // Recarga desde DB
+      const reload = await fetch(`${BACKEND_URL}/api/faqs?canal=${canal}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (reload.ok) setFaq(await reload.json());
+  
+      alert("FAQs guardadas ✅");
+    } catch (e) {
+      console.error("❌ Error guardando FAQs:", e);
+      alert("❌ Error guardando FAQs.");
+    }
+  };
   
   const [flows, setFlows] = useState<Flow[]>([
     {
@@ -485,7 +531,7 @@ export default function TrainingPage() {
           setFaqs={setFaq}
           canal="meta"
           membresiaActiva={settings.membresia_activa}
-          onSave={async () => bloquearSiNoMembresia(handleSave)}
+          onSave={() => bloquearSiNoMembresia(saveFaqs)}
         />
 
         <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
