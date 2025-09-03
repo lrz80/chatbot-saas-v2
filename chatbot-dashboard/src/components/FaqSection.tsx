@@ -94,13 +94,15 @@ export default function FaqSection({
 
   const recargarFaqs = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/faqs?canal=${encodeURIComponent(canal)}`, {
-        credentials: "include",
-        cache: "no-store",
-      });
+      const url = `${BACKEND_URL}/api/faqs?canal=${canal}`;
+      console.log("🔄 GET:", url);
+      const res = await fetch(url, { credentials: "include", cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
-        setFaqs(Array.isArray(data) ? data : []);
+        setFaqs(data);
+        console.log("✅ FAQs oficiales cargadas:", data);
+      } else {
+        console.error("❌ GET /api/faqs fallo:", res.status, await res.text());
       }
     } catch (err) {
       console.error("❌ Error recargando FAQs:", err);
@@ -108,34 +110,32 @@ export default function FaqSection({
   };
 
   const guardarFaqs = async () => {
-    const faqsLimpios = faqs
-      .map(f => ({ pregunta: (f.pregunta || "").trim(), respuesta: (f.respuesta || "").trim() }))
-      .filter(f => f.pregunta && f.respuesta);
-
+    const faqsLimpios = faqs.filter((f) => f.pregunta.trim() && f.respuesta.trim());
     if (faqsLimpios.length === 0) {
       alert("❌ Agrega al menos una FAQ válida.");
       return;
     }
-
+  
     try {
-      const url = `${BACKEND_URL}/api/faqs?canal=${encodeURIComponent(canal)}`; // ← AÑADIDO canal en query
+      const url = `${BACKEND_URL}/api/faqs?canal=${canal}`;
+      console.log("📤 POST:", url, faqsLimpios);
       const res = await fetch(url, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ faqs: faqsLimpios }), // ← canal ya va en query
+        body: JSON.stringify({ faqs: faqsLimpios }), // canal ya va en query
       });
-
-      const json = await res.json().catch(() => ({}));
+  
       if (!res.ok) {
-        console.error("❌ Respuesta backend al guardar FAQs:", json);
-        alert(`❌ Error al guardar FAQs: ${json?.error || res.statusText}`);
-        return;
+        console.error("❌ POST /api/faqs fallo:", res.status, await res.text());
+        return alert("❌ Error al guardar FAQs");
       }
-
+  
+      const j = await res.json().catch(() => ({}));
+      console.log("✅ Respuesta POST /api/faqs:", j);
+  
       await recargarFaqs();
       alert("Preguntas frecuentes guardadas ✅");
-      await onSave?.(); // opcional, por si el padre quiere reaccionar
     } catch (error) {
       console.error("❌ Error al guardar FAQs:", error);
       alert("❌ Error al guardar FAQs.");
