@@ -10,6 +10,7 @@ import { BACKEND_URL } from "@/utils/api";
 import { SiMeta, SiOpenai, SiMinutemailer, SiBuffer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
 import FaqSection from "@/components/FaqSection";
 import type { FaqSugerida } from "@/components/FaqSection";
+import FlowSection from "@/components/FlowSection";
 
 type FlowOption = {
   texto: string;
@@ -82,11 +83,12 @@ export default function TrainingPage() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [settingsRes, faqRes, intentsRes, sugeridasRes] = await Promise.all([
+        const [settingsRes, faqRes, intentsRes, sugeridasRes, flowsRes] = await Promise.all([
           fetch(`${BACKEND_URL}/api/settings?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=meta`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/flows?canal=meta`, { credentials: "include", cache: "no-store" }),
         ]);    
   
         if (settingsRes.ok) {
@@ -110,6 +112,18 @@ export default function TrainingPage() {
         if (faqRes.ok) setFaq(await faqRes.json());
         if (intentsRes.ok) setIntents(await intentsRes.json());
         if (sugeridasRes.ok) setFaqSugeridas(await sugeridasRes.json());
+
+        // 🔹 GET /api/flows devuelve **un array directo** (no {data})
+        if (flowsRes.ok) {
+          const arr = await flowsRes.json();
+          const parsed = Array.isArray(arr)
+            ? arr.map((f: any) => ({
+                mensaje: f?.pregunta ?? f?.mensaje ?? "",
+                opciones: Array.isArray(f?.opciones) ? f.opciones : [],
+              }))
+            : [];
+          setFlows(parsed);
+        }
       } catch (err) {
         console.error("❌ Error cargando configuración:", err);
       } finally {
@@ -242,112 +256,57 @@ export default function TrainingPage() {
     },
   ]);  
   
-  // Crear submenú si no existe
-  const addSubmenu = (i: number, j: number) => {
-    const copy = structuredClone(flows);
-    const op = copy[i].opciones[j];
-    op.submenu = op.submenu ?? { mensaje: "¿Qué deseas?", opciones: [{ texto: "", respuesta: "" }] };
-    setFlows(copy);
-  };
-
-  // Quitar submenú
-  const removeSubmenu = (i: number, j: number) => {
-    const copy = structuredClone(flows);
-    delete copy[i].opciones[j].submenu;
-    setFlows(copy);
-  };
-
-  // Editar título del submenú
-  const handleSubmenuMessage = (i: number, j: number, value: string) => {
-    const copy = structuredClone(flows);
-    if (!copy[i].opciones[j].submenu) return;
-    copy[i].opciones[j].submenu!.mensaje = value;
-    setFlows(copy);
-  };
-
-  // Agregar opción al submenú
-  const addSubOpcion = (i: number, j: number) => {
-    const copy = structuredClone(flows);
-    const sm = copy[i].opciones[j].submenu;
-    if (!sm) return;
-    sm.opciones.push({ texto: "", respuesta: "" });
-    setFlows(copy);
-  };
-
-  // Editar una opción del submenú
-  const handleSubOpcionChange = (
-    i: number, j: number, k: number,
-    field: keyof FlowOption, value: string
-  ) => {
-    const copy = structuredClone(flows);
-    const sm = copy[i].opciones[j].submenu;
-    if (!sm) return;
-    (sm.opciones[k] as any)[field] = value;
-    setFlows(copy);
-  };
-
-  // Eliminar una opción del submenú
-  const removeSubOpcion = (i: number, j: number, k: number) => {
-    const copy = structuredClone(flows);
-    const sm = copy[i].opciones[j].submenu;
-    if (!sm) return;
-    sm.opciones.splice(k, 1);
-    setFlows(copy);
-  };
-
-  const handleFlowChange = (
-    nivel: number,
-    key: keyof FlowOption | keyof Flow,
-    value: any,
-    path: number[] = []
-  ) => {
-  
-    const copy = JSON.parse(JSON.stringify(flows));
-    let ref = copy;
-    path.forEach((i) => ref = (ref[i].submenu?.opciones ?? ref[i].opciones) as FlowOption[]);
-    (ref[nivel] as any)[key] = value;
-    setFlows(copy);
-  };
-  
-  const addOpcion = (nivel: number = 0, path: number[] = []) => {
-    const copy = JSON.parse(JSON.stringify(flows));
-    let ref = copy;
-    path.forEach((i) => ref = (ref[i].submenu?.opciones ?? ref[i].opciones) as FlowOption[]);
-    ref[nivel].opciones.push({ texto: "", respuesta: "" });
-    setFlows(copy);
-  };
-  
   const saveFlows = async () => {
     if (!settings.membresia_activa) return;
   
+    // Validación mínima
     const flowsValidos = flows.filter(
-      (f) => f.mensaje.trim() && f.opciones.some((o) => o.texto.trim() && (o.respuesta?.trim() || o.submenu))
+      (f) =>
+        f.mensaje.trim() &&
+        f.opciones.some((o) => o.texto.trim() && (o.respuesta?.trim() || o.submenu))
     );
     if (flowsValidos.length === 0) return alert("❌ Agrega al menos un flujo válido.");
+
+    // Normalización a contrato del backend: mensaje -> pregunta
+    const payload = flowsValidos.map((f) => ({
+      pregunta: f.mensaje.toString().trim(),
+      opciones: Array.isArray(f.opciones) ? f.opciones : [],
+    }));
   
-    // El backend acepta { flows } con 'mensaje' o 'pregunta'
-    const res = await fetch(`${BACKEND_URL}/api/flows?canal=meta`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ flows: flowsValidos }),
-    });
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/flows?canal=${canal}`, {
+        method: "PUT",                       // ⬅️ PUT (no POST)
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),       // ⬅️ backend acepta array directo
+      });
+      
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return alert(`❌ Error al guardar: ${json?.error || "desconocido"}`);
+      }
+      
+      alert("Flujos guardados ✅");
   
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      return alert(`❌ Error al guardar: ${err.error || 'desconocido'}`);
+      // Recarga desde DB (GET devuelve un array directo)
+      const reload = await fetch(`${BACKEND_URL}/api/flows?canal=${canal}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (reload.ok) {
+        const arr = await reload.json();
+        const parsed = Array.isArray(arr)
+          ? arr.map((f: any) => ({
+              mensaje: f.pregunta ?? f.mensaje ?? "",
+              opciones: Array.isArray(f.opciones) ? f.opciones : [],
+            }))
+          : [];
+        setFlows(parsed);
+      }
+    } catch (err) {
+      console.error("❌ Error al guardar flujos:", err);
+      alert("❌ Error al guardar flujos.");
     }
-  
-    alert("Flujos guardados ✅");
-  
-    // 🔄 volver a cargar desde DB
-    // (mueve fetchFlows a scope superior o duplica aquí)
-    const reload = await fetch(`${BACKEND_URL}/api/flows?canal=meta`, { credentials: "include" });
-    const { data } = await reload.json();
-    const parsed = Array.isArray(data)
-      ? data.map((f: any) => ({ mensaje: f.pregunta ?? "", opciones: f.opciones || [] }))
-      : [];
-    setFlows(parsed);
   };  
   
   // Agrega esta función dentro del componente
@@ -396,32 +355,6 @@ export default function TrainingPage() {
     if (porcentaje > 50) return "bg-yellow-500";
     return "bg-green-500";
   };
-  
-  useEffect(() => {
-    const fetchFlows = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/flows?canal=meta`, {
-          credentials: "include",
-          headers: { "Accept": "application/json" },
-        });
-        if (!res.ok) throw new Error("Error al cargar flujos");
-        const { data } = await res.json(); // backend devuelve { data: [...] }
-  
-        // El backend usa 'pregunta'; el front usa 'mensaje'
-        const parsed = Array.isArray(data)
-          ? data.map((f: any) => ({
-              mensaje: f.pregunta ?? f.mensaje ?? "",
-              opciones: Array.isArray(f.opciones) ? f.opciones : [],
-            }))
-          : [];
-  
-        setFlows(parsed);
-      } catch (e) {
-        console.error("❌ Error fetch /api/flows:", e);
-      }
-    };
-    fetchFlows();
-  }, []);
   
   if (loading) return <p className="text-center">Cargando configuración...</p>;
   
@@ -628,149 +561,13 @@ export default function TrainingPage() {
           </button>
         </div>
   
-        <div className="mt-12">
-        <h3 className="text-xl font-bold mb-2 text-pink-400 flex items-center gap-2">
-          <SiBuffer className="animate-pulse" size={24} />
-          Flujos Guiados Interactivos
-        </h3>
-
-          <p className="text-sm text-white/70 mb-4">
-            Define botones con posibles subniveles. Si el usuario elige una opción, se responde automáticamente. Si no, el asistente usará IA.
-          </p>
-  
-          {flows.map((flow, i) => (
-            <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
-              <input
-                type="text"
-                value={flow.mensaje}
-                onChange={(e) => handleFlowChange(i, "mensaje", e.target.value)}
-                className="w-full p-2 border rounded mb-3 bg-white/10 border-white/20 text-white"
-                placeholder="Mensaje del bot (nivel principal)"
-                disabled={!settings.membresia_activa}
-              />
-  
-              {flow.opciones.map((opcion, j) => (
-                <div key={j} className="mb-4">
-                  <input
-                    type="text"
-                    value={opcion.texto}
-                    onChange={(e) => handleFlowChange(j, "texto", e.target.value, [i])}
-                    className="w-full p-2 mb-1 bg-white/10 text-white border border-white/20 rounded"
-                    placeholder="Texto del botón"
-                    disabled={!settings.membresia_activa}
-                  />
-  
-                  {opcion.submenu ? (
-                  <div className="bg-white/5 border border-white/10 rounded p-3 mt-2">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="text-white/80 text-sm">Submenú</span>
-                      <button
-                        type="button"
-                        onClick={() => removeSubmenu(i, j)}
-                        className="text-xs text-red-300 hover:text-red-200"
-                        disabled={!settings.membresia_activa}
-                      >
-                        Quitar submenú
-                      </button>
-                    </div>
-
-                    <input
-                      type="text"
-                      value={opcion.submenu?.mensaje || ""}
-                      onChange={(e) => handleSubmenuMessage(i, j, e.target.value)}
-                      className="w-full p-2 mb-3 bg-white/10 text-white border border-white/20 rounded"
-                      placeholder="Título del submenú (pregunta)"
-                      disabled={!settings.membresia_activa}
-                    />
-
-                    {opcion.submenu?.opciones?.map((sop, k) => (
-                      <div key={k} className="mb-3 bg-white/5 p-2 rounded border border-white/10">
-                        <input
-                          type="text"
-                          value={sop.texto}
-                          onChange={(e) => handleSubOpcionChange(i, j, k, "texto", e.target.value)}
-                          className="w-full p-2 mb-2 bg-white/10 text-white border border-white/20 rounded"
-                          placeholder="Texto del botón del submenú"
-                          disabled={!settings.membresia_activa}
-                        />
-                        <textarea
-                          value={sop.respuesta || ""}
-                          onChange={(e) => handleSubOpcionChange(i, j, k, "respuesta", e.target.value)}
-                          rows={2}
-                          className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-                          placeholder="Respuesta directa (o deja vacío si habrá otro submenú)"
-                          disabled={!settings.membresia_activa}
-                        />
-                        <div className="flex justify-end mt-1">
-                          <button
-                            type="button"
-                            onClick={() => removeSubOpcion(i, j, k)}
-                            className="text-xs text-white/60 hover:text-white"
-                            disabled={!settings.membresia_activa}
-                          >
-                            Eliminar opción
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-
-                    <button
-                      type="button"
-                      onClick={() => addSubOpcion(i, j)}
-                      className="text-white/80 text-sm hover:underline"
-                      disabled={!settings.membresia_activa}
-                    >
-                      + Agregar opción de submenú
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <textarea
-                      value={opcion.respuesta || ""}
-                      onChange={(e) => handleFlowChange(j, "respuesta", e.target.value, [i])}
-                      rows={2}
-                      className="w-full p-2 bg-white/10 text-white border border-white/20 rounded"
-                      placeholder="Respuesta directa del asistente"
-                      disabled={!settings.membresia_activa}
-                    />
-                    <div className="mt-1">
-                      <button
-                        type="button"
-                        onClick={() => addSubmenu(i, j)}
-                        className="text-xs text-white/70 hover:underline"
-                        disabled={!settings.membresia_activa}
-                      >
-                        + Convertir en submenú
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                </div>
-              ))}
-  
-              <button
-                onClick={() => addOpcion(i)}
-                className="text-white/70 text-sm hover:underline"
-                disabled={!settings.membresia_activa}
-              >
-                + Agregar opción
-              </button>
-            </div>
-          ))}
-  
-          <button
-            onClick={() => bloquearSiNoMembresia(saveFlows)}
-            disabled={!settings.membresia_activa}
-            className={`px-4 py-2 rounded mt-2 ${
-              settings.membresia_activa
-                ? "bg-pink-600 hover:bg-pink-700 text-white"
-                : "bg-gray-600 text-white/50 cursor-not-allowed"
-            }`}
-          >
-            Guardar Flujos
-          </button>
-        </div>
+        <FlowSection
+          flows={flows}
+          setFlows={setFlows}
+          canal="meta" 
+          membresiaActiva={settings.membresia_activa}
+          onSave={async () => bloquearSiNoMembresia(saveFlows)}
+        />
   
         <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
         <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
