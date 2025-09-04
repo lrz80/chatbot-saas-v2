@@ -173,7 +173,7 @@ export default function TrainingPage() {
   
     try {
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
-        method: "PATCH",                 // ⬅️ ahora PATCH (backend ya lo soporta)
+        method: "PATCH",                
         credentials: "include",
         cache: "no-store",               // opcional, previene stales
         headers: { "Content-Type": "application/json" },
