@@ -145,33 +145,46 @@ export default function TrainingPage() {
   const handleSave = async () => {
     if (!isMembershipActive) return;
     setSaving(true);
-
-    const payload = {
+  
+    // 1) Construye base con posibles campos
+    const base = {
       nombre_negocio: settings.name,
       categoria: settings.categoria,
       idioma: settings.idioma,
-      prompt: settings.prompt,
-      bienvenida: settings.bienvenida,
-      informacion_negocio: settings.informacion_negocio,
-      funciones_asistente: settings.funciones_asistente?.trim() || undefined,
-      info_clave: (settings.info_clave ?? '').replace(/\r\n/g, '\n').replace(/\n{2,}/g, '\n').trim(),
-    };    
-
-    console.log("📤 Enviando payload a /api/settings:", payload);
-
+      prompt: settings.prompt?.trim(),
+      bienvenida: settings.bienvenida?.trim(),
+      informacion_negocio: settings.informacion_negocio?.trim(),
+      funciones_asistente: settings.funciones_asistente?.trim(),
+      info_clave: (settings.info_clave ?? '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\n{2,}/g, '\n')
+        .trim(),
+    };
+  
+    // 2) Filtra claves vacías/indefinidas (no pisar con '')
+    const payload: Record<string, any> = {};
+    Object.entries(base).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && String(v).trim() !== '') {
+        payload[k] = v;
+      }
+    });
+  
+    console.log("📤 Enviando payload a /api/settings (PATCH):", payload);
+  
     try {
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
-        method: "POST",
+        method: "PATCH",                 // ⬅️ ahora PATCH (backend ya lo soporta)
         credentials: "include",
+        cache: "no-store",               // opcional, previene stales
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      const data = await res.json();
+  
+      const data = await res.json().catch(() => ({}));
       console.log("✅ Respuesta del servidor:", data);
-
+  
       if (!res.ok) {
-        alert("❌ Error al guardar: " + data?.error || "Error desconocido");
+        alert("❌ Error al guardar: " + (data?.error || "Error desconocido"));
       } else {
         alert("Configuración del bot guardada ✅");
       }
@@ -181,7 +194,7 @@ export default function TrainingPage() {
     } finally {
       setSaving(false);
     }
-  };
+  };  
 
   const handleSend = async () => {
     if (!isMembershipActive || !input.trim()) return;
@@ -222,20 +235,38 @@ export default function TrainingPage() {
   const saveIntents = async () => {
     if (!isMembershipActive) return;
   
-    const intencionesLimpias = intents.filter(
-      (i) => i.nombre.trim() && i.ejemplos.length > 0 && i.respuesta.trim()
-    );
+    // normaliza y valida
+    const intencionesLimpias = intents
+      .map(i => ({
+        nombre: (i.nombre || '').trim(),
+        ejemplos: (i.ejemplos || []).map(e => (e || '').trim()).filter(Boolean),
+        respuesta: (i.respuesta || '').trim(),
+      }))
+      .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
   
-    if (intencionesLimpias.length === 0) return alert("❌ Agrega al menos una intención válida.");
+    if (!intencionesLimpias.length) {
+      return alert("❌ Agrega al menos una intención válida.");
+    }
   
-    await fetch(`${BACKEND_URL}/api/intents`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ intents: intencionesLimpias }),
-    });
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/intents?canal=${canal}`, { // ⬅️ canal
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",                        // opcional: evita stales
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ intents: intencionesLimpias }),
+      });
   
-    alert("Intenciones guardadas ✅");
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return alert(`❌ Error al guardar intenciones: ${json?.error || res.statusText}`);
+      }
+  
+      alert("Intenciones guardadas ✅");
+    } catch (e) {
+      console.error("❌ Error guardando intenciones:", e);
+      alert("❌ Error guardando intenciones.");
+    }
   };  
   
   const saveFaqs = async () => {
@@ -258,6 +289,7 @@ export default function TrainingPage() {
       const res = await fetch(`${BACKEND_URL}/api/faqs?canal=${canal}`, {
         method: "POST",
         credentials: "include",
+        cache: "no-store",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ faqs: faqsValidas }),
       });
@@ -325,6 +357,7 @@ export default function TrainingPage() {
       const res = await fetch(`${BACKEND_URL}/api/flows?canal=${canal}`, {
         method: "PUT",                       // ⬅️ PUT (no POST)
         credentials: "include",
+        cache: "no-store",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),       // ⬅️ backend acepta array directo
       });
