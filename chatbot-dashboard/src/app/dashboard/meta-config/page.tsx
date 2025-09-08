@@ -225,7 +225,7 @@ export default function TrainingPage() {
         nombre: (i.nombre || '').trim(),
         ejemplos: Array.isArray(i.ejemplos) ? i.ejemplos : [],
         respuesta: (i.respuesta || '').trim(),
-        canal, // 🔒 refuerza por item
+        canal: 'meta', // 🔒 por ítem, blindaje
       }))
       .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
   
@@ -234,19 +234,25 @@ export default function TrainingPage() {
       return;
     }
   
-    const payload = { canal, intents: intencionesLimpias }; // 🔒 body con canal
+    // 🔒 manda canal también a nivel body
+    const payload = { canal: 'meta', intents: intencionesLimpias };
   
-    await fetch(`${BACKEND_URL}/api/intents`, {
+    const res = await fetch(`${BACKEND_URL}/api/intents`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
   
-    // (Opcional) recarga para ver el resultado
-    const reload = await fetch(`${BACKEND_URL}/api/intents?canal=${canal}`, {
-      credentials: "include",
-      cache: "no-store",
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      alert(`❌ Error al guardar: ${j?.error || res.statusText}`);
+      return;
+    }
+  
+    // recarga para ver reflejado
+    const reload = await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
+      credentials: "include", cache: "no-store",
     });
     if (reload.ok) setIntents(await reload.json());
   
