@@ -192,11 +192,11 @@ export default function TrainingPage() {
       previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }, 100);
 
-    const res = await fetch(`${BACKEND_URL}/api/preview?canal=meta`, {
+    const res = await fetch(`${BACKEND_URL}/api/preview?canal=${canal}`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: input, canal: 'preview-meta' }),
+      body: JSON.stringify({ message: input, canal }), // <- 'meta', no 'preview-meta'
     });
 
     const data = await res.json();
@@ -220,18 +220,35 @@ export default function TrainingPage() {
   const saveIntents = async () => {
     if (!isMembershipActive) return;
   
-    const intencionesLimpias = intents.filter(
-      (i) => i.nombre.trim() && i.ejemplos.length > 0 && i.respuesta.trim()
-    );
+    const intencionesLimpias = intents
+      .map(i => ({
+        nombre: (i.nombre || '').trim(),
+        ejemplos: Array.isArray(i.ejemplos) ? i.ejemplos : [],
+        respuesta: (i.respuesta || '').trim(),
+        canal, // 🔒 refuerza por item
+      }))
+      .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
   
-    if (intencionesLimpias.length === 0) return alert("❌ Agrega al menos una intención válida.");
+    if (intencionesLimpias.length === 0) {
+      alert("❌ Agrega al menos una intención válida.");
+      return;
+    }
   
-    await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
+    const payload = { canal, intents: intencionesLimpias }; // 🔒 body con canal
+  
+    await fetch(`${BACKEND_URL}/api/intents`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ intents: intencionesLimpias }),
+      body: JSON.stringify(payload),
     });
+  
+    // (Opcional) recarga para ver el resultado
+    const reload = await fetch(`${BACKEND_URL}/api/intents?canal=${canal}`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (reload.ok) setIntents(await reload.json());
   
     alert("Intenciones guardadas ✅");
   };  
