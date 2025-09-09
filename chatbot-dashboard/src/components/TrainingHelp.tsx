@@ -183,7 +183,7 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-export default function TrainingHelp({ context, defaultOpen = true }: Props) {
+export default function TrainingHelp({ context, defaultOpen = false }: Props) {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
