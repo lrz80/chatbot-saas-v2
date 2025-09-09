@@ -7,7 +7,7 @@ import PromptGenerator from "@/components/PromptGenerator";
 import { useRouter } from "next/navigation";
 import { Save, } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
-import { SiMeta, SiOpenai, SiMinutemailer, SiBuffer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
+import { SiMeta, SiOpenai, SiMinutemailer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
 import FaqSection from "@/components/FaqSection";
 import type { FaqSugerida } from "@/components/FaqSection";
 import FlowSection from "@/components/FlowSection";
@@ -41,7 +41,18 @@ export default function TrainingPage() {
   };
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
+  type AssistantStructured =
+  | string
+  | {
+      text?: string;
+      mensaje?: string; // compat
+      opciones?: Array<{ texto: string; respuesta?: string; submenu?: any }>;
+    };
+
+  type ChatMsg = { role: "user" | "assistant"; content: AssistantStructured };
+
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
@@ -183,29 +194,13 @@ export default function TrainingPage() {
 
   const handleSend = async () => {
     if (!isMembershipActive || !input.trim()) return;
+    await sendPreview(input.trim());
+  };  
 
-    setMessages((prev) => [...prev, { role: "user", content: input }]);
-    setInput("");
-    setIsTyping(true);
-
-    setTimeout(() => {
-      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }, 100);
-
-    const res = await fetch(`${BACKEND_URL}/api/preview?canal=${canal}`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: input, canal }), // <- 'meta', no 'preview-meta'
-    });
-
-    const data = await res.json();
-    setMessages((prev) => [...prev, { role: "assistant", content: data.response || "..." }]);
-    setIsTyping(false);
-
-    setTimeout(() => {
-      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }, 100);
+  // 👉 Cuando el usuario hace clic en una opción de flujo
+  const handleFlowOptionClick = async (texto: string) => {
+    if (!isMembershipActive) return;
+    await sendPreview(texto);
   };
 
   const handleIntentChange = (i: number, field: string, value: string) => {
@@ -325,6 +320,50 @@ export default function TrainingPage() {
     },
   ]);  
   
+  // 🔁 Envío reutilizable para preview (Meta)
+  const sendPreview = async (text: string) => {
+    setMessages((prev) => [...prev, { role: "user", content: text }]);
+    setIsTyping(true);
+    setInput("");
+    setTimeout(() => {
+      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 100);
+
+    try {
+      // ⬇️ Endpoint de preview para Meta
+      const res = await fetch(`${BACKEND_URL}/api/preview/meta`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
+
+      const data = await res.json();
+      const resp = data?.response;
+
+      // Si el backend devuelve estructura de Flow (objeto), la guardamos tal cual
+      if (resp && typeof resp === "object") {
+        setMessages((prev) => [...prev, { role: "assistant", content: resp }]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: String(resp ?? "...") },
+        ]);
+      }
+    } catch (e) {
+      console.error("❌ Error en preview:", e);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Lo siento, ocurrió un error en la vista previa." },
+      ]);
+    } finally {
+      setIsTyping(false);
+      setTimeout(() => {
+        previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 100);
+    }
+  };
+
   const saveFlows = async () => {
     if (!settings.membresia_activa) return;
   
@@ -425,6 +464,33 @@ export default function TrainingPage() {
     return "bg-green-500";
   };
   
+  // 🧩 Renderiza contenido del asistente: string o estructura de flujo
+  const renderAssistantContent = (content: AssistantStructured) => {
+    if (typeof content === "string") return <>{content}</>;
+
+    const texto = content?.text ?? content?.mensaje ?? "";
+    const opciones = Array.isArray(content?.opciones) ? content.opciones : [];
+
+    return (
+      <div className="flex flex-col gap-2">
+        {texto && <div>{texto}</div>}
+        {!!opciones.length && (
+          <div className="flex flex-wrap gap-2 mt-1">
+            {opciones.map((op, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleFlowOptionClick(op.texto)}
+                className="px-3 py-1 rounded bg-white/10 border border-white/20 hover:bg-white/20 text-white text-xs"
+              >
+                {op.texto}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (loading) return <p className="text-center">Cargando configuración...</p>;
   
   return (
@@ -658,7 +724,9 @@ export default function TrainingPage() {
                     : "bg-green-400/30 self-start text-left"
                 }`}
               >
-                {msg.content}
+                {msg.role === "assistant"
+                  ? renderAssistantContent(msg.content)
+                  : (typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content))}
               </div>
             ))}
             {isTyping && (
@@ -673,7 +741,12 @@ export default function TrainingPage() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}              
               placeholder="Escribe algo..."
               disabled={!settings.membresia_activa}
               className="w-full sm:flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
