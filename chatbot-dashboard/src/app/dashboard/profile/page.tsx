@@ -71,21 +71,26 @@ export default function BusinessProfilePage() {
         horario_atencion: formData.horario_atencion,
         categoria: formData.categoria,
         idioma: formData.idioma,
-        logo_url: formData.logo_url || '', // 👈 Nunca dejar undefined o null
-        direccion, // 👈 Dirección también se incluye siempre
-        email_negocio: formData.email_negocio || '', // ✅ Incluido
-        telefono_negocio: formData.telefono_negocio || '', // ✅ Incluido
+        logo_url: formData.logo_url || '',
+        direccion,
+        email_negocio: formData.email_negocio || '',
+        telefono_negocio: formData.telefono_negocio || '',
       };
   
       const res = await fetch(`${BACKEND_URL}/api/settings`, {
-        method: 'PUT',
+        method: 'PATCH',               // 👈 CAMBIO CLAVE (antes: PUT)
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload),
       });
   
-      if (res.ok) alert('✅ Cambios guardados correctamente');
-      else alert('❌ Error al guardar cambios');
+      if (res.ok) {
+        alert('✅ Cambios guardados correctamente');
+        await fetchSettings(); // refresca la vista con lo que quedó en DB
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(`❌ Error al guardar cambios${data?.error ? `: ${data.error}` : ''}`);
+      }
     } catch (err) {
       console.error(err);
       alert('❌ Error en la conexión');
