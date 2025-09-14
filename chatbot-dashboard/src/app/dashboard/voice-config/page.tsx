@@ -79,29 +79,6 @@ export default function VoiceConfigPage() {
     fetchVoiceConfig();
   }, [idioma]);
 
-  // Voces disponibles (ElevenLabs)
-  useEffect(() => {
-    const fetchVoices = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/elevenlabs/voices`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setVoiceOptions(data);
-        } else {
-          console.error("❌ La respuesta de voices no es un array:", data);
-          toast.error("Error al cargar voces disponibles.");
-        }
-      } catch (err) {
-        console.error("Error cargando voces:", err);
-        toast.error("No se pudieron cargar las voces de ElevenLabs.");
-      }
-    };
-
-    fetchVoices();
-  }, []);
-
   // Historial (usar canal = 'voz' para coincidir con backend)
   useEffect(() => {
     const fetchMessages = async () => {
@@ -124,20 +101,38 @@ export default function VoiceConfigPage() {
   // Links útiles
   useEffect(() => {
     const fetchLinksUtiles = async () => {
-      if (!tenantId) return;
       try {
         const res = await fetch(`${BACKEND_URL}/api/voice-links`, {
           credentials: "include",
         });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          console.error("GET /api/voice-links failed:", res.status, err);
+          if (res.status === 401 || res.status === 403) {
+            toast.warn("No autorizado para ver links. Inicia sesión nuevamente.");
+          } else {
+            toast.error("No se pudieron cargar los links útiles.");
+          }
+          setLinksUtiles([]);
+          return;
+        }
+
         const data = await res.json();
-        setLinksUtiles(data);
+        if (Array.isArray(data)) {
+          setLinksUtiles(data);
+        } else {
+          console.warn("GET /api/voice-links no devolvió array:", data);
+          setLinksUtiles([]);
+        }
       } catch (err) {
         console.error("Error cargando links útiles:", err);
+        setLinksUtiles([]);
       }
     };
 
     fetchLinksUtiles();
-  }, [tenantId]);
+  }, []); // <- sin tenantId en dependencias
 
   const agregarLink = async () => {
     try {
@@ -147,18 +142,28 @@ export default function VoiceConfigPage() {
         credentials: "include",
         body: JSON.stringify(nuevoLink),
       });
+      const data = await res.json().catch(() => null);
+  
       if (res.ok) {
         toast.success("✅ Link agregado");
         setNuevoLink({ tipo: "", nombre: "", url: "" });
-        const data = await res.json();
-        setLinksUtiles(data);
+        // Si el backend devolvió array, úsalo; si no, rehace GET.
+        if (data && Array.isArray(data)) {
+          setLinksUtiles(data);
+        } else {
+          // rehacer GET por si acaso
+          const res2 = await fetch(`${BACKEND_URL}/api/voice-links`, { credentials: "include" });
+          const data2 = await res2.json().catch(() => []);
+          setLinksUtiles(Array.isArray(data2) ? data2 : []);
+        }
       } else {
+        console.error("POST /api/voice-links error:", res.status, data);
         toast.error("❌ Error al agregar link útil");
       }
     } catch (err) {
       console.error("Error al agregar link:", err);
     }
-  };
+  };  
 
   const eliminarLink = async (id: number) => {
     try {
