@@ -38,7 +38,6 @@ export default function VoiceConfigPage() {
   const [linksUtiles, setLinksUtiles] = useState<any[]>([]);
   const [nuevoLink, setNuevoLink] = useState({ tipo: "", nombre: "", url: "" });
   const [audioDemoUrl, setAudioDemoUrl] = useState<string>("");
-  const [linksParaEliminar, setLinksParaEliminar] = useState<number[]>([]);
   const [usoVoz, setUsoVoz] = useState<any>(null);
   const [usoTokens, setUsoTokens] = useState<any>(null);
 
@@ -180,11 +179,6 @@ export default function VoiceConfigPage() {
     }
   };
 
-  const marcarParaEliminar = (id: number) => {
-    setLinksUtiles((prev) => prev.filter((l) => l.id !== id));
-    setLinksParaEliminar((prev) => [...prev, id]);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
@@ -207,20 +201,6 @@ export default function VoiceConfigPage() {
 
       if (res.ok) {
         toast.success("✅ ¡Configuración guardada!");
-
-        // 🔥 Eliminar links marcados para borrar
-        if (linksParaEliminar.length > 0) {
-          await Promise.all(
-            linksParaEliminar.map((id) =>
-              fetch(`${BACKEND_URL}/api/voice-links/${id}`, {
-                method: "DELETE",
-                credentials: "include",
-              })
-            )
-          );
-          setLinksParaEliminar([]);
-          toast.info("🗑️ Links eliminados correctamente.");
-        }
       } else {
         toast.error("❌ Algo salió mal.");
       }
@@ -317,6 +297,23 @@ export default function VoiceConfigPage() {
                 +{extra.toLocaleString()} tokens (+{extra / 200} min)
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {usoTokens && (
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
+          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <SiAudioboom /> Tokens OpenAI (NLP)
+          </h3>
+          <p className="text-white text-sm mb-2">
+            {usoTokens.usados ?? 0} de {usoTokens.limite} tokens consumidos
+          </p>
+          <div className="w-full bg-white/20 h-2 rounded mb-2 overflow-hidden">
+            <div
+              className={`h-full ${colorBarra(calcularPorcentaje(usoTokens.usados, usoTokens.limite))} transition-all duration-500`}
+              style={{ width: `${calcularPorcentaje(usoTokens.usados, usoTokens.limite)}%` }}
+            />
           </div>
         </div>
       )}
@@ -497,7 +494,7 @@ export default function VoiceConfigPage() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => marcarParaEliminar(link.id)}
+                  onClick={() => eliminarLink(link.id)}
                   className="text-red-500 hover:text-red-700 text-lg font-bold ml-4"
                   title="Eliminar"
                 >
