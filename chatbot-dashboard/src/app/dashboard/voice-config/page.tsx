@@ -39,7 +39,6 @@ export default function VoiceConfigPage() {
   const [nuevoLink, setNuevoLink] = useState({ tipo: "", nombre: "", url: "" });
   const [audioDemoUrl, setAudioDemoUrl] = useState<string>("");
   const [usoVoz, setUsoVoz] = useState<any>(null);
-  const [usoTokens, setUsoTokens] = useState<any>(null);
 
   const verificarMembresia = (e?: Event | React.SyntheticEvent) => {
     if (!tieneMembresia) {
@@ -218,7 +217,6 @@ export default function VoiceConfigPage() {
         if (res.ok) {
           const data = await res.json();
           setUsoVoz(data.usos.find((u: any) => u.canal === "voz"));
-          setUsoTokens(data.usos.find((u: any) => u.canal === "tokens_openai"));
         }
       } catch (error) {
         console.error("Error obteniendo uso:", error);
@@ -297,23 +295,6 @@ export default function VoiceConfigPage() {
                 +{extra.toLocaleString()} tokens (+{extra / 200} min)
               </button>
             ))}
-          </div>
-        </div>
-      )}
-
-      {usoTokens && (
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiAudioboom /> Tokens OpenAI (NLP)
-          </h3>
-          <p className="text-white text-sm mb-2">
-            {usoTokens.usados ?? 0} de {usoTokens.limite} tokens consumidos
-          </p>
-          <div className="w-full bg-white/20 h-2 rounded mb-2 overflow-hidden">
-            <div
-              className={`h-full ${colorBarra(calcularPorcentaje(usoTokens.usados, usoTokens.limite))} transition-all duration-500`}
-              style={{ width: `${calcularPorcentaje(usoTokens.usados, usoTokens.limite)}%` }}
-            />
           </div>
         </div>
       )}
