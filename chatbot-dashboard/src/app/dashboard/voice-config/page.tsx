@@ -11,6 +11,7 @@ import VoicePromptGenerator from "@/components/VoicePromptGenerator";
 import Footer from "@/components/Footer";
 import { SiAudioboom } from "react-icons/si";
 import VoicePlayer from "@/components/VoicePlayer";
+import VoiceMinutesCard from '@/components/VoiceMinutesCard';
 
 export default function VoiceConfigPage() {
   const [idioma, setIdioma] = useState("es-ES");
@@ -265,39 +266,7 @@ export default function VoiceConfigPage() {
 
       <TrainingHelp context="voice" />
 
-      {usoVoz && (
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
-          <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiAudioboom /> Uso de Voz (tokens)
-          </h3>
-          <p className="text-white text-sm mb-2">
-            {usoVoz.usados ?? 0} de {usoVoz.limite} tokens utilizados (incluye créditos adicionales vigentes)
-          </p>
-          {usoVoz.limite > 50000 && (
-            <p className="text-green-300 text-sm">Incluye {usoVoz.limite - 50000} tokens extra comprados.</p>
-          )}
-          <p className="text-white text-sm mb-2">
-            Equivalente a {(usoVoz.usados ?? 0) / 200} de {usoVoz.limite / 200} minutos
-          </p>
-          <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
-            <div
-              className={`h-full ${colorBarra(calcularPorcentaje(usoVoz.usados, usoVoz.limite))} transition-all duration-500`}
-              style={{ width: `${calcularPorcentaje(usoVoz.usados, usoVoz.limite)}%` }}
-            />
-          </div>
-          <div className="flex gap-2">
-            {[50000, 100000, 200000].map((extra) => (
-              <button
-                key={extra}
-                onClick={() => comprarMas("voz", extra)}
-                className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
-              >
-                +{extra.toLocaleString()} tokens (+{extra / 200} min)
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <VoiceMinutesCard />
 
       <div className="flex space-x-4 mb-6">
         {idiomasDisponibles.map((lang) => (
