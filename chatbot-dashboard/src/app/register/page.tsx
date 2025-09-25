@@ -1,7 +1,7 @@
 "use client";
 
 import Footer from '@/components/Footer';
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FaRobot,
@@ -36,6 +36,15 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  // 👉 Detecta timezone del navegador (IANA)
+  const timezoneGuess = useMemo(() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    } catch {
+      return "UTC";
+    }
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -46,26 +55,43 @@ export default function RegisterPage() {
     setSuccess(false);
 
     try {
+      // 1) Registro con timezone incluida
       const res = await fetch(`${BACKEND_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          timezone: timezoneGuess, // 👈 se envía al backend de registro
+        }),
       });
 
       const contentType = res.headers.get("Content-Type") || "";
       let data: any = null;
-
       if (contentType.includes("application/json")) {
         data = await res.json();
       }
-
       if (!res.ok) {
         const msg = data?.error || "Registro fallido";
         throw new Error(msg);
       }
 
+      // 2) Fallback: intenta fijar timezone en el tenant (por si /auth/register no la guarda)
+      try {
+        await fetch(`${BACKEND_URL}/tenants/timezone`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ timezone: timezoneGuess }),
+        });
+      } catch (e) {
+        // No bloquea el flujo si falla; solo log
+        console.warn("No se pudo fijar timezone vía PATCH /tenants/timezone:", e);
+      }
+
       setSuccess(true);
+      // Si quieres redirigir a onboarding:
+      // router.push("/onboarding");
     } catch (error: any) {
       console.error("❌ Error al registrar:", error);
       setError(error.message || "Error desconocido al registrar");
@@ -148,6 +174,11 @@ export default function RegisterPage() {
             className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
           />
 
+          {/* 👇 Solo informativo; si prefieres, ocúltalo */}
+          <div className="hidden">
+            Zona horaria detectada: <span className="text-white/80 font-mono">{timezoneGuess}</span>
+          </div>
+
           <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold transition duration-200">
             Registrarse
           </button>
@@ -157,8 +188,8 @@ export default function RegisterPage() {
             <a href="/login" className="text-purple-400 hover:text-purple-300 underline">
               Inicia sesión
             </a>
-            <Footer />
           </p>
+          <Footer />
         </form>
       ) : (
         <div className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl text-center">
