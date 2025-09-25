@@ -40,10 +40,7 @@ export default function BusinessProfilePage() {
   // NUEVO: campos UI para booking & availability
   const [bookingUrl, setBookingUrl] = useState('');
   const [availabilityApiUrl, setAvailabilityApiUrl] = useState('');
-  const [availabilityHeadersText, setAvailabilityHeadersText] = useState<string>(
-    '{\n  "Authorization": "Bearer ..."\n}'
-  );
-  const [availabilityHeaders, setAvailabilityHeaders] = useState('');
+  const [availabilityHeadersText, setAvailabilityHeadersText] = useState<string>('');
 
   // Helpers para leer anidados de settings (soporta distintos alias)
   const pickBookingUrl = (settings: any): string => {
@@ -110,9 +107,10 @@ export default function BusinessProfilePage() {
     const s = tenantData?.settings || {};
     setBookingUrl(s?.booking?.booking_url || '');
     setAvailabilityApiUrl(s?.availability?.api_url || '');
-    setAvailabilityHeaders(
+    setAvailabilityHeadersText(
       s?.availability?.headers ? JSON.stringify(s.availability.headers, null, 2) : ''
     );
+
   } catch (error) {
     console.error('❌ Error al obtener settings:', error);
   } finally {
@@ -146,17 +144,34 @@ const handleSave = async () => {
       body: JSON.stringify(payload),
     });
 
+    // Validar/parsear headers (textarea)
+    let headersObj: any = undefined;
+    if (availabilityHeadersText && availabilityHeadersText.trim()) {
+      try {
+        headersObj = JSON.parse(availabilityHeadersText);
+        if (typeof headersObj !== 'object' || Array.isArray(headersObj)) {
+          alert('Los headers deben ser un objeto JSON (clave → valor).');
+          setSaving(false);
+          return;
+        }
+      } catch {
+        alert('JSON inválido en "Headers para Availability".');
+        setSaving(false);
+        return;
+      }
+    }
+
     // 2) guarda booking/availability en tenants.settings
     const payloadTenants: any = {
-      name: formData.nombre_negocio,
-      categoria: formData.categoria,
-      idioma: formData.idioma,
-      prompt: undefined,     // (opcional) si no lo usas, deja undefined
-      bienvenida: undefined, // (opcional)
-      booking_url: bookingUrl,
-      availability_api_url: availabilityApiUrl,
-      availability_headers: availabilityHeaders, // JSON en texto, el backend lo parsea
-    };
+    name: formData.nombre_negocio,
+    categoria: formData.categoria,
+    idioma: formData.idioma,
+    // prompt / bienvenida: omitir si no los actualizas
+    booking_url: bookingUrl || undefined,
+    availability_api_url: availabilityApiUrl || undefined,
+    availability_headers: headersObj, // 👈 OBJETO (no string)
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // opcional pero útil
+  };
 
     const resT = await fetch(`${BACKEND_URL}/api/tenants`, {
       method: 'POST',
