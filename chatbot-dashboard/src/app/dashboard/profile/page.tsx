@@ -43,6 +43,7 @@ export default function BusinessProfilePage() {
   const [availabilityHeadersText, setAvailabilityHeadersText] = useState<string>(
     '{\n  "Authorization": "Bearer ..."\n}'
   );
+  const [availabilityHeaders, setAvailabilityHeaders] = useState('');
 
   // Helpers para leer anidados de settings (soporta distintos alias)
   const pickBookingUrl = (settings: any): string => {
@@ -70,56 +71,114 @@ export default function BusinessProfilePage() {
 
   // 🚀 Mover fetchSettings fuera del useEffect
   const fetchSettings = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/settings`, {
-        credentials: 'include',
-        cache: 'no-store',
-      });
-      if (!res.ok) throw new Error('Error al obtener settings');
-      const data = await res.json();
+  try {
+    const [sRes, tRes] = await Promise.all([
+      fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include', cache: 'no-store' }),
+      fetch(`${BACKEND_URL}/api/tenants/me`, { credentials: 'include', cache: 'no-store' }),
+    ]);
+    if (!sRes.ok) throw new Error('Error al obtener settings');
+    const settingsData = await sRes.json();
 
-      // base
-      setFormData({
-        tenant_id: data.tenant_id,
-        nombre_negocio: data.name,
-        horario_atencion: data.horario_atencion,
-        categoria: data.categoria,
-        idioma: data.idioma,
-        logo_url: data.logo_url,
-        twilio_number: data.twilio_number,
-        twilio_sms_number: data.twilio_sms_number,
-        twilio_voice_number: data.twilio_voice_number,
-        plan: data.plan,
-        fecha_registro: data.fecha_registro,
-        owner_name: data.owner_name,
-        email: data.email,
-        email_negocio: data.email_negocio || '',
-        telefono_negocio: data.telefono_negocio || '',
-        membresia_activa: data.membresia_activa,
-        membresia_vigencia: data.membresia_vigencia,
-        es_trial: data.es_trial,
-        estado_membresia_texto: data.estado_membresia_texto,
-      });
-      setDireccion(data.direccion || '');
+    let tenantData: any = {};
+    if (tRes.ok) tenantData = await tRes.json();
 
-      // nuevos campos desde settings
-      const settings = data.settings || {};
-      setBookingUrl(pickBookingUrl(settings));
-      setAvailabilityApiUrl(pickAvailabilityUrl(settings));
-      const hdrs = pickAvailabilityHeaders(settings);
-      if (hdrs && typeof hdrs === 'object') {
-        try {
-          setAvailabilityHeadersText(JSON.stringify(hdrs, null, 2));
-        } catch {
-          // si falla, lo dejamos como estaba
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error al obtener settings:', error);
-    } finally {
-      setLoading(false);
+    setFormData({
+      tenant_id: settingsData.tenant_id,
+      nombre_negocio: settingsData.name,
+      horario_atencion: settingsData.horario_atencion,
+      categoria: settingsData.categoria,
+      idioma: settingsData.idioma,
+      logo_url: settingsData.logo_url,
+      twilio_number: settingsData.twilio_number,
+      twilio_sms_number: settingsData.twilio_sms_number,
+      twilio_voice_number: settingsData.twilio_voice_number,
+      plan: settingsData.plan,
+      fecha_registro: settingsData.fecha_registro,
+      owner_name: settingsData.owner_name,
+      email: settingsData.email,
+      email_negocio: settingsData.email_negocio || '',
+      telefono_negocio: settingsData.telefono_negocio || '',
+      membresia_activa: settingsData.membresia_activa,
+      membresia_vigencia: settingsData.membresia_vigencia,
+      es_trial: settingsData.es_trial,
+      estado_membresia_texto: settingsData.estado_membresia_texto,
+    });
+
+    setDireccion(settingsData.direccion || '');
+
+    // 👇 toma los nuevos valores del tenant.settings si existen
+    const s = tenantData?.settings || {};
+    setBookingUrl(s?.booking?.booking_url || '');
+    setAvailabilityApiUrl(s?.availability?.api_url || '');
+    setAvailabilityHeaders(
+      s?.availability?.headers ? JSON.stringify(s.availability.headers, null, 2) : ''
+    );
+  } catch (error) {
+    console.error('❌ Error al obtener settings:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// en el guardar:
+const handleSave = async () => {
+  if (!formData.membresia_activa) {
+    router.push('/upgrade');
+    return;
+  }
+  setSaving(true);
+  try {
+    // 1) actualiza settings "clásicos" como ya hacías
+    const payload = {
+      nombre_negocio: formData.nombre_negocio,
+      horario_atencion: formData.horario_atencion,
+      categoria: formData.categoria,
+      idioma: formData.idioma,
+      logo_url: formData.logo_url || '',
+      direccion,
+      email_negocio: formData.email_negocio || '',
+      telefono_negocio: formData.telefono_negocio || '',
+    };
+    await fetch(`${BACKEND_URL}/api/settings`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+
+    // 2) guarda booking/availability en tenants.settings
+    const payloadTenants: any = {
+      name: formData.nombre_negocio,
+      categoria: formData.categoria,
+      idioma: formData.idioma,
+      prompt: undefined,     // (opcional) si no lo usas, deja undefined
+      bienvenida: undefined, // (opcional)
+      booking_url: bookingUrl,
+      availability_api_url: availabilityApiUrl,
+      availability_headers: availabilityHeaders, // JSON en texto, el backend lo parsea
+    };
+
+    const resT = await fetch(`${BACKEND_URL}/api/tenants`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payloadTenants),
+    });
+
+    if (!resT.ok) {
+      const data = await resT.json().catch(() => ({}));
+      throw new Error(data?.error || 'Error guardando booking/availability');
     }
-  };
+
+    alert('✅ Cambios guardados correctamente');
+    await fetchSettings(); // recarga valores desde DB
+  } catch (err: any) {
+    console.error(err);
+    alert(`❌ ${err.message || 'Error en la conexión'}`);
+  } finally {
+    setSaving(false);
+  }
+};
 
   useEffect(() => {
     fetchSettings();
@@ -127,77 +186,6 @@ export default function BusinessProfilePage() {
 
   const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSave = async () => {
-    if (!formData.membresia_activa) {
-      router.push('/upgrade');
-      return;
-    }
-
-    // Validar headers JSON (si el usuario lo modificó)
-    let headersObj: Record<string, any> | undefined = undefined;
-    if (availabilityHeadersText && availabilityHeadersText.trim().length) {
-      try {
-        headersObj = JSON.parse(availabilityHeadersText);
-        if (typeof headersObj !== 'object' || Array.isArray(headersObj)) {
-          throw new Error('Headers debe ser un objeto JSON');
-        }
-      } catch (e: any) {
-        alert(`❌ Headers inválidos: ${e?.message || e}`);
-        return;
-      }
-    }
-
-    setSaving(true);
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-      const payload: SettingsPayload = {
-        nombre_negocio: formData.nombre_negocio,
-        horario_atencion: formData.horario_atencion,
-        categoria: formData.categoria,
-        idioma: formData.idioma,
-        logo_url: formData.logo_url || '',
-        direccion,
-        email_negocio: formData.email_negocio || '',
-        telefono_negocio: formData.telefono_negocio || '',
-
-        // NUEVO: booking & availability
-        booking_url: bookingUrl || undefined,
-        // (opcional: puedes usar los alias si quieres rellenarlos todos)
-        reservas_url: undefined,
-        agenda_url: undefined,
-        booking: undefined,
-
-        availability_api_url: availabilityApiUrl || undefined,
-        booking_api_url: undefined,
-        availability_headers: headersObj,
-
-        // Enviamos timezone en silencio
-        timezone: tz,
-      };
-
-      const res = await fetch(`${BACKEND_URL}/api/settings`, {
-        method: 'PATCH', // te mantengo PATCH como ya tenías
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        alert('✅ Cambios guardados correctamente');
-        await fetchSettings(); // refresca con lo almacenado en DB
-      } else {
-        const data = await res.json().catch(() => ({}));
-        alert(`❌ Error al guardar cambios${data?.error ? `: ${data.error}` : ''}`);
-      }
-    } catch (err) {
-      console.error(err);
-      alert('❌ Error en la conexión');
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleCancelarPlan = async () => {
