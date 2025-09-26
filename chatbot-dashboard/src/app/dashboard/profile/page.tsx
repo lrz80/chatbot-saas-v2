@@ -126,52 +126,53 @@ const handleSave = async () => {
   }
   setSaving(true);
   try {
-    // 1) actualiza settings "clásicos" como ya hacías
-    const payload = {
-      nombre_negocio: formData.nombre_negocio,
-      horario_atencion: formData.horario_atencion,
-      categoria: formData.categoria,
-      idioma: formData.idioma,
-      logo_url: formData.logo_url || '',
-      direccion,
-      email_negocio: formData.email_negocio || '',
-      telefono_negocio: formData.telefono_negocio || '',
-    };
+    // 1) Ajustes "clásicos"
     await fetch(`${BACKEND_URL}/api/settings`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        nombre_negocio: formData.nombre_negocio,
+        horario_atencion: formData.horario_atencion,
+        categoria: formData.categoria,
+        idioma: formData.idioma,
+        logo_url: formData.logo_url || '',
+        direccion,
+        email_negocio: formData.email_negocio || '',
+        telefono_negocio: formData.telefono_negocio || '',
+      }),
     });
 
-    // Validar/parsear headers (textarea)
-    let headersObj: any = undefined;
-    if (availabilityHeadersText && availabilityHeadersText.trim()) {
+    // 2) Booking / Availability
+    const safeTrim = (s: string) => (s || '').trim();
+    const booking_url = safeTrim(bookingUrl);
+    const availability_api_url = safeTrim(availabilityApiUrl);
+
+    // parsea headers del textarea
+    let availability_headers: Record<string, any> | undefined = undefined;
+    const txt = safeTrim(availabilityHeadersText);
+    if (txt) {
       try {
-        headersObj = JSON.parse(availabilityHeadersText);
-        if (typeof headersObj !== 'object' || Array.isArray(headersObj)) {
-          alert('Los headers deben ser un objeto JSON (clave → valor).');
-          setSaving(false);
-          return;
+        const obj = JSON.parse(txt);
+        if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+          availability_headers = obj;
         }
-      } catch {
-        alert('JSON inválido en "Headers para Availability".');
-        setSaving(false);
-        return;
+      } catch (e) {
+        alert('⚠️ Los headers no son JSON válido. Revisa el formato.');
       }
     }
 
-    // 2) guarda booking/availability en tenants.settings
     const payloadTenants: any = {
-    name: formData.nombre_negocio,
-    categoria: formData.categoria,
-    idioma: formData.idioma,
-    // prompt / bienvenida: omitir si no los actualizas
-    booking_url: bookingUrl || undefined,
-    availability_api_url: availabilityApiUrl || undefined,
-    availability_headers: headersObj, // 👈 OBJETO (no string)
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // opcional pero útil
-  };
+      name: formData.nombre_negocio,
+      categoria: formData.categoria,
+      idioma: formData.idioma,
+      // envía solo si hay valor (el backend valida http/https)
+      ...(booking_url ? { booking_url } : {}),
+      ...(availability_api_url ? { availability_api_url } : {}),
+      ...(availability_headers ? { availability_headers } : {}),
+      // opcional: envia timezone detectada
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    };
 
     const resT = await fetch(`${BACKEND_URL}/api/tenants`, {
       method: 'POST',
@@ -186,7 +187,7 @@ const handleSave = async () => {
     }
 
     alert('✅ Cambios guardados correctamente');
-    await fetchSettings(); // recarga valores desde DB
+    await fetchSettings();
   } catch (err: any) {
     console.error(err);
     alert(`❌ ${err.message || 'Error en la conexión'}`);
