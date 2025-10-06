@@ -7,26 +7,11 @@ import PromptGenerator from "@/components/PromptGenerator";
 import { useRouter } from "next/navigation";
 import { Save, } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
-import { SiWhatsapp, SiOpenai, SiMinutemailer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
+import { SiWhatsapp, SiMinutemailer } from 'react-icons/si';
 import { MdWhatsapp } from "react-icons/md";
 import FaqSection from "@/components/FaqSection";
 import type { FaqSugerida } from "@/components/FaqSection";
-import FlowSection from "@/components/FlowSection";
-
-
-type FlowOption = {
-  texto: string;
-  respuesta?: string;
-  submenu?: {
-    mensaje: string;
-    opciones: FlowOption[];
-  };
-};
-
-type Flow = {
-  mensaje: string;
-  opciones: FlowOption[];
-};
+import IntentSection, { Intent } from "@/components/IntentSection";
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
@@ -57,16 +42,14 @@ export default function TrainingPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
-  const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
+  
   const [isTyping, setIsTyping] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const [usoWhatsapp, setUsoWhatsapp] = useState<any>(null);
-  const [usos, setUsos] = useState<any[]>([]);
-  const [clientOnly, setClientOnly] = useState(false);
-  useEffect(() => {
-    setClientOnly(true);
-  }, []);
+  
+  const [intents, setIntents] = useState<Intent[]>([]);
+
+  
   type Faq = {
     id?: number;
     pregunta: string;
@@ -98,12 +81,11 @@ export default function TrainingPage() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [settingsRes, faqRes, intentsRes, sugeridasRes, flowsRes] = await Promise.all([
+        const [settingsRes, faqRes, intentsRes, sugeridasRes] = await Promise.all([
           fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs?canal=whatsapp`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents?canal=whatsapp`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=whatsapp`, { credentials: "include" }),
-          fetch(`${BACKEND_URL}/api/flows?canal=whatsapp`, { credentials: "include", cache: "no-store" }),
         ]);
   
         if (settingsRes.ok) {
@@ -121,24 +103,23 @@ export default function TrainingPage() {
             idioma: data.idioma || prev.idioma,
           }));
           setMessages([{ role: "assistant", content: data.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?" }]);
-          setUsos(data.limites || {});
         }
   
         if (faqRes.ok) setFaq(await faqRes.json());
-        if (intentsRes.ok) setIntents(await intentsRes.json());
-        if (sugeridasRes.ok) setFaqSugeridas(await sugeridasRes.json());
-  
-        // 🔹 GET /api/flows devuelve **un array directo** (no {data})
-        if (flowsRes.ok) {
-          const arr = await flowsRes.json();
-          const parsed = Array.isArray(arr)
-            ? arr.map((f: any) => ({
-                mensaje: f?.pregunta ?? f?.mensaje ?? "",
-                opciones: Array.isArray(f?.opciones) ? f.opciones : [],
+        if (intentsRes.ok) {
+          const arr = await intentsRes.json();
+          const parsed: Intent[] = Array.isArray(arr)
+            ? arr.map((x:any) => ({
+                nombre: x?.nombre ?? "",
+                ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
+                respuesta: x?.respuesta ?? "",
               }))
             : [];
-          setFlows(parsed);
+          setIntents(parsed);
         }
+
+        if (sugeridasRes.ok) setFaqSugeridas(await sugeridasRes.json());
+  
       } catch (err) {
         console.error("❌ Error cargando configuración:", err);
       } finally {
@@ -218,15 +199,6 @@ export default function TrainingPage() {
     await sendPreview(texto);
   };
 
-  const handleIntentChange = (i: number, field: string, value: string) => {
-    const updated = [...intents];
-    updated[i][field] = field === "ejemplos" ? value.split("\n").filter(Boolean) : value;
-    setIntents(updated);
-  };
-  
-  const addIntent = () =>
-    setIntents([...intents, { nombre: "", ejemplos: [], respuesta: "" }]);
-  
   const saveIntents = async () => {
     if (!isMembershipActive) return;
   
@@ -258,29 +230,31 @@ export default function TrainingPage() {
       }
   
       alert("Intenciones guardadas ✅");
+      // 🔄 Recarga la lista desde el backend para reflejar cambios
+      try {
+        const r2 = await fetch(`${BACKEND_URL}/api/intents?canal=${canal}`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (r2.ok) {
+          const arr2 = await r2.json();
+          const parsed2: Intent[] = Array.isArray(arr2)
+            ? arr2.map((x:any) => ({
+                nombre: x?.nombre ?? "",
+                ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
+                respuesta: x?.respuesta ?? "",
+              }))
+            : [];
+          setIntents(parsed2);
+        }
+      } catch {}
     } catch (e) {
       console.error("❌ Error guardando intenciones:", e);
       alert("❌ Error guardando intenciones.");
     }
   };  
   
-  // 🔽 PÉGALO DEBAJO de saveIntents()
-  const deleteIntent = (idx: number) => {
-    setIntents(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const duplicateIntent = (idx: number) => {
-    setIntents(prev => {
-      const copy = [...prev];
-      copy.splice(idx + 1, 0, {
-        nombre: prev[idx].nombre + " (copia)",
-        ejemplos: [...prev[idx].ejemplos],
-        respuesta: prev[idx].respuesta,
-      });
-      return copy;
-    });
-  };
-
+  
   const saveFaqs = async () => {
     if (!settings.membresia_activa) return;
   
@@ -326,28 +300,6 @@ export default function TrainingPage() {
     }
   };
   
-  const [flows, setFlows] = useState<Flow[]>([
-    {
-      mensaje: "¿Qué deseas hacer?",
-      opciones: [
-        {
-          texto: "Reservar",
-          submenu: {
-            mensaje: "¿Qué deseas reservar?",
-            opciones: [
-              { texto: "Facial", respuesta: "Agenda tu facial aquí: [link]" },
-              { texto: "Masaje", respuesta: "Perfecto, masaje disponible aquí: [link]" },
-            ],
-          },
-        },
-        {
-          texto: "Ver precios",
-          respuesta: "Nuestros precios están en este link: [link]",
-        },
-      ],
-    },
-  ]);  
-  
   // 🔁 Envío reutilizable para preview (WhatsApp)
   const sendPreview = async (text: string) => {
     setMessages((prev) => [...prev, { role: "user", content: text }]);
@@ -390,60 +342,6 @@ export default function TrainingPage() {
         previewRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
       }, 100);
     }
-  };
-
-  const saveFlows = async () => {
-    if (!settings.membresia_activa) return;
-  
-    // Validación mínima
-    const flowsValidos = flows.filter(
-      (f) =>
-        f.mensaje.trim() &&
-        f.opciones.some((o) => o.texto.trim() && (o.respuesta?.trim() || o.submenu))
-    );
-    if (flowsValidos.length === 0) return alert("❌ Agrega al menos un flujo válido.");
-  
-    // Normalización a contrato del backend: mensaje -> pregunta
-    const payload = flowsValidos.map((f) => ({
-      pregunta: f.mensaje.toString().trim(),
-      opciones: Array.isArray(f.opciones) ? f.opciones : [],
-    }));
-  
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/flows?canal=${canal}`, {
-        method: "PUT",                       // ⬅️ PUT (no POST)
-        credentials: "include",
-        cache: "no-store",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),       // ⬅️ backend acepta array directo
-      });
-  
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        return alert(`❌ Error al guardar: ${json?.error || "desconocido"}`);
-      }
-  
-      alert("Flujos guardados ✅");
-  
-      // Recarga desde DB (GET devuelve un array directo)
-      const reload = await fetch(`${BACKEND_URL}/api/flows?canal=${canal}`, {
-        credentials: "include",
-        cache: "no-store",
-      });
-      if (reload.ok) {
-        const arr = await reload.json();
-        const parsed = Array.isArray(arr)
-          ? arr.map((f: any) => ({
-              mensaje: f.pregunta ?? f.mensaje ?? "",
-              opciones: Array.isArray(f.opciones) ? f.opciones : [],
-            }))
-          : [];
-        setFlows(parsed);
-      }
-    } catch (err) {
-      console.error("❌ Error al guardar flujos:", err);
-      alert("❌ Error al guardar flujos.");
-    }
   };  
   
   // Agrega esta función dentro del componente
@@ -476,7 +374,6 @@ export default function TrainingPage() {
     const fetchUsos = async () => {
       const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" });
       const data = await res.json();
-      setUsos(data.usos || []);
       setUsoWhatsapp(data.usos.find((u: any) => u.canal === "whatsapp"));
     };
     fetchUsos();
@@ -536,12 +433,6 @@ export default function TrainingPage() {
           <SiWhatsapp size={36} className="text-green-400 animate-pulse" />
           Configuración del Asistente de WhatsApp
         </h1>
-  
-        {usage.porcentaje >= 80 && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
-            ⚠ Estás utilizando el <strong>{usage.porcentaje}%</strong> de tu límite mensual ({usage.used}/{usage.limit} mensajes).<br />Considera actualizar tu plan para evitar interrupciones.
-          </div>
-        )}
   
         <TrainingHelp context="training" />
 
@@ -652,110 +543,13 @@ export default function TrainingPage() {
           onSave={() => bloquearSiNoMembresia(saveFaqs)}
         />
 
-        <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
-          <SiOpenai className="animate-pulse" size={24} />
-          Entrenamiento por Intención
-        </h3>
-
-        <p className="text-sm text-white/70 mb-4">
-          Define intenciones específicas para que el asistente pueda reconocer patrones en los mensajes del usuario y responder con mayor precisión. <br />
-          <strong>Ejemplo:</strong> Intención: Reservar cita | Ejemplos: “Quiero agendar”, “Reserva para hoy” | Respuesta: “¡Claro! ¿Qué día prefieres?”
-        </p>
-  
-        {intents.map((item, i) => (
-          <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
-            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
-              <SiTarget /> Intención
-            </label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
-              value={item.nombre}
-              onChange={(e) => handleIntentChange(i, "nombre", e.target.value)}
-              disabled={!settings.membresia_activa}
-            />
-  
-            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
-              <SiPaperspace /> Frases de ejemplo (una por línea)
-            </label>
-            <textarea
-              className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
-              value={item.ejemplos.join("\n")}
-              onChange={(e) => handleIntentChange(i, "ejemplos", e.target.value)}
-              rows={3}
-              disabled={!settings.membresia_activa}
-            />
-  
-            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
-              <SiChatbot /> Respuesta del Asistente
-            </label>
-            <textarea
-              className="w-full p-2 border rounded bg-white/10 border-white/20 text-white"
-              value={item.respuesta}
-              onChange={(e) => handleIntentChange(i, "respuesta", e.target.value)}
-              rows={2}
-              disabled={!settings.membresia_activa}
-            />
-
-            <div className="flex gap-2 mt-2">
-            <button
-              onClick={() => duplicateIntent(i)}
-              disabled={!settings.membresia_activa}
-              className={`px-3 py-1 rounded text-sm ${
-                settings.membresia_activa
-                  ? "bg-white/10 text-white hover:bg-white/20"
-                  : "bg-gray-600 text-white/50 cursor-not-allowed"
-              }`}
-              title="Duplicar intención"
-            >
-              Duplicar
-            </button>
-
-            <button
-              onClick={() => {
-                if (confirm(`¿Eliminar la intención "${item.nombre || '(sin nombre)'}"?`)) {
-                  deleteIntent(i);
-                }
-              }}
-              disabled={!settings.membresia_activa}
-              className={`px-3 py-1 rounded text-sm ${
-                settings.membresia_activa
-                  ? "bg-red-600 hover:bg-red-700 text-white"
-                  : "bg-gray-600 text-white/50 cursor-not-allowed"
-              }`}
-              title="Eliminar intención"
-            >
-              Eliminar
-            </button>
-          </div>
-          </div>
-        ))}
-  
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={addIntent}
-            disabled={!settings.membresia_activa}
-            className={`px-4 py-2 rounded ${
-              settings.membresia_activa
-                ? "bg-white/10 text-white hover:bg-white/20"
-                : "bg-gray-600 text-white/50 cursor-not-allowed"
-            }`}
-          >
-            ➕ Agregar intención
-          </button>
-  
-          <button
-            onClick={() => bloquearSiNoMembresia(saveIntents)}
-            disabled={!settings.membresia_activa}
-            className={`px-4 py-2 rounded ${
-              settings.membresia_activa
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-gray-600 text-white/50 cursor-not-allowed"
-            }`}
-          >
-            Guardar Intenciones
-          </button>
-        </div>
+        <IntentSection
+          intents={intents}
+          setIntents={setIntents}
+          canal={canal}
+          membresiaActiva={settings.membresia_activa}
+          onSave={() => bloquearSiNoMembresia(saveIntents)}
+        />
 
         <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
         <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
