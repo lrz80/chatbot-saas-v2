@@ -264,6 +264,23 @@ export default function TrainingPage() {
     }
   };  
   
+  // 🔽 PÉGALO DEBAJO de saveIntents()
+  const deleteIntent = (idx: number) => {
+    setIntents(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const duplicateIntent = (idx: number) => {
+    setIntents(prev => {
+      const copy = [...prev];
+      copy.splice(idx + 1, 0, {
+        nombre: prev[idx].nombre + " (copia)",
+        ejemplos: [...prev[idx].ejemplos],
+        respuesta: prev[idx].respuesta,
+      });
+      return copy;
+    });
+  };
+
   const saveFaqs = async () => {
     if (!settings.membresia_activa) return;
   
@@ -679,6 +696,38 @@ export default function TrainingPage() {
               rows={2}
               disabled={!settings.membresia_activa}
             />
+
+            <div className="flex gap-2 mt-2">
+            <button
+              onClick={() => duplicateIntent(i)}
+              disabled={!settings.membresia_activa}
+              className={`px-3 py-1 rounded text-sm ${
+                settings.membresia_activa
+                  ? "bg-white/10 text-white hover:bg-white/20"
+                  : "bg-gray-600 text-white/50 cursor-not-allowed"
+              }`}
+              title="Duplicar intención"
+            >
+              Duplicar
+            </button>
+
+            <button
+              onClick={() => {
+                if (confirm(`¿Eliminar la intención "${item.nombre || '(sin nombre)'}"?`)) {
+                  deleteIntent(i);
+                }
+              }}
+              disabled={!settings.membresia_activa}
+              className={`px-3 py-1 rounded text-sm ${
+                settings.membresia_activa
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-gray-600 text-white/50 cursor-not-allowed"
+              }`}
+              title="Eliminar intención"
+            >
+              Eliminar
+            </button>
+          </div>
           </div>
         ))}
   
@@ -707,14 +756,6 @@ export default function TrainingPage() {
             Guardar Intenciones
           </button>
         </div>
-  
-        <FlowSection
-          flows={flows}
-          setFlows={setFlows}
-          canal="whatsapp" // o "meta"
-          membresiaActiva={settings.membresia_activa}
-          onSave={async () => bloquearSiNoMembresia(saveFlows)}
-        />
 
         <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
         <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
