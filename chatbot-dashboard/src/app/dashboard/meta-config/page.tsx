@@ -14,7 +14,7 @@ import IntentSection, { Intent } from "@/components/IntentSection";
 
 const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
 
-const META_CONNECT_URL = `${BACKEND_URL}/api/facebook/oauth-callback`;
+const META_CONNECT_URL = `${BACKEND_URL}/api/facebook/oauth-start`;
 
 type MetaConnState = {
   connected: boolean;
