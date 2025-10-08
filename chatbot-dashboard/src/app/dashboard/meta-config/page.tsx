@@ -33,6 +33,24 @@ export default function TrainingPage() {
 const goConnectMeta = () => {
   window.location.href = META_CONNECT_URL;
 };
+const handleDisconnect = async () => {
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/meta-config/disconnect`, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (r.ok) {
+      setMetaConn({ connected: false, needsReconnect: true, pageId: undefined, pageName: undefined });
+      alert("Cuentas desconectadas ✅");
+    } else {
+      const j = await r.json().catch(() => ({}));
+      alert(`❌ Error al desconectar: ${j?.error || r.statusText}`);
+    }
+  } catch (e) {
+    console.error(e);
+    alert("❌ Error al desconectar.");
+  }
+};
   const bloquearSiNoMembresia = async (
     callback: () => Promise<void> | void
   ): Promise<void> => {
@@ -427,60 +445,6 @@ const goConnectMeta = () => {
           <SiMeta size={36} className="text-green-400 animate-pulse" />
           Configuración del Asistente de Facebook e Instagram
         </h1>
-  
-        {/* 👉 Banner Conectar / Reconectar Meta */}
-        {(!metaConn.connected || metaConn.needsReconnect) && (
-          <div className="mb-6 p-4 rounded-lg border text-sm bg-yellow-500/15 border-yellow-400/40 text-yellow-100">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <p className="font-semibold">
-                  {metaConn.needsReconnect
-                    ? "Tu conexión con Meta caducó o es inválida."
-                    : "Aún no conectas tu cuenta de Meta (Facebook/Instagram)."}
-                </p>
-                {!!metaConn.pageId && (
-                  <p className="opacity-80">
-                    Página detectada: {metaConn.pageName ?? "sin nombre"} ({metaConn.pageId})
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={goConnectMeta}
-                  className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
-                >
-                  {metaConn.needsReconnect ? "Reconectar Meta" : "Conectar Meta"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {metaConn.connected && (
-          <button
-            onClick={async () => {
-              try {
-                const r = await fetch(`${BACKEND_URL}/api/meta-config/disconnect`, {
-                  method: "POST",
-                  credentials: "include",
-                });
-                if (r.ok) {
-                  setMetaConn({ connected: false, needsReconnect: false });
-                  alert("Cuentas desconectadas ✅");
-                } else {
-                  const j = await r.json().catch(() => ({}));
-                  alert(`❌ Error al desconectar: ${j?.error || r.statusText}`);
-                }
-              } catch (e) {
-                console.error(e);
-                alert("❌ Error al desconectar.");
-              }
-            }}
-            className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 border border-white/20 text-white"
-          >
-            Desconectar
-          </button>
-        )}
 
         {usage.porcentaje >= 80 && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
@@ -489,6 +453,59 @@ const goConnectMeta = () => {
         )}
   
         <TrainingHelp context="meta" />
+
+        {/* 🔗 Integración con Meta: botones SIEMPRE visibles */}
+        <div className="mb-6 p-4 rounded-lg border text-sm bg-white/5 border-white/10 text-white">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="space-y-1">
+                <p className="font-semibold">Integración con Facebook / Instagram</p>
+                <p className="text-white/80 text-xs">
+                  Estado:{" "}
+                  {metaConn.connected
+                    ? "Conectado ✅"
+                    : metaConn.needsReconnect
+                    ? "Requiere conexión ⚠️"
+                    : "No conectado"}
+                </p>
+                {(metaConn.pageId || metaConn.pageName) && (
+                  <p className="text-white/70 text-xs">
+                    Página: {metaConn.pageName ?? "—"} {metaConn.pageId ? `(${metaConn.pageId})` : ""}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {/* ÚNICO botón para FB/IG */}
+                <button
+                  onClick={goConnectMeta}
+                  className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
+                >
+                  {metaConn.connected ? "Reconectar Facebook/Instagram" : "Conectar Facebook/Instagram"}
+                </button>
+
+                {/* Desconectar (deshabilitado si no hay conexión) */}
+                <button
+                  onClick={handleDisconnect}
+                  disabled={!metaConn.connected && !metaConn.pageId}
+                  className={`px-4 py-2 rounded border ${
+                    metaConn.connected || metaConn.pageId
+                      ? "bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                      : "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
+                  }`}
+                >
+                  Desconectar
+                </button>
+              </div>
+            </div>
+
+            <p className="text-[12px] text-white/60">
+              Tip: el mismo flujo de conexión concede permisos para Página de Facebook y mensajes de Instagram (si tu
+              IG está vinculado a esa Página). Si cambiaste la contraseña de Facebook o Meta invalidó el token, pulsa
+              “Reconectar”.
+            </p>
+          </div>
+        </div>
 
         {usoMeta && (
           <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
