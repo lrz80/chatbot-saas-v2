@@ -19,8 +19,8 @@ const META_CONNECT_URL = `${BACKEND_URL}/api/facebook/oauth-start`;
 type MetaConnState = {
   connected: boolean;
   needsReconnect: boolean;
-  pageName?: string;
-  pageId?: string;
+  fb?: { id?: string; name?: string };
+  ig?: { id?: string; username?: string };
 };
 
 export default function TrainingPage() {
@@ -40,7 +40,7 @@ const handleDisconnect = async () => {
       credentials: "include",
     });
     if (r.ok) {
-      setMetaConn({ connected: false, needsReconnect: true, pageId: undefined, pageName: undefined });
+      setMetaConn({ connected: false, needsReconnect: true, fb: undefined, ig: undefined });
       alert("Cuentas desconectadas ✅");
     } else {
       const j = await r.json().catch(() => ({}));
@@ -162,20 +162,20 @@ const handleDisconnect = async () => {
           if (mc.ok) {
             const m = await mc.json();
 
-            const hasPageId = Boolean(m?.facebook_page_id || m?.instagram_page_id);
-            // Si luego agregas bandera meta_token_invalid en backend: 
-            // connected = hasPageId && !m.meta_token_invalid
-            // needsReconnect = hasPageId && m.meta_token_invalid
+            const hasFB = Boolean(m?.facebook_page_id);
+            const hasIG = Boolean(m?.instagram_page_id);
+            const isConnected = hasFB || hasIG;
+
             setMetaConn({
-              connected: hasPageId,
-              needsReconnect: !hasPageId,
-              pageName: m?.facebook_page_name || m?.instagram_page_name,
-              pageId: m?.facebook_page_id || m?.instagram_page_id,
+              connected: isConnected,
+              needsReconnect: !isConnected,
+              fb: hasFB ? { id: m.facebook_page_id, name: m.facebook_page_name } : undefined,
+              ig: hasIG ? { id: m.instagram_page_id, username: m.instagram_page_name } : undefined,
             });
           } else if (mc.status === 401) {
-            // No logueado / sin token -> mostrar Conectar
             setMetaConn({ connected: false, needsReconnect: true });
           }
+
         } catch (e) {
           console.error("❌ Error cargando meta-config:", e);
           // En error, deja visible el botón Conectar
@@ -468,10 +468,15 @@ const handleDisconnect = async () => {
                     ? "Requiere conexión ⚠️"
                     : "No conectado"}
                 </p>
-                {(metaConn.pageId || metaConn.pageName) && (
-                  <p className="text-white/70 text-xs">
-                    Página: {metaConn.pageName ?? "—"} {metaConn.pageId ? `(${metaConn.pageId})` : ""}
-                  </p>
+                {(metaConn.fb || metaConn.ig) && (
+                  <div className="text-white/70 text-xs space-y-1">
+                    {metaConn.fb && (
+                      <p>Facebook: {metaConn.fb.name ?? "—"} {metaConn.fb.id ? `(${metaConn.fb.id})` : ""}</p>
+                    )}
+                    {metaConn.ig && (
+                      <p>Instagram: @{metaConn.ig.username ?? "—"} {metaConn.ig.id ? `(${metaConn.ig.id})` : ""}</p>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -487,9 +492,9 @@ const handleDisconnect = async () => {
                 {/* Desconectar (deshabilitado si no hay conexión) */}
                 <button
                   onClick={handleDisconnect}
-                  disabled={!metaConn.connected && !metaConn.pageId}
+                  disabled={!metaConn.connected && !metaConn.fb && !metaConn.ig}
                   className={`px-4 py-2 rounded border ${
-                    metaConn.connected || metaConn.pageId
+                    (metaConn.connected || metaConn.fb || metaConn.ig)
                       ? "bg-white/10 hover:bg-white/20 border-white/20 text-white"
                       : "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
                   }`}
