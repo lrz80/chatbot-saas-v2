@@ -10,6 +10,7 @@ import { BACKEND_URL } from "@/utils/api";
 import { SiMeta, SiOpenai, SiMinutemailer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
 import FaqSection from "@/components/FaqSection";
 import type { FaqSugerida } from "@/components/FaqSection";
+import IntentSection, { Intent } from "@/components/IntentSection";
 
 const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
 
@@ -40,7 +41,7 @@ export default function TrainingPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [intents, setIntents] = useState<{ nombre: string; ejemplos: string[]; respuesta: string }[]>([]);
+  const [intents, setIntents] = useState<Intent[]>([]);
   const [usage, setUsage] = useState({ used: 0, limit: null, porcentaje: 0 });
   const [isTyping, setIsTyping] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
@@ -107,7 +108,17 @@ export default function TrainingPage() {
         }
   
         if (faqRes.ok) setFaq(await faqRes.json());
-        if (intentsRes.ok) setIntents(await intentsRes.json());
+        if (intentsRes.ok) {
+          const arr = await intentsRes.json();
+          const parsed: Intent[] = Array.isArray(arr)
+            ? arr.map((x:any) => ({
+                nombre: x?.nombre ?? "",
+                ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
+                respuesta: x?.respuesta ?? "",
+              }))
+            : [];
+          setIntents(parsed);
+        }
         if (sugeridasRes.ok) setFaqSugeridas(await sugeridasRes.json());
 
       } catch (err) {
@@ -170,56 +181,58 @@ export default function TrainingPage() {
     await sendPreview(input.trim());
   };  
 
-  const handleIntentChange = (i: number, field: string, value: string) => {
-    const updated = [...intents];
-    updated[i][field] = field === "ejemplos" ? value.split("\n").filter(Boolean) : value;
-    setIntents(updated);
-  };
-  
-  const addIntent = () =>
-    setIntents([...intents, { nombre: "", ejemplos: [], respuesta: "" }]);
-  
   const saveIntents = async () => {
-    if (!isMembershipActive) return;
-  
-    const intencionesLimpias = intents
-      .map(i => ({
-        nombre: (i.nombre || '').trim(),
-        ejemplos: Array.isArray(i.ejemplos) ? i.ejemplos : [],
-        respuesta: (i.respuesta || '').trim(),
-        canal: 'meta', // 🔒 por ítem, blindaje
-      }))
-      .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
-  
-    if (intencionesLimpias.length === 0) {
-      alert("❌ Agrega al menos una intención válida.");
-      return;
-    }
-  
-    // 🔒 manda canal también a nivel body
-    const payload = { canal: 'meta', intents: intencionesLimpias };
-  
-    const res = await fetch(`${BACKEND_URL}/api/intents`, {
+  if (!settings.membresia_activa) return;
+
+  const intencionesLimpias = intents
+    .map(i => ({
+      nombre: (i.nombre || '').trim(),
+      ejemplos: (i.ejemplos || []).map(e => (e || '').trim()).filter(Boolean),
+      respuesta: (i.respuesta || '').trim(),
+    }))
+    .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
+
+  if (!intencionesLimpias.length) {
+    return alert("❌ Agrega al menos una intención válida.");
+  }
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
       method: "POST",
       credentials: "include",
+      cache: "no-store",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ intents: intencionesLimpias }),
     });
-  
+
+    const json = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const j = await res.json().catch(() => ({}));
-      alert(`❌ Error al guardar: ${j?.error || res.statusText}`);
-      return;
+      return alert(`❌ Error al guardar intenciones: ${json?.error || res.statusText}`);
     }
-  
-    // recarga para ver reflejado
-    const reload = await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
-      credentials: "include", cache: "no-store",
-    });
-    if (reload.ok) setIntents(await reload.json());
-  
+
     alert("Intenciones guardadas ✅");
-  };  
+
+    // Recargar para reflejar la versión DB
+    const r2 = await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (r2.ok) {
+      const arr2 = await r2.json();
+      const parsed2: Intent[] = Array.isArray(arr2)
+        ? arr2.map((x:any) => ({
+            nombre: x?.nombre ?? "",
+            ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
+            respuesta: x?.respuesta ?? "",
+          }))
+        : [];
+      setIntents(parsed2);
+    }
+  } catch (e) {
+    console.error("❌ Error guardando intenciones (meta):", e);
+    alert("❌ Error guardando intenciones.");
+  }
+};
   
   const saveFaqs = async () => {
     if (!settings.membresia_activa) return;
@@ -488,79 +501,14 @@ export default function TrainingPage() {
           onSave={() => bloquearSiNoMembresia(saveFaqs)}
         />
 
-        <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2 mt-12">
-          <SiOpenai className="animate-pulse" size={24} />
-          Entrenamiento por Intención
-        </h3>
+        <IntentSection
+          intents={intents}
+          setIntents={setIntents}
+          canal="meta"
+          membresiaActiva={settings.membresia_activa}
+          onSave={() => bloquearSiNoMembresia(saveIntents)}
+        />
 
-        <p className="text-sm text-white/70 mb-4">
-          Define intenciones específicas para que el asistente pueda reconocer patrones en los mensajes del usuario y responder con mayor precisión. <br />
-          <strong>Ejemplo:</strong> Intención: Reservar cita | Ejemplos: “Quiero agendar”, “Reserva para hoy” | Respuesta: “¡Claro! ¿Qué día prefieres?”
-        </p>
-  
-        {intents.map((item, i) => (
-          <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
-            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
-              <SiTarget /> Intención
-            </label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
-              value={item.nombre}
-              onChange={(e) => handleIntentChange(i, "nombre", e.target.value)}
-              disabled={!settings.membresia_activa}
-            />
-  
-            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
-              <SiPaperspace /> Frases de ejemplo (una por línea)
-            </label>
-            <textarea
-              className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
-              value={item.ejemplos.join("\n")}
-              onChange={(e) => handleIntentChange(i, "ejemplos", e.target.value)}
-              rows={3}
-              disabled={!settings.membresia_activa}
-            />
-  
-            <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
-              <SiChatbot /> Respuesta del Asistente
-            </label>
-            <textarea
-              className="w-full p-2 border rounded bg-white/10 border-white/20 text-white"
-              value={item.respuesta}
-              onChange={(e) => handleIntentChange(i, "respuesta", e.target.value)}
-              rows={2}
-              disabled={!settings.membresia_activa}
-            />
-          </div>
-        ))}
-  
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={addIntent}
-            disabled={!settings.membresia_activa}
-            className={`px-4 py-2 rounded ${
-              settings.membresia_activa
-                ? "bg-white/10 text-white hover:bg-white/20"
-                : "bg-gray-600 text-white/50 cursor-not-allowed"
-            }`}
-          >
-            ➕ Agregar intención
-          </button>
-  
-          <button
-            onClick={() => bloquearSiNoMembresia(saveIntents)}
-            disabled={!settings.membresia_activa}
-            className={`px-4 py-2 rounded ${
-              settings.membresia_activa
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-gray-600 text-white/50 cursor-not-allowed"
-            }`}
-          >
-            Guardar Intenciones
-          </button>
-        </div>
-  
         <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
         <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
           <SiMinutemailer className="animate-pulse" size={24} />
