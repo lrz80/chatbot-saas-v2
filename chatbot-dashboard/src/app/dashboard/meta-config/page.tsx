@@ -14,8 +14,25 @@ import IntentSection, { Intent } from "@/components/IntentSection";
 
 const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
 
+const META_CONNECT_URL = `${BACKEND_URL}/api/facebook/oauth-callback`;
+
+type MetaConnState = {
+  connected: boolean;
+  needsReconnect: boolean;
+  pageName?: string;
+  pageId?: string;
+};
+
 export default function TrainingPage() {
   const router = useRouter();
+  const [metaConn, setMetaConn] = useState<MetaConnState>({
+  connected: false,
+  needsReconnect: false,
+});
+
+const goConnectMeta = () => {
+  window.location.href = META_CONNECT_URL;
+};
   const bloquearSiNoMembresia = async (
     callback: () => Promise<void> | void
   ): Promise<void> => {
@@ -121,6 +138,31 @@ export default function TrainingPage() {
         }
         if (sugeridasRes.ok) setFaqSugeridas(await sugeridasRes.json());
 
+        // 👇 NUEVO: lee estado de conexión de Meta
+        try {
+          const mc = await fetch(`${BACKEND_URL}/api/meta-config`, { credentials: "include" });
+          if (mc.ok) {
+            const m = await mc.json();
+
+            const hasPageId = Boolean(m?.facebook_page_id || m?.instagram_page_id);
+            // Si luego agregas bandera meta_token_invalid en backend: 
+            // connected = hasPageId && !m.meta_token_invalid
+            // needsReconnect = hasPageId && m.meta_token_invalid
+            setMetaConn({
+              connected: hasPageId,
+              needsReconnect: !hasPageId,
+              pageName: m?.facebook_page_name || m?.instagram_page_name,
+              pageId: m?.facebook_page_id || m?.instagram_page_id,
+            });
+          } else if (mc.status === 401) {
+            // No logueado / sin token -> mostrar Conectar
+            setMetaConn({ connected: false, needsReconnect: true });
+          }
+        } catch (e) {
+          console.error("❌ Error cargando meta-config:", e);
+          // En error, deja visible el botón Conectar
+          setMetaConn((prev) => ({ ...prev, connected: false, needsReconnect: true }));
+        }
       } catch (err) {
         console.error("❌ Error cargando configuración:", err);
       } finally {
@@ -386,6 +428,60 @@ export default function TrainingPage() {
           Configuración del Asistente de Facebook e Instagram
         </h1>
   
+        {/* 👉 Banner Conectar / Reconectar Meta */}
+        {(!metaConn.connected || metaConn.needsReconnect) && (
+          <div className="mb-6 p-4 rounded-lg border text-sm bg-yellow-500/15 border-yellow-400/40 text-yellow-100">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="font-semibold">
+                  {metaConn.needsReconnect
+                    ? "Tu conexión con Meta caducó o es inválida."
+                    : "Aún no conectas tu cuenta de Meta (Facebook/Instagram)."}
+                </p>
+                {!!metaConn.pageId && (
+                  <p className="opacity-80">
+                    Página detectada: {metaConn.pageName ?? "sin nombre"} ({metaConn.pageId})
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={goConnectMeta}
+                  className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
+                >
+                  {metaConn.needsReconnect ? "Reconectar Meta" : "Conectar Meta"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {metaConn.connected && (
+          <button
+            onClick={async () => {
+              try {
+                const r = await fetch(`${BACKEND_URL}/api/meta-config/disconnect`, {
+                  method: "POST",
+                  credentials: "include",
+                });
+                if (r.ok) {
+                  setMetaConn({ connected: false, needsReconnect: false });
+                  alert("Cuentas desconectadas ✅");
+                } else {
+                  const j = await r.json().catch(() => ({}));
+                  alert(`❌ Error al desconectar: ${j?.error || r.statusText}`);
+                }
+              } catch (e) {
+                console.error(e);
+                alert("❌ Error al desconectar.");
+              }
+            }}
+            className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 border border-white/20 text-white"
+          >
+            Desconectar
+          </button>
+        )}
+
         {usage.porcentaje >= 80 && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
             ⚠ Estás utilizando el <strong>{usage.porcentaje}%</strong> de tu límite mensual ({usage.used}/{usage.limit} mensajes).<br />Considera actualizar tu plan para evitar interrupciones.
