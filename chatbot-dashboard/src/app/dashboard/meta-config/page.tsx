@@ -10,21 +10,6 @@ import { BACKEND_URL } from "@/utils/api";
 import { SiMeta, SiOpenai, SiMinutemailer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
 import FaqSection from "@/components/FaqSection";
 import type { FaqSugerida } from "@/components/FaqSection";
-import FlowSection from "@/components/FlowSection";
-
-type FlowOption = {
-  texto: string;
-  respuesta?: string;
-  submenu?: {
-    mensaje: string;
-    opciones: FlowOption[];
-  };
-};
-
-type Flow = {
-  mensaje: string;
-  opciones: FlowOption[];
-};
 
 const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
 
@@ -96,12 +81,11 @@ export default function TrainingPage() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [settingsRes, faqRes, intentsRes, sugeridasRes, flowsRes] = await Promise.all([
+        const [settingsRes, faqRes, intentsRes, sugeridasRes] = await Promise.all([
           fetch(`${BACKEND_URL}/api/settings?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=meta`, { credentials: "include" }),
-          fetch(`${BACKEND_URL}/api/flows?canal=meta`, { credentials: "include", cache: "no-store" }),
         ]);    
   
         if (settingsRes.ok) {
@@ -126,17 +110,6 @@ export default function TrainingPage() {
         if (intentsRes.ok) setIntents(await intentsRes.json());
         if (sugeridasRes.ok) setFaqSugeridas(await sugeridasRes.json());
 
-        // 🔹 GET /api/flows devuelve **un array directo** (no {data})
-        if (flowsRes.ok) {
-          const arr = await flowsRes.json();
-          const parsed = Array.isArray(arr)
-            ? arr.map((f: any) => ({
-                mensaje: f?.pregunta ?? f?.mensaje ?? "",
-                opciones: Array.isArray(f?.opciones) ? f.opciones : [],
-              }))
-            : [];
-          setFlows(parsed);
-        }
       } catch (err) {
         console.error("❌ Error cargando configuración:", err);
       } finally {
@@ -196,12 +169,6 @@ export default function TrainingPage() {
     if (!isMembershipActive || !input.trim()) return;
     await sendPreview(input.trim());
   };  
-
-  // 👉 Cuando el usuario hace clic en una opción de flujo
-  const handleFlowOptionClick = async (texto: string) => {
-    if (!isMembershipActive) return;
-    await sendPreview(texto);
-  };
 
   const handleIntentChange = (i: number, field: string, value: string) => {
     const updated = [...intents];
@@ -298,28 +265,6 @@ export default function TrainingPage() {
     }
   };
   
-  const [flows, setFlows] = useState<Flow[]>([
-    {
-      mensaje: "¿Qué deseas hacer?",
-      opciones: [
-        {
-          texto: "Reservar",
-          submenu: {
-            mensaje: "¿Qué deseas reservar?",
-            opciones: [
-              { texto: "Facial", respuesta: "Agenda tu facial aquí: [link]" },
-              { texto: "Masaje", respuesta: "Perfecto, masaje disponible aquí: [link]" },
-            ],
-          },
-        },
-        {
-          texto: "Ver precios",
-          respuesta: "Nuestros precios están en este link: [link]",
-        },
-      ],
-    },
-  ]);  
-  
   // 🔁 Envío reutilizable para preview (Meta)
   const sendPreview = async (text: string) => {
     setMessages((prev) => [...prev, { role: "user", content: text }]);
@@ -342,14 +287,10 @@ export default function TrainingPage() {
       const resp = data?.response;
 
       // Si el backend devuelve estructura de Flow (objeto), la guardamos tal cual
-      if (resp && typeof resp === "object") {
-        setMessages((prev) => [...prev, { role: "assistant", content: resp }]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: String(resp ?? "...") },
-        ]);
-      }
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: String(resp ?? "...") },
+      ]);
     } catch (e) {
       console.error("❌ Error en preview:", e);
       setMessages((prev) => [
@@ -363,59 +304,6 @@ export default function TrainingPage() {
       }, 100);
     }
   };
-
-  const saveFlows = async () => {
-    if (!settings.membresia_activa) return;
-  
-    // Validación mínima
-    const flowsValidos = flows.filter(
-      (f) =>
-        f.mensaje.trim() &&
-        f.opciones.some((o) => o.texto.trim() && (o.respuesta?.trim() || o.submenu))
-    );
-    if (flowsValidos.length === 0) return alert("❌ Agrega al menos un flujo válido.");
-
-    // Normalización a contrato del backend: mensaje -> pregunta
-    const payload = flowsValidos.map((f) => ({
-      pregunta: f.mensaje.toString().trim(),
-      opciones: Array.isArray(f.opciones) ? f.opciones : [],
-    }));
-  
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/flows?canal=${canal}`, {
-        method: "PUT",                       // ⬅️ PUT (no POST)
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),       // ⬅️ backend acepta array directo
-      });
-      
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        return alert(`❌ Error al guardar: ${json?.error || "desconocido"}`);
-      }
-      
-      alert("Flujos guardados ✅");
-  
-      // Recarga desde DB (GET devuelve un array directo)
-      const reload = await fetch(`${BACKEND_URL}/api/flows?canal=${canal}`, {
-        credentials: "include",
-        cache: "no-store",
-      });
-      if (reload.ok) {
-        const arr = await reload.json();
-        const parsed = Array.isArray(arr)
-          ? arr.map((f: any) => ({
-              mensaje: f.pregunta ?? f.mensaje ?? "",
-              opciones: Array.isArray(f.opciones) ? f.opciones : [],
-            }))
-          : [];
-        setFlows(parsed);
-      }
-    } catch (err) {
-      console.error("❌ Error al guardar flujos:", err);
-      alert("❌ Error al guardar flujos.");
-    }
-  };  
   
   // Agrega esta función dentro del componente
   const comprarMas = async (canal: string, cantidad: number) => {
@@ -464,31 +352,8 @@ export default function TrainingPage() {
     return "bg-green-500";
   };
   
-  // 🧩 Renderiza contenido del asistente: string o estructura de flujo
   const renderAssistantContent = (content: AssistantStructured) => {
-    if (typeof content === "string") return <>{content}</>;
-
-    const texto = content?.text ?? content?.mensaje ?? "";
-    const opciones = Array.isArray(content?.opciones) ? content.opciones : [];
-
-    return (
-      <div className="flex flex-col gap-2">
-        {texto && <div>{texto}</div>}
-        {!!opciones.length && (
-          <div className="flex flex-wrap gap-2 mt-1">
-            {opciones.map((op, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleFlowOptionClick(op.texto)}
-                className="px-3 py-1 rounded bg-white/10 border border-white/20 hover:bg-white/20 text-white text-xs"
-              >
-                {op.texto}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    );
+  return <>{typeof content === "string" ? content : String(content?.text ?? content?.mensaje ?? "")}</>;
   };
 
   if (loading) return <p className="text-center">Cargando configuración...</p>;
@@ -695,14 +560,6 @@ export default function TrainingPage() {
             Guardar Intenciones
           </button>
         </div>
-  
-        <FlowSection
-          flows={flows}
-          setFlows={setFlows}
-          canal="meta" 
-          membresiaActiva={settings.membresia_activa}
-          onSave={async () => bloquearSiNoMembresia(saveFlows)}
-        />
   
         <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
         <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
