@@ -157,27 +157,20 @@ const handleDisconnect = async () => {
           setIntents(parsed);
         }
         if (sugeridasRes.ok) {
-          const raw = await sugeridasRes.json().catch(() => []);
-          console.log("🧩 /faqs/sugeridas raw:", raw);
+          const raw: any[] = await sugeridasRes.json().catch(() => []);
+          const limpias = raw
+            .map((x: any) => ({
+              id: Number(x?.id),
+              pregunta: String(x?.pregunta ?? "").trim(),
+              respuesta_sugerida: String(x?.respuesta_sugerida ?? "").trim(), // 👈 nombre correcto
+              canal: x?.canal ?? "meta",
+            }))
+            .filter(f => f.pregunta && f.respuesta_sugerida); // 👈 filtra con ese nombre
 
-          const parsed: FaqSugerida[] = Array.isArray(raw)
-            ? raw.map((x: any, idx: number) => ({
-                id: x?.id ?? idx, // fallback si el backend no manda id
-                pregunta: String(x?.pregunta ?? x?.title ?? "").trim(),
-                respuesta_sugerida: String(
-                  x?.respuesta_sugerida ?? x?.respuesta ?? x?.body ?? ""
-                ).trim(),
-              }))
-            : [];
-
-          const limpias = parsed.filter(
-            (f) => f.pregunta && f.respuesta_sugerida
-          );
-
-          console.log("🧩 /faqs/sugeridas parsed:", limpias);
+          console.log("✅ faqs sugeridas meta:", limpias);
           setFaqSugeridas(limpias);
         } else {
-          console.warn("⚠️ /faqs/sugeridas status:", sugeridasRes.status);
+          console.warn("⚠️ /api/faqs/sugeridas status:", sugeridasRes.status);
           setFaqSugeridas([]);
         }
 
