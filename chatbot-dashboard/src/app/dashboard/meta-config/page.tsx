@@ -121,12 +121,11 @@ const handleDisconnect = async () => {
           fetch(`${BACKEND_URL}/api/settings?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents?canal=meta`, { credentials: "include" }),
-          fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=meta`, {
-            credentials: "include",
-            cache: "no-store",         // 👈 evita que Next te devuelva [] cacheado
-          }),
+          fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=meta`, { credentials: "include" }),
         ]);    
   
+        console.log("🔥 llamé /api/faqs/sugeridas?canal=meta:", sugeridasRes.status);
+        
         if (settingsRes.ok) {
           const data = await settingsRes.json();
           setSettings((prev) => ({
