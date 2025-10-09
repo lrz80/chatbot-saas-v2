@@ -157,7 +157,30 @@ const handleDisconnect = async () => {
             : [];
           setIntents(parsed);
         }
-        if (sugeridasRes.ok) setFaqSugeridas(await sugeridasRes.json());
+        if (sugeridasRes.ok) {
+          const raw = await sugeridasRes.json().catch(() => []);
+          console.log("🧩 /faqs/sugeridas raw:", raw);
+
+          const parsed: FaqSugerida[] = Array.isArray(raw)
+            ? raw.map((x: any, idx: number) => ({
+                id: x?.id ?? idx, // fallback si el backend no manda id
+                pregunta: String(x?.pregunta ?? x?.title ?? "").trim(),
+                respuesta_sugerida: String(
+                  x?.respuesta_sugerida ?? x?.respuesta ?? x?.body ?? ""
+                ).trim(),
+              }))
+            : [];
+
+          const limpias = parsed.filter(
+            (f) => f.pregunta && f.respuesta_sugerida
+          );
+
+          console.log("🧩 /faqs/sugeridas parsed:", limpias);
+          setFaqSugeridas(limpias);
+        } else {
+          console.warn("⚠️ /faqs/sugeridas status:", sugeridasRes.status);
+          setFaqSugeridas([]);
+        }
 
         // 👇 NUEVO: lee estado de conexión de Meta
         try {
