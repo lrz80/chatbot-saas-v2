@@ -1,4 +1,3 @@
-// src/components/TrainingHelp.tsx
 "use client";
 
 import { useState } from "react";
@@ -32,8 +31,6 @@ const COMMON = {
     "Escribe las preguntas como lo haría un cliente (p. ej., “¿Cuánto cuesta?”).",
     "Responde de forma completa y amable; evita “depende” o “consúltanos”.",
   ],
-  flowsTip:
-    "Usa flujos con botones para guiar al cliente hacia una acción (agendar, cotizar, calificar leads).",
   template: `Servicios y precios: ...
 Ubicación: ...
 Horarios: ...
@@ -52,13 +49,11 @@ const SECTIONS: Record<Props["context"], Section[]> = {
         "Personaliza el “Mensaje de bienvenida”.",
         "Añade Preguntas Frecuentes (FAQs).",
         "Configura Entrenamiento por Intención (frases + respuesta).",
-        "Crea Flujos guiados con botones.",
         "Prueba todo en la vista previa.",
       ],
     },
     { title: "Qué escribir", bullets: COMMON.writingTips },
     { title: "FAQs efectivas", bullets: COMMON.faqTips },
-    { title: "Flujos guiados", bullets: [COMMON.flowsTip] },
     {
       title: "Plantilla de información (copiar/pegar)",
       bullets: [{ label: "Usa este esquema:", body: COMMON.template }],
@@ -79,7 +74,7 @@ const SECTIONS: Record<Props["context"], Section[]> = {
         "Conecta tu Facebook/Instagram en Integraciones.",
         "Completa la información del negocio y el mensaje de bienvenida.",
         "Añade FAQs e Intenciones por canal “meta”.",
-        "Crea Flujos con botones y prueba en la vista previa de Meta.",
+        "Prueba en la vista previa de Meta.",
       ],
     },
     { title: "Qué escribir", bullets: COMMON.writingTips },
@@ -87,7 +82,6 @@ const SECTIONS: Record<Props["context"], Section[]> = {
       title: "FAQs e Intenciones",
       bullets: [...COMMON.faqTips, "Usa ejemplos reales de tus DMs."],
     },
-    { title: "Flujos guiados", bullets: [COMMON.flowsTip] },
     {
       title: "Plantilla de información (copiar/pegar)",
       bullets: [{ label: "Usa este esquema:", body: COMMON.template }],
@@ -165,7 +159,7 @@ function CopyButton({ text }: { text: string }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      // opcional: manejar error (toast/log)
+      // opcional: manejar error
     }
   };
 
