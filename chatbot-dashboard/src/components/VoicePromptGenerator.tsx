@@ -23,6 +23,7 @@ export default function VoicePromptGenerator({
   disabled = false,
 }: Props) {
   const [loading, setLoading] = useState(false);
+  const [modoResumenSMS, setModoResumenSMS] = useState(true); // 👈 nuevo toggle
 
   const handleGenerate = async () => {
     if (!funciones.trim() || !infoClave.trim()) {
@@ -42,6 +43,7 @@ export default function VoicePromptGenerator({
           categoria,
           funciones_asistente: funciones.trim(),
           info_clave: infoClave.trim(),
+          modo_resumen_sms: modoResumenSMS, // 👈 enviamos la bandera
         }),
       });
 
@@ -61,12 +63,26 @@ export default function VoicePromptGenerator({
   };
 
   return (
-    <button
-      onClick={handleGenerate}
-      disabled={loading || disabled}
-      className="bg-blue-600 text-white px-4 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {loading ? "Generando..." : "Generar Instrucciones de voz"}
-    </button>
+    <div className="flex items-center gap-3">
+      {/* Toggle UI */}
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          className="h-4 w-4"
+          checked={modoResumenSMS}
+          onChange={(e) => setModoResumenSMS(e.target.checked)}
+          disabled={disabled}
+        />
+        Respuestas breves y ofrecer SMS con link
+      </label>
+
+      <button
+        onClick={handleGenerate}
+        disabled={loading || disabled}
+        className="bg-blue-600 text-white px-4 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {loading ? "Generando..." : "Generar Instrucciones de voz"}
+      </button>
+    </div>
   );
 }
