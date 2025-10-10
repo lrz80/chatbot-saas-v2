@@ -37,7 +37,7 @@ export default function CampaignsSmsClient() {
   const [contactos, setContactos] = useState<any[]>([]);
   const [cantidadContactos, setCantidadContactos] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [expandedCampaignId, setExpandedCampaignId] = useState<number | null>(null);
+  const [expandedCampaignId, setExpandedCampaignId] = useState<string | null>(null);
   const [membresiaActiva, setMembresiaActiva] = useState<boolean>(false);
   const [usoSms, setUsoSms] = useState<{ usados: number; limite: number } | null>(null);
   const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
@@ -614,6 +614,7 @@ export default function CampaignsSmsClient() {
       ) : (
         <ul className="space-y-6 text-white text-sm">
           {campaigns.map((c) => {
+            const cid = String(c.id); // 👈 normalizamos
             // ✅ compacta: 1 registro por mensaje (último estado)
             const entregasCompactas = compactarEntregas(c.entregas || []);
             const lower = (s?: string) => (s || "").toLowerCase();
@@ -651,11 +652,9 @@ export default function CampaignsSmsClient() {
                   <div className="flex gap-2">
                     <button
                       className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
-                      onClick={() =>
-                        setExpandedCampaignId(c.id === expandedCampaignId ? null : c.id)
-                      }
+                      onClick={() => setExpandedCampaignId(expandedCampaignId === cid ? null : cid)}
                     >
-                      {expandedCampaignId === c.id ? "Ocultar" : "Ver más"}
+                      {expandedCampaignId === cid ? "Ocultar" : "Ver más"}
                     </button>
                     <button
                       className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
@@ -666,7 +665,7 @@ export default function CampaignsSmsClient() {
                   </div>
                 </div>
 
-                {expandedCampaignId === c.id && (
+                {expandedCampaignId === cid && (
                   <ul className="mt-4 space-y-2 border-t border-white/10 pt-3 text-xs">
                     {entregasCompactas.map((e: any, i: number) => {
                       const normalizar = (num: string | undefined | null) =>
