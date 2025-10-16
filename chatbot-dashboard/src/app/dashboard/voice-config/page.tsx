@@ -40,6 +40,22 @@ export default function VoiceConfigPage() {
   const [nuevoLink, setNuevoLink] = useState({ tipo: "", nombre: "", url: "" });
   const [audioDemoUrl, setAudioDemoUrl] = useState<string>("");
   const [usoVoz, setUsoVoz] = useState<any>(null);
+  // E.164: + y 10–15 dígitos
+  const E164_REGEX = /^\+\d{10,15}$/;
+
+  const [representanteNumber, setRepresentanteNumber] = useState<string>("");
+  const [repTouched, setRepTouched] = useState(false);
+
+  // Normaliza: deja solo + y dígitos; colapsa múltiples '+'
+  function normalizeTelInput(v: string) {
+    let s = v.replace(/[^\d+]/g, '');
+    if ((s.match(/\+/g) || []).length > 1) s = '+' + s.replace(/\+/g, '');
+    if (s.length > 1) s = s[0] + s.slice(1).replace(/\+/g, '');
+    return s;
+  }
+
+  // Válido si está vacío (sin transferencia) o cumple E.164
+  const e164Ok = representanteNumber === "" || E164_REGEX.test(representanteNumber);
 
   const verificarMembresia = (e?: Event | React.SyntheticEvent) => {
     if (!tieneMembresia) {
@@ -67,6 +83,7 @@ export default function VoiceConfigPage() {
         setVoiceHints(data?.voice_hints || "");
         setFuncionesVoz(data?.funciones_asistente || "");
         setInfoClaveVoz(data?.info_clave || "");
+        setRepresentanteNumber(data?.representante_number || "");
 
         setAudioDemoUrl(data?.audio_demo_url || "");
       } catch (err) {
@@ -181,6 +198,12 @@ export default function VoiceConfigPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!e164Ok) {
+      setRepTouched(true); // muestra el error si aún no tocó el input
+      toast.error("El número de representante debe estar en formato E.164, ej: +15551234567");
+      return;
+    }
+
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData(form);
 
@@ -191,6 +214,7 @@ export default function VoiceConfigPage() {
     formData.set("voice_hints", voiceHints);
     formData.set("funciones_asistente", funcionesVoz);
     formData.set("info_clave", infoClaveVoz);
+    formData.set("representante_number", representanteNumber.trim());
 
     try {
       const res = await fetch(`${BACKEND_URL}/api/voice-config`, {
@@ -385,6 +409,34 @@ export default function VoiceConfigPage() {
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
           </div>
+            <div className="mt-6">
+              <label className="block text-white font-semibold mb-1">
+                Número de representante (para transferir llamadas)
+              </label>
+              <input
+                type="tel"
+                name="representante_number"
+                value={representanteNumber}
+                onChange={(e) => setRepresentanteNumber(normalizeTelInput(e.target.value))}
+                onBlur={() => setRepTouched(true)}
+                placeholder="+15551234567"
+                inputMode="tel"
+                maxLength={16}                 // + y hasta 15 dígitos
+                pattern="^\+\d{10,15}$"        // hint para el navegador
+                title="Formato E.164: + y 10–15 dígitos (ej: +15551234567)"
+                aria-invalid={!e164Ok && repTouched}
+                className={`w-full px-3 py-2 rounded bg-white/10 border text-white
+                  ${!e164Ok && repTouched ? 'border-red-500' : 'border-white/20'}`}
+              />
+              {!e164Ok && repTouched && (
+                <p className="text-red-400 text-sm mt-1">
+                  Formato inválido. Usa E.164: + y 10–15 dígitos (ej: +15551234567).
+                </p>
+              )}
+              <p className="text-xs text-white/70 mt-1">
+                Déjalo vacío si no quieres transferencias.
+              </p>
+            </div>
         </div>
 
         {audioDemoUrl && (
@@ -457,8 +509,9 @@ export default function VoiceConfigPage() {
           <div className="mt-6">
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded shadow"
-              disabled={!tieneMembresia}
+              className={`px-6 py-2 rounded shadow text-white
+                ${!tieneMembresia || !e164Ok ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
+              disabled={!tieneMembresia || !e164Ok}
             >
               Guardar configuración
             </button>
