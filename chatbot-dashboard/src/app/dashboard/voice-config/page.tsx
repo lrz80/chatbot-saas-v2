@@ -25,7 +25,6 @@ export default function VoiceConfigPage() {
   const [infoClaveVoz, setInfoClaveVoz] = useState("");
   const [promptVoz, setPromptVoz] = useState("");
   const [bienvenidaVoz, setBienvenidaVoz] = useState("");
-  const [voiceName, setVoiceName] = useState("");      // NEW
   const [voiceHints, setVoiceHints] = useState("");    // NEW
 
   const idiomasDisponibles = [
@@ -79,7 +78,6 @@ export default function VoiceConfigPage() {
         // Sincroniza inputs controlados con la config
         setPromptVoz(data?.system_prompt || "");
         setBienvenidaVoz(data?.welcome_message || "");
-        setVoiceName(data?.voice_name || "");
         setVoiceHints(data?.voice_hints || "");
         setFuncionesVoz(data?.funciones_asistente || "");
         setInfoClaveVoz(data?.info_clave || "");
@@ -210,7 +208,6 @@ export default function VoiceConfigPage() {
     // Asegura que los controlados también viajen
     formData.set("system_prompt", promptVoz);
     formData.set("welcome_message", bienvenidaVoz);
-    formData.set("voice_name", voiceName);
     formData.set("voice_hints", voiceHints);
     formData.set("funciones_asistente", funcionesVoz);
     formData.set("info_clave", infoClaveVoz);
@@ -382,22 +379,6 @@ export default function VoiceConfigPage() {
               placeholder="Hola, soy Amy..."
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
-
-            <label className="block text-white font-semibold mt-4 mb-1">Seleccionar voz</label>
-            <select
-              name="voice_name"
-              value={voiceName}
-              onChange={(e) => setVoiceName(e.target.value)}
-              className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
-              required
-            >
-              <option value="">Selecciona una voz</option>
-              {voiceOptions.map((v) => (
-                <option key={v.value} value={v.value}>
-                  {v.label}
-                </option>
-              ))}
-            </select>
 
             <label className="block text-white font-semibold mt-4 mb-1">Hints de pronunciación (opcional)</label>
             <input
