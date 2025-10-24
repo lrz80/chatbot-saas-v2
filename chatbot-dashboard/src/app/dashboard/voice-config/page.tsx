@@ -25,6 +25,7 @@ export default function VoiceConfigPage() {
   const [infoClaveVoz, setInfoClaveVoz] = useState("");
   const [promptVoz, setPromptVoz] = useState("");
   const [bienvenidaVoz, setBienvenidaVoz] = useState("");
+  const [voiceName, setVoiceName] = useState("alice");
   const [voiceHints, setVoiceHints] = useState("");    // NEW
 
   const idiomasDisponibles = [
@@ -81,6 +82,7 @@ export default function VoiceConfigPage() {
         setVoiceHints(data?.voice_hints || "");
         setFuncionesVoz(data?.funciones_asistente || "");
         setInfoClaveVoz(data?.info_clave || "");
+        setVoiceName(data?.voice_name || "alice");
         setRepresentanteNumber(data?.representante_number || "");
 
         setAudioDemoUrl(data?.audio_demo_url || "");
@@ -211,6 +213,7 @@ export default function VoiceConfigPage() {
     formData.set("voice_hints", voiceHints);
     formData.set("funciones_asistente", funcionesVoz);
     formData.set("info_clave", infoClaveVoz);
+    formData.set("voice_name", voiceName || "alice");
     formData.set("representante_number", representanteNumber.trim());
 
     try {
@@ -378,6 +381,9 @@ export default function VoiceConfigPage() {
               onChange={(e) => setBienvenidaVoz(e.target.value)}
               placeholder="Hola, soy Amy..."
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+            />
+
+            <input type="hidden" name="voice_name" value={voiceName || "alice"} 
             />
 
             <label className="block text-white font-semibold mt-4 mb-1">Hints de pronunciación (opcional)</label>
