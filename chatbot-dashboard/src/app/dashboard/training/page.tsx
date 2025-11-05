@@ -69,6 +69,8 @@ export default function TrainingPage() {
     funciones_asistente: "",
     info_clave: "",
     idioma: "es",
+    cta_text: "",
+    cta_url: "",
   });
 
   const isMembershipActive = settings.membresia_activa;
@@ -101,6 +103,8 @@ export default function TrainingPage() {
             info_clave: data.info_clave || prev.info_clave,
             membresia_activa: data.membresia_activa,
             idioma: data.idioma || prev.idioma,
+            cta_text: data.cta_text ?? prev.cta_text,
+            cta_url:  data.cta_url  ?? prev.cta_url,
           }));
           setMessages([{ role: "assistant", content: data.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?" }]);
         }
@@ -151,6 +155,8 @@ export default function TrainingPage() {
         .replace(/\r\n/g, '\n')
         .replace(/\n{2,}/g, '\n')
         .trim(),
+      cta_text: settings.cta_text?.trim(),
+      cta_url:  settings.cta_url?.trim(),
     };
   
     // 2) Filtra claves vacías/indefinidas (no pisar con '')
@@ -486,8 +492,6 @@ export default function TrainingPage() {
         >
           <option value="es">Español</option>
           <option value="en">Inglés</option>
-          <option value="pt">Portugués</option>
-          <option value="fr">Francés</option>
         </select>
   
         <PromptGenerator
@@ -533,6 +537,35 @@ export default function TrainingPage() {
           <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
         </button>
   
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Texto del CTA final</label>
+            <input
+              name="cta_text"
+              value={settings.cta_text}
+              onChange={handleChange}
+              placeholder="Reserva tu primera clase GRATIS aquí"
+              disabled={!settings.membresia_activa}
+              className="w-full p-3 border rounded bg-white/10 border-white/20 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Link del CTA</label>
+            <input
+              name="cta_url"
+              value={settings.cta_url}
+              onChange={handleChange}
+              placeholder="https://tu-negocio.com/freeclass"
+              disabled={!settings.membresia_activa}
+              className="w-full p-3 border rounded bg-white/10 border-white/20 text-white"
+            />
+            <p className="text-xs text-gray-300">
+              Si dejas ambos campos vacíos, el bot no mostrará CTA.
+            </p>
+          </div>
+        </div>
+
         <FaqSection
           faqsSugeridas={faqSugeridas}
           setFaqsSugeridas={setFaqSugeridas}
