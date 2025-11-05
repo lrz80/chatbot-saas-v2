@@ -73,6 +73,10 @@ export default function TrainingPage() {
     cta_url: "",
   });
 
+  // Estado para CTA final
+  const [ctaText, setCtaText] = useState('');
+  const [ctaUrl,  setCtaUrl]  = useState('');
+
   const isMembershipActive = settings.membresia_activa;
   
   useEffect(() => {
