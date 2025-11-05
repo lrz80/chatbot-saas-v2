@@ -530,8 +530,8 @@ export default function TrainingPage() {
           disabled={!settings.membresia_activa}
         />
   
-        <CTASection />
-        
+        <CTASection canal={canal} membresiaActiva={settings.membresia_activa} />
+
         <button
           onClick={() => bloquearSiNoMembresia(handleSave)}
           disabled={!settings.membresia_activa}

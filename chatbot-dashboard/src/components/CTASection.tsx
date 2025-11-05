@@ -1,82 +1,111 @@
-// components/CTASection.tsx
-import { useEffect, useMemo, useState } from "react";
+"use client";
 
-type CTA = { intent: string; cta_text: string; cta_url: string };
+import { useEffect, useMemo, useState } from "react";
+import { BACKEND_URL } from "@/utils/api";
+
+type CTA = { id?: number; intent: string; cta_text: string; cta_url: string };
+
 const ALLOWED_INTENTS = [
-  "global","precio","horario","ubicacion","reservar","comprar","confirmar","interes_clases","clases_online"
+  "global",
+  "precio",
+  "horario",
+  "ubicacion",
+  "reservar",
+  "comprar",
+  "confirmar",
+  "interes_clases",
 ];
 
+// Validación simple de URL http(s)
 const isValidUrl = (u?: string) => {
   if (!u) return false;
   if (!/^https?:\/\//i.test(u)) return false;
-  try { new URL(u); return true; } catch { return false; }
+  try {
+    new URL(u);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
-export default function CTASection() {
+export default function CTASection({
+  canal = "whatsapp",
+  membresiaActiva = true,
+}: {
+  canal?: string;
+  membresiaActiva?: boolean;
+}) {
   const [loading, setLoading] = useState(true);
   const [ctas, setCtas] = useState<CTA[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
 
+  // Cargar CTAs desde /api/ctas (usa cookies httpOnly)
   useEffect(() => {
     (async () => {
       setLoading(true);
       setError(null);
       try {
-        const r = await fetch("/api/settings", { credentials: "include" });
-        const data = await r.json();
-        if (!r.ok) throw new Error(data?.error || "Error cargando settings");
+        const r = await fetch(`${BACKEND_URL}/api/ctas?canal=${encodeURIComponent(canal)}`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data?.error || "Error cargando CTAs");
 
-        // Construye array desde ctas_by_intent (record intent -> {cta_text, cta_url})
-        const list: CTA[] = [];
-        const rec = data?.ctas_by_intent || {};
-        for (const intent of Object.keys(rec)) {
-          const t = rec[intent]?.cta_text || "";
-          const u = rec[intent]?.cta_url || "";
-          if (t || u) list.push({ intent, cta_text: t, cta_url: u });
-        }
-        // si no hay ninguno, agrega 1 fila "global" vacía de cortesía
+        const list: CTA[] = Array.isArray(data)
+          ? data.map((x: any) => ({
+              id: x.id,
+              intent: String(x.intent || "").trim(),
+              cta_text: String(x.cta_text || "").trim(),
+              cta_url: String(x.cta_url || "").trim(),
+            }))
+          : [];
+
         setCtas(list.length ? list : [{ intent: "global", cta_text: "", cta_url: "" }]);
-      } catch (e:any) {
-        setError(e.message || "Error cargando settings");
+        console.log("✅ CTAs cargados:", list);
+      } catch (e: any) {
+        console.error("❌ Error cargando CTAs:", e);
+        setError(e.message || "Error cargando CTAs");
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [canal]);
 
-  const usedIntents = useMemo(() => new Set(ctas.map(c => c.intent)), [ctas]);
+  const usedIntents = useMemo(() => new Set(ctas.map((c) => c.intent)), [ctas]);
 
   const addRow = () => {
-    // intenta sugerir la primera intención disponible
-    const free = ALLOWED_INTENTS.find(i => !usedIntents.has(i)) || "global";
-    setCtas(prev => [...prev, { intent: free, cta_text: "", cta_url: "" }]);
+    const free = ALLOWED_INTENTS.find((i) => !usedIntents.has(i)) || "global";
+    setCtas((prev) => [...prev, { intent: free, cta_text: "", cta_url: "" }]);
   };
 
   const removeRow = (idx: number) => {
-    setCtas(prev => prev.filter((_, i) => i !== idx));
+    setCtas((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const updateRow = (idx: number, patch: Partial<CTA>) => {
-    setCtas(prev => prev.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
+    setCtas((prev) => prev.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
   };
 
   const save = async () => {
+    if (!membresiaActiva) return;
+
     setSaving(true);
     setError(null);
     setOkMsg(null);
 
-    // Validaciones: intenciones únicas y URLs válidas si no están vacías
+    // Validaciones: intenciones permitidas, únicas y URLs válidas
     const intents = new Set<string>();
     for (const row of ctas) {
       if (!ALLOWED_INTENTS.includes(row.intent)) {
         setSaving(false);
-        return setError(`Intención inválida: ${row.intent}`);
+        return setError(`Intención inválida: "${row.intent}".`);
       }
       if (intents.has(row.intent)) {
         setSaving(false);
-        return setError(`No repitas intención: ${row.intent}`);
+        return setError(`No repitas la misma intención: "${row.intent}".`);
       }
       intents.add(row.intent);
       if (row.cta_url && !isValidUrl(row.cta_url)) {
@@ -85,20 +114,41 @@ export default function CTASection() {
       }
     }
 
-    // Backend borra el CTA de una intención si ambos campos llegan vacíos; mantenemos filas vacías si el usuario las deja.
-    const payload = { ctas: ctas.map(({ intent, cta_text, cta_url }) => ({ intent, cta_text, cta_url })) };
-
     try {
-      const r = await fetch("/api/settings", {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error || "Error guardando CTAs");
-      setOkMsg("CTAs guardados correctamente.");
-    } catch (e:any) {
+      // Guardado "bulk": para cada fila, si tiene intent + (texto+url) => POST (upsert)
+      // si está vacía (texto y url vacíos) y tiene id => DELETE
+      for (const row of ctas) {
+        const intent = row.intent.trim().toLowerCase();
+        const text = (row.cta_text || "").trim();
+        const url = (row.cta_url || "").trim();
+
+        // borrar si ambos vacíos y existe en DB
+        if (!text && !url && row.id) {
+          await fetch(`${BACKEND_URL}/api/ctas/${row.id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+          continue;
+        }
+
+        // crear/actualizar si completos
+        if (intent && text && url) {
+          const res = await fetch(`${BACKEND_URL}/api/ctas`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ intent, cta_text: text, cta_url: url, canal }),
+          });
+          if (!res.ok) {
+            const j = await res.json().catch(() => ({}));
+            throw new Error(j?.error || `Error guardando CTA "${intent}"`);
+          }
+        }
+      }
+
+      setOkMsg("CTAs guardados correctamente ✅");
+    } catch (e: any) {
+      console.error("❌ Error guardando CTAs:", e);
       setError(e.message || "Error guardando CTAs");
     } finally {
       setSaving(false);
@@ -108,35 +158,46 @@ export default function CTASection() {
   if (loading) return <div className="text-sm opacity-75">Cargando CTAs…</div>;
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold">CTA por intención</h3>
-        <button onClick={addRow} className="px-3 py-1 rounded-lg border">
+    <div className="mb-8 p-4 bg-white/5 border border-white/10 rounded">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-white font-semibold">CTA por intención</h3>
+        <button
+          onClick={addRow}
+          disabled={!membresiaActiva}
+          className={`px-3 py-1 rounded text-sm ${
+            membresiaActiva ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "bg-gray-600 text-white/50"
+          }`}
+        >
           + Agregar CTA
         </button>
       </div>
 
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      {okMsg && <div className="text-green-600 text-sm">{okMsg}</div>}
+      {error && <div className="text-red-400 text-sm mb-2">{error}</div>}
+      {okMsg && <div className="text-green-300 text-sm mb-2">{okMsg}</div>}
 
       <div className="space-y-2">
         {ctas.map((row, idx) => {
           const options = ALLOWED_INTENTS.map((opt) => ({
             value: opt,
-            label: opt === "global" ? "global (fallback)" : opt
+            label: opt === "global" ? "global (fallback)" : opt,
           }));
 
           return (
-            <div key={idx} className="grid grid-cols-12 gap-2 items-start border rounded-xl p-3">
-              <div className="col-span-3">
+            <div key={row.id ?? `row-${idx}`} className="grid grid-cols-12 gap-2 items-start bg-white/10 border border-white/10 p-3 rounded">
+              <div className="col-span-12 md:col-span-3">
                 <label className="text-xs block mb-1">Intención</label>
                 <select
-                  className="w-full border rounded-md px-2 py-2 bg-white"
+                  className="w-full border rounded-md px-2 py-2 bg-white text-black"
                   value={row.intent}
                   onChange={(e) => updateRow(idx, { intent: e.target.value })}
+                  disabled={!membresiaActiva}
                 >
-                  {options.map(o => (
-                    <option key={o.value} value={o.value} disabled={o.value !== row.intent && usedIntents.has(o.value)}>
+                  {options.map((o) => (
+                    <option
+                      key={o.value}
+                      value={o.value}
+                      disabled={o.value !== row.intent && usedIntents.has(o.value)}
+                    >
                       {o.label}
                     </option>
                   ))}
@@ -144,33 +205,36 @@ export default function CTASection() {
                 <p className="text-[11px] opacity-70 mt-1">No repitas la misma intención.</p>
               </div>
 
-              <div className="col-span-4">
+              <div className="col-span-12 md:col-span-4">
                 <label className="text-xs block mb-1">Texto del CTA</label>
                 <input
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-full border rounded-md px-3 py-2 bg-white/5 border-white/20 text-white"
                   placeholder="Ej: Reserva tu clase aquí"
                   value={row.cta_text}
                   onChange={(e) => updateRow(idx, { cta_text: e.target.value })}
+                  disabled={!membresiaActiva}
                 />
               </div>
 
-              <div className="col-span-4">
+              <div className="col-span-12 md:col-span-4">
                 <label className="text-xs block mb-1">Link del CTA</label>
                 <input
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-full border rounded-md px-3 py-2 bg-white/5 border-white/20 text-white"
                   placeholder="https://..."
                   value={row.cta_url}
                   onChange={(e) => updateRow(idx, { cta_url: e.target.value })}
+                  disabled={!membresiaActiva}
                 />
                 <p className="text-[11px] opacity-70 mt-1">
                   Si dejas <b>texto</b> y <b>link</b> vacíos, se eliminará ese CTA en el backend.
                 </p>
               </div>
 
-              <div className="col-span-1 flex justify-end">
+              <div className="col-span-12 md:col-span-1 flex md:justify-end">
                 <button
-                  className="text-red-600 text-sm underline mt-6"
+                  className="text-red-300 text-sm underline mt-6"
                   onClick={() => removeRow(idx)}
+                  disabled={!membresiaActiva}
                 >
                   Eliminar
                 </button>
@@ -180,15 +244,21 @@ export default function CTASection() {
         })}
       </div>
 
-      <div className="pt-2">
+      <div className="flex justify-end mt-3">
         <button
           onClick={save}
-          disabled={saving}
-          className="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50"
+          disabled={!membresiaActiva || saving}
+          className={`px-4 py-2 rounded ${
+            membresiaActiva ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "bg-gray-600 text-white/50"
+          } disabled:opacity-50`}
         >
           {saving ? "Guardando…" : "Guardar CTAs"}
         </button>
       </div>
+
+      <p className="text-xs text-gray-300 mt-2">
+        El bot detecta la intención por similitud con <b>intents</b> y, si hay coincidencia, muestra el CTA del canal.
+      </p>
     </div>
   );
 }
