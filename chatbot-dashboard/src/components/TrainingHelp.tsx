@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Mic, ChevronDown, ChevronUp, Check, Copy } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Mic, ChevronDown, ChevronUp, Check, Copy, Search, Sparkles, Link2 } from "lucide-react";
 import { SiMeta, SiWhatsapp } from "react-icons/si";
 import { FaSms, FaEnvelope } from "react-icons/fa";
 
@@ -18,7 +18,14 @@ const ICONS = {
   "campaign-email": <FaEnvelope className="text-teal-300" />,
 } as const;
 
-type Section = { title: string; bullets: (string | { label: string; body: string })[] };
+type Bullet =
+  | string
+  | {
+      label: string;
+      body: string;
+    };
+
+type Section = { title: string; bullets: Bullet[] };
 
 const COMMON = {
   writingTips: [
@@ -150,16 +157,15 @@ const TITLES: Record<Props["context"], string> = {
   "campaign-email": "¿Cómo enviar campañas por Email?",
 };
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, label }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false);
-
   const onCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      // opcional: manejar error
+      /* noop */
     }
   };
 
@@ -168,17 +174,83 @@ function CopyButton({ text }: { text: string }) {
       type="button"
       onClick={onCopy}
       className="flex items-center gap-2 text-xs px-2 py-1 rounded bg-white/10 border border-white/20 hover:bg-white/20"
-      aria-label="Copiar contenido"
-      title={copied ? "¡Copiado!" : "Copiar"}
+      aria-label={label ? `Copiar ${label}` : "Copiar contenido"}
+      title={copied ? "¡Copiado!" : label ?? "Copiar"}
     >
       {copied ? <Check size={14} /> : <Copy size={14} />}
-      {copied ? "Copiado" : "Copiar"}
+      {copied ? "Copiado" : label ?? "Copiar"}
     </button>
   );
 }
 
 export default function TrainingHelp({ context, defaultOpen = false }: Props) {
+  const storageKey = `traininghelp:${context}`;
   const [open, setOpen] = useState(defaultOpen);
+  const [query, setQuery] = useState("");
+
+  // Cargar estado persistido
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved !== null) setOpen(saved === "1");
+      else setOpen(defaultOpen);
+    } catch {
+      setOpen(defaultOpen);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [context]);
+
+  // Guardar estado persistido
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, open ? "1" : "0");
+    } catch {
+      /* noop */
+    }
+  }, [open, storageKey]);
+
+  const sections = useMemo(() => SECTIONS[context] ?? [], [context]);
+
+  // Filtrado por buscador
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return sections;
+    return sections
+      .map((sec) => {
+        const matchTitle = sec.title.toLowerCase().includes(q);
+        const bullets = sec.bullets.filter((b) => {
+          if (typeof b === "string") return b.toLowerCase().includes(q);
+          return (
+            b.label.toLowerCase().includes(q) ||
+            b.body.toLowerCase().includes(q)
+          );
+        });
+        if (matchTitle || bullets.length > 0) {
+          return { ...sec, bullets: bullets.length > 0 || matchTitle ? bullets.length ? bullets : sec.bullets : [] };
+        }
+        return null;
+      })
+      .filter(Boolean) as Section[];
+  }, [sections, query]);
+
+  // Recolectar todos los "body" copiables de la vista actual
+  const allTemplatesText = useMemo(() => {
+    const lines: string[] = [];
+    for (const sec of filtered) {
+      for (const b of sec.bullets) {
+        if (typeof b !== "string" && b.body) {
+          lines.push(`// ${b.label}\n${b.body}`);
+        }
+      }
+    }
+    return lines.join("\n\n");
+  }, [filtered]);
+
+  // Atajos de navegación (solo hace scroll si el elemento existe)
+  const goToAnchor = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="mb-6">
@@ -195,35 +267,114 @@ export default function TrainingHelp({ context, defaultOpen = false }: Props) {
         {open ? <ChevronUp /> : <ChevronDown />}
       </button>
 
-      {open && (
-        <div
-          id={`help-panel-${context}`}
-          className="mt-4 p-4 bg-white/5 border border-white/10 rounded-lg text-sm text-white space-y-4"
-        >
-          {SECTIONS[context].map((sec, idx) => (
-            <div key={idx}>
-              <h4 className="font-semibold text-white mb-2">{sec.title}</h4>
-              <ul className="list-disc list-inside space-y-2">
-                {sec.bullets.map((b, i) =>
-                  typeof b === "string" ? (
-                    <li key={i}>{b}</li>
-                  ) : (
-                    <li key={i}>
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{b.label}</span>
-                        <CopyButton text={b.body} />
-                      </div>
-                      <div className="mt-1 font-mono text-xs bg-black/20 border border-white/10 rounded p-2 whitespace-pre-wrap">
-                        {b.body}
-                      </div>
-                    </li>
-                  )
+      {/* Panel con animación de colapso */}
+      <div
+        id={`help-panel-${context}`}
+        role="region"
+        aria-label={TITLES[context]}
+        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
+          open ? "max-h-[1200px] opacity-100 mt-4" : "max-h-0 opacity-0"
+        }`}
+      >
+        {open && (
+          <div className="p-4 bg-white/5 border border-white/10 rounded-lg text-sm text-white space-y-4">
+            {/* Toolbar de utilidades */}
+            <div className="flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2 top-2.5" size={16} />
+                  <input
+                    placeholder="Buscar en la ayuda…"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="pl-8 pr-3 py-2 rounded bg-white/10 border border-white/20 w-full md:w-64"
+                    aria-label="Buscar en la ayuda"
+                  />
+                </div>
+                {allTemplatesText && (
+                  <CopyButton text={allTemplatesText} label="Copiar todas las plantillas" />
                 )}
-              </ul>
+              </div>
+
+              {/* Atajos (no rompen si no existen IDs en la página) */}
+              {context === "training" && (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => goToAnchor("bienvenida")}
+                    className="text-xs px-2 py-1 rounded bg-white/10 border border-white/20 hover:bg-white/20 flex items-center gap-1"
+                    title="Ir a Bienvenida"
+                  >
+                    <Link2 size={14} /> Bienvenida
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToAnchor("prompt")}
+                    className="text-xs px-2 py-1 rounded bg-white/10 border border-white/20 hover:bg-white/20 flex items-center gap-1"
+                    title="Ir a Prompt del sistema"
+                  >
+                    <Link2 size={14} /> Prompt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToAnchor("faqs")}
+                    className="text-xs px-2 py-1 rounded bg-white/10 border border-white/20 hover:bg-white/20 flex items-center gap-1"
+                    title="Ir a FAQs"
+                  >
+                    <Link2 size={14} /> FAQs
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToAnchor("intents")}
+                    className="text-xs px-2 py-1 rounded bg-white/10 border border-white/20 hover:bg-white/20 flex items-center gap-1"
+                    title="Ir a Intenciones"
+                  >
+                    <Link2 size={14} /> Intenciones
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToAnchor("preview")}
+                    className="text-xs px-2 py-1 rounded bg-white/10 border border-white/20 hover:bg-white/20 flex items-center gap-1"
+                    title="Ir a Vista previa"
+                  >
+                    <Link2 size={14} /> Vista previa
+                  </button>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      )}
+
+            {/* Contenido */}
+            {filtered.length === 0 ? (
+              <p className="text-white/70 italic">No hay resultados para “{query}”.</p>
+            ) : (
+              filtered.map((sec, idx) => (
+                <div key={idx} className="bg-white/5 border border-white/10 rounded-md p-3">
+                  <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
+                    <Sparkles size={16} /> {sec.title}
+                  </h4>
+                  <ul className="list-disc list-inside space-y-2">
+                    {sec.bullets.map((b, i) =>
+                      typeof b === "string" ? (
+                        <li key={i}>{b}</li>
+                      ) : (
+                        <li key={i}>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium">{b.label}</span>
+                            <CopyButton text={b.body} />
+                          </div>
+                          <div className="mt-1 font-mono text-xs bg-black/20 border border-white/10 rounded p-2 whitespace-pre-wrap">
+                            {b.body}
+                          </div>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
