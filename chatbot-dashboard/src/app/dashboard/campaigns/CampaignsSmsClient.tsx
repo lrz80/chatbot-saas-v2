@@ -204,24 +204,27 @@ export default function CampaignsSmsClient() {
   };
   
   const eliminarCampana = async (id: number) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar esta campaña?")) return;
+  // ⛔️ Bloqueo por plan/membresía
+  if (guardSms()) return;
 
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/campaigns/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (res.ok) {
-        setCampaigns((prev) => prev.filter((c) => c.id !== id));
-        alert("✅ Campaña eliminada");
-      } else {
-        alert("❌ Error al eliminar campaña");
-      }
-    } catch (err) {
-      console.error("❌ Error al eliminar:", err);
-      alert("❌ Error al conectar con el servidor.");
+  if (!confirm("¿Estás seguro de que deseas eliminar esta campaña?")) return;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/campaigns/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (res.ok) {
+      setCampaigns((prev) => prev.filter((c) => c.id !== id));
+      alert("✅ Campaña eliminada");
+    } else {
+      alert("❌ Error al eliminar campaña");
     }
-  };
+  } catch (err) {
+    console.error("❌ Error al eliminar:", err);
+    alert("❌ Error al conectar con el servidor.");
+  }
+};
 
   const handleEliminarContactos = async () => {
     if (!confirm("¿Estás seguro? Esta acción eliminará todos tus contactos.")) return;
@@ -366,6 +369,21 @@ export default function CampaignsSmsClient() {
     }
   };
   
+  // 🔒 Guard sencillo para bloquear acciones por plan/membresía
+  const guardSms = () => {
+    if (!canSms) {
+      alert("❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.");
+      window.location.href = "/upgrade";
+      return true; // indica que se bloqueó
+    }
+    if (!membresiaActiva) {
+      const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
+      if (confirmar) window.location.href = "/upgrade";
+      return true;
+    }
+    return false; // OK para continuar
+  };
+
   // Deja un solo registro (el más reciente) por message_sid
   const compactarEntregas = (entregas: any[] = []) => {
     const bySid = new Map<string, any>();
@@ -517,10 +535,14 @@ export default function CampaignsSmsClient() {
                   <span className="truncate">{archivoCsv.name}</span>
                   <button
                     onClick={() => {
+                      if (disabledAll) return;
                       setArchivoCsv(null);
                       if (inputRef.current) inputRef.current.value = "";
                     }}
-                    className="text-red-400 hover:text-red-600 text-xs font-semibold ml-4"
+                    className={`text-xs font-semibold ml-4 ${
+                      disabledAll ? "text-white/40 cursor-not-allowed" : "text-red-400 hover:text-red-600"
+                    }`}
+                    disabled={disabledAll}
                   >
                     Eliminar archivo
                   </button>
@@ -529,14 +551,14 @@ export default function CampaignsSmsClient() {
               <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                 <button
                   onClick={() => {
-                    if (!membresiaActiva) return requerirMembresia();
+                    if (guardSms()) return;       // ← ahora chequea plan + membresía
                     handleEliminarContactos();
                   }}
+                  disabled={disabledAll}
                   className={`px-4 py-2 rounded font-semibold w-full sm:w-auto ${
-                    membresiaActiva
-                      ? 'bg-red-600 hover:bg-red-500 text-white'
-                      : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                    !disabledAll ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                   }`}
+
                 >
                   Eliminar contactos
                 </button>
@@ -544,8 +566,7 @@ export default function CampaignsSmsClient() {
                 {archivoCsv && (
                   <button
                     onClick={() => {
-                      if (!canSms) { alert('Bloqueado por tu plan'); window.location.href='/upgrade'; return; }
-                      if (!membresiaActiva) return requerirMembresia();
+                      if (guardSms()) return;
                       handleSubirCsv();
                     }}
                     disabled={disabledAll}
@@ -615,8 +636,7 @@ export default function CampaignsSmsClient() {
 
       <button
         onClick={() => {
-          if (!canSms) { alert('❌ Tu plan no incluye SMS. Actualiza tu plan.'); window.location.href='/upgrade'; return; }
-          if (!membresiaActiva) { alert('❌ Tu membresía no está activa.'); window.location.href='/upgrade'; return; }
+          if (guardSms()) return;
           handleSubmit();
         }}
         disabled={disabledAll || loading}
@@ -673,14 +693,15 @@ export default function CampaignsSmsClient() {
                   </div>
                   <div className="flex gap-2">
                     <button
-                      className="px-4 py-1 bg-white/10 border border-white/20 rounded hover:bg-white/20"
-                      onClick={() => setExpandedCampaignId(expandedCampaignId === cid ? null : cid)}
-                    >
-                      {expandedCampaignId === cid ? "Ocultar" : "Ver más"}
-                    </button>
-                    <button
-                      className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
-                      onClick={() => eliminarCampana(c.id)}
+                      className={`px-4 py-1 border border-white/20 rounded text-white
+                        ${disabledAll ? "bg-white/10 text-white/40 cursor-not-allowed" : "bg-red-500/80 hover:bg-red-600"}`}
+                      onClick={() => {
+                        if (guardSms()) return;
+                        eliminarCampana(c.id);
+                      }}
+                      disabled={disabledAll}
+                      aria-disabled={disabledAll}
+                      title={disabledAll ? "Bloqueado por plan o membresía" : "Eliminar"}
                     >
                       <SiProbot className="inline mr-1" /> Eliminar
                     </button>
