@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 
-type CTA = { id?: number; intent: string; cta_text: string; cta_url: string };
+type CTA = { id?: number; intent: string; cta_text: string; cta_url: string; canal?: string };
 
 const ALLOWED_INTENTS = [
   "global",
@@ -81,9 +81,33 @@ export default function CTASection({
     setCtas((prev) => [...prev, { intent: free, cta_text: "", cta_url: "" }]);
   };
 
-  const removeRow = (idx: number) => {
-    setCtas((prev) => prev.filter((_, i) => i !== idx));
-  };
+  const removeRow = async (idx: number) => {
+  const row = ctas[idx];
+  if (!row) return;
+
+  if (!confirm(`Eliminar CTA para la intención "${row.intent}"?`)) return;
+
+  setSaving(true);
+  setError(null);
+  setOkMsg(null);
+
+  try {
+    const url = `${BACKEND_URL}/api/ctas/${encodeURIComponent(row.intent.toLowerCase())}?canal=${encodeURIComponent(canal)}`;
+    const r = await fetch(url, { method: "DELETE", credentials: "include" });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      throw new Error(j?.error || "No se pudo eliminar el CTA en el servidor");
+    }
+
+    setCtas(prev => prev.filter((_, i) => i !== idx)); // quitar del front
+    setOkMsg("CTA eliminado correctamente ✅");
+  } catch (e: any) {
+    console.error("❌ Error eliminando CTA:", e);
+    setError(e.message || "Error eliminando CTA");
+  } finally {
+    setSaving(false);
+  }
+};
 
   const updateRow = (idx: number, patch: Partial<CTA>) => {
     setCtas((prev) => prev.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
@@ -122,13 +146,15 @@ export default function CTASection({
         const text = (row.cta_text || "").trim();
         const url = (row.cta_url || "").trim();
 
-        // borrar si ambos vacíos y existe en DB
-        if (!text && !url && row.id) {
-          await fetch(`${BACKEND_URL}/api/ctas/${row.id}`, {
-            method: "DELETE",
-            credentials: "include",
-          });
-          continue;
+        // borrar si ambos vacíos -> DELETE por intent+canal
+        if (!text && !url) {
+        const delUrl = `${BACKEND_URL}/api/ctas/${encodeURIComponent(intent)}?canal=${encodeURIComponent(canal)}`;
+        const delRes = await fetch(delUrl, { method: "DELETE", credentials: "include" });
+        if (!delRes.ok) {
+            const j = await delRes.json().catch(() => ({}));
+            throw new Error(j?.error || `Error eliminando CTA "${intent}"`);
+        }
+        continue;
         }
 
         // crear/actualizar si completos
