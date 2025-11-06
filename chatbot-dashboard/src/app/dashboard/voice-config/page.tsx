@@ -12,8 +12,12 @@ import Footer from "@/components/Footer";
 import { SiAudioboom } from "react-icons/si";
 import VoicePlayer from "@/components/VoicePlayer";
 import VoiceMinutesCard from '@/components/VoiceMinutesCard';
+import { useFeatures } from '@/hooks/usePlan';
 
 export default function VoiceConfigPage() {
+  const { loading: loadingPlan, features, esTrial } = useFeatures();
+  const canVoice = !!features.voice;
+  const disabledAll = !canVoice;
   const [idioma, setIdioma] = useState("es-ES");
   const tenant = useTenant();
   const tenantId = tenant?.id;
@@ -57,15 +61,21 @@ export default function VoiceConfigPage() {
   // Válido si está vacío (sin transferencia) o cumple E.164
   const e164Ok = representanteNumber === "" || E164_REGEX.test(representanteNumber);
 
-  const verificarMembresia = (e?: Event | React.SyntheticEvent) => {
-    if (!tieneMembresia) {
-      e?.preventDefault();
-      toast.warning("⚠️ Activa tu membresía para usar esta función.");
-      router.push("/upgrade");
-      return false;
-    }
-    return true;
-  };
+  const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
+  if (!canVoice) {
+    e?.preventDefault();
+    toast.warning("⚠️ Este canal está bloqueado en tu plan. Actualiza para habilitar Voz.");
+    router.push("/upgrade");
+    return false;
+  }
+  if (!tieneMembresia) {
+    e?.preventDefault();
+    toast.warning("⚠️ Activa tu membresía para usar esta función.");
+    router.push("/upgrade");
+    return false;
+  }
+  return true;
+};
 
   // Cargar configuración de voz por idioma
   useEffect(() => {
@@ -290,6 +300,31 @@ export default function VoiceConfigPage() {
 
       <TrainingHelp context="voice" />
 
+      {!canVoice && (
+        <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
+          <p className="font-semibold mb-2">Voz está bloqueado en tu plan actual</p>
+          <p className="text-sm mb-3">
+            {esTrial
+              ? <>Tu período de prueba está activo. Durante el trial solo está habilitado <b>WhatsApp</b>.</>
+              : <>Tu membresía no permite este canal actualmente.</>}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => router.push('/upgrade')}
+              className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              Actualizar plan
+            </button>
+            <button
+              onClick={() => router.push('/dashboard/training')}
+              className="px-4 py-2 rounded border border-white/20 hover:bg-white/10 text-white"
+            >
+              Ir a WhatsApp (habilitado)
+            </button>
+          </div>
+        </div>
+      )}
+
       <VoiceMinutesCard />
 
       <div className="flex space-x-4 mb-6">
@@ -298,6 +333,9 @@ export default function VoiceConfigPage() {
             key={lang.value}
             className={`px-4 py-2 rounded ${idioma === lang.value ? "bg-purple-600 text-white" : "bg-gray-200"}`}
             onClick={() => setIdioma(lang.value)}
+            disabled={disabledAll}
+            aria-disabled={disabledAll}
+            title={disabledAll ? "Bloqueado por tu plan" : ""}
           >
             {lang.label}
           </button>
@@ -312,7 +350,7 @@ export default function VoiceConfigPage() {
 
       <form
         onSubmit={(e) => {
-          if (verificarMembresia(e)) {
+          if (verificarPermiso(e)) {
             handleSubmit(e);
           }
         }}
@@ -352,7 +390,7 @@ export default function VoiceConfigPage() {
           categoria="voz"
           funciones={funcionesVoz}
           infoClave={infoClaveVoz}
-          disabled={!tieneMembresia}
+          disabled={disabledAll || !tieneMembresia}
           onGenerate={(nuevoPrompt, nuevaBienvenida) => {
             setPromptVoz(nuevoPrompt);
             setBienvenidaVoz(nuevaBienvenida);
@@ -465,7 +503,7 @@ export default function VoiceConfigPage() {
             type="button"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4"
             onClick={(e) => {
-              if (verificarMembresia(e)) agregarLink();
+              if (verificarPermiso(e)) agregarLink();
             }}
             disabled={!tieneMembresia}
           >
@@ -496,9 +534,14 @@ export default function VoiceConfigPage() {
           <div className="mt-6">
             <button
               type="submit"
-              className={`px-6 py-2 rounded shadow text-white
-                ${!tieneMembresia || !e164Ok ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
-              disabled={!tieneMembresia || !e164Ok}
+              className={`px-6 py-2 rounded shadow text-white ${
+                (!tieneMembresia || !e164Ok || disabledAll)
+                  ? 'bg-gray-400'
+                  : 'bg-green-600 hover:bg-green-700'
+              }`}
+              disabled={!tieneMembresia || !e164Ok || disabledAll}
+              aria-disabled={!tieneMembresia || !e164Ok || disabledAll}
+              title={disabledAll ? "Bloqueado por tu plan" : (!tieneMembresia ? "Requiere membresía" : (!e164Ok ? "Teléfono inválido" : ""))}
             >
               Guardar configuración
             </button>
