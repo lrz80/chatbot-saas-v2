@@ -521,9 +521,26 @@ export default function VoiceConfigPage() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => eliminarLink(link.id)}
-                  className="text-red-500 hover:text-red-700 text-lg font-bold ml-4"
-                  title="Eliminar"
+                  onClick={(e) => {
+                    // Bloquea por plan o membresía
+                    if (disabledAll || !tieneMembresia) return;
+                    // (Opcional) si usas verificarPermiso:
+                    // if (!verificarPermiso(e)) return;
+                    eliminarLink(link.id);
+                  }}
+                  disabled={disabledAll || !tieneMembresia}
+                  aria-disabled={disabledAll || !tieneMembresia}
+                  tabIndex={(disabledAll || !tieneMembresia) ? -1 : 0}
+                  className={`text-lg font-bold ml-4 ${
+                    (disabledAll || !tieneMembresia)
+                      ? "text-white/40 cursor-not-allowed"
+                      : "text-red-500 hover:text-red-700"
+                  }`}
+                  title={
+                    disabledAll
+                      ? "Bloqueado por tu plan"
+                      : (!tieneMembresia ? "Requiere membresía" : "Eliminar")
+                  }
                 >
                   ✖
                 </button>
