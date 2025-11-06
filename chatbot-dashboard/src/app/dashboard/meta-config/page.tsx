@@ -473,7 +473,7 @@ const handleDisconnect = async () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
   
-        {!settings.membresia_activa && (
+        {!features.meta && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
             ⚠ Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.
           </div>
@@ -561,7 +561,7 @@ const handleDisconnect = async () => {
 
                 <button
                   onClick={handleDisconnect}
-                  disabled={(!metaConn.connected && !metaConn.fb && !metaConn.ig)}
+                  disabled={!canMetaConnect || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
                   aria-disabled={!canMetaConnect || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
                   className={`px-4 py-2 rounded border ${
                     canMetaConnect && (metaConn.connected || metaConn.fb || metaConn.ig)
@@ -645,7 +645,7 @@ const handleDisconnect = async () => {
             setSettings((prev) => ({ ...prev, funciones_asistente: value }))
           }
           idioma={settings.idioma}
-          membresiaActiva={settings.membresia_activa}
+          membresiaActiva={!!features.meta}
           onPromptGenerated={(prompt) => setSettings((prev) => ({ ...prev, prompt }))}
         />
   
@@ -672,7 +672,7 @@ const handleDisconnect = async () => {
           onClick={() => bloquearSiNoMembresia(handleSave)}
           disabled={!features.meta}
           className={`px-6 py-2 rounded-lg flex items-center gap-2 mb-10 ${
-            settings.membresia_activa
+            features.meta
               ? "bg-indigo-600 hover:bg-indigo-700 text-white"
               : "bg-gray-600 text-white/50 cursor-not-allowed"
           }`}
@@ -686,7 +686,7 @@ const handleDisconnect = async () => {
           faqs={faq}
           setFaqs={setFaq}
           canal="meta"
-          membresiaActiva={settings.membresia_activa}
+          membresiaActiva={!!features.meta}
           onSave={() => bloquearSiNoMembresia(saveFaqs)}
         />
 
@@ -694,7 +694,7 @@ const handleDisconnect = async () => {
           intents={intents}
           setIntents={setIntents}
           canal="meta"
-          membresiaActiva={settings.membresia_activa}
+          membresiaActiva={!!features.meta}
           onSave={() => bloquearSiNoMembresia(saveIntents)}
         />
 
