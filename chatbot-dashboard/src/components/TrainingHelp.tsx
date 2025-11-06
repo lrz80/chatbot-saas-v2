@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Mic, ChevronDown, ChevronUp, Check, Copy, Search, Sparkles, Link2 } from "lucide-react";
+import { Mic, ChevronDown, ChevronUp, Check, Copy, Search, Sparkles, Link2, Info } from "lucide-react";
 import { SiMeta, SiWhatsapp } from "react-icons/si";
 import { FaSms, FaEnvelope } from "react-icons/fa";
 
@@ -46,6 +46,82 @@ Promociones vigentes: ...
 Links internos o de pago: ...`,
 };
 
+// ⚠️ Mantén esta lista sincronizada con CTASection.tsx
+const ALLOWED_INTENTS = [
+  "global",
+  "precio",
+  "horario",
+  "ubicacion",
+  "reservar",
+  "comprar",
+  "confirmar",
+  "interes_clases",
+];
+
+const CTA_EXPLANATION = [
+  "Configura CTAs (texto + URL) por intención para que el asistente sugiera la acción correcta al detectar esa intención.",
+  "Si no hay CTA para la intención detectada, se usa la CTA de “global” como fallback.",
+  "La URL debe comenzar con http:// o https:// para ser válida.",
+  "Recomendación: usa URLs cortas y páginas de acción directa (checkout, reservar, confirmar, mapa).",
+  "Tip: la intención “global” sirve como CTA por defecto cuando la intención del cliente no coincide con otra más específica.",
+];
+
+const CTA_TEMPLATE = `Intención: global
+CTA texto: Empieza hoy en 1 minuto
+CTA URL: https://tusitio.com/empezar
+
+Intención: precio
+CTA texto: Ver planes y precios
+CTA URL: https://tusitio.com/precios
+
+Intención: horario
+CTA texto: Ver horarios disponibles
+CTA URL: https://tusitio.com/horarios
+
+Intención: ubicacion
+CTA texto: Cómo llegar (Google Maps)
+CTA URL: https://maps.google.com/?q=Tu+Negocio
+
+Intención: reservar
+CTA texto: Reservar mi clase ahora
+CTA URL: https://tusitio.com/reserva
+
+Intención: comprar
+CTA texto: Comprar mi plan
+CTA URL: https://tusitio.com/checkout
+
+Intención: confirmar
+CTA texto: Confirmar mi asistencia
+CTA URL: https://tusitio.com/confirmar
+
+Intención: interes_clases
+CTA texto: Ver clases para principiantes
+CTA URL: https://tusitio.com/clases-inicio`;
+
+const CTA_EXAMPLES_FITNESS = `Escenario: Cliente pregunta "¿Cuánto cuesta?"
+→ Intención detectada: precio
+→ CTA sugerida: "Ver planes y precios" → https://synergyzone.fit/precios
+
+Escenario: "¿Dónde están ubicados?"
+→ Intención: ubicacion
+→ CTA: "Cómo llegar (Google Maps)" → https://maps.google.com/?q=Synergy+Zone
+
+Escenario: "Quiero reservar para mañana"
+→ Intención: reservar
+→ CTA: "Reservar mi clase ahora" → https://synergyzone.fit/reserva`;
+
+const CTA_EXAMPLES_BEAUTY = `Escenario: "¿Cuánto cuestan las cejas?"
+→ Intención: precio
+→ CTA: "Ver precios de cejas y pestañas" → https://andreacastrobeauty.com/precios
+
+Escenario: "¿Tienen disponibilidad hoy?"
+→ Intención: horario
+→ CTA: "Ver horarios disponibles" → https://andreacastrobeauty.com/agenda
+
+Escenario: "¿Dónde están?"
+→ Intención: ubicacion
+→ CTA: "Cómo llegar (Google Maps)" → https://maps.google.com/?q=Andrea+Castro+Beauty`;
+
 const SECTIONS: Record<Props["context"], Section[]> = {
   training: [
     {
@@ -56,6 +132,7 @@ const SECTIONS: Record<Props["context"], Section[]> = {
         "Personaliza el “Mensaje de bienvenida”.",
         "Añade Preguntas Frecuentes (FAQs).",
         "Configura Entrenamiento por Intención (frases + respuesta).",
+        "Configura CTA por intención (global y específicas).",
         "Prueba todo en la vista previa.",
       ],
     },
@@ -66,11 +143,36 @@ const SECTIONS: Record<Props["context"], Section[]> = {
       bullets: [{ label: "Usa este esquema:", body: COMMON.template }],
     },
     {
+      title: "CTA por intención (cómo funciona)",
+      bullets: [
+        "Ve a la sección “CTA por intención”.",
+        ...CTA_EXPLANATION,
+        {
+          label: "Intentos permitidos",
+          body: ALLOWED_INTENTS.join(", "),
+        },
+        {
+          label: "Plantilla base para configurar",
+          body: CTA_TEMPLATE,
+        },
+        {
+          label: "Ejemplos (Fitness)",
+          body: CTA_EXAMPLES_FITNESS,
+        },
+        {
+          label: "Ejemplos (Beauty)",
+          body: CTA_EXAMPLES_BEAUTY,
+        },
+      ],
+    },
+    {
       title: "Errores comunes",
       bullets: [
         "Poner solo enlaces (“ver web”).",
         "Respuestas vagas (“depende”).",
         "Información en bullets que se omite en el generador.",
+        "Olvidar CTA “global” (sin fallback).",
+        "Usar URL sin http/https (son inválidas).",
       ],
     },
   ],
@@ -226,7 +328,7 @@ export default function TrainingHelp({ context, defaultOpen = false }: Props) {
           );
         });
         if (matchTitle || bullets.length > 0) {
-          return { ...sec, bullets: bullets.length > 0 || matchTitle ? bullets.length ? bullets : sec.bullets : [] };
+          return { ...sec, bullets: bullets.length > 0 || matchTitle ? (bullets.length ? bullets : sec.bullets) : [] };
         }
         return null;
       })
@@ -273,11 +375,21 @@ export default function TrainingHelp({ context, defaultOpen = false }: Props) {
         role="region"
         aria-label={TITLES[context]}
         className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-          open ? "max-h-[1200px] opacity-100 mt-4" : "max-h-0 opacity-0"
+          open ? "max-h-[1600px] opacity-100 mt-4" : "max-h-0 opacity-0"
         }`}
       >
         {open && (
           <div className="p-4 bg-white/5 border border-white/10 rounded-lg text-sm text-white space-y-4">
+            {/* Nota contextual breve */}
+            {context === "training" && (
+              <div className="flex items-start gap-2 text-white/80">
+                <Info size={16} className="mt-0.5" />
+                <p>
+                  Esta ayuda está basada en tu flujo actual: <b>PromptGenerator</b>, <b>FAQs</b>, <b>Intenciones</b>, <b>CTA por intención</b> y <b>Vista previa</b>. Usa los atajos para saltar a cada sección.
+                </p>
+              </div>
+            )}
+
             {/* Toolbar de utilidades */}
             <div className="flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
               <div className="flex gap-2">
@@ -296,7 +408,7 @@ export default function TrainingHelp({ context, defaultOpen = false }: Props) {
                 )}
               </div>
 
-              {/* Atajos (no rompen si no existen IDs en la página) */}
+              {/* Atajos (añade estos IDs en TrainingPage si aún no los tienes) */}
               {context === "training" && (
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -330,6 +442,14 @@ export default function TrainingHelp({ context, defaultOpen = false }: Props) {
                     title="Ir a Intenciones"
                   >
                     <Link2 size={14} /> Intenciones
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToAnchor("ctas")}
+                    className="text-xs px-2 py-1 rounded bg-white/10 border border-white/20 hover:bg-white/20 flex items-center gap-1"
+                    title="Ir a CTA por intención"
+                  >
+                    <Link2 size={14} /> CTA por intención
                   </button>
                   <button
                     type="button"
