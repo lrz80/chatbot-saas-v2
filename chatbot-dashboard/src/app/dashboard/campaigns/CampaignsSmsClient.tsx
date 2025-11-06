@@ -19,6 +19,7 @@ import TrainingHelp from "@/components/TrainingHelp";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { DateTime } from "luxon";
 import { useSearchParams } from "next/navigation";
+import { useFeatures } from '@/hooks/usePlan';
 
 export default function CampaignsSmsClient() {
   const [form, setForm] = useState({
@@ -42,7 +43,9 @@ export default function CampaignsSmsClient() {
   const [usoSms, setUsoSms] = useState<{ usados: number; limite: number } | null>(null);
   const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-
+  const { loading: loadingPlan, features, esTrial } = useFeatures();
+  const canSms = !!features.sms;                // ← habilitado por plan
+  const disabledAll = !canSms || !membresiaActiva; // ← bloquea todo si plan no incluye SMS o sin membresía
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -400,6 +403,25 @@ export default function CampaignsSmsClient() {
         </div>
       )}
 
+      {!canSms && (
+        <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
+          <p className="font-semibold mb-1">SMS está bloqueado en tu plan actual</p>
+          <p className="text-sm mb-3">
+            {esTrial
+              ? <>Durante el período de prueba solo está habilitado <b>WhatsApp</b>.</>
+              : <>Tu plan no incluye campañas por SMS.</>}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => (window.location.href = "/upgrade")}
+              className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              Actualizar plan
+            </button>
+          </div>
+        </div>
+      )}
+
       <TrainingHelp context="campaign-sms" />
 
       {usoSms && (
@@ -474,6 +496,7 @@ export default function CampaignsSmsClient() {
                 type="file"
                 accept=".csv"
                 multiple={false}
+                disabled={disabledAll}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file && file.name.toLowerCase().endsWith(".csv")) {
@@ -521,13 +544,13 @@ export default function CampaignsSmsClient() {
                 {archivoCsv && (
                   <button
                     onClick={() => {
+                      if (!canSms) { alert('Bloqueado por tu plan'); window.location.href='/upgrade'; return; }
                       if (!membresiaActiva) return requerirMembresia();
                       handleSubirCsv();
                     }}
+                    disabled={disabledAll}
                     className={`px-4 py-2 rounded font-semibold w-full sm:w-auto ${
-                      membresiaActiva
-                        ? 'bg-green-600 hover:bg-green-500 text-white'
-                        : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                      !disabledAll ? 'bg-green-600 hover:bg-green-500 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                     }`}
                   >
                     Subir contactos
@@ -582,6 +605,7 @@ export default function CampaignsSmsClient() {
               type="checkbox"
               checked={form.segmentos.includes(seg)}
               onChange={() => toggleSegmento(seg)}
+              disabled={disabledAll}
               className="mr-2"
             />
             {seg}
@@ -591,13 +615,11 @@ export default function CampaignsSmsClient() {
 
       <button
         onClick={() => {
-          if (!membresiaActiva) {
-            alert('❌ Tu membresía no está activa. Actívala para usar campañas SMS.');
-            return requerirMembresia();
-          }
+          if (!canSms) { alert('❌ Tu plan no incluye SMS. Actualiza tu plan.'); window.location.href='/upgrade'; return; }
+          if (!membresiaActiva) { alert('❌ Tu membresía no está activa.'); window.location.href='/upgrade'; return; }
           handleSubmit();
         }}
-        disabled={loading}
+        disabled={disabledAll || loading}
         className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Enviando...' : 'Programar campaña SMS'}
