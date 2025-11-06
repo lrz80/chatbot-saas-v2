@@ -11,6 +11,7 @@ import { SiMeta, SiOpenai, SiMinutemailer, SiChatbot, SiTarget, SiPaperspace } f
 import FaqSection from "@/components/FaqSection";
 import type { FaqSugerida } from "@/components/FaqSection";
 import IntentSection, { Intent } from "@/components/IntentSection";
+import { useFeatures } from '@/hooks/usePlan';
 
 const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
 
@@ -25,6 +26,8 @@ type MetaConnState = {
 
 export default function TrainingPage() {
   const router = useRouter();
+  const { loading: loadingPlan, features, esTrial } = useFeatures();
+  // features = { whatsapp, meta, voice, sms, email }
   const [metaConn, setMetaConn] = useState<MetaConnState>({
   connected: false,
   needsReconnect: false,
@@ -51,15 +54,14 @@ const handleDisconnect = async () => {
     alert("❌ Error al desconectar.");
   }
 };
-  const bloquearSiNoMembresia = async (
-    callback: () => Promise<void> | void
-  ): Promise<void> => {
-    if (!settings.membresia_activa) {
-      router.push("/upgrade");
-      return;
-    }
-    await callback();
-  };
+  const bloquearSiNoMembresia = async (callback: () => Promise<void> | void) => {
+  if (!features.meta) {
+    router.push("/upgrade");
+    return;
+  }
+  await callback();
+};
+
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
   type AssistantStructured =
@@ -214,7 +216,11 @@ const handleDisconnect = async () => {
   };
 
   const handleSave = async () => {
-    if (!isMembershipActive) return;
+    if (!features.meta) {
+      alert("Este canal está bloqueado en tu plan. Actualiza para habilitar Meta.");
+      return;
+    }
+
     setSaving(true);
 
     const payload = {
@@ -255,12 +261,15 @@ const handleDisconnect = async () => {
   };
 
   const handleSend = async () => {
-    if (!isMembershipActive || !input.trim()) return;
+    if (!features.meta || !input.trim())  return;
     await sendPreview(input.trim());
   };  
 
   const saveIntents = async () => {
-  if (!settings.membresia_activa) return;
+  if (!features.meta) {
+    alert("Este canal está bloqueado en tu plan. Actualiza para habilitar Meta.");
+    return;
+  }
 
   const intencionesLimpias = intents
     .map(i => ({
@@ -313,8 +322,12 @@ const handleDisconnect = async () => {
 };
   
   const saveFaqs = async () => {
-    if (!settings.membresia_activa) return;
-  
+    if (!features.meta) {
+      alert("Este canal está bloqueado en tu plan. Actualiza para habilitar Meta.");
+      return;
+    }
+
+
     // Normaliza/valida
     const faqsValidas = (faq ?? [])
       .map(f => ({
@@ -447,7 +460,7 @@ const handleDisconnect = async () => {
   return <>{typeof content === "string" ? content : String(content?.text ?? content?.mensaje ?? "")}</>;
   };
 
-  if (loading) return <p className="text-center">Cargando configuración...</p>;
+  if (loading || loadingPlan) return <p className="text-center">Cargando configuración...</p>;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
@@ -463,6 +476,31 @@ const handleDisconnect = async () => {
           <SiMeta size={36} className="text-green-400 animate-pulse" />
           Configuración del Asistente de Facebook e Instagram
         </h1>
+
+        {!features.meta && (
+          <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded-lg">
+            <p className="font-semibold mb-2">Meta está bloqueado en tu plan actual</p>
+            <p className="text-sm mb-3">
+              {esTrial
+                ? <>Tu período de prueba está activo. Durante el trial solo está habilitado <b>WhatsApp</b>.</>
+                : <>Tu membresía no permite este canal actualmente.</>}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => router.push('/upgrade')}
+                className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                Actualizar plan
+              </button>
+              <button
+                onClick={() => router.push('/dashboard/training')}
+                className="px-4 py-2 rounded border border-white/20 hover:bg-white/10"
+              >
+                Ir a WhatsApp (habilitado)
+              </button>
+            </div>
+          </div>
+        )}
 
         {usage.porcentaje >= 80 && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
@@ -576,7 +614,7 @@ const handleDisconnect = async () => {
           value={settings.idioma}
           onChange={handleChange}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          disabled={!settings.membresia_activa}
+          disabled={!features.meta}
         >
           <option value="es">Español</option>
           <option value="en">Inglés</option>
@@ -602,7 +640,7 @@ const handleDisconnect = async () => {
           onChange={handleChange}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Mensaje de bienvenida"
-          disabled={!settings.membresia_activa}
+          disabled={!features.meta}
         />
   
         <textarea
@@ -612,12 +650,12 @@ const handleDisconnect = async () => {
           rows={3}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Prompt del sistema"
-          disabled={!settings.membresia_activa}
+          disabled={!features.meta}
         />
   
         <button
           onClick={() => bloquearSiNoMembresia(handleSave)}
-          disabled={!settings.membresia_activa}
+          disabled={!features.meta}
           className={`px-6 py-2 rounded-lg flex items-center gap-2 mb-10 ${
             settings.membresia_activa
               ? "bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -689,12 +727,12 @@ const handleDisconnect = async () => {
                 }
               }}              
               placeholder="Escribe algo..."
-              disabled={!settings.membresia_activa}
+              disabled={!features.meta}
               className="w-full sm:flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
             />
             <button
               onClick={() => bloquearSiNoMembresia(handleSend)}
-              disabled={!settings.membresia_activa}
+              disabled={!features.meta}
               className={`w-full sm:w-auto px-4 py-2 rounded ${
                 settings.membresia_activa
                   ? "bg-indigo-600 hover:bg-indigo-700 text-white"
