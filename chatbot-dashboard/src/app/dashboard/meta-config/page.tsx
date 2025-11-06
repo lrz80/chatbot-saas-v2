@@ -27,6 +27,7 @@ type MetaConnState = {
 export default function TrainingPage() {
   const router = useRouter();
   const { loading: loadingPlan, features, esTrial } = useFeatures();
+  const canMetaConnect = !!features.meta; // ← habilitado por plan+membresía
   // features = { whatsapp, meta, voice, sms, email }
   const [metaConn, setMetaConn] = useState<MetaConnState>({
   connected: false,
@@ -34,9 +35,18 @@ export default function TrainingPage() {
 });
 
 const goConnectMeta = () => {
+  if (!canMetaConnect) {
+    alert("Este canal está bloqueado en tu plan. Actualiza para habilitar Meta.");
+    return;
+  }
   window.location.href = META_CONNECT_URL;
 };
+
 const handleDisconnect = async () => {
+  if (!canMetaConnect) {
+    alert("Este canal está bloqueado en tu plan. Actualiza para habilitar Meta.");
+    return;
+  }
   try {
     const r = await fetch(`${BACKEND_URL}/api/meta-config/disconnect`, {
       method: "POST",
@@ -54,13 +64,10 @@ const handleDisconnect = async () => {
     alert("❌ Error al desconectar.");
   }
 };
-  const bloquearSiNoMembresia = async (callback: () => Promise<void> | void) => {
-  if (!features.meta) {
-    router.push("/upgrade");
-    return;
-  }
-  await callback();
-};
+  const bloquearSiNoMembresia = async (cb: () => Promise<void> | void) => {
+    if (!features.meta) { router.push('/upgrade'); return; }
+    await cb();
+  };
 
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
@@ -540,20 +547,28 @@ const handleDisconnect = async () => {
                 {/* ÚNICO botón para FB/IG */}
                 <button
                   onClick={goConnectMeta}
-                  className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
+                  disabled={!canMetaConnect}
+                  aria-disabled={!canMetaConnect}
+                  className={`px-4 py-2 rounded text-white ${
+                    canMetaConnect
+                      ? "bg-indigo-600 hover:bg-indigo-700"
+                      : "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
+                  }`}
+                  title={canMetaConnect ? "" : "Bloqueado por tu plan"}
                 >
                   {metaConn.connected ? "Reconectar Facebook/Instagram" : "Conectar Facebook/Instagram"}
                 </button>
 
-                {/* Desconectar (deshabilitado si no hay conexión) */}
                 <button
                   onClick={handleDisconnect}
-                  disabled={!metaConn.connected && !metaConn.fb && !metaConn.ig}
+                  disabled={(!metaConn.connected && !metaConn.fb && !metaConn.ig)}
+                  aria-disabled={!canMetaConnect || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
                   className={`px-4 py-2 rounded border ${
-                    (metaConn.connected || metaConn.fb || metaConn.ig)
+                    canMetaConnect && (metaConn.connected || metaConn.fb || metaConn.ig)
                       ? "bg-white/10 hover:bg-white/20 border-white/20 text-white"
                       : "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
                   }`}
+                  title={canMetaConnect ? "" : "Bloqueado por tu plan"}
                 >
                   Desconectar
                 </button>
