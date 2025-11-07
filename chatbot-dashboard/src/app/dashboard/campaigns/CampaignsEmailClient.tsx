@@ -662,11 +662,19 @@ export default function CampaignsEmailClient() {
               <label className="block text-sm font-semibold text-white">
                 Subir archivo CSV de contactos
               </label>
+
               <input
                 type="file"
                 accept=".csv"
                 multiple={false}
+                disabled={disabledAll}
                 onChange={(e) => {
+                  if (disabledAll) {
+                    alert("❌ No puedes subir contactos: canal de Email bloqueado o membresía inactiva.");
+                    // Limpia el valor por si el navegador lo llegó a setear
+                    if (inputRef.current) inputRef.current.value = "";
+                    return;
+                  }
                   const file = e.target.files?.[0];
                   if (file && file.name.toLowerCase().endsWith(".csv")) {
                     setArchivoCsv(file);
@@ -674,27 +682,51 @@ export default function CampaignsEmailClient() {
                     alert("Por favor selecciona un archivo CSV válido.");
                   }
                 }}
-                className="cursor-pointer block w-full text-sm text-white
-                          file:mr-0 file:py-2 file:px-4 file:rounded
-                          file:border-0 file:text-sm file:font-semibold
-                          file:bg-indigo-600 file:text-white
-                          hover:file:bg-indigo-500"
+                className={`cursor-pointer block w-full text-sm text-white
+                            file:mr-0 file:py-2 file:px-4 file:rounded
+                            file:border-0 file:text-sm file:font-semibold
+                            ${
+                              disabledAll
+                                ? "file:bg-gray-500 file:text-gray-300 cursor-not-allowed opacity-60"
+                                : "file:bg-indigo-600 file:text-white hover:file:bg-indigo-500"
+                            }`}
                 style={{ color: "transparent" }}
+                aria-disabled={disabledAll}
+                title={
+                  disabledAll
+                    ? "Bloqueado por tu plan o membresía inactiva"
+                    : "Selecciona un archivo .csv"
+                }
+                ref={inputRef}
               />
+
               {archivoCsv && (
                 <div className="flex items-center justify-between bg-white/10 border border-white/20 rounded px-4 py-2 text-sm text-white">
                   <span className="truncate">{archivoCsv.name}</span>
+
                   <button
                     onClick={() => {
+                      if (disabledAll) {
+                        alert("❌ No puedes eliminar el archivo: canal bloqueado o membresía inactiva.");
+                        return;
+                      }
                       setArchivoCsv(null);
                       if (inputRef.current) inputRef.current.value = "";
                     }}
-                    className="text-red-400 hover:text-red-600 text-xs font-semibold ml-4"
+                    disabled={disabledAll}
+                    className={`text-xs font-semibold ml-4 ${
+                      disabledAll
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-red-400 hover:text-red-600"
+                    }`}
+                    aria-disabled={disabledAll}
+                    title={disabledAll ? "Bloqueado" : "Eliminar archivo"}
                   >
                     Eliminar archivo
                   </button>
                 </div>
               )}
+
               <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
               <button
                 onClick={() => {
@@ -1006,8 +1038,19 @@ export default function CampaignsEmailClient() {
                     </button>
 
                     <button
-                      className="px-4 py-1 bg-red-500/80 hover:bg-red-600 border border-white/20 rounded text-white"
-                      onClick={() => eliminarCampana(c.id)}
+                      onClick={() => {
+                        if (disabledAll) {
+                          alert("❌ No puedes eliminar campañas: el canal de Email está bloqueado o la membresía inactiva.");
+                          return;
+                        }
+                        eliminarCampana(c.id);
+                      }}
+                      disabled={disabledAll}
+                      className={`px-4 py-1 rounded border border-white/20 ${
+                        disabledAll
+                          ? "bg-gray-500 text-gray-300 cursor-not-allowed"
+                          : "bg-red-500/80 hover:bg-red-600 text-white"
+                      }`}
                     >
                       🗑 Eliminar
                     </button>
