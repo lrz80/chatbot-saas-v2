@@ -172,13 +172,15 @@ export default function TrainingPage() {
     return true;
   };
 
-   useEffect(() => {
+  useEffect(() => {
     (async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=${canal}`, {
           credentials: "include",
         });
         const d = await res.json();
+
+        // ✅ Usa el 'enabled' ya calculado por el backend.
         setChannelState({
           enabled: !!d.enabled,
           maintenance: !!d.maintenance,
@@ -544,6 +546,13 @@ export default function TrainingPage() {
           </div>
         )}
 
+        {/* 🔒 Membresía inactiva (mantén visible la UI pero bloquea acciones) */}
+        {!isMembershipActive && (
+          <div className="mb-6 p-3 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded text-sm">
+            ⚠️ Tu membresía está inactiva. Puedes ver la configuración, pero no guardar ni entrenar hasta activarla.
+          </div>
+        )}
+        
         <TrainingHelp context="training" />
 
         {usoWhatsapp && (
