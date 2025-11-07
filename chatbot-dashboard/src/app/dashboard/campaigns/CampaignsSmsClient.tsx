@@ -44,11 +44,18 @@ export default function CampaignsSmsClient() {
   const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { loading: loadingPlan, features, esTrial } = useFeatures();
-  const [channelEnabled, setChannelEnabled] = useState<boolean | null>(null);
-  const loadingChannel = channelEnabled === null;
-  const canSmsPlan = !loadingPlan && !!features?.sms;   // espera a que cargue el plan
-  const canSms = canSmsPlan && channelEnabled === true;
-  const disabledAll = !canSms || !membresiaActiva;
+  type ChannelState = {
+   enabled: boolean;
+   maintenance: boolean;
+   plan_enabled: boolean;
+   settings_enabled: boolean;
+   maintenance_message?: string | null;
+ };
+ const [channelState, setChannelState] = useState<ChannelState | null>(null);
+ const loadingChannel = channelState === null;
+ const canSmsPlan = !loadingPlan && !!features?.sms; // del plan
+ const canSms = canSmsPlan && channelState?.enabled === true;
+ const disabledAll = !canSms || !membresiaActiva;
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -152,10 +159,23 @@ export default function CampaignsSmsClient() {
       setLoading(false);
 
       if (res.status === 403 && json?.error === "channel_blocked") {
-        alert("📴 El canal SMS está en mantenimiento. Inténtalo más tarde.");
-        // refresca estado del canal
-        fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, { credentials: "include" })
-          .then(r => r.json()).then(d => setChannelEnabled(Boolean(d.enabled)));
+        const st = await fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, { credentials: "include" })
+          .then(r => r.json()).catch(() => ({}));
+        setChannelState({
+          enabled: !!st.enabled,
+          maintenance: !!st.maintenance,
+          plan_enabled: !!st.plan_enabled,
+          settings_enabled: !!st.settings_enabled,
+          maintenance_message: st.maintenance_message || null,
+        });
+        if (st.maintenance) {
+          alert(`🛠️ Canal SMS en mantenimiento. ${st.maintenance_message || "Inténtalo más tarde."}`);
+        } else if (!st.plan_enabled) {
+          alert("❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.");
+          window.location.href = "/upgrade";
+        } else {
+          alert("📴 Canal SMS deshabilitado en tu configuración. Habilítalo en Ajustes.");
+        }
         return;
       } else if (res.ok) {
         alert("✅ Campaña enviada");
@@ -199,9 +219,23 @@ export default function CampaignsSmsClient() {
       const json = await res.json();
   
       if (res.status === 403 && json?.error === "channel_blocked") {
-          alert("📴 El canal SMS está en mantenimiento. Inténtalo más tarde.");
-          fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, { credentials: "include" })
-            .then(r => r.json()).then(d => setChannelEnabled(Boolean(d.enabled)));
+          const st = await fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, { credentials: "include" })
+            .then(r => r.json()).catch(() => ({}));
+          setChannelState({
+            enabled: !!st.enabled,
+            maintenance: !!st.maintenance,
+            plan_enabled: !!st.plan_enabled,
+            settings_enabled: !!st.settings_enabled,
+            maintenance_message: st.maintenance_message || null,
+          });
+          if (st.maintenance) {
+            alert(`🛠️ Canal SMS en mantenimiento. ${st.maintenance_message || "Inténtalo más tarde."}`);
+          } else if (!st.plan_enabled) {
+            alert("❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.");
+            window.location.href = "/upgrade";
+          } else {
+            alert("📴 Canal SMS deshabilitado en tu configuración. Habilítalo en Ajustes.");
+          }
           return;
         } else if (res.ok) {
         alert(`✅ ${json.nuevos} contactos agregados`);
@@ -236,9 +270,23 @@ export default function CampaignsSmsClient() {
         try {
           const j = await res.json();
           if (j?.error === "channel_blocked") {
-            alert("📴 El canal SMS está en mantenimiento. Inténtalo más tarde.");
-            fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, { credentials: "include" })
-              .then(r => r.json()).then(d => setChannelEnabled(Boolean(d.enabled)));
+            const st = await fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, { credentials: "include" })
+              .then(r => r.json()).catch(() => ({}));
+            setChannelState({
+              enabled: !!st.enabled,
+              maintenance: !!st.maintenance,
+              plan_enabled: !!st.plan_enabled,
+              settings_enabled: !!st.settings_enabled,
+              maintenance_message: st.maintenance_message || null,
+            });
+            if (st.maintenance) {
+              alert(`🛠️ Canal SMS en mantenimiento. ${st.maintenance_message || "Inténtalo más tarde."}`);
+            } else if (!st.plan_enabled) {
+              alert("❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.");
+              window.location.href = "/upgrade";
+            } else {
+              alert("📴 Canal SMS deshabilitado en tu configuración. Habilítalo en Ajustes.");
+            }
             return;
           }
         } catch {}
@@ -396,10 +444,19 @@ export default function CampaignsSmsClient() {
   
   // 🔒 Guard sencillo para bloquear acciones por plan/membresía
   const guardSms = () => {
+    if (channelState?.maintenance) {
+      alert(`🛠️ Canal SMS en mantenimiento. ${channelState.maintenance_message || "Inténtalo más tarde."}`);
+      return true;
+    }
     if (!canSms) {
-      alert("❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.");
-      window.location.href = "/upgrade";
-      return true; // indica que se bloqueó
+      // bloqueado por plan o por flags de settings
+      if (!channelState?.plan_enabled) {
+        alert("❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.");
+        window.location.href = "/upgrade";
+      } else {
+        alert("📴 Canal SMS deshabilitado en tu configuración. Habilítalo en Ajustes.");
+      }
+      return true;
     }
     if (!membresiaActiva) {
       const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
@@ -435,10 +492,22 @@ export default function CampaignsSmsClient() {
           credentials: "include",
         });
         const data = await res.json();
-        setChannelEnabled(Boolean(data.enabled));
+        setChannelState({
+          enabled: !!data.enabled,
+          maintenance: !!data.maintenance,
+          plan_enabled: !!data.plan_enabled,
+          settings_enabled: !!data.settings_enabled,
+          maintenance_message: data.maintenance_message || null,
+        });
       } catch (err) {
         console.error("❌ Error obteniendo channel settings:", err);
-        setChannelEnabled(false);
+        setChannelState({
+          enabled: false,
+          maintenance: false,
+          plan_enabled: false,
+          settings_enabled: false,
+          maintenance_message: null,
+        });
       }
     })();
   }, []);
@@ -457,12 +526,24 @@ export default function CampaignsSmsClient() {
         <SiTwilio className="text-red-300 animate-pulse" /> Campañas por SMS
       </h1>
 
-      {!loadingChannel && (
+      {!loadingChannel && channelState && (
         <div className="mb-4 text-sm">
           Estado del canal:{" "}
-          <span className={`px-2 py-0.5 rounded ${channelEnabled ? 'bg-green-600/30 text-green-300' : 'bg-red-600/30 text-red-300'}`}>
-            {channelEnabled ? 'Habilitado' : 'En mantenimiento'}
-          </span>
+          {channelState.maintenance ? (
+            <span className="px-2 py-0.5 rounded bg-red-600/30 text-red-300">
+              En mantenimiento{channelState.maintenance_message ? ` — ${channelState.maintenance_message}` : ""}
+            </span>
+          ) : channelState.enabled ? (
+            <span className="px-2 py-0.5 rounded bg-green-600/30 text-green-300">Habilitado</span>
+          ) : (
+            <span className="px-2 py-0.5 rounded bg-yellow-600/30 text-yellow-200">
+              Bloqueado { !channelState.plan_enabled
+                ? "por tu plan"
+                : !channelState.settings_enabled
+                ? "por configuración del canal"
+                : "" }
+            </span>
+          )}
         </div>
       )}
 
@@ -478,7 +559,7 @@ export default function CampaignsSmsClient() {
         </div>
       )}
 
-      {!loadingChannel && !canSms && (
+      {!loadingChannel && !channelState?.maintenance && !canSms && (
         <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
           <p className="font-semibold mb-1">SMS está bloqueado en tu plan actual</p>
           <p className="text-sm mb-3">

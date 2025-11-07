@@ -55,10 +55,17 @@ export default function CampaignsEmailClient() {
 
   const { loading: loadingPlan, features, esTrial } = useFeatures();
 
-  const [channelEnabled, setChannelEnabled] = useState<boolean | null>(null); // ← viene de channel_settings.email_enabled
-  const canEmailPlan = !!features?.email;        // plan/membresía incluye Email
-  const canEmail = canEmailPlan && channelEnabled === true; // ← canal habilitado + plan
-  const disabledAll = !canEmail || !membresiaActiva;        // ← bloquea acciones si no cumple
+  type ChannelState = {
+   enabled: boolean;
+   maintenance: boolean;
+   plan_enabled: boolean;
+   settings_enabled: boolean;
+   maintenance_message?: string | null;
+ };
+ const [channelState, setChannelState] = useState<ChannelState | null>(null);
+ const canEmailPlan = !!features?.email;
+ const canEmail = canEmailPlan && channelState?.enabled === true;
+ const disabledAll = !canEmail || !membresiaActiva;
 
   const cargarCampañas = async () => {
     try {
@@ -166,16 +173,7 @@ export default function CampaignsEmailClient() {
   };
 
   const handleSubmit = async () => {
-    if (!canEmail) {
-      alert("❌ Tu plan no incluye Email o el canal está deshabilitado. Actualiza tu plan.");
-      window.location.href = "/upgrade";
-      return;
-    }
-    if (!membresiaActiva) {
-      alert("❌ Tu membresía no está activa.");
-      window.location.href = "/upgrade";
-      return;
-    }
+    if (guardEmail()) return;
 
     console.log("🧪 Asunto que se envía:", form.asunto);
     if (!form.nombre || !form.fecha_envio || form.segmentos.length === 0) {
@@ -183,13 +181,10 @@ export default function CampaignsEmailClient() {
       return;
     }
 
-    const destinatarios = contactos
-      .filter((c: any) => form.segmentos.includes(c.segmento))
-      .map((c: any) => c.email)
-      .filter((email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
-
-    if (destinatarios.length === 0) {
-      alert("❌ No hay correos válidos.");
+    // validación mínima: que existan contactos en esos segmentos
+    const hayContactos = contactos.some((c: any) => form.segmentos.includes(c.segmento) && c.email);
+    if (!hayContactos) {
+      alert("❌ No hay contactos válidos en los segmentos seleccionados.");
       return;
     }
 
@@ -201,7 +196,7 @@ export default function CampaignsEmailClient() {
     data.append("asunto", form.asunto);
     data.append("titulo_visual", form.titulo_visual);
     data.append("fecha_envio", fechaEnvioISO);
-    data.append("segmentos", JSON.stringify(destinatarios));
+    data.append("segmentos", JSON.stringify(form.segmentos));
     data.append("link_url", form.link_url);
     if (form.imagen) data.append("imagen", form.imagen);
 
@@ -217,7 +212,27 @@ export default function CampaignsEmailClient() {
       setLoading(false);
 
       if (res.status === 403 && json?.error === "channel_blocked") {
-        alert("📴 El canal Email está en mantenimiento o deshabilitado temporalmente.");
+        try {
+          const stRes = await fetch(`${BACKEND_URL}/api/channel-settings?canal=email`, { credentials: "include" });
+          const st = await stRes.json();
+          setChannelState({
+            enabled: !!st.enabled,
+            maintenance: !!st.maintenance,
+            plan_enabled: !!st.plan_enabled,
+            settings_enabled: !!st.settings_enabled,
+            maintenance_message: st.maintenance_message || null,
+          });
+          if (st.maintenance) {
+            alert(`🛠️ Canal Email en mantenimiento. ${st.maintenance_message || "Inténtalo más tarde."}`);
+          } else if (!st.plan_enabled) {
+            alert("❌ Tu plan no incluye Email. Actualiza para habilitarlo.");
+            window.location.href = "/upgrade";
+          } else {
+            alert("📴 Canal Email deshabilitado en tu configuración.");
+          }
+        } catch {
+          alert("📴 Canal Email no disponible.");
+        }
         return;
       }
 
@@ -245,17 +260,7 @@ export default function CampaignsEmailClient() {
   };
 
   const handleSubirCsv = async () => {
-    if (!canEmail) {
-      alert("❌ Tu plan no incluye Email o el canal está deshabilitado.");
-      window.location.href = "/upgrade";
-      return;
-    }
-
-    if (!membresiaActiva) {
-      alert("❌ Tu membresía no está activa. Actívala para subir contactos.");
-      window.location.href = "/dashboard/upgrade";
-      return;
-    }
+    if (guardEmail()) return;
     
     if (!archivoCsv) return;
     
@@ -323,17 +328,7 @@ export default function CampaignsEmailClient() {
   };  
 
   const handleEliminarContactos = async () => {
-    if (!canEmail) {
-      alert("❌ Tu plan no incluye Email o el canal está deshabilitado.");
-      window.location.href = "/upgrade";
-      return;
-    }
-
-    if (!membresiaActiva) {
-      alert("❌ Tu membresía no está activa. Actívala para eliminar contactos.");
-      window.location.href = "/dashboard/upgrade";
-      return;
-    }
+    if (guardEmail()) return;
     
     if (!confirm("¿Estás seguro? Esta acción eliminará todos tus contactos.")) return;
   
@@ -493,14 +488,20 @@ export default function CampaignsEmailClient() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=email`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        setChannelEnabled(Boolean(data?.enabled)); // true/false
+        const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=email`, { credentials: "include" });
+          const d = await res.json();
+          setChannelState({
+            enabled: !!d.enabled,
+            maintenance: !!d.maintenance,
+            plan_enabled: !!d.plan_enabled,
+            settings_enabled: !!d.settings_enabled,
+            maintenance_message: d.maintenance_message || null,
+          });
       } catch (err) {
         console.error("❌ Error obteniendo channel settings (email):", err);
-        setChannelEnabled(false);
+        setChannelState({
+          enabled: false, maintenance: false, plan_enabled: false, settings_enabled: false, maintenance_message: null,
+        });
       }
     })();
   }, []);
@@ -563,6 +564,28 @@ export default function CampaignsEmailClient() {
     }
   };
   
+   const guardEmail = () => {
+      if (channelState?.maintenance) {
+        alert(`🛠️ Canal Email en mantenimiento. ${channelState.maintenance_message || "Inténtalo más tarde."}`);
+        return true;
+      }
+      if (!canEmail) {
+        if (channelState?.plan_enabled === false) {
+          alert("❌ Tu plan no incluye Email. Actualiza para habilitar campañas por Email.");
+          window.location.href = "/upgrade";
+        } else {
+          alert("📴 Canal de Email deshabilitado en tu configuración.");
+        }
+        return true;
+      }
+      if (!membresiaActiva) {
+        const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
+        if (confirmar) window.location.href = "/upgrade";
+        return true;
+      }
+      return false;
+    };
+
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
         <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -576,13 +599,24 @@ export default function CampaignsEmailClient() {
 
         <TrainingHelp context="campaign-email" />
 
-        {(!canEmailPlan || channelEnabled === false) && (
+        {channelState && channelState.maintenance && (
+          <div className="mb-6 p-4 bg-red-600/15 border border-red-600/40 text-red-200 rounded">
+            <p className="font-semibold mb-1">Email en mantenimiento</p>
+            <p className="text-sm">{channelState.maintenance_message || "Estamos trabajando para restablecer el servicio."}</p>
+          </div>
+        )}
+
+        {(!channelState?.maintenance && (!canEmailPlan || channelState?.enabled === false)) && (
           <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
             <p className="font-semibold mb-1">Email está bloqueado en tu plan actual</p>
             <p className="text-sm mb-3">
               {esTrial
                 ? <>Durante el período de prueba solo está habilitado <b>WhatsApp</b>.</>
-                : <>Tu plan o configuración actual no permiten campañas por Email.</>}
+                : <>
+                    {channelState?.plan_enabled === false
+                      ? "Tu plan no incluye campañas por Email."
+                      : "El canal está deshabilitado en tu configuración."}
+                  </>}
             </p>
             <div className="flex flex-wrap gap-2">
               <button
@@ -921,8 +955,7 @@ export default function CampaignsEmailClient() {
 
       <button
         onClick={() => {
-          if (!canEmail) { alert('❌ Tu plan no incluye Email o el canal está deshabilitado.'); window.location.href='/upgrade'; return; }
-          if (!membresiaActiva) { requerirMembresia(); return; }
+          if (guardEmail()) return;
           handleSubmit();
         }}
         disabled={disabledAll || loading}
