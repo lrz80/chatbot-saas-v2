@@ -635,14 +635,14 @@ export default function TrainingPage() {
           onClick={() => bloquearSiNoMembresia(handleSave)}
           disabled={disabledAll}
           className={`px-6 py-2 rounded-lg flex items-center gap-2 mb-10 ${
-            settings.membresia_activa
+            !disabledAll
               ? "bg-indigo-600 hover:bg-indigo-700 text-white"
               : "bg-gray-600 text-white/50 cursor-not-allowed"
           }`}
         >
           <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
         </button>
-  
+
         <FaqSection
           faqsSugeridas={faqSugeridas}
           setFaqsSugeridas={setFaqSugeridas}
@@ -712,7 +712,7 @@ export default function TrainingPage() {
               onClick={() => bloquearSiNoMembresia(handleSend)}
               disabled={disabledAll}
               className={`w-full sm:w-auto px-4 py-2 rounded ${
-                settings.membresia_activa
+                !disabledAll
                   ? "bg-indigo-600 hover:bg-indigo-700 text-white"
                   : "bg-gray-600 text-white/50 cursor-not-allowed"
               }`}
