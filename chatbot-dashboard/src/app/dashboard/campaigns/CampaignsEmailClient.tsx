@@ -20,6 +20,8 @@ import { useSearchParams } from "next/navigation";
 import EmailLogViewer from "@/components/EmailLogViewer";
 import { useFeatures } from '@/hooks/usePlan';
 
+const BASE_EMAIL_LIMIT = 2000;
+
 export default function CampaignsEmailClient() {
   const [form, setForm] = useState({
     nombre: "",
@@ -214,6 +216,11 @@ export default function CampaignsEmailClient() {
       const json = await res.json();
       setLoading(false);
 
+      if (res.status === 403 && json?.error === "channel_blocked") {
+        alert("📴 El canal Email está en mantenimiento o deshabilitado temporalmente.");
+        return;
+      }
+
       if (res.ok) {
         alert("✅ Campaña enviada");
         setForm({
@@ -366,7 +373,7 @@ export default function CampaignsEmailClient() {
         body: JSON.stringify({
           canal: "contactos",
           cantidad,
-          redirectPath: "/dashboard/campaigns/sms",
+          redirectPath: "/dashboard/campaigns/email",
         }),
       });
   
@@ -596,9 +603,9 @@ export default function CampaignsEmailClient() {
             <p className="text-white text-sm mb-2">
               {usoEmail.usados} de {usoEmail.limite} campañas usadas este mes (incluye créditos extra)
             </p>
-            {usoEmail.limite > 2000 && (
+            {usoEmail.limite > BASE_EMAIL_LIMIT && (
               <p className="text-green-300 text-sm">
-                Incluye {usoEmail.limite - 2000} campañas extra compradas.
+                Incluye {usoEmail.limite - BASE_EMAIL_LIMIT} campañas extra compradas.
               </p>
             )}
             <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
@@ -872,7 +879,7 @@ export default function CampaignsEmailClient() {
         <div className="my-10">
           <h3 className="text-white text-lg font-bold mb-2">
             <SiTestinglibrary /> Vista previa del Email
-          </h3> SiTestinglibrary
+          </h3>
           <div className="bg-white rounded shadow p-4 max-h-[600px] overflow-y-auto">
             <iframe
               srcDoc={previewHtml}
@@ -947,7 +954,9 @@ export default function CampaignsEmailClient() {
               <li key={c.id} className="border border-white/10 rounded p-4 bg-white/5">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div>
-                    <div className="text-lg font-bold text-white mb-1">{c.nombre}</div>
+                    <div className="text-lg font-bold text-white mb-1">
+                      {c.titulo ?? c.nombre ?? "Sin nombre"}
+                    </div>
                     <div className="text-white/80 mb-1">
                       <SiGooglecalendar className="inline mr-1" />{" "}
                       {new Date(c.programada_para).toLocaleString("es-ES", {

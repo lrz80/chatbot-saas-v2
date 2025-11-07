@@ -45,7 +45,8 @@ export default function CampaignsSmsClient() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { loading: loadingPlan, features, esTrial } = useFeatures();
   const [channelEnabled, setChannelEnabled] = useState<boolean | null>(null);
-  const canSmsPlan = !!features.sms;
+  const loadingChannel = channelEnabled === null;
+  const canSmsPlan = !loadingPlan && !!features?.sms;   // espera a que cargue el plan
   const canSms = canSmsPlan && channelEnabled === true;
   const disabledAll = !canSms || !membresiaActiva;
 
@@ -137,7 +138,7 @@ export default function CampaignsSmsClient() {
 
     const fechaUTC = new Date(form.fecha_envio).toISOString();
     data.append("fecha_envio", fechaUTC);
-    data.append("segmentos", JSON.stringify(destinatarios));
+    data.append("destinatarios", JSON.stringify(destinatarios));
 
     try {
       setLoading(true);
@@ -150,7 +151,13 @@ export default function CampaignsSmsClient() {
       const json = await res.json();
       setLoading(false);
 
-      if (res.ok) {
+      if (res.status === 403 && json?.error === "channel_blocked") {
+        alert("📴 El canal SMS está en mantenimiento. Inténtalo más tarde.");
+        // refresca estado del canal
+        fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, { credentials: "include" })
+          .then(r => r.json()).then(d => setChannelEnabled(Boolean(d.enabled)));
+        return;
+      } else if (res.ok) {
         alert("✅ Campaña enviada");
         setForm({ nombre: "", contenido: "", fecha_envio: "", segmentos: [] });
         setCampaigns((prev) => [json, ...prev]);
@@ -191,7 +198,12 @@ export default function CampaignsSmsClient() {
   
       const json = await res.json();
   
-      if (res.ok) {
+      if (res.status === 403 && json?.error === "channel_blocked") {
+          alert("📴 El canal SMS está en mantenimiento. Inténtalo más tarde.");
+          fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, { credentials: "include" })
+            .then(r => r.json()).then(d => setChannelEnabled(Boolean(d.enabled)));
+          return;
+        } else if (res.ok) {
         alert(`✅ ${json.nuevos} contactos agregados`);
         inputRef.current?.value && (inputRef.current.value = "");
         setArchivoCsv(null);
@@ -220,7 +232,18 @@ export default function CampaignsSmsClient() {
       setCampaigns((prev) => prev.filter((c) => c.id !== id));
       alert("✅ Campaña eliminada");
     } else {
-      alert("❌ Error al eliminar campaña");
+      if (res.status === 403) {
+        try {
+          const j = await res.json();
+          if (j?.error === "channel_blocked") {
+            alert("📴 El canal SMS está en mantenimiento. Inténtalo más tarde.");
+            fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, { credentials: "include" })
+              .then(r => r.json()).then(d => setChannelEnabled(Boolean(d.enabled)));
+            return;
+          }
+        } catch {}
+        alert("❌ Error al eliminar campaña");
+      }
     }
   } catch (err) {
     console.error("❌ Error al eliminar:", err);
@@ -420,11 +443,28 @@ export default function CampaignsSmsClient() {
     })();
   }, []);
 
+  const guardAnd = (fn: () => void) => () => {
+    if (disabledAll) {
+      alert("❌ Canal SMS deshabilitado o membresía inactiva.");
+      return;
+    }
+    fn();
+  };
+
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
         <SiTwilio className="text-red-300 animate-pulse" /> Campañas por SMS
       </h1>
+
+      {!loadingChannel && (
+        <div className="mb-4 text-sm">
+          Estado del canal:{" "}
+          <span className={`px-2 py-0.5 rounded ${channelEnabled ? 'bg-green-600/30 text-green-300' : 'bg-red-600/30 text-red-300'}`}>
+            {channelEnabled ? 'Habilitado' : 'En mantenimiento'}
+          </span>
+        </div>
+      )}
 
       {contactosOk && (
         <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
@@ -438,7 +478,7 @@ export default function CampaignsSmsClient() {
         </div>
       )}
 
-      {!canSms && (
+      {!loadingChannel && !canSms && (
         <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
           <p className="font-semibold mb-1">SMS está bloqueado en tu plan actual</p>
           <p className="text-sm mb-3">
@@ -532,6 +572,7 @@ export default function CampaignsSmsClient() {
                 accept=".csv"
                 multiple={false}
                 disabled={disabledAll}
+                ref={inputRef}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file && file.name.toLowerCase().endsWith(".csv")) {
@@ -570,13 +611,7 @@ export default function CampaignsSmsClient() {
               )}
               <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                 <button
-                  onClick={() => {
-                    if (disabledAll) {
-                      alert("❌ Canal SMS deshabilitado o membresía inactiva.");
-                      return;
-                    }
-                    handleEliminarContactos();
-                  }}
+                  onClick={guardAnd(handleEliminarContactos)}
                   disabled={disabledAll}
                   className={`px-4 py-2 rounded font-semibold w-full sm:w-auto ${
                     !disabledAll ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'
@@ -736,6 +771,12 @@ export default function CampaignsSmsClient() {
                       title={disabledAll ? "Bloqueado por plan o membresía" : "Eliminar"}
                     >
                       <SiProbot className="inline mr-1" /> Eliminar
+                    </button>
+                    <button
+                      className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-white"
+                      onClick={() => setExpandedCampaignId(expandedCampaignId === cid ? null : cid)}
+                    >
+                      {expandedCampaignId === cid ? "Ocultar detalles" : "Ver detalles"}
                     </button>
                   </div>
                 </div>
