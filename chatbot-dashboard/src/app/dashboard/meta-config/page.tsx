@@ -24,9 +24,19 @@ type MetaConnState = {
   ig?: { id?: string; username?: string };
 };
 
-export default function TrainingPage() {
+export default function MetaConfigPage() {
   const router = useRouter();
   const { loading: loadingPlan, features, esTrial } = useFeatures();
+  type ChannelState = {
+  enabled: boolean;              // pasa gates (plan + toggle)
+  maintenance: boolean;          // bandera real de mantenimiento
+  plan_enabled: boolean;         // plan permite Meta
+  settings_enabled: boolean;     // toggle global/tenant
+  maintenance_message?: string | null;
+};
+
+const [channelState, setChannelState] = useState<ChannelState | null>(null);
+
   const canMetaConnect = !!features.meta; // ← habilitado por plan+membresía
   // features = { whatsapp, meta, voice, sms, email }
   const [metaConn, setMetaConn] = useState<MetaConnState>({
@@ -35,23 +45,18 @@ export default function TrainingPage() {
 });
 
 const goConnectMeta = () => {
-  if (!canMetaConnect) {
-    alert("Este canal está bloqueado en tu plan. Actualiza para habilitar Meta.");
-    return;
-  }
+  if (!verificarPermiso()) return;
   window.location.href = META_CONNECT_URL;
 };
 
-const handleDisconnect = async () => {
-  if (!canMetaConnect) {
-    alert("Este canal está bloqueado en tu plan. Actualiza para habilitar Meta.");
-    return;
-  }
+const handleDisconnect = async (e?: any) => {
+  if (!verificarPermiso(e)) return;
   try {
     const r = await fetch(`${BACKEND_URL}/api/meta-config/disconnect`, {
       method: "POST",
       credentials: "include",
     });
+
     if (r.ok) {
       setMetaConn({ connected: false, needsReconnect: true, fb: undefined, ig: undefined });
       alert("Cuentas desconectadas ✅");
@@ -64,10 +69,6 @@ const handleDisconnect = async () => {
     alert("❌ Error al desconectar.");
   }
 };
-  const bloquearSiNoMembresia = async (cb: () => Promise<void> | void) => {
-    if (!features.meta) { router.push('/upgrade'); return; }
-    await cb();
-  };
 
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
@@ -117,7 +118,10 @@ const handleDisconnect = async () => {
   });
 
   const isMembershipActive = settings.membresia_activa;
-  
+  const planMeta = !!features?.meta;
+  const canMeta = planMeta && channelState?.enabled === true && !channelState?.maintenance;
+  const disabledAll = !canMeta || !isMembershipActive;
+
   useEffect(() => {
     if (!chatContainerRef.current) return;
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -218,15 +222,95 @@ const handleDisconnect = async () => {
     fetchAll();
   }, [router]);
   
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=meta`, {
+          credentials: "include",
+        });
+        const d = await res.json();
+        setChannelState({
+          enabled: !!d.enabled,
+          maintenance: !!d.maintenance,
+          plan_enabled: !!d.plan_enabled,
+          settings_enabled: !!d.settings_enabled,
+          maintenance_message: d.maintenance_message || null,
+        });
+      } catch (err) {
+        console.error("❌ Error obteniendo channel settings (meta):", err);
+        setChannelState({
+          enabled: false,
+          maintenance: false,
+          plan_enabled: false,
+          settings_enabled: false,
+          maintenance_message: null,
+        });
+      }
+    })();
+  }, []);
+
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
   };
 
-  const handleSave = async () => {
-    if (!features.meta) {
-      alert("Este canal está bloqueado en tu plan. Actualiza para habilitar Meta.");
-      return;
+  const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
+  if (channelState?.maintenance) {
+    e?.preventDefault();
+    alert(`🛠️ Meta en mantenimiento. ${channelState.maintenance_message || ""}`);
+    return false;
+  }
+  if (!planMeta) {
+    e?.preventDefault();
+    alert("⚠️ Tu plan no incluye Meta. Actualiza para habilitarlo.");
+    router.push("/upgrade");
+    return false;
+  }
+  if (channelState?.enabled === false) {
+    e?.preventDefault();
+    alert("📴 El canal Meta está deshabilitado en tu configuración.");
+    return false;
+  }
+  if (!isMembershipActive) {
+    e?.preventDefault();
+    alert("⚠️ Activa tu membresía para usar este canal.");
+    router.push("/upgrade");
+    return false;
+  }
+  return true;
+};
+
+const bloquearSiNoMembresia = async (cb: () => Promise<void> | void) => {
+  if (!verificarPermiso()) return;
+  await cb();
+};
+
+async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestInit) {
+  const res = await fetch(input, init);
+  if (res.status === 403) {
+    const j = await res.json().catch(() => ({} as any));
+    if (j?.error === "channel_blocked") {
+      try {
+        const s = await fetch(`${BACKEND_URL}/api/channel-settings?canal=meta`, { credentials: "include" });
+        const d = await s.json();
+        setChannelState({
+          enabled: !!d.enabled,
+          maintenance: !!d.maintenance,
+          plan_enabled: !!d.plan_enabled,
+          settings_enabled: !!d.settings_enabled,
+          maintenance_message: d.maintenance_message || null,
+        });
+        if (d.maintenance) alert(`🛠️ Meta en mantenimiento. ${d.maintenance_message || ""}`);
+        else if (!d.plan_enabled) alert("❌ Tu plan no incluye Meta.");
+        else alert("📴 Meta deshabilitado en tu configuración.");
+      } catch { /* noop */ }
+      throw new Error("channel_blocked");
     }
+  }
+  return res;
+}
+
+  const handleSave = async () => {
+  if (!verificarPermiso()) return;
 
     setSaving(true);
 
@@ -244,7 +328,7 @@ const handleDisconnect = async () => {
     console.log("📤 Enviando payload a /api/settings:", payload);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/settings?canal=meta`, {
+      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/settings?canal=meta`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -268,15 +352,13 @@ const handleDisconnect = async () => {
   };
 
   const handleSend = async () => {
-    if (!features.meta || !input.trim())  return;
+    if (!input.trim()) return;
+    if (!verificarPermiso()) return;
     await sendPreview(input.trim());
-  };  
+  };
 
   const saveIntents = async () => {
-  if (!features.meta) {
-    alert("Este canal está bloqueado en tu plan. Actualiza para habilitar Meta.");
-    return;
-  }
+    if (!verificarPermiso()) return;
 
   const intencionesLimpias = intents
     .map(i => ({
@@ -291,7 +373,7 @@ const handleDisconnect = async () => {
   }
 
   try {
-    const res = await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
+    const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/intents?canal=meta`, {
       method: "POST",
       credentials: "include",
       cache: "no-store",
@@ -329,11 +411,7 @@ const handleDisconnect = async () => {
 };
   
   const saveFaqs = async () => {
-    if (!features.meta) {
-      alert("Este canal está bloqueado en tu plan. Actualiza para habilitar Meta.");
-      return;
-    }
-
+    if (!verificarPermiso()) return;
 
     // Normaliza/valida
     const faqsValidas = (faq ?? [])
@@ -349,7 +427,7 @@ const handleDisconnect = async () => {
     }
   
     try {
-      const res = await fetch(`${BACKEND_URL}/api/faqs?canal=${canal}`, {
+      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/faqs?canal=${canal}`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -387,7 +465,7 @@ const handleDisconnect = async () => {
 
     try {
       // ⬇️ Endpoint de preview para Meta
-      const res = await fetch(`${BACKEND_URL}/api/preview/meta`, {
+      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/preview/meta`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -473,39 +551,47 @@ const handleDisconnect = async () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
   
-        {!features.meta && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
-            ⚠ Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.
-          </div>
-        )}
-  
         <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
           <SiMeta size={36} className="text-green-400 animate-pulse" />
           Configuración del Asistente de Facebook e Instagram
         </h1>
 
-        {!features.meta && (
-          <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded-lg">
-            <p className="font-semibold mb-2">Meta está bloqueado en tu plan actual</p>
+        {/* 🛠️ Mantenimiento real */}
+        {channelState?.maintenance && (
+          <div className="mb-6 p-4 bg-red-600/15 border border-red-600/40 text-red-200 rounded">
+            <p className="font-semibold mb-1">Meta en mantenimiento</p>
+            <p className="text-sm">{channelState.maintenance_message || "Estamos trabajando para restablecer el servicio."}</p>
+          </div>
+        )}
+
+        {/* 🚫 Bloqueo por plan o configuración (solo si NO está en mantenimiento) */}
+        {!channelState?.maintenance && (!planMeta || channelState?.enabled === false) && (
+          <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
+            <p className="font-semibold mb-2">Meta está bloqueado en tu cuenta</p>
             <p className="text-sm mb-3">
               {esTrial
                 ? <>Tu período de prueba está activo. Durante el trial solo está habilitado <b>WhatsApp</b>.</>
-                : <>Tu membresía no permite este canal actualmente.</>}
+                : !planMeta
+                  ? "Tu plan no incluye el canal Meta."
+                  : "El canal Meta está deshabilitado en tu configuración."}
             </p>
             <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => router.push('/upgrade')}
-                className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
-              >
+              <button onClick={() => router.push('/upgrade')}
+                      className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white">
                 Actualizar plan
               </button>
-              <button
-                onClick={() => router.push('/dashboard/training')}
-                className="px-4 py-2 rounded border border-white/20 hover:bg-white/10"
-              >
+              <button onClick={() => router.push('/dashboard/training')}
+                      className="px-4 py-2 rounded border border-white/20 hover:bg-white/10 text-white">
                 Ir a WhatsApp (habilitado)
               </button>
             </div>
+          </div>
+        )}
+
+        {/* 🔒 Membresía inactiva (mantén visible la UI pero bloquea acciones) */}
+        {!isMembershipActive && (
+          <div className="mb-6 p-3 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded text-sm">
+            ⚠️ Tu membresía está inactiva. Puedes ver la configuración, pero no guardar ni entrenar hasta activarla.
           </div>
         )}
 
@@ -547,28 +633,28 @@ const handleDisconnect = async () => {
                 {/* ÚNICO botón para FB/IG */}
                 <button
                   onClick={goConnectMeta}
-                  disabled={!canMetaConnect}
-                  aria-disabled={!canMetaConnect}
+                  disabled={disabledAll}
+                  aria-disabled={disabledAll}
                   className={`px-4 py-2 rounded text-white ${
-                    canMetaConnect
+                    !disabledAll
                       ? "bg-indigo-600 hover:bg-indigo-700"
                       : "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
                   }`}
-                  title={canMetaConnect ? "" : "Bloqueado por tu plan"}
+                  title={!disabledAll ? "" : "Bloqueado por plan/membresía o canal"}
                 >
                   {metaConn.connected ? "Reconectar Facebook/Instagram" : "Conectar Facebook/Instagram"}
                 </button>
 
                 <button
                   onClick={handleDisconnect}
-                  disabled={!canMetaConnect || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
-                  aria-disabled={!canMetaConnect || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
+                  disabled={disabledAll || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
+                  aria-disabled={disabledAll || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
                   className={`px-4 py-2 rounded border ${
                     canMetaConnect && (metaConn.connected || metaConn.fb || metaConn.ig)
                       ? "bg-white/10 hover:bg-white/20 border-white/20 text-white"
                       : "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
                   }`}
-                  title={canMetaConnect ? "" : "Bloqueado por tu plan"}
+                  title={!disabledAll ? "" : "Bloqueado por plan/membresía o canal"}
                 >
                   Desconectar
                 </button>
@@ -629,7 +715,7 @@ const handleDisconnect = async () => {
           value={settings.idioma}
           onChange={handleChange}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          disabled={!features.meta}
+          disabled={!canMeta}
         >
           <option value="es">Español</option>
           <option value="en">Inglés</option>
@@ -645,7 +731,7 @@ const handleDisconnect = async () => {
             setSettings((prev) => ({ ...prev, funciones_asistente: value }))
           }
           idioma={settings.idioma}
-          membresiaActiva={!!features.meta}
+          membresiaActiva={canMeta}
           onPromptGenerated={(prompt) => setSettings((prev) => ({ ...prev, prompt }))}
         />
   
@@ -655,7 +741,7 @@ const handleDisconnect = async () => {
           onChange={handleChange}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Mensaje de bienvenida"
-          disabled={!features.meta}
+          disabled={!canMeta}
         />
   
         <textarea
@@ -665,17 +751,18 @@ const handleDisconnect = async () => {
           rows={3}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Prompt del sistema"
-          disabled={!features.meta}
+          disabled={!canMeta}
         />
   
         <button
           onClick={() => bloquearSiNoMembresia(handleSave)}
-          disabled={!features.meta}
+          disabled={disabledAll}
           className={`px-6 py-2 rounded-lg flex items-center gap-2 mb-10 ${
-            features.meta
+            !disabledAll
               ? "bg-indigo-600 hover:bg-indigo-700 text-white"
               : "bg-gray-600 text-white/50 cursor-not-allowed"
           }`}
+
         >
           <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
         </button>
@@ -686,7 +773,7 @@ const handleDisconnect = async () => {
           faqs={faq}
           setFaqs={setFaq}
           canal="meta"
-          membresiaActiva={!!features.meta}
+          membresiaActiva={canMeta}
           onSave={() => bloquearSiNoMembresia(saveFaqs)}
         />
 
@@ -694,7 +781,7 @@ const handleDisconnect = async () => {
           intents={intents}
           setIntents={setIntents}
           canal="meta"
-          membresiaActiva={!!features.meta}
+          membresiaActiva={canMeta}
           onSave={() => bloquearSiNoMembresia(saveIntents)}
         />
 
@@ -742,12 +829,12 @@ const handleDisconnect = async () => {
                 }
               }}              
               placeholder="Escribe algo..."
-              disabled={!features.meta}
+              disabled={!canMeta}
               className="w-full sm:flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
             />
             <button
               onClick={() => bloquearSiNoMembresia(handleSend)}
-              disabled={!features.meta}
+              disabled={!canMeta}
               className={`w-full sm:w-auto px-4 py-2 rounded ${
                 settings.membresia_activa
                   ? "bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -763,3 +850,4 @@ const handleDisconnect = async () => {
     </div>
   ); 
 } 
+MetaConfigPage.displayName = "MetaConfigPage";
