@@ -18,6 +18,7 @@ import { FaAddressBook, FaPaperclip } from "react-icons/fa";
 import TrainingHelp from "@/components/TrainingHelp";
 import { useSearchParams } from "next/navigation";
 import EmailLogViewer from "@/components/EmailLogViewer";
+import { useFeatures } from '@/hooks/usePlan';
 
 export default function CampaignsEmailClient() {
   const [form, setForm] = useState({
@@ -49,6 +50,13 @@ export default function CampaignsEmailClient() {
   const [cargandoLogsId, setCargandoLogsId] = useState<number | null>(null);
   const [errorLogsCampana, setErrorLogsCampana] = useState<number | null>(null);
   const [previewHtml, setPreviewHtml] = useState("");
+
+  const { loading: loadingPlan, features, esTrial } = useFeatures();
+
+  const [channelEnabled, setChannelEnabled] = useState<boolean | null>(null); // ← viene de channel_settings.email_enabled
+  const canEmailPlan = !!features?.email;        // plan/membresía incluye Email
+  const canEmail = canEmailPlan && channelEnabled === true; // ← canal habilitado + plan
+  const disabledAll = !canEmail || !membresiaActiva;        // ← bloquea acciones si no cumple
 
   const cargarCampañas = async () => {
     try {
@@ -156,6 +164,17 @@ export default function CampaignsEmailClient() {
   };
 
   const handleSubmit = async () => {
+    if (!canEmail) {
+      alert("❌ Tu plan no incluye Email o el canal está deshabilitado. Actualiza tu plan.");
+      window.location.href = "/upgrade";
+      return;
+    }
+    if (!membresiaActiva) {
+      alert("❌ Tu membresía no está activa.");
+      window.location.href = "/upgrade";
+      return;
+    }
+
     console.log("🧪 Asunto que se envía:", form.asunto);
     if (!form.nombre || !form.fecha_envio || form.segmentos.length === 0) {
       alert("Completa todos los campos.");
@@ -219,6 +238,12 @@ export default function CampaignsEmailClient() {
   };
 
   const handleSubirCsv = async () => {
+    if (!canEmail) {
+      alert("❌ Tu plan no incluye Email o el canal está deshabilitado.");
+      window.location.href = "/upgrade";
+      return;
+    }
+
     if (!membresiaActiva) {
       alert("❌ Tu membresía no está activa. Actívala para subir contactos.");
       window.location.href = "/dashboard/upgrade";
@@ -291,6 +316,12 @@ export default function CampaignsEmailClient() {
   };  
 
   const handleEliminarContactos = async () => {
+    if (!canEmail) {
+      alert("❌ Tu plan no incluye Email o el canal está deshabilitado.");
+      window.location.href = "/upgrade";
+      return;
+    }
+
     if (!membresiaActiva) {
       alert("❌ Tu membresía no está activa. Actívala para eliminar contactos.");
       window.location.href = "/dashboard/upgrade";
@@ -453,6 +484,21 @@ export default function CampaignsEmailClient() {
   };
   
   useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=email`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        setChannelEnabled(Boolean(data?.enabled)); // true/false
+      } catch (err) {
+        console.error("❌ Error obteniendo channel settings (email):", err);
+        setChannelEnabled(false);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
     const fetchPreview = async () => {
       if (!form.contenido) return;
   
@@ -522,6 +568,25 @@ export default function CampaignsEmailClient() {
         )}
 
         <TrainingHelp context="campaign-email" />
+
+        {(!canEmailPlan || channelEnabled === false) && (
+          <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
+            <p className="font-semibold mb-1">Email está bloqueado en tu plan actual</p>
+            <p className="text-sm mb-3">
+              {esTrial
+                ? <>Durante el período de prueba solo está habilitado <b>WhatsApp</b>.</>
+                : <>Tu plan o configuración actual no permiten campañas por Email.</>}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => (window.location.href = "/upgrade")}
+                className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                Actualizar plan
+              </button>
+            </div>
+          </div>
+        )}
 
         {usoEmail && (
           <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
@@ -633,10 +698,13 @@ export default function CampaignsEmailClient() {
               <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
               <button
                 onClick={() => {
+                  if (!canEmail) { alert('Bloqueado por tu plan'); window.location.href='/upgrade'; return; }
                   if (!membresiaActiva) return requerirMembresia();
                   handleEliminarContactos();
                 }}
-                className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
+                disabled={disabledAll}
+                className={`px-4 py-2 rounded font-semibold w-full sm:w-auto
+                  ${disabledAll ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white'}`}
               >
                 Eliminar contactos
               </button>
@@ -644,10 +712,13 @@ export default function CampaignsEmailClient() {
               {archivoCsv && (
                 <button
                   onClick={() => {
+                    if (!canEmail) { alert('Bloqueado por tu plan'); window.location.href='/upgrade'; return; }
                     if (!membresiaActiva) return requerirMembresia();
                     handleSubirCsv();
                   }}
-                  className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold text-white w-full sm:w-auto"
+                  disabled={disabledAll}
+                  className={`px-4 py-2 rounded font-semibold w-full sm:w-auto
+                    ${disabledAll ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 text-white'}`}
                 >
                   Subir contactos
                 </button>
@@ -742,6 +813,7 @@ export default function CampaignsEmailClient() {
           accept="image/*"
           ref={inputRef}
           onChange={handleChange}
+          disabled={disabledAll}
           className="hidden"
         />
 
@@ -797,11 +869,12 @@ export default function CampaignsEmailClient() {
         {["cliente", "leads", "otros"].map((seg) => (
           <label key={seg} className="block text-white text-sm mb-1">
             <input
-              type="checkbox"
-              checked={form.segmentos.includes(seg)}
-              onChange={() => toggleSegmento(seg)}
-              className="mr-2"
-            />
+            type="checkbox"
+            checked={form.segmentos.includes(seg)}
+            onChange={() => toggleSegmento(seg)}
+            disabled={disabledAll}
+            className="mr-2"
+          />
             {seg}
           </label>
         ))}
@@ -809,14 +882,13 @@ export default function CampaignsEmailClient() {
 
       <button
         onClick={() => {
-          if (!membresiaActiva) {
-            requerirMembresia();
-            return;
-          }
+          if (!canEmail) { alert('❌ Tu plan no incluye Email o el canal está deshabilitado.'); window.location.href='/upgrade'; return; }
+          if (!membresiaActiva) { requerirMembresia(); return; }
           handleSubmit();
         }}
-        disabled={loading}
-        className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={disabledAll || loading}
+        className={`px-4 py-2 rounded font-semibold disabled:opacity-50 disabled:cursor-not-allowed
+          ${disabledAll ? 'bg-gray-500 text-white/70' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}
       >
         {loading ? "Enviando..." : "Programar campaña Email"}
       </button>
