@@ -18,6 +18,16 @@ const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
 export default function TrainingPage() {
   const router = useRouter();
+  type ChannelState = {
+    enabled: boolean;              // pasa gates (plan + toggle)
+    maintenance: boolean;          // bandera real de mantenimiento
+    plan_enabled: boolean;         // plan permite WhatsApp
+    settings_enabled: boolean;     // toggle global/tenant
+    maintenance_message?: string | null;
+  };
+
+  const [channelState, setChannelState] = useState<ChannelState | null>(null);
+
   const bloquearSiNoMembresia = async (
     callback: () => Promise<void> | void
   ): Promise<void> => {
@@ -73,10 +83,6 @@ export default function TrainingPage() {
     cta_text: "",
     cta_url: "",
   });
-
-  // Estado para CTA final
-  const [ctaText, setCtaText] = useState('');
-  const [ctaUrl,  setCtaUrl]  = useState('');
 
   const isMembershipActive = settings.membresia_activa;
   
@@ -143,8 +149,82 @@ export default function TrainingPage() {
     setSettings({ ...settings, [e.target.name]: e.target.value });
   };
 
+  const canWhats = channelState?.enabled === true && !channelState?.maintenance;
+  const disabledAll = !canWhats || !isMembershipActive;
+
+  const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
+    if (channelState?.maintenance) {
+      e?.preventDefault();
+      alert(`🛠️ WhatsApp en mantenimiento. ${channelState.maintenance_message || ""}`);
+      return false;
+    }
+    if (channelState?.enabled === false) {
+      e?.preventDefault();
+      alert("📴 El canal WhatsApp está deshabilitado en tu configuración.");
+      return false;
+    }
+    if (!isMembershipActive) {
+      e?.preventDefault();
+      alert("⚠️ Activa tu membresía para usar este canal.");
+      router.push("/upgrade");
+      return false;
+    }
+    return true;
+  };
+
+   useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=${canal}`, {
+          credentials: "include",
+        });
+        const d = await res.json();
+        setChannelState({
+          enabled: !!d.enabled,
+          maintenance: !!d.maintenance,
+          plan_enabled: !!d.plan_enabled,
+          settings_enabled: !!d.settings_enabled,
+          maintenance_message: d.maintenance_message || null,
+        });
+      } catch (err) {
+        console.error("❌ Error obteniendo channel settings (whatsapp):", err);
+        setChannelState({
+          enabled: false,
+          maintenance: false,
+          plan_enabled: false,
+          settings_enabled: false,
+          maintenance_message: null,
+        });
+      }
+    })();
+  }, []);
+
+  async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestInit) {
+    const res = await fetch(input, init);
+    if (res.status === 403) {
+      const j = await res.json().catch(() => ({} as any));
+      if (j?.error === "channel_blocked") {
+        try {
+          const s = await fetch(`${BACKEND_URL}/api/channel-settings?canal=${canal}`, { credentials: "include" });
+          const d = await s.json();
+          setChannelState({
+            enabled: !!d.enabled,
+            maintenance: !!d.maintenance,
+            plan_enabled: !!d.plan_enabled,
+            settings_enabled: !!d.settings_enabled,
+            maintenance_message: d.maintenance_message || null,
+          });
+          if (d.maintenance) alert(`🛠️ WhatsApp en mantenimiento. ${d.maintenance_message || ""}`);
+          else alert("📴 WhatsApp deshabilitado en tu configuración.");
+        } catch { /* noop */ }
+        throw new Error("channel_blocked");
+      }
+    }
+    return res;
+  }
+
   const handleSave = async () => {
-    if (!isMembershipActive) return;
+    if (!verificarPermiso()) return;
     setSaving(true);
   
     // 1) Construye base con posibles campos
@@ -175,10 +255,10 @@ export default function TrainingPage() {
     console.log("📤 Enviando payload a /api/settings (PATCH):", payload);
   
     try {
-      const res = await fetch(`${BACKEND_URL}/api/settings`, {
-        method: "PATCH",                
+      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/settings?canal=${canal}`, {
+        method: "PATCH",
         credentials: "include",
-        cache: "no-store",               // opcional, previene stales
+        cache: "no-store",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -200,18 +280,19 @@ export default function TrainingPage() {
   };  
 
   const handleSend = async () => {
-    if (!isMembershipActive || !input.trim()) return;
+    if (!input.trim()) return;
+    if (!verificarPermiso()) return;
     await sendPreview(input.trim());
-  };  
+  };
 
   // 👉 Cuando el usuario hace clic en una opción de flujo
   const handleFlowOptionClick = async (texto: string) => {
-    if (!isMembershipActive) return;
+    if (!verificarPermiso()) return;
     await sendPreview(texto);
   };
 
   const saveIntents = async () => {
-    if (!isMembershipActive) return;
+    if (!verificarPermiso()) return;
   
     // normaliza y valida
     const intencionesLimpias = intents
@@ -227,7 +308,7 @@ export default function TrainingPage() {
     }
   
     try {
-      const res = await fetch(`${BACKEND_URL}/api/intents?canal=${canal}`, { // ⬅️ canal
+      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/intents?canal=${canal}`, {
         method: "POST",
         credentials: "include",
         cache: "no-store",                        // opcional: evita stales
@@ -267,7 +348,7 @@ export default function TrainingPage() {
   
   
   const saveFaqs = async () => {
-    if (!settings.membresia_activa) return;
+    if (!verificarPermiso()) return;
   
     // Normaliza/valida
     const faqsValidas = (faq ?? [])
@@ -283,7 +364,7 @@ export default function TrainingPage() {
     }
   
     try {
-      const res = await fetch(`${BACKEND_URL}/api/faqs?canal=${canal}`, {
+      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/faqs?canal=${canal}`, {
         method: "POST",
         credentials: "include",
         cache: "no-store",
@@ -322,7 +403,7 @@ export default function TrainingPage() {
 
     try {
       // ⬇️ Nuevo endpoint específico de WhatsApp
-      const res = await fetch(`${BACKEND_URL}/api/preview/whatsapp`, {
+      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/preview/whatsapp`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -445,6 +526,24 @@ export default function TrainingPage() {
           Configuración del Asistente de WhatsApp
         </h1>
   
+        {/* 🛠️ Mantenimiento real */}
+        {channelState?.maintenance && (
+          <div className="mb-6 p-4 bg-red-600/15 border border-red-600/40 text-red-200 rounded">
+            <p className="font-semibold mb-1">WhatsApp en mantenimiento</p>
+            <p className="text-sm">{channelState.maintenance_message || "Estamos trabajando para restablecer el servicio."}</p>
+          </div>
+        )}
+
+        {/* 🚫 Bloqueo por configuración (si NO está en mantenimiento) */}
+        {!channelState?.maintenance && channelState?.enabled === false && (
+          <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
+            <p className="font-semibold mb-2">WhatsApp está deshabilitado en tu cuenta</p>
+            <p className="text-sm mb-0">
+              Actívalo en tu configuración o actualiza tu plan si aplica.
+            </p>
+          </div>
+        )}
+
         <TrainingHelp context="training" />
 
         {usoWhatsapp && (
@@ -493,7 +592,7 @@ export default function TrainingPage() {
           value={settings.idioma}
           onChange={handleChange}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          disabled={!settings.membresia_activa}
+          disabled={disabledAll}
         >
           <option value="es">Español</option>
           <option value="en">Inglés</option>
@@ -507,7 +606,7 @@ export default function TrainingPage() {
             setSettings((prev) => ({ ...prev, funciones_asistente: value }))
           }
           idioma={settings.idioma}
-          membresiaActiva={settings.membresia_activa}
+          membresiaActiva={!disabledAll}
           onPromptGenerated={(prompt) => setSettings((prev) => ({ ...prev, prompt }))}
         />
   
@@ -517,7 +616,7 @@ export default function TrainingPage() {
           onChange={handleChange}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Mensaje de bienvenida"
-          disabled={!settings.membresia_activa}
+          disabled={disabledAll}
         />
   
         <textarea
@@ -527,14 +626,14 @@ export default function TrainingPage() {
           rows={3}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           placeholder="Prompt del sistema"
-          disabled={!settings.membresia_activa}
+          disabled={disabledAll}
         />
   
-        <CTASection canal={canal} membresiaActiva={settings.membresia_activa} />
+        <CTASection canal={canal} membresiaActiva={!disabledAll} />
 
         <button
           onClick={() => bloquearSiNoMembresia(handleSave)}
-          disabled={!settings.membresia_activa}
+          disabled={disabledAll}
           className={`px-6 py-2 rounded-lg flex items-center gap-2 mb-10 ${
             settings.membresia_activa
               ? "bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -550,7 +649,7 @@ export default function TrainingPage() {
           faqs={faq}
           setFaqs={setFaq}
           canal="whatsapp"
-          membresiaActiva={settings.membresia_activa}
+          membresiaActiva={!disabledAll}
           onSave={() => bloquearSiNoMembresia(saveFaqs)}
         />
 
@@ -558,7 +657,7 @@ export default function TrainingPage() {
           intents={intents}
           setIntents={setIntents}
           canal={canal}
-          membresiaActiva={settings.membresia_activa}
+          membresiaActiva={!disabledAll}
           onSave={() => bloquearSiNoMembresia(saveIntents)}
         />
 
@@ -606,12 +705,12 @@ export default function TrainingPage() {
                 }
               }}              
               placeholder="Escribe algo..."
-              disabled={!settings.membresia_activa}
+              disabled={disabledAll}
               className="w-full sm:flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
             />
             <button
               onClick={() => bloquearSiNoMembresia(handleSend)}
-              disabled={!settings.membresia_activa}
+              disabled={disabledAll}
               className={`w-full sm:w-auto px-4 py-2 rounded ${
                 settings.membresia_activa
                   ? "bg-indigo-600 hover:bg-indigo-700 text-white"
