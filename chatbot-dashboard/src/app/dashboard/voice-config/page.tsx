@@ -15,14 +15,26 @@ import VoiceMinutesCard from '@/components/VoiceMinutesCard';
 import { useFeatures } from '@/hooks/usePlan';
 
 export default function VoiceConfigPage() {
-  const { loading: loadingPlan, features, esTrial } = useFeatures();
-  const canVoice = !!features.voice;
-  const disabledAll = !canVoice;
   const [idioma, setIdioma] = useState("es-ES");
   const tenant = useTenant();
   const tenantId = tenant?.id;
   const tieneMembresia = tenant?.membresia_activa;
   const router = useRouter();
+  type ChannelState = {
+  enabled: boolean;              // gate final result (plan + settings + sin pausa)
+  maintenance: boolean;          // proviene de channel_maintenance
+  plan_enabled: boolean;         // tu plan permite este canal
+  settings_enabled: boolean;     // toggle global/tenant en channel_settings
+  maintenance_message?: string | null;
+};
+  const { loading: loadingPlan, features, esTrial } = useFeatures();
+
+  const planVoice = !!features?.voice;
+  const [channelState, setChannelState] = useState<ChannelState | null>(null);
+
+  // Habilitado SOLO si el plan lo incluye y el endpoint dice enabled=true (sin mantenimiento ni pausas)
+  const canVoice = planVoice && channelState?.enabled === true;
+  const disabledAll = !canVoice || !tieneMembresia;
 
   // ✨ Estado controlado
   const [funcionesVoz, setFuncionesVoz] = useState("");
@@ -62,18 +74,36 @@ export default function VoiceConfigPage() {
   const e164Ok = representanteNumber === "" || E164_REGEX.test(representanteNumber);
 
   const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
-  if (!canVoice) {
+  // Mantenimiento real
+  if (channelState?.maintenance) {
     e?.preventDefault();
-    toast.warning("⚠️ Este canal está bloqueado en tu plan. Actualiza para habilitar Voz.");
+    toast.warning(`🛠️ Canal Voz en mantenimiento. ${channelState.maintenance_message || ""}`);
+    return false;
+  }
+
+  // Plan
+  if (!planVoice) {
+    e?.preventDefault();
+    toast.warning("⚠️ Tu plan no incluye Voz. Actualiza para habilitarlo.");
     router.push("/upgrade");
     return false;
   }
+
+  // Toggle/config
+  if (channelState?.enabled === false) {
+    e?.preventDefault();
+    toast.warning("📴 El canal de Voz está deshabilitado en tu configuración.");
+    return false;
+  }
+
+  // Membresía
   if (!tieneMembresia) {
     e?.preventDefault();
     toast.warning("⚠️ Activa tu membresía para usar esta función.");
     router.push("/upgrade");
     return false;
   }
+
   return true;
 };
 
@@ -81,7 +111,7 @@ export default function VoiceConfigPage() {
   useEffect(() => {
     const fetchVoiceConfig = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/voice-config?idioma=${idioma}&canal=voz`, {
+        const res = await fetch(`${BACKEND_URL}/api/voice-config?idioma=${idioma}&canal=voice`, {
           credentials: "include",
         });
         const data = await res.json();
@@ -104,6 +134,33 @@ export default function VoiceConfigPage() {
 
     fetchVoiceConfig();
   }, [idioma]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=voice`, {
+          credentials: "include",
+        });
+        const d = await res.json();
+        setChannelState({
+          enabled: !!d.enabled,
+          maintenance: !!d.maintenance,
+          plan_enabled: !!d.plan_enabled,
+          settings_enabled: !!d.settings_enabled,
+          maintenance_message: d.maintenance_message || null,
+        });
+      } catch (err) {
+        console.error("❌ Error obteniendo channel settings (voice):", err);
+        setChannelState({
+          enabled: false,
+          maintenance: false,
+          plan_enabled: false,
+          settings_enabled: false,
+          maintenance_message: null,
+        });
+      }
+    })();
+  }, []);
 
   // Historial (usar canal = 'voz' para coincidir con backend)
   useEffect(() => {
@@ -168,16 +225,32 @@ export default function VoiceConfigPage() {
         credentials: "include",
         body: JSON.stringify(nuevoLink),
       });
+
+      // 👇 Manejo del 403 por canal bloqueado
+      if (res.status === 403) {
+        let data: any = {};
+        try { data = await res.json(); } catch {}
+        if (data?.error === "channel_blocked") {
+          const st = await refreshChannelVoice();
+          if (st?.maintenance) {
+            toast.warning(`🛠️ Voz en mantenimiento. ${st.maintenance_message || ""}`);
+          } else if (!st?.plan_enabled) {
+            toast.warning("❌ Tu plan no incluye Voz.");
+          } else {
+            toast.warning("📴 Voz deshabilitado en tu configuración.");
+          }
+          return;
+        }
+      }
+
       const data = await res.json().catch(() => null);
-  
+
       if (res.ok) {
         toast.success("✅ Link agregado");
         setNuevoLink({ tipo: "", nombre: "", url: "" });
-        // Si el backend devolvió array, úsalo; si no, rehace GET.
         if (data && Array.isArray(data)) {
           setLinksUtiles(data);
         } else {
-          // rehacer GET por si acaso
           const res2 = await fetch(`${BACKEND_URL}/api/voice-links`, { credentials: "include" });
           const data2 = await res2.json().catch(() => []);
           setLinksUtiles(Array.isArray(data2) ? data2 : []);
@@ -189,8 +262,8 @@ export default function VoiceConfigPage() {
     } catch (err) {
       console.error("Error al agregar link:", err);
     }
-  };  
-
+  };
+ 
   const eliminarLink = async (id: number) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/voice-links/${id}`, {
@@ -232,6 +305,23 @@ export default function VoiceConfigPage() {
         body: formData,
         credentials: "include",
       });
+
+      // 👇 Manejo del 403 por canal bloqueado
+      if (res.status === 403) {
+        let json: any = {};
+        try { json = await res.json(); } catch {}
+        if (json?.error === "channel_blocked") {
+          const st = await refreshChannelVoice();
+          if (st?.maintenance) {
+            toast.warning(`🛠️ Voz en mantenimiento. ${st.maintenance_message || ""}`);
+          } else if (!st?.plan_enabled) {
+            toast.warning("❌ Tu plan no incluye Voz.");
+          } else {
+            toast.warning("📴 Voz deshabilitado en tu configuración.");
+          }
+          return;
+        }
+      }
 
       if (res.ok) {
         toast.success("✅ ¡Configuración guardada!");
@@ -292,6 +382,24 @@ export default function VoiceConfigPage() {
     return "bg-green-500";
   };
 
+  const refreshChannelVoice = async () => {
+    try {
+      const stRes = await fetch(`${BACKEND_URL}/api/channel-settings?canal=voice`, { credentials: "include" });
+      const st = await stRes.json();
+      setChannelState({
+        enabled: !!st.enabled,
+        maintenance: !!st.maintenance,
+        plan_enabled: !!st.plan_enabled,
+        settings_enabled: !!st.settings_enabled,
+        maintenance_message: st.maintenance_message || null,
+      });
+      return st;
+    } catch (e) {
+      console.error("❌ Error refrescando channel-state voice:", e);
+      return null;
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
@@ -299,6 +407,46 @@ export default function VoiceConfigPage() {
       </h1>
 
       <TrainingHelp context="voice" />
+
+      {/* 🛠️ Mantenimiento real */}
+      {channelState?.maintenance && (
+        <div className="mb-6 p-4 bg-red-600/15 border border-red-600/40 text-red-200 rounded">
+          <p className="font-semibold mb-1">Voz en mantenimiento</p>
+          <p className="text-sm">{channelState.maintenance_message || "Estamos trabajando para restablecer el servicio."}</p>
+        </div>
+      )}
+
+      {/* 🚫 Bloqueo por plan/config (solo si NO está en mantenimiento) */}
+      {!channelState?.maintenance && (!planVoice || channelState?.enabled === false) && (
+        <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
+          <p className="font-semibold mb-2">Voz está bloqueado en tu cuenta</p>
+          <p className="text-sm mb-3">
+            {esTrial ? (
+              <>Tu período de prueba está activo. Durante el trial solo está habilitado <b>WhatsApp</b>.</>
+            ) : (
+              <>
+                {!planVoice
+                  ? "Tu plan no incluye el canal de Voz."
+                  : "El canal de Voz está deshabilitado en tu configuración."}
+              </>
+            )}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => router.push('/upgrade')}
+              className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              Actualizar plan
+            </button>
+            <button
+              onClick={() => router.push('/dashboard/training')}
+              className="px-4 py-2 rounded border border-white/20 hover:bg-white/10 text-white"
+            >
+              Ir a WhatsApp (habilitado)
+            </button>
+          </div>
+        </div>
+      )}
 
       {!canVoice && (
         <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
