@@ -44,8 +44,10 @@ export default function CampaignsSmsClient() {
   const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { loading: loadingPlan, features, esTrial } = useFeatures();
-  const canSms = !!features.sms;                // ← habilitado por plan
-  const disabledAll = !canSms || !membresiaActiva; // ← bloquea todo si plan no incluye SMS o sin membresía
+  const [channelEnabled, setChannelEnabled] = useState<boolean | null>(null);
+  const canSmsPlan = !!features.sms;
+  const canSms = canSmsPlan && channelEnabled === true;
+  const disabledAll = !canSms || !membresiaActiva;
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -403,6 +405,21 @@ export default function CampaignsSmsClient() {
     );
   };
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        setChannelEnabled(Boolean(data.enabled));
+      } catch (err) {
+        console.error("❌ Error obteniendo channel settings:", err);
+        setChannelEnabled(false);
+      }
+    })();
+  }, []);
+
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -535,7 +552,10 @@ export default function CampaignsSmsClient() {
                   <span className="truncate">{archivoCsv.name}</span>
                   <button
                     onClick={() => {
-                      if (disabledAll) return;
+                      if (disabledAll) {
+                        alert("❌ Canal SMS deshabilitado o membresía inactiva.");
+                        return;
+                      }
                       setArchivoCsv(null);
                       if (inputRef.current) inputRef.current.value = "";
                     }}
@@ -551,7 +571,10 @@ export default function CampaignsSmsClient() {
               <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                 <button
                   onClick={() => {
-                    if (guardSms()) return;       // ← ahora chequea plan + membresía
+                    if (disabledAll) {
+                      alert("❌ Canal SMS deshabilitado o membresía inactiva.");
+                      return;
+                    }
                     handleEliminarContactos();
                   }}
                   disabled={disabledAll}
@@ -566,7 +589,10 @@ export default function CampaignsSmsClient() {
                 {archivoCsv && (
                   <button
                     onClick={() => {
-                      if (guardSms()) return;
+                      if (disabledAll) {
+                        alert("❌ Canal SMS deshabilitado o membresía inactiva.");
+                        return;
+                      }
                       handleSubirCsv();
                     }}
                     disabled={disabledAll}
@@ -636,7 +662,10 @@ export default function CampaignsSmsClient() {
 
       <button
         onClick={() => {
-          if (guardSms()) return;
+          if (disabledAll) {
+            alert("❌ Canal SMS deshabilitado o membresía inactiva.");
+            return;
+          }
           handleSubmit();
         }}
         disabled={disabledAll || loading}
@@ -696,7 +725,10 @@ export default function CampaignsSmsClient() {
                       className={`px-4 py-1 border border-white/20 rounded text-white
                         ${disabledAll ? "bg-white/10 text-white/40 cursor-not-allowed" : "bg-red-500/80 hover:bg-red-600"}`}
                       onClick={() => {
-                        if (guardSms()) return;
+                        if (disabledAll) {
+                          alert("❌ Canal SMS deshabilitado o membresía inactiva.");
+                          return;
+                        }
                         eliminarCampana(c.id);
                       }}
                       disabled={disabledAll}
