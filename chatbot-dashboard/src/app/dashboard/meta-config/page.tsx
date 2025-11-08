@@ -721,6 +721,7 @@ const handleDisconnect = async () => {
             </button>
           </div>
         </div>
+        </ChannelGate>
       </div>
       <Footer />
     </div>
