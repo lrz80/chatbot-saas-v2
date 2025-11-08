@@ -1,21 +1,38 @@
-// components/ChannelGate.tsx
 "use client";
-import { ReactNode } from "react";
-import { useFeatures } from "@/hooks/usePlan";
+import { useEffect, useState } from "react";
+import ChannelStatus from "./ChannelStatus";
 
-type Props = {
-  canal: "whatsapp" | "meta" | "voice" | "sms" | "email";
-  children: ReactNode;
-};
+type Canal = "sms" | "email" | "whatsapp" | "meta" | "voice";
 
-/**
- * Gate SOLO oculta/muestra children. No renderiza banners ni estado.
- * El banner y chip de estado los muestra ChannelStatus por separado.
- */
-export default function ChannelGate({ canal, children }: Props) {
-  const { loading, features } = useFeatures();
-  if (loading) return null;
-  const allowed = !!features?.[canal];
-  if (!allowed) return null;       // 🔒 oculta todo el contenido del canal
-  return <>{children}</>;
+export default function ChannelGate({
+  canal,
+  children,
+}: {
+  canal: Canal;
+  children: React.ReactNode;
+}) {
+  const [status, setStatus] = useState<any>(null);
+
+  useEffect(() => {
+    fetch(`/api/channel/status?canal=${canal}`, {
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then(setStatus)
+      .catch(() => setStatus(null));
+  }, [canal]);
+
+  // 🟣 SIEMPRE mostrar encabezado + banner
+  return (
+    <div className="w-full">
+      <ChannelStatus canal={canal} />
+
+      {/* ✅ Si el canal está bloqueado, SOLO ocultar las acciones */}
+      {status?.blocked ? (
+        <div className="opacity-50 pointer-events-none select-none">{children}</div>
+      ) : (
+        children
+      )}
+    </div>
+  );
 }
