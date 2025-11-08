@@ -12,6 +12,8 @@ import FaqSection from "@/components/FaqSection";
 import type { FaqSugerida } from "@/components/FaqSection";
 import IntentSection, { Intent } from "@/components/IntentSection";
 import { useFeatures } from '@/hooks/usePlan';
+import ChannelStatus from "@/components/ChannelStatus";
+import ChannelGate from "@/components/ChannelGate";
 
 const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
 
@@ -27,15 +29,6 @@ type MetaConnState = {
 export default function MetaConfigPage() {
   const router = useRouter();
   const { loading: loadingPlan, features, esTrial } = useFeatures();
-  type ChannelState = {
-  enabled: boolean;              // pasa gates (plan + toggle)
-  maintenance: boolean;          // bandera real de mantenimiento
-  plan_enabled: boolean;         // plan permite Meta
-  settings_enabled: boolean;     // toggle global/tenant
-  maintenance_message?: string | null;
-};
-
-const [channelState, setChannelState] = useState<ChannelState | null>(null);
 
   const canMetaConnect = !!features.meta; // ← habilitado por plan+membresía
   // features = { whatsapp, meta, voice, sms, email }
@@ -45,12 +38,12 @@ const [channelState, setChannelState] = useState<ChannelState | null>(null);
 });
 
 const goConnectMeta = () => {
-  if (!verificarPermiso()) return;
+  if (!canMeta) { router.push("/upgrade"); return; }
   window.location.href = META_CONNECT_URL;
 };
 
-const handleDisconnect = async (e?: any) => {
-  if (!verificarPermiso(e)) return;
+const handleDisconnect = async () => {
+  if (!canMeta) { router.push("/upgrade"); return; }
   try {
     const r = await fetch(`${BACKEND_URL}/api/meta-config/disconnect`, {
       method: "POST",
@@ -119,8 +112,8 @@ const handleDisconnect = async (e?: any) => {
 
   const isMembershipActive = settings.membresia_activa;
   const planMeta = !!features?.meta;
-  const canMeta = planMeta && channelState?.enabled === true && !channelState?.maintenance;
-  const disabledAll = !canMeta || !isMembershipActive;
+  const canMeta = planMeta && isMembershipActive; // el gate maneja mantenimiento/pausas
+  const disabledAll = !canMeta;
 
   useEffect(() => {
     if (!chatContainerRef.current) return;
@@ -222,96 +215,11 @@ const handleDisconnect = async (e?: any) => {
     fetchAll();
   }, [router]);
   
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=meta`, {
-          credentials: "include",
-        });
-        const d = await res.json();
-        setChannelState({
-          enabled: !!d.enabled,
-          maintenance: !!d.maintenance,
-          plan_enabled: !!d.plan_enabled,
-          settings_enabled: !!d.settings_enabled,
-          maintenance_message: d.maintenance_message || null,
-        });
-      } catch (err) {
-        console.error("❌ Error obteniendo channel settings (meta):", err);
-        setChannelState({
-          enabled: false,
-          maintenance: false,
-          plan_enabled: false,
-          settings_enabled: false,
-          maintenance_message: null,
-        });
-      }
-    })();
-  }, []);
-
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
   };
 
-  const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
-  if (channelState?.maintenance) {
-    e?.preventDefault();
-    alert(`🛠️ Meta en mantenimiento. ${channelState.maintenance_message || ""}`);
-    return false;
-  }
-  if (!planMeta) {
-    e?.preventDefault();
-    alert("⚠️ Tu plan no incluye Meta. Actualiza para habilitarlo.");
-    router.push("/upgrade");
-    return false;
-  }
-  if (channelState?.enabled === false) {
-    e?.preventDefault();
-    alert("📴 El canal Meta está deshabilitado en tu configuración.");
-    return false;
-  }
-  if (!isMembershipActive) {
-    e?.preventDefault();
-    alert("⚠️ Activa tu membresía para usar este canal.");
-    router.push("/upgrade");
-    return false;
-  }
-  return true;
-};
-
-const bloquearSiNoMembresia = async (cb: () => Promise<void> | void) => {
-  if (!verificarPermiso()) return;
-  await cb();
-};
-
-async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestInit) {
-  const res = await fetch(input, init);
-  if (res.status === 403) {
-    const j = await res.json().catch(() => ({} as any));
-    if (j?.error === "channel_blocked") {
-      try {
-        const s = await fetch(`${BACKEND_URL}/api/channel-settings?canal=meta`, { credentials: "include" });
-        const d = await s.json();
-        setChannelState({
-          enabled: !!d.enabled,
-          maintenance: !!d.maintenance,
-          plan_enabled: !!d.plan_enabled,
-          settings_enabled: !!d.settings_enabled,
-          maintenance_message: d.maintenance_message || null,
-        });
-        if (d.maintenance) alert(`🛠️ Meta en mantenimiento. ${d.maintenance_message || ""}`);
-        else if (!d.plan_enabled) alert("❌ Tu plan no incluye Meta.");
-        else alert("📴 Meta deshabilitado en tu configuración.");
-      } catch { /* noop */ }
-      throw new Error("channel_blocked");
-    }
-  }
-  return res;
-}
-
   const handleSave = async () => {
-  if (!verificarPermiso()) return;
-
     setSaving(true);
 
     const payload = {
@@ -328,7 +236,7 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
     console.log("📤 Enviando payload a /api/settings:", payload);
 
     try {
-      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/settings?canal=meta`, {
+      const res = await fetch(`${BACKEND_URL}/api/settings?canal=meta`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -353,12 +261,11 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
 
   const handleSend = async () => {
     if (!input.trim()) return;
-    if (!verificarPermiso()) return;
+    if (!canMeta) { router.push("/upgrade"); return; }
     await sendPreview(input.trim());
   };
 
   const saveIntents = async () => {
-    if (!verificarPermiso()) return;
 
   const intencionesLimpias = intents
     .map(i => ({
@@ -373,7 +280,7 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
   }
 
   try {
-    const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/intents?canal=meta`, {
+    const res = await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
       method: "POST",
       credentials: "include",
       cache: "no-store",
@@ -411,8 +318,6 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
 };
   
   const saveFaqs = async () => {
-    if (!verificarPermiso()) return;
-
     // Normaliza/valida
     const faqsValidas = (faq ?? [])
       .map(f => ({
@@ -427,7 +332,7 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
     }
   
     try {
-      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/faqs?canal=${canal}`, {
+      const res = await fetch(`${BACKEND_URL}/api/faqs?canal=${canal}`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -465,7 +370,7 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
 
     try {
       // ⬇️ Endpoint de preview para Meta
-      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/preview/meta`, {
+      const res = await fetch(`${BACKEND_URL}/api/preview/meta`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -556,37 +461,7 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
           Configuración del Asistente de Facebook e Instagram
         </h1>
 
-        {/* 🛠️ Mantenimiento real */}
-        {channelState?.maintenance && (
-          <div className="mb-6 p-4 bg-red-600/15 border border-red-600/40 text-red-200 rounded">
-            <p className="font-semibold mb-1">Meta en mantenimiento</p>
-            <p className="text-sm">{channelState.maintenance_message || "Estamos trabajando para restablecer el servicio."}</p>
-          </div>
-        )}
-
-        {/* 🚫 Bloqueo por plan o configuración (solo si NO está en mantenimiento) */}
-        {!channelState?.maintenance && (!planMeta || channelState?.enabled === false) && (
-          <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
-            <p className="font-semibold mb-2">Meta está bloqueado en tu cuenta</p>
-            <p className="text-sm mb-3">
-              {esTrial
-                ? <>Tu período de prueba está activo. Durante el trial solo está habilitado <b>WhatsApp</b>.</>
-                : !planMeta
-                  ? "Tu plan no incluye el canal Meta."
-                  : "El canal Meta está deshabilitado en tu configuración."}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <button onClick={() => router.push('/upgrade')}
-                      className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white">
-                Actualizar plan
-              </button>
-              <button onClick={() => router.push('/dashboard/training')}
-                      className="px-4 py-2 rounded border border-white/20 hover:bg-white/10 text-white">
-                Ir a WhatsApp (habilitado)
-              </button>
-            </div>
-          </div>
-        )}
+        <ChannelStatus canal="meta" />
 
         {/* 🔒 Membresía inactiva (mantén visible la UI pero bloquea acciones) */}
         {!isMembershipActive && (
@@ -603,6 +478,7 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
   
         <TrainingHelp context="meta" />
 
+        <ChannelGate canal="meta">
         {/* 🔗 Integración con Meta: botones SIEMPRE visibles */}
         <div className="mb-6 p-4 rounded-lg border text-sm bg-white/5 border-white/10 text-white">
           <div className="flex flex-col gap-3">
@@ -755,7 +631,7 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
         />
   
         <button
-          onClick={() => bloquearSiNoMembresia(handleSave)}
+          onClick={handleSave}
           disabled={disabledAll}
           className={`px-6 py-2 rounded-lg flex items-center gap-2 mb-10 ${
             !disabledAll
@@ -774,7 +650,7 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
           setFaqs={setFaq}
           canal="meta"
           membresiaActiva={canMeta}
-          onSave={() => bloquearSiNoMembresia(saveFaqs)}
+          onSave={saveFaqs}
         />
 
         <IntentSection
@@ -782,7 +658,7 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
           setIntents={setIntents}
           canal="meta"
           membresiaActiva={canMeta}
-          onSave={() => bloquearSiNoMembresia(saveIntents)}
+          onSave={saveIntents}
         />
 
         <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
@@ -833,7 +709,7 @@ async function fetchWithChannelGuard(input: RequestInfo | URL, init?: RequestIni
               className="w-full sm:flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
             />
             <button
-              onClick={() => bloquearSiNoMembresia(handleSend)}
+              onClick={handleSend}
               disabled={!canMeta}
               className={`w-full sm:w-auto px-4 py-2 rounded ${
                 settings.membresia_activa
