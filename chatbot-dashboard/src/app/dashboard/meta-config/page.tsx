@@ -463,13 +463,6 @@ const handleDisconnect = async () => {
 
         <ChannelStatus canal="meta" />
 
-        {/* 🔒 Membresía inactiva (mantén visible la UI pero bloquea acciones) */}
-        {!isMembershipActive && (
-          <div className="mb-6 p-3 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded text-sm">
-            ⚠️ Tu membresía está inactiva. Puedes ver la configuración, pero no guardar ni entrenar hasta activarla.
-          </div>
-        )}
-
         {usage.porcentaje >= 80 && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
             ⚠ Estás utilizando el <strong>{usage.porcentaje}%</strong> de tu límite mensual ({usage.used}/{usage.limit} mensajes).<br />Considera actualizar tu plan para evitar interrupciones.
