@@ -1,18 +1,14 @@
 "use client";
 import { ReactNode, useEffect, useState } from "react";
+import { BACKEND_URL } from "@/utils/api";
 
 type Canal = "sms" | "email" | "whatsapp" | "meta" | "voice";
-type Status = {
-  canal: Canal;
-  blocked: boolean;
-};
 
-async function fetchStatus(canal: Canal): Promise<Status | null> {
+type StatusSlim = { canal: Canal; blocked: boolean };
+
+async function fetchStatus(canal: Canal): Promise<StatusSlim | null> {
   try {
-    const base =
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      (typeof window !== "undefined" ? "" : "");
-    const r = await fetch(`${base}/api/channel/status?canal=${canal}`, {
+    const r = await fetch(`${BACKEND_URL}/api/channel/status?canal=${canal}`, {
       credentials: "include",
       cache: "no-store",
     });
@@ -24,11 +20,6 @@ async function fetchStatus(canal: Canal): Promise<Status | null> {
   }
 }
 
-/**
- * variant:
- * - "banner-only": nunca oculta children (útil si quieres ver todo pero mostrar el aviso con ChannelStatus).
- * - "block-when-locked": oculta children cuando el canal está bloqueado (default).
- */
 export default function ChannelGate({
   canal,
   children,
@@ -46,16 +37,9 @@ export default function ChannelGate({
     fetchStatus(canal).then((s) => setBlocked(s?.blocked ?? null));
   }, [canal]);
 
-  if (variant === "banner-only") {
-    return <div className={className}>{children}</div>;
-  }
-
-  // Mientras carga, no ocultes nada (evita parpadeo)
+  if (variant === "banner-only") return <div className={className}>{children}</div>;
   if (blocked === null) return <div className={className}>{children}</div>;
-
-  // Bloqueado => oculta children
   if (blocked) return <div className={className} />;
 
-  // Desbloqueado => muestra children
   return <div className={className}>{children}</div>;
 }

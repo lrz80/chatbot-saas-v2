@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { BACKEND_URL } from "@/utils/api";
 
 type Canal = "sms" | "email" | "whatsapp" | "meta" | "voice";
 
@@ -16,10 +17,7 @@ type Status = {
 
 async function fetchStatus(canal: Canal): Promise<Status | null> {
   try {
-    const base =
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      (typeof window !== "undefined" ? "" : "");
-    const r = await fetch(`${base}/api/channel/status?canal=${canal}`, {
+    const r = await fetch(`${BACKEND_URL}/api/channel/status?canal=${canal}`, {
       credentials: "include",
       cache: "no-store",
     });
@@ -42,7 +40,7 @@ export default function ChannelStatus({
   canal,
   className = "",
   showBanner = true,
-  hideTitle = true, // ← por defecto NO pintamos el h2, solo chip + banner
+  hideTitle = true,
 }: {
   canal: Canal;
   className?: string;
@@ -57,22 +55,27 @@ export default function ChannelStatus({
     setLoading(true);
     fetchStatus(canal).then((s) => {
       if (!alive) return;
-      setStatus(s);
+      setStatus(s);       // puede ser null
       setLoading(false);
     });
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, [canal]);
 
   const label = CANAL_LABEL[canal];
 
-  // pill
+  // PILL
   const pill = (() => {
-    if (loading || !status) {
+    if (loading) {
       return (
         <span className="rounded-full px-2 py-1 text-xs font-semibold bg-zinc-700/40 text-zinc-300 animate-pulse">
           Cargando…
+        </span>
+      );
+    }
+    if (!status) {
+      return (
+        <span className="rounded-full px-2 py-1 text-xs font-semibold bg-zinc-700/40 text-zinc-300">
+          Sin datos
         </span>
       );
     }
@@ -88,10 +91,9 @@ export default function ChannelStatus({
     );
   })();
 
-  // banner
+  // BANNER
   const banner = (() => {
-    if (!showBanner) return null;
-    if (loading || !status) return null;
+    if (!showBanner || loading || !status) return null;
     if (!status.blocked) return null;
 
     let title = `${label} está bloqueado`;
@@ -144,13 +146,11 @@ export default function ChannelStatus({
   return (
     <div className={className}>
       {hideTitle ? (
-        // Encabezado compacto: “Estado del canal: [chip]”
         <div className="mb-3 flex items-center gap-2">
           <span className="text-sm opacity-75">Estado del canal:</span>
           {pill}
         </div>
       ) : (
-        // Opción por si algún día quieres el título dentro del componente
         <div className="mb-3 flex items-center gap-2">
           <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">{`Campañas por ${label}`}</h2>
           {pill}
