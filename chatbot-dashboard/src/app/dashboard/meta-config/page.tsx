@@ -461,7 +461,7 @@ const handleDisconnect = async () => {
           Configuración del Asistente de Facebook e Instagram
         </h1>
 
-        <ChannelStatus canal="meta" />
+        <ChannelStatus canal="meta" showBanner hideTitle />
 
         {usage.porcentaje >= 80 && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
