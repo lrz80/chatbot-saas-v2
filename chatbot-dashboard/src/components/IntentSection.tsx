@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { SiTarget, SiPaperspace, SiChatbot } from "react-icons/si";
+import { BACKEND_URL } from "@/utils/api";
 
-// ✅ Intent con id opcional (string o number)
 export type Intent = {
   id?: number | string;
   nombre: string;
@@ -11,15 +11,14 @@ export type Intent = {
   respuesta: string;
 };
 
-type IntentSectionProps = {
+type Props = {
   intents: Intent[];
-  setIntents: (next: Intent[]) => void;
-  canal: string; // ej: "whatsapp"
+  // 👇 acepta forma funcional (prev => next)
+  setIntents: React.Dispatch<React.SetStateAction<Intent[]>>;
+  canal: string;
   membresiaActiva: boolean;
-  onSave: () => Promise<void> | void; // lo define el padre
+  onSave: () => Promise<void> | void;
 };
-
-type IdLike = string | number | null | undefined;
 
 export default function IntentSection({
   intents,
@@ -27,76 +26,85 @@ export default function IntentSection({
   canal,
   membresiaActiva,
   onSave,
-}: IntentSectionProps) {
+}: Props) {
   const canEdit = membresiaActiva;
+  const newId = () =>
+    (globalThis?.crypto?.randomUUID?.() ?? `tmp_${Date.now()}_${Math.random()}`);
 
-  // ✅ helper para crear ids únicos
-  const newId = () => (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`);
+  const total = useMemo(() => intents.length, [intents]);
 
   const addIntent = () => {
     if (!canEdit) return;
-    setIntents([
-      ...intents,
+    setIntents((prev) => [
+      ...prev,
       { id: newId(), nombre: "", ejemplos: [], respuesta: "" },
     ]);
   };
 
-  // ✅ eliminar por id (si no hay id, elimina por primer match de nombre)
-  const deleteIntent = (id: IdLike, nombre?: string) => {
+  const updateIntentField = (
+    idx: number,
+    field: keyof Intent,
+    value: string
+  ) => {
     if (!canEdit) return;
-    if (id == null) {
-      const idx = nombre ? intents.findIndex((it) => it.nombre === nombre) : -1;
-      if (idx >= 0) {
-        const next = [...intents.slice(0, idx), ...intents.slice(idx + 1)];
-        setIntents(next);
+    setIntents((prev) => {
+      const next = [...prev];
+      if (field === "ejemplos") {
+        next[idx].ejemplos = value
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      } else {
+        (next[idx] as any)[field] = value;
       }
-      return;
+      return next;
+    });
+  };
+
+  const deleteIntent = async (id?: string | number, nombre?: string) => {
+    if (!canEdit) return;
+    if (!confirm(`¿Eliminar la intención "${nombre || "(sin nombre)"}"?`)) return;
+
+    // 🔥 Si hay id numérico, borra en DB
+    if (id !== undefined && id !== null && !String(id).startsWith("tmp_")) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/intents/${id}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({} as any));
+          alert(`❌ Error eliminando intención: ${j?.error || res.statusText}`);
+          return;
+        }
+      } catch (err) {
+        console.error("❌ Error eliminando intención:", err);
+        alert("❌ No se pudo eliminar. Intenta de nuevo.");
+        return;
+      }
     }
-    setIntents(intents.filter((it) => String(it.id) !== String(id)));
+
+    // ✅ Quita del estado (forma funcional para evitar race conditions)
+    setIntents((prev) => prev.filter((it) => String(it.id) !== String(id)));
+
+    // ✅ Opcional: volver a guardar/recargar
+    await onSave?.();
   };
 
   const duplicateIntent = (idx: number) => {
     if (!canEdit) return;
-    const item = intents[idx];
-    const copy: Intent = {
-      id: newId(),
-      nombre: (item.nombre || "") + " (copia)",
-      ejemplos: [...(item.ejemplos || [])],
-      respuesta: item.respuesta || "",
-    };
-    const next = [...intents];
-    next.splice(idx + 1, 0, copy);
-    setIntents(next);
-  };
-
-  const updateIntentField = (
-    idx: number,
-    field: keyof Omit<Intent, "id">,
-    value: string
-  ) => {
-    if (!canEdit) return;
-    const next = [...intents];
-    if (field === "ejemplos") {
-      next[idx].ejemplos = value
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean);
-    } else if (field === "nombre") {
-      next[idx].nombre = value;
-    } else if (field === "respuesta") {
-      next[idx].respuesta = value;
-    }
-    setIntents(next);
-  };
-
-  const total = useMemo(() => intents.length, [intents]);
-
-  // ✅ Eliminar y guardar en un solo click
-  const deleteAndSave = async (id: IdLike, nombre: string) => {
-    if (!canEdit) return;
-    if (!confirm(`¿Eliminar la intención "${nombre || "(sin nombre)"}"?`)) return;
-    deleteIntent(id, nombre);     // actualiza estado
-    await onSave?.();             // persiste al backend (PUT de reemplazo total)
+    setIntents((prev) => {
+      const item = prev[idx];
+      const copy: Intent = {
+        id: newId(),
+        nombre: (item?.nombre || "") + " (copia)",
+        ejemplos: [...(item?.ejemplos || [])],
+        respuesta: item?.respuesta || "",
+      };
+      const next = [...prev];
+      next.splice(idx + 1, 0, copy);
+      return next;
+    });
   };
 
   return (
@@ -113,7 +121,10 @@ export default function IntentSection({
       </p>
 
       {intents.map((item, i) => (
-        <div key={String(item.id ?? `${item.nombre}-${i}`)} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
+        <div
+          key={String(item.id ?? i)}
+          className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg"
+        >
           <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
             <SiTarget /> Intención
           </label>
@@ -162,10 +173,9 @@ export default function IntentSection({
               Duplicar
             </button>
 
-            {/* ✅ Borrar + guardar en un solo click */}
             <button
               type="button"
-              onClick={() => deleteAndSave(item.id, item.nombre)}
+              onClick={() => deleteIntent(item.id, item.nombre)}
               disabled={!canEdit}
               className={`px-3 py-1 rounded text-sm ${
                 canEdit
@@ -199,8 +209,9 @@ export default function IntentSection({
           onClick={onSave}
           disabled={!canEdit}
           className={`px-4 py-2 rounded ${
-            canEdit ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "bg-gray-600 text-white/50 cursor-not-allowed"
+            canEdit
+              ? "bg-blue-600 hover:bg-blue-700 text-white"
+              : "bg-gray-600 text-white/50 cursor-not-allowed"
           }`}
         >
           Guardar Intenciones ({total})
