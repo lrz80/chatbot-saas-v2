@@ -124,7 +124,8 @@ export default function TrainingPage() {
         if (intentsRes.ok) {
           const arr = await intentsRes.json();
           const parsed: Intent[] = Array.isArray(arr)
-            ? arr.map((x:any) => ({
+            ? arr.map((x: any) => ({
+                id: x?.id || (globalThis.crypto?.randomUUID?.() ?? String(Math.random())),
                 nombre: x?.nombre ?? "",
                 ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
                 respuesta: x?.respuesta ?? "",
@@ -295,36 +296,39 @@ export default function TrainingPage() {
 
   const saveIntents = async () => {
     if (!verificarPermiso()) return;
-  
+
     // normaliza y valida
     const intencionesLimpias = intents
       .map(i => ({
+        id: i.id, // ✅ importante
         nombre: (i.nombre || '').trim(),
         ejemplos: (i.ejemplos || []).map(e => (e || '').trim()).filter(Boolean),
         respuesta: (i.respuesta || '').trim(),
       }))
       .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
-  
+
     if (!intencionesLimpias.length) {
       return alert("❌ Agrega al menos una intención válida.");
     }
-  
+
     try {
+      // ✅ Reemplazo total por canal (PUT recomendado)
       const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/intents?canal=${canal}`, {
-        method: "POST",
+        method: "PUT",
         credentials: "include",
-        cache: "no-store",                        // opcional: evita stales
+        cache: "no-store",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ intents: intencionesLimpias }),
       });
-  
+
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         return alert(`❌ Error al guardar intenciones: ${json?.error || res.statusText}`);
       }
-  
+
       alert("Intenciones guardadas ✅");
-      // 🔄 Recarga la lista desde el backend para reflejar cambios
+
+      // 🔄 Recarga lista desde DB
       try {
         const r2 = await fetch(`${BACKEND_URL}/api/intents?canal=${canal}`, {
           credentials: "include",
@@ -334,6 +338,7 @@ export default function TrainingPage() {
           const arr2 = await r2.json();
           const parsed2: Intent[] = Array.isArray(arr2)
             ? arr2.map((x:any) => ({
+                id: x?.id || (globalThis.crypto?.randomUUID?.() ?? String(Math.random())),
                 nombre: x?.nombre ?? "",
                 ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
                 respuesta: x?.respuesta ?? "",
@@ -346,9 +351,8 @@ export default function TrainingPage() {
       console.error("❌ Error guardando intenciones:", e);
       alert("❌ Error guardando intenciones.");
     }
-  };  
-  
-  
+  };
+    
   const saveFaqs = async () => {
     if (!verificarPermiso()) return;
   
@@ -552,7 +556,7 @@ export default function TrainingPage() {
             ⚠️ Tu membresía está inactiva. Puedes ver la configuración, pero no guardar ni entrenar hasta activarla.
           </div>
         )}
-        
+
         <TrainingHelp context="training" />
 
         {usoWhatsapp && (

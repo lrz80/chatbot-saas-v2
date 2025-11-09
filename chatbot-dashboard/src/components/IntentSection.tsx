@@ -3,7 +3,9 @@
 import { useMemo } from "react";
 import { SiTarget, SiPaperspace, SiChatbot } from "react-icons/si";
 
+// ✅ Agrega un id estable por intención
 export type Intent = {
+  id: string;
   nombre: string;
   ejemplos: string[];
   respuesta: string;
@@ -14,7 +16,7 @@ type IntentSectionProps = {
   setIntents: (next: Intent[]) => void;
   canal: string; // ej: "whatsapp"
   membresiaActiva: boolean;
-  onSave: () => Promise<void> | void; // lo define el padre (igual que FaqSection/FlowSection)
+  onSave: () => Promise<void> | void; // lo define el padre
 };
 
 export default function IntentSection({
@@ -26,23 +28,28 @@ export default function IntentSection({
 }: IntentSectionProps) {
   const canEdit = membresiaActiva;
 
+  // ✅ helper para crear ids únicos
+  const newId = () => crypto.randomUUID();
+
   const addIntent = () => {
     if (!canEdit) return;
     setIntents([
       ...intents,
-      { nombre: "", ejemplos: [], respuesta: "" },
+      { id: newId(), nombre: "", ejemplos: [], respuesta: "" },
     ]);
   };
 
-  const deleteIntent = (idx: number) => {
+  // ✅ eliminar por id (no por índice)
+  const deleteIntent = (id: string) => {
     if (!canEdit) return;
-    setIntents(intents.filter((_, i) => i !== idx));
+    setIntents(intents.filter((it) => it.id !== id));
   };
 
   const duplicateIntent = (idx: number) => {
     if (!canEdit) return;
     const item = intents[idx];
-    const copy = {
+    const copy: Intent = {
+      id: newId(),
       nombre: (item.nombre || "") + " (copia)",
       ejemplos: [...(item.ejemplos || [])],
       respuesta: item.respuesta || "",
@@ -54,7 +61,7 @@ export default function IntentSection({
 
   const updateIntentField = (
     idx: number,
-    field: keyof Intent,
+    field: keyof Omit<Intent, "id">,
     value: string
   ) => {
     if (!canEdit) return;
@@ -74,6 +81,17 @@ export default function IntentSection({
 
   const total = useMemo(() => intents.length, [intents]);
 
+  // ✅ Opción: eliminar y guardar en un solo click
+  const deleteAndSave = async (id: string, nombre: string) => {
+    if (!canEdit) return;
+    if (!confirm(`¿Eliminar la intención "${nombre || "(sin nombre)"}"?`)) return;
+    // actualiza estado
+    const next = intents.filter((it) => it.id !== id);
+    setIntents(next);
+    // persiste al backend
+    await onSave?.(); // ahora sí verás petición en Network
+  };
+
   return (
     <section className="mt-12">
       <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2">
@@ -88,7 +106,7 @@ export default function IntentSection({
       </p>
 
       {intents.map((item, i) => (
-        <div key={i} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
+        <div key={item.id} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
           <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
             <SiTarget /> Intención
           </label>
@@ -124,6 +142,7 @@ export default function IntentSection({
 
           <div className="flex gap-2 mt-3">
             <button
+              type="button"
               onClick={() => duplicateIntent(i)}
               disabled={!canEdit}
               className={`px-3 py-1 rounded text-sm ${
@@ -136,13 +155,25 @@ export default function IntentSection({
               Duplicar
             </button>
 
+            {/* ❌ Si prefieres solo borrar local y luego guardar manualmente:
             <button
+              type="button"
               onClick={() => {
                 if (!canEdit) return;
                 if (confirm(`¿Eliminar la intención "${item.nombre || "(sin nombre)"}"?`)) {
-                  deleteIntent(i);
+                  deleteIntent(item.id);
                 }
               }}
+              ...
+            >
+              Eliminar
+            </button>
+            */}
+
+            {/* ✅ Borrar + guardar en un solo click */}
+            <button
+              type="button"
+              onClick={() => deleteAndSave(item.id, item.nombre)}
               disabled={!canEdit}
               className={`px-3 py-1 rounded text-sm ${
                 canEdit
@@ -159,6 +190,7 @@ export default function IntentSection({
 
       <div className="flex gap-2 mt-2">
         <button
+          type="button"
           onClick={addIntent}
           disabled={!canEdit}
           className={`px-4 py-2 rounded ${
@@ -171,6 +203,7 @@ export default function IntentSection({
         </button>
 
         <button
+          type="button"
           onClick={onSave}
           disabled={!canEdit}
           className={`px-4 py-2 rounded ${

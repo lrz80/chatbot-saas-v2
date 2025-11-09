@@ -154,7 +154,8 @@ const handleDisconnect = async () => {
         if (intentsRes.ok) {
           const arr = await intentsRes.json();
           const parsed: Intent[] = Array.isArray(arr)
-            ? arr.map((x:any) => ({
+            ? arr.map((x: any) => ({
+                id: x?.id || (globalThis.crypto?.randomUUID?.() ?? String(Math.random())),
                 nombre: x?.nombre ?? "",
                 ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
                 respuesta: x?.respuesta ?? "",
@@ -162,6 +163,7 @@ const handleDisconnect = async () => {
             : [];
           setIntents(parsed);
         }
+
         if (sugeridasRes.ok) {
           const raw: any[] = await sugeridasRes.json().catch(() => []);
           const limpias = raw
@@ -266,56 +268,59 @@ const handleDisconnect = async () => {
   };
 
   const saveIntents = async () => {
+    // Normaliza y valida
+    const intencionesLimpias = intents
+      .map(i => ({
+        id: i.id, // ✅ importante
+        nombre: (i.nombre || '').trim(),
+        ejemplos: (i.ejemplos || []).map(e => (e || '').trim()).filter(Boolean),
+        respuesta: (i.respuesta || '').trim(),
+      }))
+      .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
 
-  const intencionesLimpias = intents
-    .map(i => ({
-      nombre: (i.nombre || '').trim(),
-      ejemplos: (i.ejemplos || []).map(e => (e || '').trim()).filter(Boolean),
-      respuesta: (i.respuesta || '').trim(),
-    }))
-    .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
-
-  if (!intencionesLimpias.length) {
-    return alert("❌ Agrega al menos una intención válida.");
-  }
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
-      method: "POST",
-      credentials: "include",
-      cache: "no-store",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ intents: intencionesLimpias }),
-    });
-
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return alert(`❌ Error al guardar intenciones: ${json?.error || res.statusText}`);
+    if (!intencionesLimpias.length) {
+      return alert("❌ Agrega al menos una intención válida.");
     }
 
-    alert("Intenciones guardadas ✅");
+    try {
+      // ✅ Reemplazo total por canal
+      const res = await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
+        method: "PUT",
+        credentials: "include",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ intents: intencionesLimpias }),
+      });
 
-    // Recargar para reflejar la versión DB
-    const r2 = await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
-      credentials: "include",
-      cache: "no-store",
-    });
-    if (r2.ok) {
-      const arr2 = await r2.json();
-      const parsed2: Intent[] = Array.isArray(arr2)
-        ? arr2.map((x:any) => ({
-            nombre: x?.nombre ?? "",
-            ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
-            respuesta: x?.respuesta ?? "",
-          }))
-        : [];
-      setIntents(parsed2);
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return alert(`❌ Error al guardar intenciones: ${json?.error || res.statusText}`);
+      }
+
+      alert("Intenciones guardadas ✅");
+
+      // 🔄 Recarga desde DB para reflejar exactamente lo persistido
+      const r2 = await fetch(`${BACKEND_URL}/api/intents?canal=meta`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (r2.ok) {
+        const arr2 = await r2.json();
+        const parsed2: Intent[] = Array.isArray(arr2)
+          ? arr2.map((x:any) => ({
+              id: x?.id || (globalThis.crypto?.randomUUID?.() ?? String(Math.random())),
+              nombre: x?.nombre ?? "",
+              ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
+              respuesta: x?.respuesta ?? "",
+            }))
+          : [];
+        setIntents(parsed2);
+      }
+    } catch (e) {
+      console.error("❌ Error guardando intenciones (meta):", e);
+      alert("❌ Error guardando intenciones.");
     }
-  } catch (e) {
-    console.error("❌ Error guardando intenciones (meta):", e);
-    alert("❌ Error guardando intenciones.");
-  }
-};
+  };
   
   const saveFaqs = async () => {
     // Normaliza/valida
