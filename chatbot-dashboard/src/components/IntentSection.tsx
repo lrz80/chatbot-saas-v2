@@ -61,33 +61,49 @@ export default function IntentSection({
     });
   };
 
-  const deleteIntent = async (id?: string | number, nombre?: string) => {
+ const deleteIntent = async (id?: string | number, nombre?: string) => {
     if (!canEdit) return;
     if (!confirm(`¿Eliminar la intención "${nombre || "(sin nombre)"}"?`)) return;
 
-    // 🔥 Si hay id numérico, borra en DB
-    if (id !== undefined && id !== null && !String(id).startsWith("tmp_")) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/intents/${id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-        if (!res.ok) {
-          const j = await res.json().catch(() => ({} as any));
-          alert(`❌ Error eliminando intención: ${j?.error || res.statusText}`);
-          return;
-        }
-      } catch (err) {
-        console.error("❌ Error eliminando intención:", err);
-        alert("❌ No se pudo eliminar. Intenta de nuevo.");
-        return;
-      }
+    const isTmp = typeof id === "string" && id.startsWith("tmp_");
+
+    // Si es un ID temporal, solo quita del estado.
+    if (!id || isTmp) {
+      setIntents((prev) => prev.filter((it) => String(it.id) !== String(id)));
+      await onSave?.();
+      return;
     }
 
-    // ✅ Quita del estado (forma funcional para evitar race conditions)
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/intents/${encodeURIComponent(String(id))}?canal=${encodeURIComponent(canal)}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+          },
+          // En algunos setups el backend también lee el canal del body; lo mandamos doble por compatibilidad.
+          body: JSON.stringify({ canal }),
+        }
+      );
+
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({} as any));
+        alert(`❌ Error eliminando intención: ${j?.error || res.statusText}`);
+        return;
+      }
+    } catch (err) {
+      console.error("❌ Error eliminando intención:", err);
+      alert("❌ No se pudo eliminar. Intenta de nuevo.");
+      return;
+    }
+
+    // Quita del estado luego del OK real en DB
     setIntents((prev) => prev.filter((it) => String(it.id) !== String(id)));
 
-    // ✅ Opcional: volver a guardar/recargar
+    // Refresca / vuelve a guardar si lo necesitas
     await onSave?.();
   };
 
