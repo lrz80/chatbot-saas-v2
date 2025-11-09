@@ -295,63 +295,64 @@ export default function TrainingPage() {
   };
 
   const saveIntents = async () => {
-    if (!verificarPermiso()) return;
+  if (!verificarPermiso()) return;
 
-    // normaliza y valida
-    const intencionesLimpias = intents
-      .map(i => ({
-        id: i.id, // ✅ importante
-        nombre: (i.nombre || '').trim(),
-        ejemplos: (i.ejemplos || []).map(e => (e || '').trim()).filter(Boolean),
-        respuesta: (i.respuesta || '').trim(),
-      }))
-      .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
+  const intencionesLimpias = intents
+    .map(i => ({
+      nombre: (i.nombre || '').trim(),
+      ejemplos: (i.ejemplos || []).map(e => (e || '').trim()).filter(Boolean),
+      respuesta: (i.respuesta || '').trim(),
+    }))
+    .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
 
-    if (!intencionesLimpias.length) {
-      return alert("❌ Agrega al menos una intención válida.");
+  if (!intencionesLimpias.length) {
+    return alert("❌ Agrega al menos una intención válida.");
+  }
+
+  try {
+    // 👇 usa PUT + canal explícito -> el backend borra TODO y vuelve a insertar
+    const res = await fetch(`${BACKEND_URL}/api/intents?canal=${canal}`, {
+      method: "PUT",
+      credentials: "include",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ intents: intencionesLimpias }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return alert(`❌ Error al guardar intenciones: ${json?.error || res.statusText}`);
     }
 
-    try {
-      // ✅ Reemplazo total por canal (PUT recomendado)
-      const res = await fetchWithChannelGuard(`${BACKEND_URL}/api/intents?canal=${canal}`, {
-        method: "PUT",
-        credentials: "include",
-        cache: "no-store",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ intents: intencionesLimpias }),
-      });
+    // Opcional: ver cuántas borró/insertó
+    console.log("PUT /api/intents =>", json);
 
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        return alert(`❌ Error al guardar intenciones: ${json?.error || res.statusText}`);
-      }
+    alert("Intenciones guardadas ✅");
 
-      alert("Intenciones guardadas ✅");
+    // Recargar desde DB
+    const r2 = await fetch(`${BACKEND_URL}/api/intents?canal=${canal}`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (r2.ok) {
+      const arr2 = await r2.json();
+      const parsed2: Intent[] = Array.isArray(arr2)
+        ? arr2.map((x: any): Intent => ({
+            id: x?.id, // puede venir o no; TS ok porque es opcional
+            nombre: x?.nombre ?? "",
+            ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
+            respuesta: x?.respuesta ?? "",
+          }))
+        : [];
+      setIntents(parsed2);
 
-      // 🔄 Recarga lista desde DB
-      try {
-        const r2 = await fetch(`${BACKEND_URL}/api/intents?canal=${canal}`, {
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (r2.ok) {
-          const arr2 = await r2.json();
-          const parsed2: Intent[] = Array.isArray(arr2)
-            ? arr2.map((x:any) => ({
-                id: x?.id || (globalThis.crypto?.randomUUID?.() ?? String(Math.random())),
-                nombre: x?.nombre ?? "",
-                ejemplos: Array.isArray(x?.ejemplos) ? x.ejemplos : [],
-                respuesta: x?.respuesta ?? "",
-              }))
-            : [];
-          setIntents(parsed2);
-        }
-      } catch {}
-    } catch (e) {
-      console.error("❌ Error guardando intenciones:", e);
-      alert("❌ Error guardando intenciones.");
     }
-  };
+  } catch (e) {
+    console.error("❌ Error guardando intenciones (PUT):", e);
+    alert("❌ Error guardando intenciones.");
+  }
+};
+
     
   const saveFaqs = async () => {
     if (!verificarPermiso()) return;

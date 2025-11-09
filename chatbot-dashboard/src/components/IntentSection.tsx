@@ -3,9 +3,9 @@
 import { useMemo } from "react";
 import { SiTarget, SiPaperspace, SiChatbot } from "react-icons/si";
 
-// ✅ Agrega un id estable por intención
+// ✅ Intent con id opcional (string o number)
 export type Intent = {
-  id: string;
+  id?: number | string;
   nombre: string;
   ejemplos: string[];
   respuesta: string;
@@ -19,6 +19,8 @@ type IntentSectionProps = {
   onSave: () => Promise<void> | void; // lo define el padre
 };
 
+type IdLike = string | number | null | undefined;
+
 export default function IntentSection({
   intents,
   setIntents,
@@ -29,7 +31,7 @@ export default function IntentSection({
   const canEdit = membresiaActiva;
 
   // ✅ helper para crear ids únicos
-  const newId = () => crypto.randomUUID();
+  const newId = () => (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`);
 
   const addIntent = () => {
     if (!canEdit) return;
@@ -39,10 +41,18 @@ export default function IntentSection({
     ]);
   };
 
-  // ✅ eliminar por id (no por índice)
-  const deleteIntent = (id: string) => {
+  // ✅ eliminar por id (si no hay id, elimina por primer match de nombre)
+  const deleteIntent = (id: IdLike, nombre?: string) => {
     if (!canEdit) return;
-    setIntents(intents.filter((it) => it.id !== id));
+    if (id == null) {
+      const idx = nombre ? intents.findIndex((it) => it.nombre === nombre) : -1;
+      if (idx >= 0) {
+        const next = [...intents.slice(0, idx), ...intents.slice(idx + 1)];
+        setIntents(next);
+      }
+      return;
+    }
+    setIntents(intents.filter((it) => String(it.id) !== String(id)));
   };
 
   const duplicateIntent = (idx: number) => {
@@ -81,15 +91,12 @@ export default function IntentSection({
 
   const total = useMemo(() => intents.length, [intents]);
 
-  // ✅ Opción: eliminar y guardar en un solo click
-  const deleteAndSave = async (id: string, nombre: string) => {
+  // ✅ Eliminar y guardar en un solo click
+  const deleteAndSave = async (id: IdLike, nombre: string) => {
     if (!canEdit) return;
     if (!confirm(`¿Eliminar la intención "${nombre || "(sin nombre)"}"?`)) return;
-    // actualiza estado
-    const next = intents.filter((it) => it.id !== id);
-    setIntents(next);
-    // persiste al backend
-    await onSave?.(); // ahora sí verás petición en Network
+    deleteIntent(id, nombre);     // actualiza estado
+    await onSave?.();             // persiste al backend (PUT de reemplazo total)
   };
 
   return (
@@ -106,7 +113,7 @@ export default function IntentSection({
       </p>
 
       {intents.map((item, i) => (
-        <div key={item.id} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
+        <div key={String(item.id ?? `${item.nombre}-${i}`)} className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg">
           <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
             <SiTarget /> Intención
           </label>
@@ -154,21 +161,6 @@ export default function IntentSection({
             >
               Duplicar
             </button>
-
-            {/* ❌ Si prefieres solo borrar local y luego guardar manualmente:
-            <button
-              type="button"
-              onClick={() => {
-                if (!canEdit) return;
-                if (confirm(`¿Eliminar la intención "${item.nombre || "(sin nombre)"}"?`)) {
-                  deleteIntent(item.id);
-                }
-              }}
-              ...
-            >
-              Eliminar
-            </button>
-            */}
 
             {/* ✅ Borrar + guardar en un solo click */}
             <button
