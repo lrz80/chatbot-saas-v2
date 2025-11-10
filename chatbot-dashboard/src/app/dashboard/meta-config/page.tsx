@@ -30,7 +30,6 @@ export default function MetaConfigPage() {
   const router = useRouter();
   const { loading: loadingPlan, features, esTrial } = useFeatures();
 
-  const canMetaConnect = !!features.meta; // ← habilitado por plan+membresía
   // features = { whatsapp, meta, voice, sms, email }
   const [metaConn, setMetaConn] = useState<MetaConnState>({
   connected: false,
@@ -112,15 +111,22 @@ const handleDisconnect = async () => {
     categoria: "",
     prompt: "Eres un asistente útil.",
     bienvenida: "¡Hola! ¿En qué puedo ayudarte hoy?",
-    membresia_activa: true,
+    membresia_activa: false,
     informacion_negocio: "",
     funciones_asistente: "",
     info_clave: "",
     idioma: "es",
   });
 
-  // 🔒 Opción B (plan + canal): solo habilita si el plan incluye Meta Y el canal está habilitado en DB
-  const canMeta = Boolean(channelFlags.meta_enabled && features?.meta);
+  // Estados base seguros (evitan “flicker” mientras carga)
+  const isMembershipActive = Boolean(settings?.membresia_activa);
+  const planHasMeta       = Boolean(features?.meta);
+  const channelMetaOn     = Boolean(channelFlags?.meta_enabled);
+
+  // ✅ SOLO habilita si: membresía ACTIVA + plan incluye Meta + canal encendido
+  const canMeta = isMembershipActive && planHasMeta && channelMetaOn;
+
+  // Todo lo editable/botones usan este flag
   const disabledAll = !canMeta;
 
   useEffect(() => {
@@ -500,6 +506,17 @@ const handleDisconnect = async () => {
   
         <TrainingHelp context="meta" />
 
+        {!canMeta && (
+          <div className="mb-4 text-xs bg-white/5 border border-white/10 rounded p-3 text-white/80">
+            <div className="font-semibold mb-1">Meta está bloqueado:</div>
+            <ul className="list-disc ml-5 space-y-1">
+              {!isMembershipActive && <li>Sin membresía activa</li>}
+              {!planHasMeta && <li>Tu plan actual no incluye Meta</li>}
+              {!channelMetaOn && <li>Canal Meta desactivado por el administrador</li>}
+            </ul>
+          </div>
+        )}
+
         <ChannelGate canal="meta">
         {/* 🔗 Integración con Meta: botones SIEMPRE visibles */}
         <div className="mb-6 p-4 rounded-lg border text-sm bg-white/5 border-white/10 text-white">
@@ -538,7 +555,12 @@ const handleDisconnect = async () => {
                       ? "bg-indigo-600 hover:bg-indigo-700"
                       : "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
                   }`}
-                  title={!disabledAll ? "" : "Bloqueado por plan/membresía o canal"}
+                  title={
+                    canMeta ? "" :
+                    !isMembershipActive ? "Requiere membresía activa" :
+                    !planHasMeta ? "Tu plan no incluye Meta" :
+                    !channelMetaOn ? "Canal Meta desactivado por admin" : ""
+                  }
                 >
                   {metaConn.connected ? "Reconectar Facebook/Instagram" : "Conectar Facebook/Instagram"}
                 </button>
@@ -548,11 +570,16 @@ const handleDisconnect = async () => {
                   disabled={disabledAll || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
                   aria-disabled={disabledAll || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
                   className={`px-4 py-2 rounded border ${
-                    canMetaConnect && (metaConn.connected || metaConn.fb || metaConn.ig)
+                    canMeta && (metaConn.connected || metaConn.fb || metaConn.ig)
                       ? "bg-white/10 hover:bg-white/20 border-white/20 text-white"
                       : "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
                   }`}
-                  title={!disabledAll ? "" : "Bloqueado por plan/membresía o canal"}
+                  title={
+                    canMeta ? "" :
+                    !isMembershipActive ? "Requiere membresía activa" :
+                    !planHasMeta ? "Tu plan no incluye Meta" :
+                    !channelMetaOn ? "Canal Meta desactivado por admin" : ""
+                  }
                 >
                   Desconectar
                 </button>
