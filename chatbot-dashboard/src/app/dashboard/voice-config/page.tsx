@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTenant } from "@/context/TenantContext";
 import { toast } from "react-toastify";
@@ -27,14 +27,25 @@ export default function VoiceConfigPage() {
   settings_enabled: boolean;     // toggle global/tenant en channel_settings
   maintenance_message?: string | null;
 };
-  const { loading: loadingPlan, features, esTrial } = useFeatures();
+  const { loading: loadingPlan } = useFeatures(); // si no usas features/esTrial, no los destructures
 
-  const planVoice = !!features?.voice;
+  // 1) Estado base primero
   const [channelState, setChannelState] = useState<ChannelState | null>(null);
 
-  // Habilitado SOLO si el plan lo incluye y el endpoint dice enabled=true (sin mantenimiento ni pausas)
-  const canVoice = planVoice && channelState?.enabled === true;
-  const disabledAll = !canVoice || !tieneMembresia;
+  // 2) Derivados seguros (después del estado). Puedes usar useMemo o booleanos simples:
+  const planVoice      = useMemo(() => Boolean(channelState?.plan_enabled),   [channelState]);
+  const settingsOn     = useMemo(() => Boolean(channelState?.settings_enabled),[channelState]);
+  const inMaintenance  = useMemo(() => Boolean(channelState?.maintenance),    [channelState]);
+
+  // 3) Gate final
+  const canVoice = Boolean(
+    tieneMembresia &&
+    planVoice &&
+    settingsOn &&
+    !inMaintenance
+  );
+
+  const disabledAll = !canVoice; // si no pasa el gate, no se puede usar nada
 
   // ✨ Estado controlado
   const [funcionesVoz, setFuncionesVoz] = useState("");
@@ -74,38 +85,30 @@ export default function VoiceConfigPage() {
   const e164Ok = representanteNumber === "" || E164_REGEX.test(representanteNumber);
 
   const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
-  // Mantenimiento real
-  if (channelState?.maintenance) {
-    e?.preventDefault();
-    toast.warning(`🛠️ Canal Voz en mantenimiento. ${channelState.maintenance_message || ""}`);
-    return false;
-  }
-
-  // Plan
-  if (!planVoice) {
-    e?.preventDefault();
-    toast.warning("⚠️ Tu plan no incluye Voz. Actualiza para habilitarlo.");
-    router.push("/upgrade");
-    return false;
-  }
-
-  // Toggle/config
-  if (channelState?.enabled === false) {
-    e?.preventDefault();
-    toast.warning("📴 El canal de Voz está deshabilitado en tu configuración.");
-    return false;
-  }
-
-  // Membresía
-  if (!tieneMembresia) {
-    e?.preventDefault();
-    toast.warning("⚠️ Activa tu membresía para usar esta función.");
-    router.push("/upgrade");
-    return false;
-  }
-
-  return true;
-};
+    if (inMaintenance) {
+      e?.preventDefault();
+      toast.warning(`🛠️ Canal Voz en mantenimiento. ${channelState?.maintenance_message || ""}`);
+      return false;
+    }
+    if (!planVoice) {
+      e?.preventDefault();
+      toast.warning("⚠️ Tu plan no incluye Voz. Actualiza para habilitarlo.");
+      router.push("/upgrade");
+      return false;
+    }
+    if (!settingsOn) {
+      e?.preventDefault();
+      toast.warning("📴 El canal de Voz está deshabilitado por el administrador.");
+      return false;
+    }
+    if (!tieneMembresia) {
+      e?.preventDefault();
+      toast.warning("⚠️ Activa tu membresía para usar esta función.");
+      router.push("/upgrade");
+      return false;
+    }
+    return true;
+  };
 
   // Cargar configuración de voz por idioma
   useEffect(() => {
@@ -408,68 +411,15 @@ export default function VoiceConfigPage() {
 
       <TrainingHelp context="voice" />
 
-      {/* 🛠️ Mantenimiento real */}
-      {channelState?.maintenance && (
-        <div className="mb-6 p-4 bg-red-600/15 border border-red-600/40 text-red-200 rounded">
-          <p className="font-semibold mb-1">Voz en mantenimiento</p>
-          <p className="text-sm">{channelState.maintenance_message || "Estamos trabajando para restablecer el servicio."}</p>
-        </div>
-      )}
-
-      {/* 🚫 Bloqueo por plan/config (solo si NO está en mantenimiento) */}
-      {!channelState?.maintenance && (!planVoice || channelState?.enabled === false) && (
-        <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
-          <p className="font-semibold mb-2">Voz está bloqueado en tu cuenta</p>
-          <p className="text-sm mb-3">
-            {esTrial ? (
-              <>Tu período de prueba está activo. Durante el trial solo está habilitado <b>WhatsApp</b>.</>
-            ) : (
-              <>
-                {!planVoice
-                  ? "Tu plan no incluye el canal de Voz."
-                  : "El canal de Voz está deshabilitado en tu configuración."}
-              </>
-            )}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => router.push('/upgrade')}
-              className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
-            >
-              Actualizar plan
-            </button>
-            <button
-              onClick={() => router.push('/dashboard/training')}
-              className="px-4 py-2 rounded border border-white/20 hover:bg-white/10 text-white"
-            >
-              Ir a WhatsApp (habilitado)
-            </button>
-          </div>
-        </div>
-      )}
-
       {!canVoice && (
-        <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
-          <p className="font-semibold mb-2">Voz está bloqueado en tu plan actual</p>
-          <p className="text-sm mb-3">
-            {esTrial
-              ? <>Tu período de prueba está activo. Durante el trial solo está habilitado <b>WhatsApp</b>.</>
-              : <>Tu membresía no permite este canal actualmente.</>}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => router.push('/upgrade')}
-              className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
-            >
-              Actualizar plan
-            </button>
-            <button
-              onClick={() => router.push('/dashboard/training')}
-              className="px-4 py-2 rounded border border-white/20 hover:bg-white/10 text-white"
-            >
-              Ir a WhatsApp (habilitado)
-            </button>
-          </div>
+        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded text-white/90 text-sm">
+          <p className="font-semibold mb-2">Voz está bloqueado:</p>
+          <ul className="list-disc ml-5 space-y-1">
+            {!tieneMembresia && <li>Sin membresía activa</li>}
+            {!planVoice && <li>Tu plan actual no incluye Voz</li>}
+            {!settingsOn && <li>Canal Voz desactivado por el administrador</li>}
+            {inMaintenance && <li>Canal en mantenimiento</li>}
+          </ul>
         </div>
       )}
 
@@ -505,7 +455,7 @@ export default function VoiceConfigPage() {
         className="mb-10"
       >
         <input type="hidden" name="idioma" value={idioma} />
-        <input type="hidden" name="canal" value="voz" />
+        <input type="hidden" name="canal" value="voice" />
         <input type="hidden" name="tenant_id" value={tenantId || ""} />
 
         <div className="grid grid-cols-1 gap-6 mb-6">
