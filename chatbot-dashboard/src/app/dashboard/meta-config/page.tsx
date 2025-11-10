@@ -86,6 +86,15 @@ const handleDisconnect = async () => {
   const [usoMeta, setUsoMeta] = useState<any>(null);
   const [usos, setUsos] = useState<any[]>([]);
   const [clientOnly, setClientOnly] = useState(false);
+  // ✅ Flags reales de channel_settings
+  const [channelFlags, setChannelFlags] = useState({
+    whatsapp_enabled: false,
+    meta_enabled: false,
+    voice_enabled: false,
+    sms_enabled: false,
+    email_enabled: false,
+  });
+
   useEffect(() => {
     setClientOnly(true);
   }, []);
@@ -110,9 +119,8 @@ const handleDisconnect = async () => {
     idioma: "es",
   });
 
-  const isMembershipActive = settings.membresia_activa;
-  const planMeta = !!features?.meta;
-  const canMeta = planMeta && isMembershipActive; // el gate maneja mantenimiento/pausas
+  // 🔒 Opción B (plan + canal): solo habilita si el plan incluye Meta Y el canal está habilitado en DB
+  const canMeta = Boolean(channelFlags.meta_enabled && features?.meta);
   const disabledAll = !canMeta;
 
   useEffect(() => {
@@ -206,6 +214,22 @@ const handleDisconnect = async () => {
           console.error("❌ Error cargando meta-config:", e);
           // En error, deja visible el botón Conectar
           setMetaConn((prev) => ({ ...prev, connected: false, needsReconnect: true }));
+        }
+        // ✅ Lee flags de canales desde DB
+        try {
+          const ch = await fetch(`${BACKEND_URL}/api/channel-settings`, {
+            credentials: "include",
+            cache: "no-store",
+          });
+          if (ch.ok) {
+            const flags = await ch.json(); // { whatsapp_enabled, meta_enabled, voice_enabled, sms_enabled, email_enabled }
+            setChannelFlags((prev) => ({ ...prev, ...flags }));
+            (window as any).__lastFlags = flags; // debug opcional
+          } else {
+            console.warn("⚠️ /api/channel-settings status:", ch.status);
+          }
+        } catch (e) {
+          console.error("❌ Error cargando channel-settings:", e);
         }
       } catch (err) {
         console.error("❌ Error cargando configuración:", err);
