@@ -6,7 +6,6 @@ import { BACKEND_URL } from "@/utils/api";
 type CTA = { id?: number; intent: string; cta_text: string; cta_url: string; canal?: string };
 
 const ALLOWED_INTENTS = [
-  "global",
   "precio",
   "horario",
   "ubicacion",
@@ -41,38 +40,39 @@ export default function CTASection({
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
 
-  // Cargar CTAs desde /api/ctas (usa cookies httpOnly)
+const reload = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/ctas?canal=${encodeURIComponent(canal)}`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data?.error || "Error cargando CTAs");
+
+    const list: CTA[] = Array.isArray(data)
+      ? data.map((x: any) => ({
+          id: x.id,
+          intent: String(x.intent || "").trim(),
+          cta_text: String(x.cta_text || "").trim(),
+          cta_url: String(x.cta_url || "").trim(),
+        }))
+      : [];
+
+    setCtas(list);
+  } catch (e: any) {
+    console.error("❌ Error cargando CTAs:", e);
+    setError(e.message || "Error cargando CTAs");
+  } finally {
+    setLoading(false);
+  }
+};
+
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const r = await fetch(`${BACKEND_URL}/api/ctas?canal=${encodeURIComponent(canal)}`, {
-          credentials: "include",
-          cache: "no-store",
-        });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data?.error || "Error cargando CTAs");
-
-        const list: CTA[] = Array.isArray(data)
-          ? data.map((x: any) => ({
-              id: x.id,
-              intent: String(x.intent || "").trim(),
-              cta_text: String(x.cta_text || "").trim(),
-              cta_url: String(x.cta_url || "").trim(),
-            }))
-          : [];
-
-        setCtas(list.length ? list : [{ intent: "global", cta_text: "", cta_url: "" }]);
-        console.log("✅ CTAs cargados:", list);
-      } catch (e: any) {
-        console.error("❌ Error cargando CTAs:", e);
-        setError(e.message || "Error cargando CTAs");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [canal]);
+  reload();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [canal]);
 
   const usedIntents = useMemo(() => new Set(ctas.map((c) => c.intent)), [ctas]);
 
@@ -99,8 +99,9 @@ export default function CTASection({
       throw new Error(j?.error || "No se pudo eliminar el CTA en el servidor");
     }
 
-    setCtas(prev => prev.filter((_, i) => i !== idx)); // quitar del front
     setOkMsg("CTA eliminado correctamente ✅");
+    await reload();
+
   } catch (e: any) {
     console.error("❌ Error eliminando CTA:", e);
     setError(e.message || "Error eliminando CTA");
@@ -173,6 +174,8 @@ export default function CTASection({
       }
 
       setOkMsg("CTAs guardados correctamente ✅");
+      await reload();
+
     } catch (e: any) {
       console.error("❌ Error guardando CTAs:", e);
       setError(e.message || "Error guardando CTAs");
