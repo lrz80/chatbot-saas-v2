@@ -7,13 +7,12 @@ import PromptGenerator from "@/components/PromptGenerator";
 import { useRouter } from "next/navigation";
 import { Save, } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
-import { SiMeta, SiOpenai, SiMinutemailer, SiChatbot, SiTarget, SiPaperspace } from 'react-icons/si';
+import { SiMeta, SiMinutemailer, } from 'react-icons/si';
 import FaqSection from "@/components/FaqSection";
 import type { FaqSugerida } from "@/components/FaqSection";
 import IntentSection, { Intent } from "@/components/IntentSection";
 import { useFeatures } from '@/hooks/usePlan';
 import ChannelStatus from "@/components/ChannelStatus";
-import ChannelGate from "@/components/ChannelGate";
 
 const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
 
@@ -85,14 +84,13 @@ const handleDisconnect = async () => {
   const [usoMeta, setUsoMeta] = useState<any>(null);
   const [usos, setUsos] = useState<any[]>([]);
   const [clientOnly, setClientOnly] = useState(false);
-  // ✅ Flags reales de channel_settings
-  const [channelFlags, setChannelFlags] = useState({
-    whatsapp_enabled: false,
-    meta_enabled: false,
-    voice_enabled: false,
-    sms_enabled: false,
-    email_enabled: false,
-  });
+  // ✅ usa este estado nuevo:
+  const [channelState, setChannelState] = useState<{
+    enabled: boolean;          // final para la UI
+    plan_enabled: boolean;     // plan lo incluye
+    settings_enabled: boolean; // toggle admin en DB
+    maintenance: boolean;      // mantenimiento activo
+  }>({ enabled: false, plan_enabled: false, settings_enabled: false, maintenance: false });
 
   useEffect(() => {
     setClientOnly(true);
@@ -118,14 +116,13 @@ const handleDisconnect = async () => {
     idioma: "es",
   });
 
-  // ✅ Estados base seguros (evitan “flicker” mientras carga)
-  const planHasMeta = Boolean(features?.meta);            // plan incluye Meta
-  const channelMetaOn = Boolean(channelFlags?.meta_enabled); // canal activo en DB
+  // Estados base
+  const isMembershipActive = Boolean(settings?.membresia_activa);
+  const planHasMeta        = Boolean(channelState.plan_enabled);     // ← del endpoint
+  const channelMetaOn      = Boolean(channelState.settings_enabled);  // ← del endpoint
 
-  // ✅ SOLO habilita si el plan incluye Meta y el canal está activo
-  const canMeta = planHasMeta && channelMetaOn;
-
-  // Todo lo editable/botones usan este flag
+  // ✅ desbloquea solo si: membresía ACTIVA + plan lo incluye + toggle admin ON + sin mantenimiento
+  const canMeta = isMembershipActive && planHasMeta && channelMetaOn && !channelState.maintenance;
   const disabledAll = !canMeta;
 
   // 🔎 Exponer al window para inspeccionar en consola
@@ -226,20 +223,29 @@ const handleDisconnect = async () => {
         }
         // ✅ Lee flags de canales desde DB
         try {
-          const ch = await fetch(`${BACKEND_URL}/api/channel-settings`, {
+          const ch = await fetch(`${BACKEND_URL}/api/channel-settings?canal=meta`, {
             credentials: "include",
             cache: "no-store",
           });
+
           if (ch.ok) {
-            const flags = await ch.json(); // { whatsapp_enabled, meta_enabled, voice_enabled, sms_enabled, email_enabled }
-            setChannelFlags((prev) => ({ ...prev, ...flags }));
-            (window as any).__lastFlags = flags; // debug opcional
+            const data = await ch.json();
+            setChannelState({
+              enabled: Boolean(data.enabled),
+              plan_enabled: Boolean(data.plan_enabled),
+              settings_enabled: Boolean(data.settings_enabled),
+              maintenance: Boolean(data.maintenance),
+            });
+
+            (window as any).__channelState = data; // debug en consola
+            console.log("channel-state(meta):", data);
           } else {
-            console.warn("⚠️ /api/channel-settings status:", ch.status);
+            console.warn("⚠️ /api/channel-settings(meta) status:", ch.status);
           }
         } catch (e) {
-          console.error("❌ Error cargando channel-settings:", e);
+          console.error("❌ Error cargando channel-settings(meta):", e);
         }
+
       } catch (err) {
         console.error("❌ Error cargando configuración:", err);
       } finally {
@@ -513,8 +519,10 @@ const handleDisconnect = async () => {
           <div className="mb-4 text-xs bg-white/5 border border-white/10 rounded p-3 text-white/80">
             <div className="font-semibold mb-1">Meta está bloqueado:</div>
             <ul className="list-disc ml-5 space-y-1">
-              {!features?.meta && <li>Tu plan actual no incluye Meta</li>}
-              {!channelFlags?.meta_enabled && <li>Canal Meta desactivado por el administrador</li>}
+              {!isMembershipActive && <li>Sin membresía activa</li>}
+              {!planHasMeta && <li>Tu plan actual no incluye Meta</li>}
+              {!channelMetaOn && <li>Canal Meta desactivado por el administrador</li>}
+              {channelState.maintenance && <li>Canal en mantenimiento</li>}
             </ul>
           </div>
         )}
@@ -557,13 +565,17 @@ const handleDisconnect = async () => {
                       : "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
                   }`}
                   title={
-                    disabledAll
-                      ? (!features?.meta
+                    canMeta
+                      ? ""
+                      : !isMembershipActive
+                        ? "Requiere membresía activa"
+                        : !planHasMeta
                           ? "Tu plan no incluye Meta"
-                          : !channelFlags?.meta_enabled
-                          ? "Canal Meta desactivado por admin"
-                          : "")
-                      : ""
+                          : !channelMetaOn
+                            ? "Canal Meta desactivado por admin"
+                            : channelState.maintenance
+                              ? "Canal en mantenimiento"
+                              : ""
                   }
                 >
                   {metaConn.connected ? "Reconectar Facebook/Instagram" : "Conectar Facebook/Instagram"}
@@ -579,13 +591,17 @@ const handleDisconnect = async () => {
                       : "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
                   }`}
                   title={
-                    disabledAll
-                      ? (!features?.meta
+                    canMeta
+                      ? ""
+                      : !isMembershipActive
+                        ? "Requiere membresía activa"
+                        : !planHasMeta
                           ? "Tu plan no incluye Meta"
-                          : !channelFlags?.meta_enabled
-                          ? "Canal Meta desactivado por admin"
-                          : "")
-                      : ""
+                          : !channelMetaOn
+                            ? "Canal Meta desactivado por admin"
+                            : channelState.maintenance
+                              ? "Canal en mantenimiento"
+                              : ""
                   }
                 >
                   Desconectar
