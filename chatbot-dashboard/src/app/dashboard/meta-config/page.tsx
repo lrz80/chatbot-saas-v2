@@ -118,16 +118,19 @@ const handleDisconnect = async () => {
     idioma: "es",
   });
 
-  // Estados base seguros (evitan “flicker” mientras carga)
-  const isMembershipActive = Boolean(settings?.membresia_activa);
-  const planHasMeta       = Boolean(features?.meta);
-  const channelMetaOn     = Boolean(channelFlags?.meta_enabled);
+  // ✅ Estados base seguros (evitan “flicker” mientras carga)
+  const planHasMeta = Boolean(features?.meta);            // plan incluye Meta
+  const channelMetaOn = Boolean(channelFlags?.meta_enabled); // canal activo en DB
 
-  // ✅ SOLO habilita si: membresía ACTIVA + plan incluye Meta + canal encendido
-  const canMeta = isMembershipActive && planHasMeta && channelMetaOn;
+  // ✅ SOLO habilita si el plan incluye Meta y el canal está activo
+  const canMeta = planHasMeta && channelMetaOn;
 
   // Todo lo editable/botones usan este flag
   const disabledAll = !canMeta;
+
+  // 🔎 Exponer al window para inspeccionar en consola
+  useEffect(() => { (window as any).__features  = features }, [features]);
+  useEffect(() => { (window as any).__settings  = settings }, [settings]);
 
   useEffect(() => {
     if (!chatContainerRef.current) return;
@@ -510,14 +513,12 @@ const handleDisconnect = async () => {
           <div className="mb-4 text-xs bg-white/5 border border-white/10 rounded p-3 text-white/80">
             <div className="font-semibold mb-1">Meta está bloqueado:</div>
             <ul className="list-disc ml-5 space-y-1">
-              {!isMembershipActive && <li>Sin membresía activa</li>}
-              {!planHasMeta && <li>Tu plan actual no incluye Meta</li>}
-              {!channelMetaOn && <li>Canal Meta desactivado por el administrador</li>}
+              {!features?.meta && <li>Tu plan actual no incluye Meta</li>}
+              {!channelFlags?.meta_enabled && <li>Canal Meta desactivado por el administrador</li>}
             </ul>
           </div>
         )}
 
-        <ChannelGate canal="meta">
         {/* 🔗 Integración con Meta: botones SIEMPRE visibles */}
         <div className="mb-6 p-4 rounded-lg border text-sm bg-white/5 border-white/10 text-white">
           <div className="flex flex-col gap-3">
@@ -556,10 +557,13 @@ const handleDisconnect = async () => {
                       : "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
                   }`}
                   title={
-                    canMeta ? "" :
-                    !isMembershipActive ? "Requiere membresía activa" :
-                    !planHasMeta ? "Tu plan no incluye Meta" :
-                    !channelMetaOn ? "Canal Meta desactivado por admin" : ""
+                    disabledAll
+                      ? (!features?.meta
+                          ? "Tu plan no incluye Meta"
+                          : !channelFlags?.meta_enabled
+                          ? "Canal Meta desactivado por admin"
+                          : "")
+                      : ""
                   }
                 >
                   {metaConn.connected ? "Reconectar Facebook/Instagram" : "Conectar Facebook/Instagram"}
@@ -575,10 +579,13 @@ const handleDisconnect = async () => {
                       : "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
                   }`}
                   title={
-                    canMeta ? "" :
-                    !isMembershipActive ? "Requiere membresía activa" :
-                    !planHasMeta ? "Tu plan no incluye Meta" :
-                    !channelMetaOn ? "Canal Meta desactivado por admin" : ""
+                    disabledAll
+                      ? (!features?.meta
+                          ? "Tu plan no incluye Meta"
+                          : !channelFlags?.meta_enabled
+                          ? "Canal Meta desactivado por admin"
+                          : "")
+                      : ""
                   }
                 >
                   Desconectar
@@ -770,7 +777,6 @@ const handleDisconnect = async () => {
             </button>
           </div>
         </div>
-        </ChannelGate>
       </div>
       <Footer />
     </div>
