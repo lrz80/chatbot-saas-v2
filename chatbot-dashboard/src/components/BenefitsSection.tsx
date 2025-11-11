@@ -14,7 +14,7 @@ export default function BenefitsSection() {
     {
       icon: <BotMessageSquare className="w-8 h-8 text-purple-400" />,
       title: "Entrenamiento Personalizado",
-      description: "Entrena a Amy con preguntas frecuentes, flujos guiados e intenciones específicas según tu negocio.",
+      description: "Entrena a Amy con preguntas frecuentes e intenciones específicas según tu negocio.",
     },
     {
       icon: <BarChart3 className="w-8 h-8 text-purple-400" />,
@@ -24,7 +24,7 @@ export default function BenefitsSection() {
     {
       icon: <Share2 className="w-8 h-8 text-purple-400" />,
       title: "Campañas Multicanal",
-      description: "Lanza promociones por WhatsApp, SMS o Email desde el dashboard, todo conectado a tu base de clientes.",
+      description: "Lanza promociones por SMS o Email desde el dashboard, todo conectado a tu base de clientes.",
     },
   ];
 
