@@ -95,10 +95,18 @@ export default function BusinessProfilePage() {
       email: settingsData.email,
       email_negocio: settingsData.email_negocio || '',
       telefono_negocio: settingsData.telefono_negocio || '',
+      // ⬇️ NUEVO
       membresia_activa: settingsData.membresia_activa,
       membresia_vigencia: settingsData.membresia_vigencia,
       es_trial: settingsData.es_trial,
       estado_membresia_texto: settingsData.estado_membresia_texto,
+      trial_disponible: Boolean(settingsData.trial_disponible),
+      trial_activo: Boolean(settingsData.trial_vigente || settingsData.trial_activo),
+      can_edit: Boolean(
+        settingsData.can_edit ??
+        settingsData.membresia_activa ??
+        (settingsData.trial_vigente || settingsData.trial_activo)
+      ),
     });
 
     setDireccion(settingsData.direccion || '');
@@ -120,10 +128,12 @@ export default function BusinessProfilePage() {
 
 // en el guardar:
 const handleSave = async () => {
-  if (!formData.membresia_activa) {
+  if (!formData.can_edit) {
+    // si no tiene plan activo ni trial vigente, lo envío a upgrade
     router.push('/upgrade');
     return;
   }
+
   setSaving(true);
   try {
     // 1) Ajustes "clásicos"
@@ -223,6 +233,25 @@ const handleSave = async () => {
     } catch (err) {
       console.error("❌ Error:", err);
       alert("❌ Hubo un problema al cancelar el plan.");
+    }
+  };
+
+  const handleClaimTrial = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/billing/claim-trial`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(`❌ ${data?.error || 'No se pudo activar la prueba'}`);
+        return;
+      }
+      alert('✅ ¡Prueba gratis activada!');
+      await fetchSettings();
+    } catch (e) {
+      console.error(e);
+      alert('❌ Error activando la prueba');
     }
   };
 
@@ -434,11 +463,32 @@ const handleSave = async () => {
         </div>
       </div>
 
-      {!formData.membresia_activa && (
+      {/* 🎁 Caso 1: Nunca ha usado el trial → invitar a activar prueba */}
+      {formData?.trial_disponible && !formData?.can_edit && (
+        <div className="mt-4 mb-2 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center font-medium">
+          🎁 <strong>Activa tu prueba gratis</strong> y comienza a entrenar tu asistente ahora.
+          <button
+            onClick={handleClaimTrial}
+            className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
+          >
+            Activar prueba gratis
+          </button>
+        </div>
+      )}
+
+      {/* 🟡 Caso 2: Trial activo pero sin plan pago (permitir editar) → mensaje informativo */}
+      {!formData?.membresia_activa && formData?.trial_activo && (
         <div className="mt-4 mb-2 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
-          🚫 Tu membresía está inactiva.{' '}
+          🟡 Estás usando la <strong>prueba gratis</strong>. ¡Aprovecha para configurar tu asistente!
+        </div>
+      )}
+
+      {/* 🔴 Caso 3: Sin plan y sin trial activo → banner de inactiva con CTA a upgrade */}
+      {!formData?.can_edit && !formData?.trial_disponible && !formData?.trial_activo && (
+        <div className="mt-4 mb-2 p-4 bg-red-500/20 border border-red-400 text-red-200 rounded text-center font-medium">
+          🚫 Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.{` `}
           <a onClick={() => router.push('/upgrade')} className="underline cursor-pointer">
-            Actívala para editar tus datos.
+            Activa un plan para continuar.
           </a>
         </div>
       )}
