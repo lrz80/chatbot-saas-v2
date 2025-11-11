@@ -138,7 +138,7 @@ const handleDisconnect = async () => {
     const fetchAll = async () => {
       try {
         const [settingsRes, faqRes, intentsRes, sugeridasRes] = await Promise.all([
-          fetch(`${BACKEND_URL}/api/settings?canal=meta`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/meta-configs`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=meta`, { credentials: "include" }),
@@ -150,18 +150,18 @@ const handleDisconnect = async () => {
           const data = await settingsRes.json();
           setSettings((prev) => ({
             ...prev,
-            name: data.name || prev.name,
-            categoria: data.categoria || prev.categoria,
-            prompt: data.prompt || prev.prompt,
-            bienvenida: data.bienvenida || prev.bienvenida,
-            informacion_negocio: data.informacion_negocio || prev.informacion_negocio,
-            funciones_asistente: data.funciones_asistente || prev.funciones_asistente,
-            info_clave: data.info_clave || prev.info_clave,
-            membresia_activa: data.membresia_activa,
-            idioma: data.idioma || prev.idioma,
+            name: data?.name || prev.name,                // si tu endpoint devuelve el nombre
+            categoria: data?.categoria || prev.categoria, // opcional
+            prompt: data?.prompt ?? prev.prompt,
+            bienvenida: data?.bienvenida ?? prev.bienvenida,
+            informacion_negocio: data?.informacion_negocio ?? prev.informacion_negocio, // si la tienes en meta
+            funciones_asistente: data?.funciones_asistente ?? prev.funciones_asistente,
+            info_clave: data?.info_clave ?? prev.info_clave,
+            membresia_activa: data?.membresia_activa ?? prev.membresia_activa, // lo sueles traer aparte
+            idioma: data?.idioma ?? prev.idioma,
           }));
-          setMessages([{ role: "assistant", content: data.bienvenida != null ? data.bienvenida : "¡Hola! ¿Cómo puedo ayudarte?" }]);
-          setUsos(data.limites || {});  // 🚀 Ahora guardamos límites completos por canal
+          setMessages([{ role: "assistant", content: data?.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?" }]);
+          setUsos(data?.limites || {}); // si tu endpoint trae límites por canal
         }
   
         if (faqRes.ok) setFaq(await faqRes.json());
@@ -263,38 +263,32 @@ const handleDisconnect = async () => {
   const handleSave = async () => {
     setSaving(true);
 
+    // payload SOLO de meta_configs
     const payload = {
-      nombre_negocio: settings.name,
-      categoria: settings.categoria,
-      idioma: settings.idioma,
-      prompt: settings.prompt,
-      bienvenida: settings.bienvenida,
-      informacion_negocio: settings.informacion_negocio,
-      funciones_asistente: settings.funciones_asistente?.trim() || undefined,
+      funciones_asistente: settings.funciones_asistente?.trim() || "",
       info_clave: (settings.info_clave ?? '').replace(/\r\n/g, '\n').replace(/\n{2,}/g, '\n').trim(),
-    };    
-
-    console.log("📤 Enviando payload a /api/settings:", payload);
+      prompt_meta: settings.prompt,          // 👈 el backend espera *_meta
+      bienvenida_meta: settings.bienvenida,  // 👈 el backend espera *_meta
+      idioma: settings.idioma ?? "es",
+    };
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/settings?canal=meta`, {
-        method: "POST",
+      const res = await fetch(`${BACKEND_URL}/api/meta-config`, {
+        method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      console.log("✅ Respuesta del servidor:", data);
-
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        alert("❌ Error al guardar: " + data?.error || "Error desconocido");
+        alert("❌ Error al guardar (meta_configs): " + (data?.error || res.statusText));
       } else {
-        alert("Configuración del bot guardada ✅");
+        alert("Configuración Meta guardada ✅");
       }
     } catch (err) {
-      console.error("❌ Error en handleSave:", err);
-      alert("Error al guardar la configuración.");
+      console.error("❌ Error en handleSave(meta):", err);
+      alert("Error al guardar la configuración de Meta.");
     } finally {
       setSaving(false);
     }
