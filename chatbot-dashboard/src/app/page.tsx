@@ -21,7 +21,7 @@ import {
   FaUserCheck,
 } from 'react-icons/fa';
 
-// ✅ Features: todo como disponible (sin “próximamente”)
+// 🔥 Features con estilos y descripciones más claras
 const features = [
   {
     icon: <FaRobot size={28} className="text-purple-400 drop-shadow" />,
@@ -36,38 +36,37 @@ const features = [
   {
     icon: <FaWhatsapp size={28} className="text-green-400 drop-shadow" />,
     title: "WhatsApp Automatizado",
-    description: "Respuestas inteligentes, seguimiento y conversiones por WhatsApp de forma inmediata.",
+    description: "Envía respuestas inteligentes y automatizadas directamente en WhatsApp.",
   },
   {
     icon: <FaFacebookMessenger size={28} className="text-blue-400 drop-shadow" />,
-    title: "Facebook Messenger",
+    title: "Facebook (próximamente)",
     description: "Atiende consultas y vende directamente desde Messenger con IA natural.",
   },
   {
     icon: <FaInstagram size={28} className="text-pink-400 drop-shadow" />,
-    title: "Instagram DM",
+    title: "Instagram (próximamente)",
     description: "Responde mensajes y dirige a venta desde los DMs de Instagram en minutos.",
   },
   {
     icon: <FaMicrophoneAlt size={28} className="text-indigo-400 drop-shadow" />,
     title: "Asistente de Voz AI",
-    description: "Recibe llamadas con voz natural: resuelve dudas y agenda citas automáticamente.",
+    description: "Recibe llamadas con una voz natural que resuelve dudas y agenda citas automáticamente.",
   },
   {
     icon: <FaUserCheck size={28} className="text-yellow-400 drop-shadow" />,
     title: "Seguimiento de Leads",
-    description: "Detecta intención de compra y programa seguimientos para cerrar más ventas.",
+    description: "Detecta intención de compra y agenda seguimientos automáticos para no perder ventas.",
   },
   {
     icon: <FaBullhorn size={28} className="text-orange-400 drop-shadow" />,
     title: "Campañas de Marketing",
-    description: "Crea y programa campañas por Email y SMS con contenido personalizado.",
+    description: "Crea y programa campañas por Email y SMS con promociones personalizadas.",
   },
-  // 👇 Si quieres, mantenemos autopublicaciones como disponible:
   // {
-  //   icon: <FaInstagram size={28} className="text-pink-300 drop-shadow" />,
-  //   title: "Auto-publicaciones",
-  //   description: "Programa publicaciones en Instagram y Facebook para mantener tu marca activa.",
+  // icon: <FaInstagram size={28} className="text-pink-300 drop-shadow" />,
+  // title: "Auto-publicaciones (próximamente)",
+  // description: "Programa publicaciones automáticas en Instagram y Facebook. En desarrollo.",
   // },
 ];
 
@@ -171,9 +170,9 @@ export default function LandingPage() {
         <p className="mb-6 text-white/80 max-w-xl mx-auto">
           Activa tu membresía y desbloquea el potencial completo de tu Asistente Virtual para optimizar la atención al cliente de tu negocio.
         </p>
-        <a href="/login" aria-label="Crear cuenta y probar Aamy AI gratis">
+        <a href="/login">
           <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg transition">
-            Prueba gratis
+            Probar Amy AI Gratis
           </button>
         </a>
       </section>
