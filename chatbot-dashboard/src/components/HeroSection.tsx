@@ -43,7 +43,7 @@ export default function HeroSection() {
         </h1>
 
         <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed drop-shadow">
-          Automatiza llamadas, WhatsApp, Instagram, Facebook y campañas. Amy responde por ti 24/7 con IA natural y poderosa.
+          Automatiza llamadas, WhatsApp, Instagram, Facebook y campañas de Marketing SMS/Email. Amy responde por ti 24/7 con IA natural y poderosa.
         </p>
 
         <a
