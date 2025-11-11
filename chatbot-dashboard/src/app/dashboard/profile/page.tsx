@@ -390,54 +390,6 @@ const handleSave = async () => {
           </select>
         </div>
 
-        {/* ===== NUEVOS CAMPOS ===== */}
-        <div className="md:col-span-2 border-t border-white/10 pt-4 mt-2">
-          <h2 className="text-lg font-semibold text-purple-300 mb-3">Reservas & Disponibilidad</h2>
-
-          {/* Booking URL */}
-          <div className="mb-4">
-            <label className="text-sm text-indigo-200 font-semibold">URL de Reservas (Booking URL)</label>
-            <input
-              type="url"
-              placeholder="https://miagenda.com/tu-negocio"
-              value={bookingUrl}
-              onChange={(e) => setBookingUrl(e.target.value)}
-              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-            />
-            <p className="text-xs text-white/60 mt-1">
-              Puedes usar servicios como Calendly, Booksy, etc. El backend guarda el primer alias disponible.
-            </p>
-          </div>
-
-          {/* Availability API URL */}
-          <div className="mb-4">
-            <label className="text-sm text-indigo-200 font-semibold">Availability API URL</label>
-            <input
-              type="url"
-              placeholder="https://api.miagenda.com/v1/availability"
-              value={availabilityApiUrl}
-              onChange={(e) => setAvailabilityApiUrl(e.target.value)}
-              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-            />
-            <p className="text-xs text-white/60 mt-1">Alias opcional: booking_api_url.</p>
-          </div>
-
-          {/* Headers JSON */}
-          <div className="mb-2">
-            <label className="text-sm text-indigo-200 font-semibold">Headers para Availability (JSON)</label>
-            <textarea
-              rows={6}
-              value={availabilityHeadersText}
-              onChange={(e) => setAvailabilityHeadersText(e.target.value)}
-              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md font-mono text-sm"
-            />
-            <p className="text-xs text-white/60 mt-1">
-              Ejemplo: {'{ "Authorization": "Bearer XYZ", "X-Tenant": "abc" }'}
-            </p>
-          </div>
-        </div>
-        {/* ===== FIN NUEVOS CAMPOS ===== */}
-
         <div>
           <p className="text-sm text-indigo-200 font-semibold">Plan Activo</p>
           <p className="text-lg text-white">{formData.plan}</p>
