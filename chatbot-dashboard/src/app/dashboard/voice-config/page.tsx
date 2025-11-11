@@ -13,6 +13,7 @@ import { SiAudioboom } from "react-icons/si";
 import VoicePlayer from "@/components/VoicePlayer";
 import VoiceMinutesCard from '@/components/VoiceMinutesCard';
 import { useFeatures } from '@/hooks/usePlan';
+import ChannelStatus from "@/components/ChannelStatus";
 
 export default function VoiceConfigPage() {
   const [idioma, setIdioma] = useState("es-ES");
@@ -409,6 +410,8 @@ export default function VoiceConfigPage() {
         <SiAudioboom size={36} className="text-sky-400 animate-pulse" /> Configuración de Asistente de Voz
       </h1>
 
+      <ChannelStatus canal="voice" showBanner hideTitle />
+      
       <TrainingHelp context="voice" />
 
       {!canVoice && (
