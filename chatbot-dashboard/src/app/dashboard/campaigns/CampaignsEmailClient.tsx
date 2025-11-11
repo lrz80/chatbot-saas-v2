@@ -19,6 +19,7 @@ import TrainingHelp from "@/components/TrainingHelp";
 import { useSearchParams } from "next/navigation";
 import EmailLogViewer from "@/components/EmailLogViewer";
 import { useFeatures } from '@/hooks/usePlan';
+import ChannelStatus from "@/components/ChannelStatus";
 
 const BASE_EMAIL_LIMIT = 2000;
 
@@ -48,12 +49,11 @@ export default function CampaignsEmailClient() {
   const [membresiaActiva, setMembresiaActiva] = useState<boolean>(false);
   const [usoEmail, setUsoEmail] = useState<{ usados: number; limite: number } | null>(null);
   const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const csvInputRef   = useRef<HTMLInputElement | null>(null);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
   const [cargandoLogsId, setCargandoLogsId] = useState<number | null>(null);
   const [errorLogsCampana, setErrorLogsCampana] = useState<number | null>(null);
   const [previewHtml, setPreviewHtml] = useState("");
-
-  const { loading: loadingPlan, features, esTrial } = useFeatures();
 
   type ChannelState = {
    enabled: boolean;
@@ -63,8 +63,9 @@ export default function CampaignsEmailClient() {
    maintenance_message?: string | null;
  };
  const [channelState, setChannelState] = useState<ChannelState | null>(null);
- const canEmailPlan = !!features?.email;
- const canEmail = canEmailPlan && channelState?.enabled === true;
+
+ const { esTrial } = useFeatures(); // si lo usas solo para el texto
+ const canEmail = !!channelState?.enabled;     // ← verdad única
  const disabledAll = !canEmail || !membresiaActiva;
 
   const cargarCampañas = async () => {
@@ -120,7 +121,7 @@ export default function CampaignsEmailClient() {
       const data = await res.json();
   
       const email = data.usos?.find((u: any) => u.canal === "email");
-      setUsoEmail({ usados: email?.usados ?? 0, limite: email?.limite ?? 500 });
+      setUsoEmail({ usados: email?.usados ?? 0, limite: email?.limite ?? BASE_EMAIL_LIMIT });
   
       const usoContactos = data.usos?.find((u: any) => u.canal === "contactos");
       setLimiteContactos(usoContactos?.limite || 500);
@@ -290,7 +291,7 @@ export default function CampaignsEmailClient() {
   
       if (res.ok) {
         alert(`✅ ${json.nuevos} contactos agregados`);
-        inputRef.current?.value && (inputRef.current.value = "");
+        if (csvInputRef.current) csvInputRef.current.value = "";
         setArchivoCsv(null);
         setCantidadContactos((prev) => prev + json.nuevos);
       } else {
@@ -356,7 +357,7 @@ export default function CampaignsEmailClient() {
   const comprarMasContactos = async (cantidad: number) => {
     if (!membresiaActiva) {
       alert("❌ Activa tu membresía para ampliar contactos o campañas.");
-      window.location.href = "/dashboard/upgrade";
+      window.location.href = "/upgrade";
       return;
     }
     
@@ -388,7 +389,7 @@ export default function CampaignsEmailClient() {
   const comprarMasCampanas = async (cantidad: number) => {
     if (!membresiaActiva) {
       alert("❌ Activa tu membresía para ampliar contactos o campañas.");
-      window.location.href = "/dashboard/upgrade";
+      window.location.href = "/upgrade";
       return;
     }
     
@@ -591,22 +592,18 @@ export default function CampaignsEmailClient() {
         <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
           <SiMinutemailer className="text-blue-400 animate-pulse" /> Campañas por Email
         </h1>
+
+        <ChannelStatus canal="email" showBanner hideTitle />
+
+        <TrainingHelp context="campaign-email" />
+
         {contactosOk && (
           <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
             ✅ Límite de contactos ampliado exitosamente. Ya puedes cargar más contactos.
           </div>
         )}
 
-        <TrainingHelp context="campaign-email" />
-
-        {channelState && channelState.maintenance && (
-          <div className="mb-6 p-4 bg-red-600/15 border border-red-600/40 text-red-200 rounded">
-            <p className="font-semibold mb-1">Email en mantenimiento</p>
-            <p className="text-sm">{channelState.maintenance_message || "Estamos trabajando para restablecer el servicio."}</p>
-          </div>
-        )}
-
-        {(!channelState?.maintenance && (!canEmailPlan || channelState?.enabled === false)) && (
+        {(!channelState?.maintenance && channelState?.enabled === false) && (
           <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
             <p className="font-semibold mb-1">Email está bloqueado en tu plan actual</p>
             <p className="text-sm mb-3">
@@ -709,36 +706,27 @@ export default function CampaignsEmailClient() {
                 accept=".csv"
                 multiple={false}
                 disabled={disabledAll}
+                ref={csvInputRef}
                 onChange={(e) => {
-                  if (disabledAll) {
-                    alert("❌ No puedes subir contactos: canal de Email bloqueado o membresía inactiva.");
-                    // Limpia el valor por si el navegador lo llegó a setear
-                    if (inputRef.current) inputRef.current.value = "";
+                  const file = e.target.files?.[0] || null;
+                  if (!file) {
+                    setArchivoCsv(null);
                     return;
                   }
-                  const file = e.target.files?.[0];
-                  if (file && file.name.toLowerCase().endsWith(".csv")) {
-                    setArchivoCsv(file);
-                  } else {
-                    alert("Por favor selecciona un archivo CSV válido.");
+                  if (!file.name.toLowerCase().endsWith(".csv")) {
+                    alert("❌ El archivo debe ser .csv");
+                    if (csvInputRef.current) csvInputRef.current.value = "";
+                    setArchivoCsv(null);
+                    return;
                   }
+                  if (file.size > 5 * 1024 * 1024) {
+                    alert("❌ El CSV no puede pesar más de 5MB");
+                    if (csvInputRef.current) csvInputRef.current.value = "";
+                    setArchivoCsv(null);
+                    return;
+                  }
+                  setArchivoCsv(file);
                 }}
-                className={`cursor-pointer block w-full text-sm text-white
-                            file:mr-0 file:py-2 file:px-4 file:rounded
-                            file:border-0 file:text-sm file:font-semibold
-                            ${
-                              disabledAll
-                                ? "file:bg-gray-500 file:text-gray-300 cursor-not-allowed opacity-60"
-                                : "file:bg-indigo-600 file:text-white hover:file:bg-indigo-500"
-                            }`}
-                style={{ color: "transparent" }}
-                aria-disabled={disabledAll}
-                title={
-                  disabledAll
-                    ? "Bloqueado por tu plan o membresía inactiva"
-                    : "Selecciona un archivo .csv"
-                }
-                ref={inputRef}
               />
 
               {archivoCsv && (
@@ -747,12 +735,9 @@ export default function CampaignsEmailClient() {
 
                   <button
                     onClick={() => {
-                      if (disabledAll) {
-                        alert("❌ No puedes eliminar el archivo: canal bloqueado o membresía inactiva.");
-                        return;
-                      }
+                      if (disabledAll) { alert("❌ No puedes eliminar…"); return; }
                       setArchivoCsv(null);
-                      if (inputRef.current) inputRef.current.value = "";
+                      if (csvInputRef.current) csvInputRef.current.value = "";
                     }}
                     disabled={disabledAll}
                     className={`text-xs font-semibold ml-4 ${
@@ -868,8 +853,7 @@ export default function CampaignsEmailClient() {
         </label>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-          <button
-            onClick={() => inputRef.current?.click()}
+          <button onClick={() => imageInputRef.current?.click()}
             className="bg-white/10 hover:bg-white/20 text-sm px-4 py-2 rounded text-white border border-white/20 w-full sm:w-auto"
           >
             Seleccionar imagen
@@ -884,7 +868,7 @@ export default function CampaignsEmailClient() {
           name="imagen"
           type="file"
           accept="image/*"
-          ref={inputRef}
+          ref={imageInputRef}
           onChange={handleChange}
           disabled={disabledAll}
           className="hidden"
