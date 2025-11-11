@@ -89,8 +89,8 @@ export default function BusinessProfilePage() {
       twilio_number: settingsData.twilio_number,
       twilio_sms_number: settingsData.twilio_sms_number,
       twilio_voice_number: settingsData.twilio_voice_number,
-      plan: settingsData.plan,
-      fecha_registro: settingsData.fecha_registro,
+      plan: settingsData.plan_name ?? tenantData?.plan ?? '',
+      fecha_registro: settingsData.registered_at ?? tenantData?.created_at ?? null,
       owner_name: settingsData.owner_name,
       email: settingsData.email,
       email_negocio: settingsData.email_negocio || '',
@@ -455,8 +455,10 @@ const handleSave = async () => {
           <p className="text-sm text-indigo-200 font-semibold">Fecha de Registro</p>
           <p className="text-lg text-white">
             {formData.fecha_registro
-              ? new Date(formData.fecha_registro).toLocaleDateString()
-              : 'Fecha no disponible'}
+              ? new Date(formData.fecha_registro).toLocaleDateString('es-ES', {
+              year: 'numeric', month: 'long', day: '2-digit'
+            })
+          : 'Fecha no disponible'}
           </p>
         </div>
 
