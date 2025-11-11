@@ -138,7 +138,7 @@ const handleDisconnect = async () => {
     const fetchAll = async () => {
       try {
         const [settingsRes, faqRes, intentsRes, sugeridasRes] = await Promise.all([
-          fetch(`${BACKEND_URL}/api/meta-configs`, { credentials: "include" }),
+          fetch(`${BACKEND_URL}/api/meta-config`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=meta`, { credentials: "include" }),
