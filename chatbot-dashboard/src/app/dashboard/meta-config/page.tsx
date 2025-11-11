@@ -114,15 +114,19 @@ const handleDisconnect = async () => {
     funciones_asistente: "",
     info_clave: "",
     idioma: "es",
-  });
+    // ⬇️ NUEVO
+    trial_disponible: false,
+    trial_activo: false,
+    can_edit: false,
+});
 
-  // Estados base
-  const isMembershipActive = Boolean(settings?.membresia_activa);
-  const planHasMeta        = Boolean(channelState.plan_enabled);     // ← del endpoint
-  const channelMetaOn      = Boolean(channelState.settings_enabled);  // ← del endpoint
+  const isMembershipActive = Boolean(settings?.membresia_activa || settings?.trial_activo); // ✅ trial cuenta como activo
+  const planHasMeta        = Boolean(channelState.plan_enabled);
+  const channelMetaOn      = Boolean(channelState.settings_enabled);
 
-  // ✅ desbloquea solo si: membresía ACTIVA + plan lo incluye + toggle admin ON + sin mantenimiento
-  const canMeta = isMembershipActive && planHasMeta && channelMetaOn && !channelState.maintenance;
+  // ✅ Desbloquea si: plan lo incluye + toggle ON + sin mantenimiento + (plan activo o trial activo)
+  const canMeta = Boolean(planHasMeta && channelMetaOn && !channelState.maintenance && (settings?.can_edit || isMembershipActive));
+
   const disabledAll = !canMeta;
 
   // 🔎 Exponer al window para inspeccionar en consola
@@ -137,33 +141,55 @@ const handleDisconnect = async () => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
+        // 1) Lee /api/settings para obtener trial flags y perfil base
+        const settingsCoreRes = await fetch(`${BACKEND_URL}/api/settings`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (settingsCoreRes.ok) {
+          const sdata = await settingsCoreRes.json();
+          setSettings((prev) => ({
+            ...prev,
+            name: sdata?.name ?? prev.name,
+            categoria: sdata?.categoria ?? prev.categoria,
+            idioma: sdata?.idioma ?? prev.idioma,
+            membresia_activa: Boolean(sdata?.membresia_activa),
+            // ⬇️ flags de trial/can_edit que vienen del backend
+            trial_disponible: Boolean(sdata?.trial_disponible),
+            trial_activo: Boolean(sdata?.trial_vigente || sdata?.trial_activo),
+            can_edit: Boolean(sdata?.can_edit ?? sdata?.membresia_activa ?? (sdata?.trial_vigente || sdata?.trial_activo)),
+          }));
+        }
+
+        // 2) El resto de endpoints en paralelo
         const [settingsRes, faqRes, intentsRes, sugeridasRes] = await Promise.all([
           fetch(`${BACKEND_URL}/api/meta-config`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/intents?canal=meta`, { credentials: "include" }),
           fetch(`${BACKEND_URL}/api/faqs/sugeridas?canal=meta`, { credentials: "include" }),
-        ]);    
-  
+        ]);
+
         console.log("🔥 llamé /api/faqs/sugeridas?canal=meta:", sugeridasRes.status);
-        
+
         if (settingsRes.ok) {
           const data = await settingsRes.json();
           setSettings((prev) => ({
             ...prev,
-            name: data?.name || prev.name,                // si tu endpoint devuelve el nombre
-            categoria: data?.categoria || prev.categoria, // opcional
+            name: data?.name || prev.name,
+            categoria: data?.categoria || prev.categoria,
             prompt: data?.prompt ?? prev.prompt,
             bienvenida: data?.bienvenida ?? prev.bienvenida,
-            informacion_negocio: data?.informacion_negocio ?? prev.informacion_negocio, // si la tienes en meta
+            informacion_negocio: data?.informacion_negocio ?? prev.informacion_negocio,
             funciones_asistente: data?.funciones_asistente ?? prev.funciones_asistente,
             info_clave: data?.info_clave ?? prev.info_clave,
-            membresia_activa: data?.membresia_activa ?? prev.membresia_activa, // lo sueles traer aparte
             idioma: data?.idioma ?? prev.idioma,
+            // 👇 NO toques los flags de trial aquí: ya vinieron de /api/settings
           }));
           setMessages([{ role: "assistant", content: data?.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?" }]);
-          setUsos(data?.limites || {}); // si tu endpoint trae límites por canal
+          setUsos(data?.limites || {});
         }
-  
+
         if (faqRes.ok) setFaq(await faqRes.json());
         if (intentsRes.ok) {
           const arr = await intentsRes.json();
@@ -184,10 +210,10 @@ const handleDisconnect = async () => {
             .map((x: any) => ({
               id: Number(x?.id),
               pregunta: String(x?.pregunta ?? "").trim(),
-              respuesta_sugerida: String(x?.respuesta_sugerida ?? "").trim(), // 👈 nombre correcto
+              respuesta_sugerida: String(x?.respuesta_sugerida ?? "").trim(),
               canal: x?.canal ?? "meta",
             }))
-            .filter(f => f.pregunta && f.respuesta_sugerida); // 👈 filtra con ese nombre
+            .filter(f => f.pregunta && f.respuesta_sugerida);
 
           console.log("✅ faqs sugeridas meta:", limpias);
           setFaqSugeridas(limpias);
@@ -196,12 +222,11 @@ const handleDisconnect = async () => {
           setFaqSugeridas([]);
         }
 
-        // 👇 NUEVO: lee estado de conexión de Meta
+        // 3) Estado de conexión Meta
         try {
           const mc = await fetch(`${BACKEND_URL}/api/meta-config`, { credentials: "include" });
           if (mc.ok) {
             const m = await mc.json();
-
             const hasFB = Boolean(m?.facebook_page_id);
             const hasIG = Boolean(m?.instagram_page_id);
             const isConnected = hasFB || hasIG;
@@ -215,19 +240,17 @@ const handleDisconnect = async () => {
           } else if (mc.status === 401) {
             setMetaConn({ connected: false, needsReconnect: true });
           }
-
         } catch (e) {
           console.error("❌ Error cargando meta-config:", e);
-          // En error, deja visible el botón Conectar
           setMetaConn((prev) => ({ ...prev, connected: false, needsReconnect: true }));
         }
-        // ✅ Lee flags de canales desde DB
+
+        // 4) Flags de canal en DB
         try {
           const ch = await fetch(`${BACKEND_URL}/api/channel-settings?canal=meta`, {
             credentials: "include",
             cache: "no-store",
           });
-
           if (ch.ok) {
             const data = await ch.json();
             setChannelState({
@@ -236,8 +259,7 @@ const handleDisconnect = async () => {
               settings_enabled: Boolean(data.settings_enabled),
               maintenance: Boolean(data.maintenance),
             });
-
-            (window as any).__channelState = data; // debug en consola
+            (window as any).__channelState = data;
             console.log("channel-state(meta):", data);
           } else {
             console.warn("⚠️ /api/channel-settings(meta) status:", ch.status);
@@ -252,10 +274,10 @@ const handleDisconnect = async () => {
         setLoading(false);
       }
     };
-  
+
     fetchAll();
   }, [router]);
-  
+
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
   };
@@ -500,6 +522,64 @@ const handleDisconnect = async () => {
         </h1>
 
         <ChannelStatus canal="meta" showBanner hideTitle />
+
+        {/* 🎁 Caso 1: Nunca usó trial → invitar a activar prueba */}
+        {settings?.trial_disponible && !settings?.can_edit && (
+          <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center font-medium">
+            🎁 <strong>Activa tu prueba gratis</strong> y comienza a usar el canal Meta.
+            <button
+              onClick={async () => {
+                try {
+                  const r = await fetch(`${BACKEND_URL}/api/billing/claim-trial`, {
+                    method: "POST",
+                    credentials: "include",
+                  });
+                  if (!r.ok) {
+                    const j = await r.json().catch(() => ({}));
+                    alert(`❌ ${j?.error || 'No se pudo activar la prueba'}`);
+                    return;
+                  }
+                  alert("✅ ¡Prueba gratis activada!");
+                  // refresca las flags
+                  const sres = await fetch(`${BACKEND_URL}/api/settings`, { credentials: "include", cache: "no-store" });
+                  if (sres.ok) {
+                    const sdata = await sres.json();
+                    setSettings((prev) => ({
+                      ...prev,
+                      membresia_activa: Boolean(sdata?.membresia_activa),
+                      trial_disponible: Boolean(sdata?.trial_disponible),
+                      trial_activo: Boolean(sdata?.trial_vigente || sdata?.trial_activo),
+                      can_edit: Boolean(sdata?.can_edit ?? sdata?.membresia_activa ?? (sdata?.trial_vigente || sdata?.trial_activo)),
+                    }));
+                  }
+                } catch(e) {
+                  console.error(e);
+                  alert("❌ Error activando la prueba");
+                }
+              }}
+              className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
+            >
+              Activar prueba gratis
+            </button>
+          </div>
+        )}
+
+        {/* 🟡 Caso 2: Trial activo (permitido editar) → mensaje informativo */}
+        {!settings?.membresia_activa && settings?.trial_activo && (
+          <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
+            🟡 Estás usando la <strong>prueba gratis</strong>. ¡Aprovecha para configurar tu asistente en Meta!
+          </div>
+        )}
+
+        {/* 🔴 Caso 3: Sin plan y sin trial → banner inactiva */}
+        {!settings?.can_edit && !settings?.trial_disponible && !settings?.trial_activo && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-400 text-red-200 rounded text-center font-medium">
+            🚫 Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente en Meta.{" "}
+            <a onClick={() => router.push('/upgrade')} className="underline cursor-pointer">
+              Activa un plan para continuar.
+            </a>
+          </div>
+        )}
 
         {usage.porcentaje >= 80 && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
