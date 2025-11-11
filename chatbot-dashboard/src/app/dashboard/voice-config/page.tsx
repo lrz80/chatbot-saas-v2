@@ -33,20 +33,25 @@ export default function VoiceConfigPage() {
   // 1) Estado base primero
   const [channelState, setChannelState] = useState<ChannelState | null>(null);
 
+  // ✅ Trial / edición
+  const [trialDisponible, setTrialDisponible] = useState(false);
+  const [trialActivo, setTrialActivo] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
+
   // 2) Derivados seguros (después del estado). Puedes usar useMemo o booleanos simples:
   const planVoice      = useMemo(() => Boolean(channelState?.plan_enabled),   [channelState]);
   const settingsOn     = useMemo(() => Boolean(channelState?.settings_enabled),[channelState]);
   const inMaintenance  = useMemo(() => Boolean(channelState?.maintenance),    [channelState]);
 
-  // 3) Gate final
+  // ✅ usa canEdit (plan activo O trial activo)
   const canVoice = Boolean(
-    tieneMembresia &&
+    canEdit &&            // <- clave
     planVoice &&
     settingsOn &&
     !inMaintenance
   );
 
-  const disabledAll = !canVoice; // si no pasa el gate, no se puede usar nada
+  const disabledAll = !canVoice;
 
   // ✨ Estado controlado
   const [funcionesVoz, setFuncionesVoz] = useState("");
@@ -102,12 +107,18 @@ export default function VoiceConfigPage() {
       toast.warning("📴 El canal de Voz está deshabilitado por el administrador.");
       return false;
     }
-    if (!tieneMembresia) {
+    // ✅ ahora decide por canEdit + trialDisponible
+    if (!canEdit) {
       e?.preventDefault();
-      toast.warning("⚠️ Activa tu membresía para usar esta función.");
-      router.push("/upgrade");
+      if (trialDisponible) {
+        toast.warning("🎁 Activa tu prueba gratis para configurar Voz.");
+      } else {
+        toast.warning("⚠️ Activa un plan para usar esta función.");
+        router.push("/upgrade");
+      }
       return false;
     }
+
     return true;
   };
 
@@ -115,7 +126,7 @@ export default function VoiceConfigPage() {
   useEffect(() => {
     const fetchVoiceConfig = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/voice-config?idioma=${idioma}&canal=voice`, {
+        const res = await fetch(`${BACKEND_URL}/api/voice-config?idioma=${idioma}&canal=voz`, {
           credentials: "include",
         });
         const data = await res.json();
@@ -138,6 +149,30 @@ export default function VoiceConfigPage() {
 
     fetchVoiceConfig();
   }, [idioma]);
+
+  // ✅ Lee flags de trial/can_edit del backend
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/settings`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const s = await res.json();
+        // el backend debe devolver: trial_disponible, trial_vigente (o trial_activo), can_edit
+        const tDisponible = Boolean(s.trial_disponible);
+        const tActivo = Boolean(s.trial_vigente || s.trial_activo);
+        const editable = Boolean(s.can_edit ?? s.membresia_activa ?? tActivo);
+
+        setTrialDisponible(tDisponible);
+        setTrialActivo(tActivo);
+        setCanEdit(editable);
+      } catch (e) {
+        console.error("❌ No se pudo leer /api/settings", e);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -404,6 +439,31 @@ export default function VoiceConfigPage() {
     }
   };
 
+  const handleClaimTrial = async () => {
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/billing/claim-trial`, {
+      method: "POST",
+      credentials: "include",
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      toast.error(`❌ ${j?.error || "No se pudo activar la prueba"}`);
+      return;
+    }
+    toast.success("✅ ¡Prueba gratis activada!");
+    // refresca settings para que canEdit cambie a true
+    const sRes = await fetch(`${BACKEND_URL}/api/settings`, { credentials: "include", cache: "no-store" });
+    const s = await sRes.json();
+    setTrialDisponible(Boolean(s.trial_disponible));
+    const tActivo = Boolean(s.trial_vigente || s.trial_activo);
+    setTrialActivo(tActivo);
+    setCanEdit(Boolean(s.can_edit ?? s.membresia_activa ?? tActivo));
+  } catch (e) {
+    console.error(e);
+    toast.error("❌ Error activando la prueba");
+  }
+};
+
   return (
     <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
@@ -411,7 +471,40 @@ export default function VoiceConfigPage() {
       </h1>
 
       <ChannelStatus canal="voice" showBanner hideTitle />
-      
+
+      {/* 🎁 Caso 1: nunca usó trial → invitar a activar */}
+      {trialDisponible && !canEdit && (
+        <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-sm text-center">
+          🎁 <strong>Activa tu prueba gratis</strong> para configurar tu Asistente de Voz.
+          <button
+            onClick={handleClaimTrial}
+            className="ml-3 inline-flex items-center px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            Activar prueba gratis
+          </button>
+        </div>
+      )}
+
+      {/* 🟡 Caso 2: trial activo sin plan pago → permitir edición */}
+      {!tieneMembresia && trialActivo && (
+        <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-100 rounded text-sm text-center">
+          🟡 Estás en <strong>prueba gratis</strong>. Puedes configurar Voz.
+        </div>
+      )}
+
+      {/* 🔴 Caso 3: sin plan ni trial → bloqueado */}
+      {!canEdit && !trialDisponible && !trialActivo && (
+        <div className="mb-6 p-4 bg-red-500/20 border border-red-400 text-red-100 rounded text-sm text-center">
+          🚫 Tu membresía está inactiva. No puedes guardar cambios.
+          <button
+            onClick={() => router.push("/upgrade")}
+            className="ml-3 inline-flex items-center px-3 py-1.5 rounded bg-red-600 hover:bg-red-700 text-white"
+          >
+            Activar plan
+          </button>
+        </div>
+      )}
+
       <TrainingHelp context="voice" />
 
       {!canVoice && (
@@ -429,19 +522,24 @@ export default function VoiceConfigPage() {
       <VoiceMinutesCard />
 
       <div className="flex space-x-4 mb-6">
-        {idiomasDisponibles.map((lang) => (
-          <button
-            key={lang.value}
-            className={`px-4 py-2 rounded ${idioma === lang.value ? "bg-purple-600 text-white" : "bg-gray-200"}`}
-            onClick={() => setIdioma(lang.value)}
-            disabled={disabledAll}
-            aria-disabled={disabledAll}
-            title={disabledAll ? "Bloqueado por tu plan" : ""}
-          >
-            {lang.label}
-          </button>
-        ))}
-      </div>
+      {idiomasDisponibles.map((lang) => (
+        <button
+          key={lang.value}
+          type="button"
+          onClick={() => setIdioma(lang.value)}
+          disabled={disabledAll}
+          className={`px-4 py-2 rounded ${
+            idioma === lang.value
+              ? "bg-purple-600 text-white"
+              : "bg-gray-200 text-gray-900 hover:bg-gray-300"
+          }`}
+          title={disabledAll ? "Bloqueado por tu plan" : ""}
+          aria-pressed={idioma === lang.value}
+        >
+          {lang.label}
+        </button>
+      ))}
+    </div>
 
       {!tieneMembresia && (
         <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-6 text-sm border border-yellow-400">
@@ -458,7 +556,7 @@ export default function VoiceConfigPage() {
         className="mb-10"
       >
         <input type="hidden" name="idioma" value={idioma} />
-        <input type="hidden" name="canal" value="voice" />
+        <input type="hidden" name="canal" value="voz" />
         <input type="hidden" name="tenant_id" value={tenantId || ""} />
 
         <div className="grid grid-cols-1 gap-6 mb-6">
@@ -602,11 +700,18 @@ export default function VoiceConfigPage() {
           </div>
           <button
             type="button"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4"
+            className={`px-4 py-2 rounded mb-4 ${
+              (!canEdit || disabledAll) ? "bg-gray-400 text-white/80" : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
             onClick={(e) => {
               if (verificarPermiso(e)) agregarLink();
             }}
-            disabled={!tieneMembresia}
+            disabled={!canEdit || disabledAll}
+            title={
+              disabledAll
+                ? "Bloqueado por tu plan"
+                : (!canEdit ? (trialDisponible ? "Activa tu prueba gratis" : "Requiere membresía") : "")
+            }
           >
             Agregar link útil
           </button>
@@ -653,13 +758,17 @@ export default function VoiceConfigPage() {
             <button
               type="submit"
               className={`px-6 py-2 rounded shadow text-white ${
-                (!tieneMembresia || !e164Ok || disabledAll)
+                (!canEdit || !e164Ok || disabledAll)
                   ? 'bg-gray-400'
                   : 'bg-green-600 hover:bg-green-700'
               }`}
-              disabled={!tieneMembresia || !e164Ok || disabledAll}
-              aria-disabled={!tieneMembresia || !e164Ok || disabledAll}
-              title={disabledAll ? "Bloqueado por tu plan" : (!tieneMembresia ? "Requiere membresía" : (!e164Ok ? "Teléfono inválido" : ""))}
+              disabled={!canEdit || !e164Ok || disabledAll}
+              aria-disabled={!canEdit || !e164Ok || disabledAll}
+              title={
+                disabledAll
+                  ? "Bloqueado por tu plan"
+                  : (!canEdit ? (trialDisponible ? "Activa tu prueba gratis" : "Requiere membresía") : (!e164Ok ? "Teléfono inválido" : ""))
+              }
             >
               Guardar configuración
             </button>
