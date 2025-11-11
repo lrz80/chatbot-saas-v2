@@ -32,10 +32,11 @@ export default function TrainingPage() {
   const bloquearSiNoMembresia = async (
     callback: () => Promise<void> | void
   ): Promise<void> => {
-    if (!settings.membresia_activa) {
+    if (!settings.can_edit) {
       router.push("/upgrade");
       return;
     }
+
     await callback();
   };
   const previewRef = useRef<HTMLDivElement | null>(null);
@@ -76,16 +77,21 @@ export default function TrainingPage() {
     categoria: "",
     prompt: "Eres un asistente útil.",
     bienvenida: "¡Hola! ¿En qué puedo ayudarte hoy?",
-    membresia_activa: true,
     informacion_negocio: "",
     funciones_asistente: "",
     info_clave: "",
     idioma: "es",
     cta_text: "",
     cta_url: "",
+    // ✅ Membresía/trial defaults
+    membresia_activa: false,
+    can_edit: false,
+    trial_disponible: false,
+    trial_activo: false,
+    estado_membresia_texto: "",
   });
 
-  const isMembershipActive = settings.membresia_activa;
+  const isMembershipActive = !!settings.can_edit; // permite edición con plan activo o trial vigente
   
   useEffect(() => {
     if (!chatContainerRef.current) return;
@@ -113,10 +119,16 @@ export default function TrainingPage() {
             informacion_negocio: data.informacion_negocio || prev.informacion_negocio,
             funciones_asistente: data.funciones_asistente || prev.funciones_asistente,
             info_clave: data.info_clave || prev.info_clave,
-            membresia_activa: data.membresia_activa,
+            // ⬇️  claves de membresía/trial nuevas
+            membresia_activa: !!data.membresia_activa,
             idioma: data.idioma || prev.idioma,
             cta_text: data.cta_text ?? prev.cta_text,
             cta_url:  data.cta_url  ?? prev.cta_url,
+
+            trial_disponible: !!data.trial_disponible,
+            trial_activo: !!(data.trial_vigente || data.trial_activo),
+            can_edit: !!(data.can_edit ?? data.membresia_activa ?? data.trial_vigente),
+            estado_membresia_texto: data.estado_membresia_texto || '',
           }));
           setMessages([{ role: "assistant", content: data.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?" }]);
         }
@@ -152,7 +164,7 @@ export default function TrainingPage() {
   };
 
   const canWhats = channelState?.enabled === true && !channelState?.maintenance;
-  const disabledAll = !canWhats || !isMembershipActive;
+  const disabledAll = !isMembershipActive || !canWhats;
 
   const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
     if (channelState?.maintenance) {
@@ -165,12 +177,14 @@ export default function TrainingPage() {
       alert("📴 El canal WhatsApp está deshabilitado en tu configuración.");
       return false;
     }
-    if (!isMembershipActive) {
+    if (!settings.can_edit) {
       e?.preventDefault();
-      alert("⚠️ Activa tu membresía para usar este canal.");
+      // Si no puede editar, puede ser que tenga trial disponible => lo mandaremos al flujo correcto con el banner
+      alert("⚠️ Activa un plan o tu prueba gratis para usar este canal.");
       router.push("/upgrade");
       return false;
     }
+
     return true;
   };
 
@@ -523,12 +537,58 @@ export default function TrainingPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
   
-        {!settings.membresia_activa && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
-            ⚠ Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.
+        {/* 🎁 Caso 1: Nunca ha usado el trial → invitar a activar prueba */}
+        {settings?.trial_disponible && !settings?.can_edit && (
+          <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded-lg text-center font-medium">
+            🎁 <strong>Activa tu prueba gratis</strong> y empieza a entrenar tu asistente ahora.
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch(`${BACKEND_URL}/api/billing/claim-trial`, {
+                    method: 'POST',
+                    credentials: 'include',
+                  });
+                  if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    alert(`❌ ${data?.error || 'No se pudo activar la prueba'}`);
+                    return;
+                  }
+                  alert('✅ ¡Prueba gratis activada!');
+                  // recargar settings
+                  const s = await fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, { credentials: 'include' });
+                  if (s.ok) {
+                    const data = await s.json();
+                    setSettings((prev) => ({ ...prev, ...data, can_edit: !!(data.can_edit ?? data.membresia_activa ?? data.trial_vigente) }));
+                  }
+                } catch (e) {
+                  console.error(e);
+                  alert('❌ Error activando la prueba');
+                }
+              }}
+              className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
+            >
+              Activar prueba gratis
+            </button>
           </div>
         )}
-  
+
+        {/* 🟡 Caso 2: Trial activo (puede editar) → aviso informativo */}
+        {!settings?.membresia_activa && settings?.trial_activo && (
+          <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded-lg text-center font-medium">
+            🟡 Estás usando la <strong>prueba gratis</strong>. ¡Aprovecha para configurar tu asistente!
+          </div>
+        )}
+
+        {/* 🔴 Caso 3: Sin plan y sin trial activo → banner de inactiva */}
+        {!settings?.can_edit && !settings?.trial_disponible && !settings?.trial_activo && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
+            🚫 Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.{' '}
+            <a onClick={() => router.push('/upgrade')} className="underline cursor-pointer">
+              Activa un plan para continuar.
+            </a>
+          </div>
+        )}
+
         <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
           <SiWhatsapp size={36} className="text-green-400 animate-pulse" />
           Configuración del Asistente de WhatsApp
@@ -553,13 +613,6 @@ export default function TrainingPage() {
             <p className="text-sm mb-0">
               Actívalo en tu configuración o actualiza tu plan si aplica.
             </p>
-          </div>
-        )}
-
-        {/* 🔒 Membresía inactiva (mantén visible la UI pero bloquea acciones) */}
-        {!isMembershipActive && (
-          <div className="mb-6 p-3 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded text-sm">
-            ⚠️ Tu membresía está inactiva. Puedes ver la configuración, pero no guardar ni entrenar hasta activarla.
           </div>
         )}
 
