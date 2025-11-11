@@ -20,6 +20,7 @@ import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { DateTime } from "luxon";
 import { useSearchParams } from "next/navigation";
 import { useFeatures } from '@/hooks/usePlan';
+import ChannelStatus from "@/components/ChannelStatus";
 
 export default function CampaignsSmsClient() {
   const [form, setForm] = useState({
@@ -54,7 +55,7 @@ export default function CampaignsSmsClient() {
  const [channelState, setChannelState] = useState<ChannelState | null>(null);
  const loadingChannel = channelState === null;
  const canSmsPlan = !loadingPlan && !!features?.sms; // del plan
- const canSms = canSmsPlan && channelState?.enabled === true;
+ const canSms = !!channelState?.enabled;
  const disabledAll = !canSms || !membresiaActiva;
 
   useEffect(() => {
@@ -526,26 +527,9 @@ export default function CampaignsSmsClient() {
         <SiTwilio className="text-red-300 animate-pulse" /> Campañas por SMS
       </h1>
 
-      {!loadingChannel && channelState && (
-        <div className="mb-4 text-sm">
-          Estado del canal:{" "}
-          {channelState.maintenance ? (
-            <span className="px-2 py-0.5 rounded bg-red-600/30 text-red-300">
-              En mantenimiento{channelState.maintenance_message ? ` — ${channelState.maintenance_message}` : ""}
-            </span>
-          ) : channelState.enabled ? (
-            <span className="px-2 py-0.5 rounded bg-green-600/30 text-green-300">Habilitado</span>
-          ) : (
-            <span className="px-2 py-0.5 rounded bg-yellow-600/30 text-yellow-200">
-              Bloqueado { !channelState.plan_enabled
-                ? "por tu plan"
-                : !channelState.settings_enabled
-                ? "por configuración del canal"
-                : "" }
-            </span>
-          )}
-        </div>
-      )}
+      <ChannelStatus canal="sms" showBanner hideTitle />
+
+      <TrainingHelp context="campaign-sms" />
 
       {contactosOk && (
         <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
@@ -577,8 +561,6 @@ export default function CampaignsSmsClient() {
           </div>
         </div>
       )}
-
-      <TrainingHelp context="campaign-sms" />
 
       {usoSms && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
