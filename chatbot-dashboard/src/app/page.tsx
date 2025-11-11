@@ -41,12 +41,12 @@ const features = [
   {
     icon: <FaFacebookMessenger size={28} className="text-blue-400 drop-shadow" />,
     title: "Facebook (próximamente)",
-    description: "Atiende consultas y vende directamente desde Messenger con IA natural.",
+    description: "La automatización en Messenger estará disponible muy pronto. Estamos en revisión con Meta.",
   },
   {
     icon: <FaInstagram size={28} className="text-pink-400 drop-shadow" />,
     title: "Instagram (próximamente)",
-    description: "Responde mensajes y dirige a venta desde los DMs de Instagram en minutos.",
+    description: "Automatiza mensajes directos en Instagram. Función habilitada tras revisión de Meta.",
   },
   {
     icon: <FaMicrophoneAlt size={28} className="text-indigo-400 drop-shadow" />,
@@ -61,13 +61,13 @@ const features = [
   {
     icon: <FaBullhorn size={28} className="text-orange-400 drop-shadow" />,
     title: "Campañas de Marketing",
-    description: "Crea y programa campañas por Email y SMS con promociones personalizadas.",
+    description: "Crea y programa campañas por WhatsApp, Email o SMS con promociones personalizadas.",
   },
-  // {
-  // icon: <FaInstagram size={28} className="text-pink-300 drop-shadow" />,
-  // title: "Auto-publicaciones (próximamente)",
-  // description: "Programa publicaciones automáticas en Instagram y Facebook. En desarrollo.",
-  // },
+  {
+    icon: <FaInstagram size={28} className="text-pink-300 drop-shadow" />,
+    title: "Auto-publicaciones (próximamente)",
+    description: "Programa publicaciones automáticas en Instagram y Facebook. En desarrollo.",
+  },
 ];
 
 export default function LandingPage() {
