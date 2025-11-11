@@ -13,6 +13,7 @@ import FaqSection from "@/components/FaqSection";
 import type { FaqSugerida } from "@/components/FaqSection";
 import IntentSection, { Intent } from "@/components/IntentSection";
 import CTASection from "@/components/CTASection";
+import ChannelStatus from "@/components/ChannelStatus";
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
@@ -144,7 +145,7 @@ export default function TrainingPage() {
     };
   
     fetchAll();
-  }, [router]);  
+  }, []);  
   
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
@@ -533,6 +534,10 @@ export default function TrainingPage() {
           Configuración del Asistente de WhatsApp
         </h1>
   
+        <ChannelStatus canal="whatsapp" showBanner hideTitle />
+
+        <TrainingHelp context="training" />
+
         {/* 🛠️ Mantenimiento real */}
         {channelState?.maintenance && (
           <div className="mb-6 p-4 bg-red-600/15 border border-red-600/40 text-red-200 rounded">
@@ -557,8 +562,6 @@ export default function TrainingPage() {
             ⚠️ Tu membresía está inactiva. Puedes ver la configuración, pero no guardar ni entrenar hasta activarla.
           </div>
         )}
-
-        <TrainingHelp context="training" />
 
         {usoWhatsapp && (
           <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
