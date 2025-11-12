@@ -65,82 +65,102 @@ export default function ChannelStatus({
 
   // PILL
   const pill = (() => {
-    if (loading) {
-      return (
-        <span className="rounded-full px-2 py-1 text-xs font-semibold bg-zinc-700/40 text-zinc-300 animate-pulse">
-          Cargando…
-        </span>
-      );
-    }
-    if (!status) {
-      return (
-        <span className="rounded-full px-2 py-1 text-xs font-semibold bg-zinc-700/40 text-zinc-300">
-          Sin datos
-        </span>
-      );
-    }
-    const blocked = !!status.blocked;
-    const text = blocked ? "Bloqueado por tu plan" : "Activo";
-    const color = blocked
-      ? "bg-yellow-700/40 text-yellow-200"
-      : "bg-green-700/40 text-green-200";
+  if (loading) {
     return (
-      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${color}`}>
-        {text}
+      <span className="rounded-full px-2 py-1 text-xs font-semibold bg-zinc-700/40 text-zinc-300 animate-pulse">
+        Cargando…
       </span>
     );
+  }
+  if (!status) {
+    return (
+      <span className="rounded-full px-2 py-1 text-xs font-semibold bg-zinc-700/40 text-zinc-300">
+        Sin datos
+      </span>
+    );
+  }
+
+  // ✅ Considera bloqueo por plan aunque `blocked` venga false
+  const isPlanBlocked = status.blocked_by_plan || status.reason === "plan";
+  const isMaint = status.reason === "maintenance";
+  const isPaused = status.reason === "paused";
+
+  const blocked = status.blocked || isPlanBlocked || isMaint || isPaused;
+
+  let text = "Activo";
+  if (blocked) {
+    if (isPlanBlocked) text = "Bloqueado por tu plan";
+    else if (isMaint) text = "En mantenimiento";
+    else if (isPaused) text = "En pausa";
+    else text = "Bloqueado";
+  }
+
+  const color = blocked
+    ? "bg-yellow-700/40 text-yellow-200"
+    : "bg-green-700/40 text-green-200";
+
+  return (
+    <span className={`rounded-full px-2 py-1 text-xs font-semibold ${color}`}>
+      {text}
+    </span>
+  );
   })();
 
   // BANNER
   const banner = (() => {
-    if (!showBanner || loading || !status) return null;
-    if (!status.blocked) return null;
+  if (!showBanner || loading || !status) return null;
 
-    let title = `${label} está bloqueado`;
-    let body = "Tu plan actual no incluye este canal.";
-    let action = "Actualizar plan";
+  // ✅ Muestra banner si está bloqueado por plan aunque `blocked` sea false
+  const isPlanBlocked = status.blocked_by_plan || status.reason === "plan";
+  const isMaint = status.reason === "maintenance";
+  const isPaused = status.reason === "paused";
+  const shouldShow =
+    status.blocked || isPlanBlocked || isMaint || isPaused;
 
-    if (status.reason === "maintenance") {
-      title = `${label} en mantenimiento`;
-      body =
-        status.maintenance_message ||
-        "Este canal está temporalmente en mantenimiento.";
-      action = "Volver más tarde";
-    } else if (status.reason === "paused") {
-      title = `${label} en pausa`;
-      body = status.paused_until
-        ? `Este canal se reanudará aprox. el ${new Date(
-            status.paused_until
-          ).toLocaleString()}.`
-        : "Este canal está en pausa temporal.";
-      action = "Volver más tarde";
-    }
+  if (!shouldShow) return null;
 
-    const isPlan = status.reason === "plan";
+  let title = `${label} está bloqueado`;
+  let body = "Tu plan actual no incluye este canal.";
+  let action = "Actualizar plan";
+  let isPlan = true;
 
-    return (
-      <div className="rounded-md border border-yellow-700/30 bg-yellow-900/30 p-4 text-yellow-100">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="font-semibold mb-1">{title}</div>
-            <div className="text-sm opacity-80">{body}</div>
-          </div>
-          <a
-            href={isPlan ? "/upgrade" : "#"}
-            className={`shrink-0 rounded-md px-3 py-2 text-sm font-semibold ${
-              isPlan
-                ? "bg-indigo-600 text-white hover:bg-indigo-500"
-                : "bg-zinc-700 text-white cursor-default"
-            }`}
-            onClick={(e) => {
-              if (!isPlan) e.preventDefault();
-            }}
-          >
-            {action}
-          </a>
+  if (isMaint) {
+    title = `${label} en mantenimiento`;
+    body = status.maintenance_message || "Este canal está temporalmente en mantenimiento.";
+    action = "Volver más tarde";
+    isPlan = false;
+  } else if (isPaused) {
+    title = `${label} en pausa`;
+    body = status.paused_until
+      ? `Este canal se reanudará aprox. el ${new Date(status.paused_until).toLocaleString()}.`
+      : "Este canal está en pausa temporal.";
+    action = "Volver más tarde";
+    isPlan = false;
+  }
+
+  return (
+    <div className="rounded-md border border-yellow-700/30 bg-yellow-900/30 p-4 text-yellow-100">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="font-semibold mb-1">{title}</div>
+          <div className="text-sm opacity-80">{body}</div>
         </div>
+        <a
+          href={isPlan ? "/upgrade" : "#"}
+          className={`shrink-0 rounded-md px-3 py-2 text-sm font-semibold ${
+            isPlan
+              ? "bg-indigo-600 text-white hover:bg-indigo-500"
+              : "bg-zinc-700 text-white cursor-default"
+          }`}
+          onClick={(e) => {
+            if (!isPlan) e.preventDefault();
+          }}
+        >
+          {action}
+        </a>
       </div>
-    );
+    </div>
+  );
   })();
 
   return (
