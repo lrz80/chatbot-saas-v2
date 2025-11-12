@@ -53,10 +53,14 @@ export default function CampaignsSmsClient() {
    maintenance_message?: string | null;
  };
  const [channelState, setChannelState] = useState<ChannelState | null>(null);
+ const [trialDisponible, setTrialDisponible] = useState<boolean>(false);
+ const [trialActivo, setTrialActivo] = useState<boolean>(false);
+ const [canEdit, setCanEdit] = useState<boolean>(false);
+
  const loadingChannel = channelState === null;
  const canSmsPlan = !loadingPlan && !!features?.sms; // del plan
  const canSms = !!channelState?.enabled;
- const disabledAll = !canSms || !membresiaActiva;
+ const disabledAll = !canSms || !canEdit;
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -97,6 +101,13 @@ export default function CampaignsSmsClient() {
       .then((res) => res.json())
       .then((data) => {
         setMembresiaActiva(data?.membresia_activa === true);
+        setTrialDisponible(Boolean(data?.trial_disponible));
+        setTrialActivo(Boolean(data?.trial_vigente || data?.trial_activo));
+        setCanEdit(Boolean(
+          data?.can_edit ??
+          data?.membresia_activa ??
+          (data?.trial_vigente || data?.trial_activo)
+        ));
       })
       .catch(err => console.error("❌ Error obteniendo membresía:", err));
 
@@ -459,11 +470,13 @@ export default function CampaignsSmsClient() {
       }
       return true;
     }
-    if (!membresiaActiva) {
+    if (!canEdit) {
+      // sin plan y sin trial vigente → upgrade
       const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
       if (confirmar) window.location.href = "/upgrade";
       return true;
     }
+
     return false; // OK para continuar
   };
 
@@ -521,6 +534,35 @@ export default function CampaignsSmsClient() {
     fn();
   };
 
+  const handleClaimTrial = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/billing/claim-trial`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(`❌ ${j?.error || 'No se pudo activar la prueba'}`);
+        return;
+      }
+      alert('✅ ¡Prueba gratis activada!');
+      // refrescamos settings para actualizar banners y canEdit
+      await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include', cache: 'no-store' })
+        .then(r => r.json())
+        .then(d => {
+          setMembresiaActiva(d?.membresia_activa === true);
+          setTrialDisponible(Boolean(d?.trial_disponible));
+          setTrialActivo(Boolean(d?.trial_vigente || d?.trial_activo));
+          setCanEdit(Boolean(
+            d?.can_edit ?? d?.membresia_activa ?? (d?.trial_vigente || d?.trial_activo)
+          ));
+        }).catch(() => {});
+    } catch (e) {
+      console.error(e);
+      alert('❌ Error activando la prueba');
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
@@ -528,6 +570,36 @@ export default function CampaignsSmsClient() {
       </h1>
 
       <ChannelStatus canal="sms" showBanner hideTitle />
+
+      {/* 🎁 Caso 1: Nunca usó trial → invitar a activar prueba */}
+      {trialDisponible && !canEdit && (
+        <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center font-medium">
+          🎁 <strong>Activa tu prueba gratis</strong> y envía tus primeras campañas SMS.
+          <button
+            onClick={handleClaimTrial}
+            className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
+          >
+            Activar prueba gratis
+          </button>
+        </div>
+      )}
+
+      {/* 🟡 Caso 2: Trial activo (puede editar/enviar) → aviso informativo */}
+      {!membresiaActiva && trialActivo && (
+        <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
+          🟡 Estás usando la <strong>prueba gratis</strong>. ¡Aprovecha para programar tu campaña SMS!
+        </div>
+      )}
+
+      {/* 🔴 Caso 3: Sin plan ni trial vigente → bloqueo con CTA a upgrade */}
+      {!canEdit && !trialDisponible && !trialActivo && (
+        <div className="mb-6 p-4 bg-red-500/20 border border-red-400 text-red-200 rounded text-center font-medium">
+          🚫 Tu membresía está inactiva. No puedes programar campañas por SMS.{` `}
+          <a onClick={() => (window.location.href = "/upgrade")} className="underline cursor-pointer">
+            Activa un plan para continuar.
+          </a>
+        </div>
+      )}
 
       <TrainingHelp context="campaign-sms" />
 
