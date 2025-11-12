@@ -681,29 +681,6 @@ export default function CampaignsEmailClient() {
           </div>
         )}
 
-        {(!channelState?.maintenance && channelState?.enabled === false) && (
-          <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
-            <p className="font-semibold mb-1">Email está bloqueado en tu plan actual</p>
-            <p className="text-sm mb-3">
-              {esTrial
-                ? <>Durante el período de prueba solo está habilitado <b>WhatsApp</b>.</>
-                : <>
-                    {channelState?.plan_enabled === false
-                      ? "Tu plan no incluye campañas por Email."
-                      : "El canal está deshabilitado en tu configuración."}
-                  </>}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => (window.location.href = "/upgrade")}
-                className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white"
-              >
-                Actualizar plan
-              </button>
-            </div>
-          </div>
-        )}
-
         {usoEmail && (
           <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
             <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
