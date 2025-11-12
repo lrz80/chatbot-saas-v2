@@ -528,35 +528,7 @@ const handleDisconnect = async () => {
           <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center font-medium">
             🎁 <strong>Activa tu prueba gratis</strong> y comienza a usar el canal Meta.
             <button
-              onClick={async () => {
-                try {
-                  const r = await fetch(`${BACKEND_URL}/api/billing/claim-trial`, {
-                    method: "POST",
-                    credentials: "include",
-                  });
-                  if (!r.ok) {
-                    const j = await r.json().catch(() => ({}));
-                    alert(`❌ ${j?.error || 'No se pudo activar la prueba'}`);
-                    return;
-                  }
-                  alert("✅ ¡Prueba gratis activada!");
-                  // refresca las flags
-                  const sres = await fetch(`${BACKEND_URL}/api/settings`, { credentials: "include", cache: "no-store" });
-                  if (sres.ok) {
-                    const sdata = await sres.json();
-                    setSettings((prev) => ({
-                      ...prev,
-                      membresia_activa: Boolean(sdata?.membresia_activa),
-                      trial_disponible: Boolean(sdata?.trial_disponible),
-                      trial_activo: Boolean(sdata?.trial_vigente || sdata?.trial_activo),
-                      can_edit: Boolean(sdata?.can_edit ?? sdata?.membresia_activa ?? (sdata?.trial_vigente || sdata?.trial_activo)),
-                    }));
-                  }
-                } catch(e) {
-                  console.error(e);
-                  alert("❌ Error activando la prueba");
-                }
-              }}
+              onClick={() => router.push('/upgrade')}
               className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
             >
               Activar prueba gratis

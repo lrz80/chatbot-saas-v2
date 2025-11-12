@@ -477,7 +477,7 @@ export default function VoiceConfigPage() {
         <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-sm text-center">
           🎁 <strong>Activa tu prueba gratis</strong> para configurar tu Asistente de Voz.
           <button
-            onClick={handleClaimTrial}
+            onClick={() => router.push('/upgrade')}
             className="ml-3 inline-flex items-center px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-700 text-white"
           >
             Activar prueba gratis

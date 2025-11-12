@@ -648,7 +648,7 @@ export default function CampaignsEmailClient() {
           <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center font-medium">
             🎁 <strong>Activa tu prueba gratis</strong> y lanza tu primera campaña por Email.
             <button
-              onClick={handleClaimTrial}
+              onClick={() => (window.location.href = '/upgrade')}
               className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
             >
               Activar prueba gratis

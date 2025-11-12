@@ -468,7 +468,7 @@ const handleSave = async () => {
         <div className="mt-4 mb-2 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center font-medium">
           🎁 <strong>Activa tu prueba gratis</strong> y comienza a entrenar tu asistente ahora.
           <button
-            onClick={handleClaimTrial}
+            onClick={() => router.push('/upgrade')}
             className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
           >
             Activar prueba gratis
