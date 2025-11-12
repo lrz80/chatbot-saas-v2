@@ -64,9 +64,15 @@ export default function CampaignsEmailClient() {
  };
  const [channelState, setChannelState] = useState<ChannelState | null>(null);
 
- const { esTrial } = useFeatures(); // si lo usas solo para el texto
- const canEmail = !!channelState?.enabled;     // ← verdad única
- const disabledAll = !canEmail || !membresiaActiva;
+ // Flags de membresía/trial venidos del backend (/api/settings)
+  const [canEdit, setCanEdit] = useState(false);
+  const [trialDisponible, setTrialDisponible] = useState(false);
+  const [trialActivo, setTrialActivo] = useState(false);
+  const [estadoMembresiaTexto, setEstadoMembresiaTexto] = useState<string>('');
+
+ const { esTrial } = useFeatures(); // opcional, solo para textos
+ const canEmail = !!channelState?.enabled;           // si el canal está habilitado
+ const disabledAll = !canEmail || !canEdit;          // ← ahora usa canEdit (plan activo o trial activo)
 
   const cargarCampañas = async () => {
     try {
@@ -139,7 +145,13 @@ export default function CampaignsEmailClient() {
   
         const data = await res.json();
         setMembresiaActiva(data?.membresia_activa === true);
-  
+        // Flags de membresía/trial provenientes del backend
+        setMembresiaActiva(data?.membresia_activa === true);
+        setCanEdit(Boolean(data?.can_edit));
+        setTrialDisponible(Boolean(data?.trial_disponible));
+        setTrialActivo(Boolean(data?.trial_vigente || data?.trial_activo));
+        setEstadoMembresiaTexto(String(data?.estado_membresia_texto || ''));
+
         // ✅ 2. Solo si pasa la validación, cargar todo lo demás
         await Promise.all([
           cargarCampañas(),
@@ -453,6 +465,32 @@ export default function CampaignsEmailClient() {
     colorBarra = "bg-yellow-400";
   }
 
+  const handleClaimTrial = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/billing/claim-trial`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(`❌ ${data?.error || 'No se pudo activar la prueba'}`);
+        return;
+      }
+      alert('✅ ¡Prueba gratis activada!');
+      // refrescamos settings/flags
+      const s = await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include' });
+      const j = await s.json();
+      setMembresiaActiva(j?.membresia_activa === true);
+      setCanEdit(Boolean(j?.can_edit));
+      setTrialDisponible(Boolean(j?.trial_disponible));
+      setTrialActivo(Boolean(j?.trial_vigente || j?.trial_activo));
+      setEstadoMembresiaTexto(String(j?.estado_membresia_texto || ''));
+    } catch (e) {
+      console.error(e);
+      alert('❌ Error activando la prueba');
+    }
+  };
+
   const cargarLogsPorCampaña = async (campaignId: number) => {
     try {
       let res = await fetch(`${BACKEND_URL}/api/email-status/?campaign_id=${campaignId}`, {
@@ -555,15 +593,18 @@ export default function CampaignsEmailClient() {
   ]);  
   
   const requerirMembresia = (callback?: () => void) => {
-    if (!membresiaActiva) {
-      const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
-      if (confirmar) {
-        window.location.href = "/upgrade";
-      }
+  if (!canEdit) {
+    if (trialDisponible) {
+      const confirma = window.confirm("Puedes activar tu prueba gratis ahora. ¿Deseas activarla?");
+      if (confirma) handleClaimTrial();
     } else {
-      if (callback) callback();
+      const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
+      if (confirmar) window.location.href = "/upgrade";
     }
-  };
+  } else {
+    if (callback) callback();
+  }
+};
   
    const guardEmail = () => {
       if (channelState?.maintenance) {
@@ -579,11 +620,18 @@ export default function CampaignsEmailClient() {
         }
         return true;
       }
-      if (!membresiaActiva) {
-        const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
-        if (confirmar) window.location.href = "/upgrade";
+      if (!canEdit) {
+        // No tiene plan activo ni trial vigente
+        if (trialDisponible) {
+          const confirma = window.confirm("Puedes activar tu prueba gratis ahora. ¿Deseas activarla?");
+          if (confirma) handleClaimTrial();
+        } else {
+          const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
+          if (confirmar) window.location.href = "/upgrade";
+        }
         return true;
       }
+
       return false;
     };
 
@@ -594,6 +642,36 @@ export default function CampaignsEmailClient() {
         </h1>
 
         <ChannelStatus canal="email" showBanner hideTitle />
+
+        {/* 🎁 Caso 1: Trial disponible (nunca lo usó) → invitar a activar */}
+        {trialDisponible && !canEdit && (
+          <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center font-medium">
+            🎁 <strong>Activa tu prueba gratis</strong> y lanza tu primera campaña por Email.
+            <button
+              onClick={handleClaimTrial}
+              className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
+            >
+              Activar prueba gratis
+            </button>
+          </div>
+        )}
+
+        {/* 🟡 Caso 2: Trial ACTIVO → permitir uso con mensaje informativo */}
+        {!membresiaActiva && trialActivo && (
+          <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
+            🟡 Estás usando la <strong>prueba gratis</strong>. ¡Aprovecha para enviar tus primeras campañas!
+          </div>
+        )}
+
+        {/* 🔴 Caso 3: Sin plan y sin trial activo → bloquear con CTA a upgrade */}
+        {!canEdit && !trialDisponible && !trialActivo && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-400 text-red-200 rounded text-center font-medium">
+            🚫 Tu membresía está inactiva. No puedes crear campañas.{` `}
+            <a onClick={() => (window.location.href = '/upgrade')} className="underline cursor-pointer">
+              Activa un plan para continuar.
+            </a>
+          </div>
+        )}
 
         <TrainingHelp context="campaign-email" />
 
@@ -757,7 +835,7 @@ export default function CampaignsEmailClient() {
               <button
                 onClick={() => {
                   if (!canEmail) { alert('Bloqueado por tu plan'); window.location.href='/upgrade'; return; }
-                  if (!membresiaActiva) return requerirMembresia();
+                  if (!canEdit) return requerirMembresia();
                   handleEliminarContactos();
                 }}
                 disabled={disabledAll}
@@ -771,7 +849,7 @@ export default function CampaignsEmailClient() {
                 <button
                   onClick={() => {
                     if (!canEmail) { alert('Bloqueado por tu plan'); window.location.href='/upgrade'; return; }
-                    if (!membresiaActiva) return requerirMembresia();
+                    if (!canEdit) return requerirMembresia();
                     handleSubirCsv();
                   }}
                   disabled={disabledAll}

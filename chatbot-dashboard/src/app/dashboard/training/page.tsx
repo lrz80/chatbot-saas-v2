@@ -14,6 +14,7 @@ import type { FaqSugerida } from "@/components/FaqSection";
 import IntentSection, { Intent } from "@/components/IntentSection";
 import CTASection from "@/components/CTASection";
 import ChannelStatus from "@/components/ChannelStatus";
+import MembershipBanner from "@/components/MembershipBanner";
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
@@ -537,37 +538,15 @@ export default function TrainingPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
   
-        {/* 🎁 Caso 1: Nunca ha usado el trial → invitar a activar prueba */}
+        {/* 🎁 Caso 1: Nunca ha usado el trial → invitar a activar prueba (vía Stripe) */}
         {settings?.trial_disponible && !settings?.can_edit && (
           <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded-lg text-center font-medium">
-            🎁 <strong>Activa tu prueba gratis</strong> y empieza a entrenar tu asistente ahora.
+            🎁 <strong>Prueba Aamy 14 días</strong> eligiendo un plan. La prueba se aplica automáticamente en Stripe.
             <button
-              onClick={async () => {
-                try {
-                  const res = await fetch(`${BACKEND_URL}/api/billing/claim-trial`, {
-                    method: 'POST',
-                    credentials: 'include',
-                  });
-                  if (!res.ok) {
-                    const data = await res.json().catch(() => ({}));
-                    alert(`❌ ${data?.error || 'No se pudo activar la prueba'}`);
-                    return;
-                  }
-                  alert('✅ ¡Prueba gratis activada!');
-                  // recargar settings
-                  const s = await fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, { credentials: 'include' });
-                  if (s.ok) {
-                    const data = await s.json();
-                    setSettings((prev) => ({ ...prev, ...data, can_edit: !!(data.can_edit ?? data.membresia_activa ?? data.trial_vigente) }));
-                  }
-                } catch (e) {
-                  console.error(e);
-                  alert('❌ Error activando la prueba');
-                }
-              }}
+              onClick={() => router.push('/upgrade?trial=1')}
               className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
             >
-              Activar prueba gratis
+              Elegir plan y probar gratis
             </button>
           </div>
         )}
