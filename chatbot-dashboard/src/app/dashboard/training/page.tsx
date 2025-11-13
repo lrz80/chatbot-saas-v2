@@ -93,6 +93,7 @@ export default function TrainingPage() {
   });
 
   const isMembershipActive = !!settings.can_edit; // permite edición con plan activo o trial vigente
+  const membershipInactive = !isMembershipActive; // ✅ agrega esta línea
   
   useEffect(() => {
     if (!chatContainerRef.current) return;
@@ -573,7 +574,12 @@ export default function TrainingPage() {
           Configuración del Asistente de WhatsApp
         </h1>
   
-        <ChannelStatus canal="whatsapp" showBanner hideTitle />
+        <ChannelStatus
+          canal="whatsapp"
+          showBanner
+          hideTitle
+          membershipInactive={membershipInactive} // ✅ nuevo
+        />
 
         <TrainingHelp context="training" />
 
