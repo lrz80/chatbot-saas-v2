@@ -713,8 +713,6 @@ const handleDisconnect = async () => {
         >
           <option value="es">Español</option>
           <option value="en">Inglés</option>
-          <option value="pt">Portugués</option>
-          <option value="fr">Francés</option>
         </select>
   
         <PromptGenerator
