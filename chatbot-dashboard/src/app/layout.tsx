@@ -20,6 +20,9 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
   },
   manifest: "/manifest.json",
+  other: {
+    "facebook-domain-verification": "yw55oh02053to5oxntgp0pvm19sw2z",
+  },
 };
 
 // ✅ Agrega esto justo debajo
