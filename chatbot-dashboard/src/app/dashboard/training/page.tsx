@@ -15,6 +15,7 @@ import IntentSection, { Intent } from "@/components/IntentSection";
 import CTASection from "@/components/CTASection";
 import ChannelStatus from "@/components/ChannelStatus";
 import MembershipBanner from "@/components/MembershipBanner";
+import ConnectWhatsAppButton from "@/components/ConnectWhatsAppButton";
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
@@ -167,6 +168,9 @@ export default function TrainingPage() {
 
   const canWhats = channelState?.enabled === true && !channelState?.maintenance;
   const disabledAll = !isMembershipActive || !canWhats;
+
+  const canConnectWhatsApp =
+    !!settings.can_edit && (channelState?.plan_enabled ?? true);
 
   const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
     if (channelState?.maintenance) {
@@ -580,6 +584,22 @@ export default function TrainingPage() {
           hideTitle
           membershipInactive={membershipInactive} // ✅ nuevo
         />
+
+        {/* Conexión de número oficial de WhatsApp */}
+        {canConnectWhatsApp && (
+          <section className="mt-4 mb-6 p-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10">
+            <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
+              <MdWhatsapp className="text-green-400" />
+              Conecta tu número de WhatsApp Business
+            </h2>
+            <p className="text-sm text-emerald-100 mb-3">
+              Vincula un nuevo número oficial mediante Twilio Embedded Signup.
+              Tus clientes verán tu nombre y foto de empresa en WhatsApp.
+            </p>
+
+            <ConnectWhatsAppButton />
+          </section>
+        )}
 
         <TrainingHelp context="training" />
 
