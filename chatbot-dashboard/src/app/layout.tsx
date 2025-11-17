@@ -8,11 +8,9 @@ import "react-toastify/dist/ReactToastify.css";
 import ClientWrapper from "./ClientWrapper";
 import ConditionalNavbar from "@/components/ConditionalNavbar";
 
-
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-// ✅ Mantén metadata sin themeColor
 export const metadata: Metadata = {
   title: "Aamy AI",
   description: "Automatiza tu negocio con Aamy.AI, tu asistente 24/7.",
@@ -20,12 +18,8 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
   },
   manifest: "/manifest.json",
-  other: {
-    "facebook-domain-verification": "yw55oh02053to5oxntgp0pvm19sw2z",
-  },
 };
 
-// ✅ Agrega esto justo debajo
 export const viewport = {
   themeColor: "#0f0a1e",
 };
@@ -35,8 +29,15 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es">
+      <head>
+        <meta
+          name="facebook-domain-verification"
+          content="yw55oh02053to5oxntgp0pvm19sw2z"
+        />
+      </head>
+
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ConditionalNavbar /> {/* ✅ Aquí va el navbar */}
+        <ConditionalNavbar />
         <ClientWrapper>{children}</ClientWrapper>
         <ToastContainer position="top-right" autoClose={3000} />
       </body>
