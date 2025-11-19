@@ -585,16 +585,15 @@ export default function TrainingPage() {
           membershipInactive={membershipInactive} // ✅ nuevo
         />
 
-        {/* Conexión de número oficial de WhatsApp */}
+        {/* Conexión de número oficial de WhatsApp (Meta Business / Cloud API) */}
         {canConnectWhatsApp && (
-          <section className="mt-4 mb-6 p-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10">
+          <section className="mt-4 mb-6 p-4 rounded-lg border border-green-500/40 bg-green-500/10">
             <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
               <MdWhatsapp className="text-green-400" />
-              Conecta tu número de WhatsApp Business
+              Conecta tu WhatsApp Business Oficial
             </h2>
-            <p className="text-sm text-emerald-100 mb-3">
-              Vincula un nuevo número oficial mediante Twilio Embedded Signup.
-              Tus clientes verán tu nombre y foto de empresa en WhatsApp.
+            <p className="text-sm text-green-100 mb-3">
+              Vincula tu cuenta de WhatsApp Business directamente con Meta (Cloud API).
             </p>
 
             <ConnectWhatsAppButton disabled={!canConnectWhatsApp} />
