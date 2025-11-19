@@ -1,69 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { BACKEND_URL } from "@/utils/api";
+import React from "react";
+import { MdWhatsapp } from "react-icons/md";
 
-export default function ConnectWhatsAppButton() {
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+type Props = {
+  disabled?: boolean;
+};
 
-  const handleClick = async () => {
-    try {
-      setLoading(true);
-      setErrorMsg(null);
+export default function ConnectWhatsAppButton({ disabled }: Props) {
+  // 👉 URL generado desde Meta, debes reemplazar con TU URL
+  const EMBEDDED_SIGNUP_URL =
+    "https://business.facebook.com/messaging/whatsapp/onboard/?app_id=672113805196816&config_id=1588077632361933";
 
-      const resp = await fetch(
-        `${BACKEND_URL}/api/twilio/whatsapp/start-embedded-signup`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}), // por si tu middleware espera JSON
-        }
-      );
-
-      if (!resp.ok) {
-        const txt = await resp.text().catch(() => "");
-        console.error("Error start-embedded-signup:", resp.status, txt);
-        setErrorMsg("No se pudo iniciar el registro de WhatsApp.");
-        return;
-      }
-
-      const data = await resp.json();
-
-      if (!data.signupUrl) {
-        console.error("Respuesta sin signupUrl:", data);
-        setErrorMsg("La respuesta no trajo el enlace de registro.");
-        return;
-      }
-
-      // Redirige al flujo Embedded Signup de Twilio
-      window.location.href = data.signupUrl;
-    } catch (err) {
-      console.error("Error inesperado:", err);
-      setErrorMsg("Ocurrió un error inesperado.");
-    } finally {
-      setLoading(false);
+  const handleConnect = () => {
+    if (!EMBEDDED_SIGNUP_URL) {
+      alert("No se encontró la URL de conexión. Contacta soporte.");
+      return;
     }
+    // Abrir en pestaña nueva (o popup si prefieres)
+    window.open(EMBEDDED_SIGNUP_URL, "_blank", "width=900,height=750");
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={loading}
-        className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-      >
-        {loading ? "Conectando WhatsApp..." : "Conectar WhatsApp"}
-      </button>
-      {errorMsg && (
-        <p className="text-xs text-red-500">
-          {errorMsg}
-        </p>
-      )}
-    </div>
+    <button
+      disabled={disabled}
+      onClick={handleConnect}
+      className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium transition
+        ${
+          !disabled
+            ? "bg-green-600 hover:bg-green-700 text-white"
+            : "bg-gray-600 text-white/50 cursor-not-allowed"
+        }`}
+    >
+      <MdWhatsapp className="mr-2" size={18} />
+      Conectar número oficial de WhatsApp
+    </button>
   );
 }

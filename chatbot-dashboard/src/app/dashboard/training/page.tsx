@@ -597,7 +597,7 @@ export default function TrainingPage() {
               Tus clientes verán tu nombre y foto de empresa en WhatsApp.
             </p>
 
-            <ConnectWhatsAppButton />
+            <ConnectWhatsAppButton disabled={!canConnectWhatsApp} />
           </section>
         )}
 
