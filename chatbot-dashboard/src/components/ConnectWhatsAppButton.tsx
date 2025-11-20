@@ -8,12 +8,12 @@ type Props = {
 };
 
 export default function ConnectWhatsAppButton({ disabled }: Props) {
-  // URL de callback a tu propio frontend
+  // URL a la que Meta redirige cuando el cliente termina el Embedded Signup de WhatsApp
   const redirectUri = encodeURIComponent(
     "https://www.aamy.ai/dashboard/whatsapp-connected"
   );
 
-  // URL de Embedded Signup con redirect_uri incluido
+  // URL de Embedded Signup con tu app_id, config_id y redirect_uri
   const EMBEDDED_SIGNUP_URL = `https://business.facebook.com/messaging/whatsapp/onboard/?app_id=672113805196816&config_id=1588077632361933&redirect_uri=${redirectUri}`;
 
   const handleConnect = () => {
@@ -22,6 +22,7 @@ export default function ConnectWhatsAppButton({ disabled }: Props) {
       return;
     }
 
+    // Abrimos el flujo oficial de WhatsApp en una nueva ventana
     window.open(EMBEDDED_SIGNUP_URL, "_blank", "width=900,height=750");
   };
 
