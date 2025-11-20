@@ -1,28 +1,30 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function WhatsAppRedirectPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const [saving, setSaving] = useState(true);
 
   useEffect(() => {
-    const saveWhatsAppData = async () => {
-      const waba_id = searchParams.get('waba_id');
-      const phone_number_id = searchParams.get('phone_number_id');
-      const access_token = searchParams.get('access_token');
-      const phone_number = searchParams.get('phone_number');
-      const state = searchParams.get('state'); // tenantId
-
-      if (!state) {
-        alert('No se encontró el TenantId (state).');
-        router.push('/dashboard/training');
-        return;
-      }
-
+    const run = async () => {
       try {
+        // 👇 Tomamos los parámetros desde la URL del navegador
+        const params = new URLSearchParams(window.location.search);
+
+        const waba_id = params.get('waba_id');
+        const phone_number_id = params.get('phone_number_id');
+        const access_token = params.get('access_token');
+        const phone_number = params.get('phone_number');
+        const state = params.get('state'); // tenantId
+
+        if (!state) {
+          alert('No se encontró el TenantId (state).');
+          router.push('/dashboard/training');
+          return;
+        }
+
+        // 👇 Enviamos los datos al backend para guardarlos en tenants
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/meta/whatsapp/onboard-complete`,
           {
@@ -38,24 +40,30 @@ export default function WhatsAppRedirectPage() {
           }
         );
 
-        if (!res.ok) throw new Error('Fallo al guardar WhatsApp');
+        if (!res.ok) {
+          console.error('❌ Error HTTP', res.status);
+          alert('No se pudo guardar la conexión de WhatsApp');
+          router.push('/dashboard/training');
+          return;
+        }
 
+        // ✅ Todo bien: volvemos al training con un query de éxito
         router.push('/dashboard/training?wa_connected=1');
       } catch (err) {
-        console.error(err);
-        alert('No se pudo guardar la conexión de WhatsApp');
+        console.error('❌ Error en WhatsAppRedirectPage:', err);
+        alert('No se pudo procesar la conexión de WhatsApp');
         router.push('/dashboard/training');
       }
     };
 
-    saveWhatsAppData();
-  }, [searchParams, router]);
+    run();
+  }, [router]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <h2 className="text-lg font-medium">Conectando WhatsApp...</h2>
-      <p className="text-sm text-gray-500 mt-2">
-        Espera un momento mientras guardamos la configuración.
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0e0e2c] text-white">
+      <h2 className="text-lg font-semibold">Conectando WhatsApp...</h2>
+      <p className="text-sm text-white/70 mt-2">
+        Espera un momento mientras guardamos la configuración de tu número.
       </p>
     </div>
   );
