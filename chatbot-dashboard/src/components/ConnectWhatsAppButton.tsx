@@ -9,8 +9,7 @@ type Props = {
 };
 
 export default function ConnectWhatsAppButton({ disabled, tenantId }: Props) {
-  const BASE_EMBEDDED_SIGNUP_URL =
-    "https://business.facebook.com/messaging/whatsapp/onboard/?app_id=672113805196816&config_id=1588077632361933";
+  const EMBEDDED_SIGNUP_URL = `https://business.facebook.com/messaging/whatsapp/onboard/?app_id=672113805196816&config_id=1588077632361933&redirect_uri=https://www.aamy.ai/meta/whatsapp-redirect&state=${tenantId}`;
 
   const handleConnect = () => {
     if (!tenantId) {
@@ -18,11 +17,7 @@ export default function ConnectWhatsAppButton({ disabled, tenantId }: Props) {
       return;
     }
 
-    const url = `${BASE_EMBEDDED_SIGNUP_URL}&state=${encodeURIComponent(
-      tenantId
-    )}`;
-
-    window.open(url, "_blank", "width=900,height=750");
+    window.open(EMBEDDED_SIGNUP_URL, "_blank", "width=900,height=750");
   };
 
   return (
