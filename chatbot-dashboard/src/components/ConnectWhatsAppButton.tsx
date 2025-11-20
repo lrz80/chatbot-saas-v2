@@ -8,16 +8,20 @@ type Props = {
 };
 
 export default function ConnectWhatsAppButton({ disabled }: Props) {
-  // 👉 URL generado desde Meta, debes reemplazar con TU URL
-  const EMBEDDED_SIGNUP_URL =
-    "https://business.facebook.com/messaging/whatsapp/onboard/?app_id=672113805196816&config_id=1588077632361933";
+  // URL de callback a tu propio frontend
+  const redirectUri = encodeURIComponent(
+    "https://www.aamy.ai/dashboard/whatsapp-connected"
+  );
+
+  // URL de Embedded Signup con redirect_uri incluido
+  const EMBEDDED_SIGNUP_URL = `https://business.facebook.com/messaging/whatsapp/onboard/?app_id=672113805196816&config_id=1588077632361933&redirect_uri=${redirectUri}`;
 
   const handleConnect = () => {
     if (!EMBEDDED_SIGNUP_URL) {
       alert("No se encontró la URL de conexión. Contacta soporte.");
       return;
     }
-    // Abrir en pestaña nueva (o popup si prefieres)
+
     window.open(EMBEDDED_SIGNUP_URL, "_blank", "width=900,height=750");
   };
 
