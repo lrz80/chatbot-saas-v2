@@ -5,25 +5,24 @@ import { MdWhatsapp } from "react-icons/md";
 
 type Props = {
   disabled?: boolean;
+  tenantId?: string;
 };
 
-export default function ConnectWhatsAppButton({ disabled }: Props) {
-  // URL a la que Meta redirige cuando el cliente termina el Embedded Signup de WhatsApp
-  const redirectUri = encodeURIComponent(
-    "https://www.aamy.ai/dashboard/whatsapp-connected"
-  );
-
-  // URL de Embedded Signup con tu app_id, config_id y redirect_uri
-  const EMBEDDED_SIGNUP_URL = `https://business.facebook.com/messaging/whatsapp/onboard/?app_id=672113805196816&config_id=1588077632361933&redirect_uri=${redirectUri}`;
+export default function ConnectWhatsAppButton({ disabled, tenantId }: Props) {
+  const BASE_EMBEDDED_SIGNUP_URL =
+    "https://business.facebook.com/messaging/whatsapp/onboard/?app_id=672113805196816&config_id=1588077632361933";
 
   const handleConnect = () => {
-    if (!EMBEDDED_SIGNUP_URL) {
-      alert("No se encontró la URL de conexión. Contacta soporte.");
+    if (!tenantId) {
+      alert("No se encontró el ID del negocio. Recarga la página o contacta soporte.");
       return;
     }
 
-    // Abrimos el flujo oficial de WhatsApp en una nueva ventana
-    window.open(EMBEDDED_SIGNUP_URL, "_blank", "width=900,height=750");
+    const url = `${BASE_EMBEDDED_SIGNUP_URL}&state=${encodeURIComponent(
+      tenantId
+    )}`;
+
+    window.open(url, "_blank", "width=900,height=750");
   };
 
   return (

@@ -19,6 +19,26 @@ import ConnectWhatsAppButton from "@/components/ConnectWhatsAppButton";
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
+type SettingsState = {
+  name: string;
+  categoria: string;
+  prompt: string;
+  bienvenida: string;
+  informacion_negocio: string;
+  funciones_asistente: string;
+  info_clave: string;
+  idioma: string;
+  cta_text: string;
+  cta_url: string;
+  membresia_activa: boolean;
+  can_edit: boolean;
+  trial_disponible: boolean;
+  trial_activo: boolean;
+  estado_membresia_texto: string;
+  // 👇 NUEVO: id del tenant
+  tenant_id?: string;
+};
+
 export default function TrainingPage() {
   const router = useRouter();
   type ChannelState = {
@@ -74,7 +94,7 @@ export default function TrainingPage() {
   const [faq, setFaq] = useState<Faq[]>([]); // Usa el tipo importado de FaqSection si prefieres
   const [faqSugeridas, setFaqSugeridas] = useState<FaqSugerida[]>([]);
   
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<SettingsState>({
     name: "",
     categoria: "",
     prompt: "Eres un asistente útil.",
@@ -85,12 +105,12 @@ export default function TrainingPage() {
     idioma: "es",
     cta_text: "",
     cta_url: "",
-    // ✅ Membresía/trial defaults
     membresia_activa: false,
     can_edit: false,
     trial_disponible: false,
     trial_activo: false,
     estado_membresia_texto: "",
+    tenant_id: undefined,
   });
 
   const isMembershipActive = !!settings.can_edit; // permite edición con plan activo o trial vigente
@@ -132,6 +152,7 @@ export default function TrainingPage() {
             trial_activo: !!(data.trial_vigente || data.trial_activo),
             can_edit: !!(data.can_edit ?? data.membresia_activa ?? data.trial_vigente),
             estado_membresia_texto: data.estado_membresia_texto || '',
+            tenant_id: data.tenant_id || data.id || prev.tenant_id,
           }));
           setMessages([{ role: "assistant", content: data.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?" }]);
         }
@@ -586,19 +607,10 @@ export default function TrainingPage() {
         />
 
         {/* Conexión de número oficial de WhatsApp (Meta Business / Cloud API) */}
-        {canConnectWhatsApp && (
-          <section className="mt-4 mb-6 p-4 rounded-lg border border-green-500/40 bg-green-500/10">
-            <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
-              <MdWhatsapp className="text-green-400" />
-              Conecta tu WhatsApp Business Oficial
-            </h2>
-            <p className="text-sm text-green-100 mb-3">
-              Vincula tu cuenta de WhatsApp Business directamente con Meta (Cloud API).
-            </p>
-
-            <ConnectWhatsAppButton disabled={!canConnectWhatsApp} />
-          </section>
-        )}
+        <ConnectWhatsAppButton
+          disabled={!canConnectWhatsApp}
+          tenantId={settings.tenant_id}
+        />
 
         <TrainingHelp context="training" />
 
