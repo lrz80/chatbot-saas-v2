@@ -11,61 +11,59 @@ export default function RedirectClient() {
   const [message, setMessage] = useState<string>("Procesando conexión...");
 
   useEffect(() => {
-    const code = searchParams.get("code");
-    const state = searchParams.get("state"); // tenantId que mandamos en el botón
+    const waWabaId = searchParams.get("wa_waba_id");
+    const waPhoneNumberId = searchParams.get("wa_phone_number_id");
+    const businessId = searchParams.get("waba_business_id") || searchParams.get("business_id");
+    const tenantId = searchParams.get("state"); // el ID que tú enviaste
 
-    console.log("🔁 /meta/whatsapp-redirect → code:", code, "state:", state);
+    console.log("🔁 Callback params:", {
+      waWabaId,
+      waPhoneNumberId,
+      businessId,
+      tenantId,
+    });
 
-    if (!code || !state) {
+    if (!waWabaId || !waPhoneNumberId || !tenantId) {
       setStatus("error");
       setMessage(
-        "No se recibieron los datos de Meta correctamente. Cierra esta ventana e inténtalo de nuevo."
+        "Meta no devolvió los datos necesarios. Cierra esta ventana e inténtalo de nuevo."
       );
       return;
     }
 
     const run = async () => {
       try {
-        const res = await fetch(
-          `${BACKEND_URL}/api/meta/whatsapp/onboard-complete`,
-          {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              code,
-              // por ahora solo enviamos el code; en el siguiente paso podremos
-              // usar este code en el backend para leer waba_id y phone_number_id
-            }),
-          }
-        );
+        const res = await fetch(`${BACKEND_URL}/api/meta/whatsapp/onboard-complete`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tenantId,
+            waWabaId,
+            waPhoneNumberId,
+            businessId,
+          }),
+        });
 
-        const json = await res.json().catch(() => ({} as any));
-        console.log("✅ Respuesta /onboard-complete:", res.status, json);
+        const json = await res.json().catch(() => ({}));
+        console.log("💾 Backend response:", res.status, json);
 
         if (!res.ok) {
           setStatus("error");
-          setMessage(
-            json?.error ||
-              "Ocurrió un error guardando la conexión de WhatsApp en Aamy."
-          );
+          setMessage(json?.error || "Error guardando datos en Aamy.");
           return;
         }
 
         setStatus("ok");
-        setMessage("WhatsApp conectado correctamente. Volviendo al dashboard...");
+        setMessage("WhatsApp conectado correctamente. Regresando al dashboard...");
 
         setTimeout(() => {
-          router.push("/dashboard/training");
-        }, 2500);
-      } catch (e) {
-        console.error("❌ Error llamando /onboard-complete:", e);
+          router.replace("/dashboard/training");
+        }, 2000);
+      } catch (err) {
+        console.error("❌ Error conectando con el backend:", err);
         setStatus("error");
-        setMessage(
-          "Error de red al conectar con Aamy. Cierra esta ventana e inténtalo de nuevo."
-        );
+        setMessage("Error de red. Cierra esta ventana e inténtalo de nuevo.");
       }
     };
 
@@ -78,7 +76,7 @@ export default function RedirectClient() {
         <h1 className="text-2xl font-bold mb-3">Conexión de WhatsApp</h1>
         <p className="mb-4">{message}</p>
         {status === "loading" && (
-          <p className="text-sm text-white/60">Por favor, no cierres esta ventana…</p>
+          <p className="text-sm text-white/60">No cierres esta ventana…</p>
         )}
       </div>
     </div>
