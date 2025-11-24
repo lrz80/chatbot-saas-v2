@@ -68,20 +68,20 @@ export default function ConnectWhatsAppButton({ disabled, tenantId }: Props) {
 
       try {
         const r = await fetch(
-          `${BACKEND_URL}/api/meta/whatsapp/onboard-complete`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({
-              waba_id,
-              phone_number_id,
-              phone_number,
-              access_token,
-              tenantId,                 // 👈 opcional: también se lo mandamos al backend
-            }),
-          }
-        );
+            `${BACKEND_URL}/api/meta/whatsapp-onboard`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                waba_id,
+                phone_number_id,
+                phone_number,
+                access_token,
+                tenantId,
+                }),
+            }
+            );
 
         if (!r.ok) {
           console.error(
