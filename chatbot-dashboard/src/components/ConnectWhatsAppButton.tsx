@@ -7,44 +7,65 @@ type Props = {
   tenantId?: string;
 };
 
-// URL base del flujo Hosted de WhatsApp (configurada en Vercel)
-const HOSTED_URL =
-  process.env.NEXT_PUBLIC_WHATSAPP_HOSTED_URL || "";
-
 export default function ConnectWhatsAppButton({ disabled, tenantId }: Props) {
-  const handleClick = () => {
+  const handleClick = async () => {
     if (disabled) return;
 
-    if (!HOSTED_URL) {
-      console.error(
-        "[WA HOSTED] Falta NEXT_PUBLIC_WHATSAPP_HOSTED_URL en el frontend"
+    try {
+      console.log("[WA META] Iniciando flujo de conexión con Meta…");
+
+      const res = await fetch(
+        `${BACKEND_URL}/api/meta/whatsapp-onboard/start`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ tenantId }), // opcional: el backend puede usar req.user.tenant_id
+        }
       );
+
+      if (!res.ok) {
+        console.error(
+          "[WA META] Error al iniciar onboarding:",
+          res.status,
+          res.statusText
+        );
+        alert(
+          "No se pudo iniciar la conexión con WhatsApp Business. Inténtalo de nuevo o contacta al administrador."
+        );
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!data?.url) {
+        console.error("[WA META] Respuesta sin URL válida:", data);
+        alert(
+          "No se recibió la URL de conexión de Meta. Inténtalo más tarde o contacta al administrador."
+        );
+        return;
+      }
+
+      const width = 1000;
+      const height = 800;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+
+      console.log("[WA META] Abriendo URL de Meta:", data.url);
+
+      window.open(
+        data.url,
+        "wa-meta-onboard",
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
+    } catch (error) {
+      console.error("[WA META] Error inesperado en ConnectWhatsAppButton:", error);
       alert(
-        "No se ha configurado la URL de conexión de WhatsApp. Contacta al administrador."
+        "Ocurrió un error al iniciar la conexión con WhatsApp Business. Inténtalo nuevamente."
       );
-      return;
     }
-
-    // Pasamos el tenantId en el parámetro state para recuperarlo en el callback
-    const urlWithState =
-      tenantId
-        ? `${HOSTED_URL}${
-            HOSTED_URL.includes("?") ? "&" : "?"
-          }state=${encodeURIComponent(tenantId)}`
-        : HOSTED_URL;
-
-    const width = 1000;
-    const height = 800;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2;
-
-    console.log("[WA HOSTED] Abriendo onboarding:", urlWithState);
-
-    window.open(
-      urlWithState,
-      "wa-hosted-signup",
-      `width=${width},height=${height},left=${left},top=${top}`
-    );
   };
 
   return (
