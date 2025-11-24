@@ -35,8 +35,11 @@ type SettingsState = {
   trial_disponible: boolean;
   trial_activo: boolean;
   estado_membresia_texto: string;
-  // 👇 NUEVO: id del tenant
+  // 👇 ya lo tenías
   tenant_id?: string;
+  // 👇 NUEVOS
+  whatsapp_status?: string | null;
+  whatsapp_phone_number?: string | null;
 };
 
 export default function TrainingPage() {
@@ -84,6 +87,19 @@ export default function TrainingPage() {
   
   const [intents, setIntents] = useState<Intent[]>([]);
 
+    type WhatsAppAccount = {
+    business_id: string;
+    business_name: string | null;
+    waba_id: string;
+    waba_name: string | null;
+    phone_number_id: string;
+    phone_number: string;
+    verified_name: string | null;
+  };
+
+  const [waAccounts, setWaAccounts] = useState<WhatsAppAccount[] | null>(null);
+  const [waLoading, setWaLoading] = useState(false);
+  const [waSaving, setWaSaving] = useState(false);
   
   type Faq = {
     id?: number;
@@ -111,6 +127,8 @@ export default function TrainingPage() {
     trial_activo: false,
     estado_membresia_texto: "",
     tenant_id: undefined,
+    whatsapp_status: null,
+    whatsapp_phone_number: null,
   });
 
   const isMembershipActive = !!settings.can_edit; // permite edición con plan activo o trial vigente
@@ -153,10 +171,18 @@ export default function TrainingPage() {
             can_edit: !!(data.can_edit ?? data.membresia_activa ?? data.trial_vigente),
             estado_membresia_texto: data.estado_membresia_texto || '',
             tenant_id: data.tenant_id || data.id || prev.tenant_id,
+            // 👇 NUEVO: leemos lo que devuelva el backend si existe
+            whatsapp_status: data.whatsapp_status ?? prev.whatsapp_status ?? null,
+            whatsapp_phone_number: data.whatsapp_phone_number ?? prev.whatsapp_phone_number ?? null,
           }));
-          setMessages([{ role: "assistant", content: data.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?" }]);
+          setMessages([
+            {
+              role: "assistant",
+              content: data.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?",
+            },
+          ]);
         }
-  
+
         if (faqRes.ok) setFaq(await faqRes.json());
         if (intentsRes.ok) {
           const arr = await intentsRes.json();
@@ -192,6 +218,79 @@ export default function TrainingPage() {
 
   const canConnectWhatsApp =
     !!settings.can_edit && (channelState?.plan_enabled ?? true);
+
+  const loadWhatsAppAccounts = async () => {
+    try {
+      setWaLoading(true);
+      const res = await fetch(`${BACKEND_URL}/api/meta/whatsapp/accounts`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error("❌ Error listando cuentas WA:", data);
+        alert(data?.error || "No se pudieron obtener las cuentas de WhatsApp.");
+        return;
+      }
+      setWaAccounts(data.accounts || []);
+    } catch (err) {
+      console.error("❌ Error listando cuentas WA:", err);
+      alert("Error al obtener las cuentas de WhatsApp desde Meta.");
+    } finally {
+      setWaLoading(false);
+    }
+  };
+
+  const handleSelectWhatsAppNumber = async (acc: WhatsAppAccount) => {
+    if (!acc) return;
+
+    if (
+      !window.confirm(
+        `¿Quieres usar el número ${acc.phone_number} (${
+          acc.verified_name || "sin nombre verificado"
+        }) para este negocio?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setWaSaving(true);
+      const res = await fetch(
+        `${BACKEND_URL}/api/meta/whatsapp/select-number`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            waba_id: acc.waba_id,
+            phone_number_id: acc.phone_number_id,
+            phone_number: acc.phone_number,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        console.error("❌ Error guardando número WA:", data);
+        alert(data?.error || "No se pudo guardar el número seleccionado.");
+        return;
+      }
+
+      // Actualiza el estado local para reflejar el número activo
+      setSettings((prev) => ({
+        ...prev,
+        whatsapp_phone_number: acc.phone_number,
+        whatsapp_status: "connected",
+      }));
+
+      alert("Número de WhatsApp actualizado para este negocio ✅");
+    } catch (err) {
+      console.error("❌ Error guardando número WA:", err);
+      alert("Error al guardar el número de WhatsApp.");
+    } finally {
+      setWaSaving(false);
+    }
+  };
 
   const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
     if (channelState?.maintenance) {
@@ -611,6 +710,86 @@ export default function TrainingPage() {
           disabled={!canConnectWhatsApp}
           tenantId={settings.tenant_id}
         />
+
+        {/* Selector de WABA / número cuando ya hay tenant y acceso a Meta */}
+        {settings.tenant_id && (
+          <div className="mt-4 mb-6 p-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10">
+            <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
+              <MdWhatsapp className="text-green-400" />
+              Número de WhatsApp conectado
+            </h2>
+
+            {settings.whatsapp_phone_number ? (
+              <p className="text-sm text-emerald-100 mb-2">
+                Número actual:{" "}
+                <span className="font-mono font-semibold">
+                  {settings.whatsapp_phone_number}
+                </span>
+              </p>
+            ) : (
+              <p className="text-sm text-emerald-100 mb-2">
+                Aún no hay un número seleccionado. Conecta WhatsApp y luego
+                elige uno de tu cuenta de Meta.
+              </p>
+            )}
+
+            {canConnectWhatsApp && (
+              <div className="mt-3">
+                {!waAccounts && (
+                  <button
+                    type="button"
+                    onClick={loadWhatsAppAccounts}
+                    disabled={waLoading}
+                    className="px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-60"
+                  >
+                    {waLoading
+                      ? "Cargando números..."
+                      : "Ver números disponibles"}
+                  </button>
+                )}
+
+                {Array.isArray(waAccounts) && waAccounts.length > 0 && (
+                  <div className="mt-3 space-y-2 max-h-52 overflow-y-auto text-sm">
+                    {waAccounts.map((acc) => (
+                      <button
+                        key={acc.phone_number_id}
+                        type="button"
+                        onClick={() => handleSelectWhatsAppNumber(acc)}
+                        disabled={waSaving}
+                        className="w-full text-left px-3 py-2 rounded-md bg-white/5 hover:bg-white/10 border border-white/10"
+                      >
+                        <div className="flex justify-between items-center gap-2">
+                          <div>
+                            <div className="font-semibold">
+                              {acc.verified_name ||
+                                acc.waba_name ||
+                                "WhatsApp Business Account"}
+                            </div>
+                            <div className="font-mono text-xs text-emerald-200">
+                              {acc.phone_number}
+                            </div>
+                          </div>
+                          <span className="text-xs text-emerald-200">
+                            {acc.business_name || "Business"}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {Array.isArray(waAccounts) &&
+                  waAccounts.length === 0 &&
+                  !waLoading && (
+                    <p className="text-xs text-emerald-200 mt-2">
+                      No encontramos cuentas de WhatsApp Business con números
+                      activos en tu cuenta de Meta.
+                    </p>
+                  )}
+              </div>
+            )}
+          </div>
+        )}
 
         <TrainingHelp context="training" />
 
