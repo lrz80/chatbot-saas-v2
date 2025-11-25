@@ -100,7 +100,8 @@ export default function TrainingPage() {
   const [waAccounts, setWaAccounts] = useState<WhatsAppAccount[] | null>(null);
   const [waLoading, setWaLoading] = useState(false);
   const [waSaving, setWaSaving] = useState(false);
-  
+  const [isDisconnecting, setIsDisconnecting] = useState(false); // 👈 NUEVO
+
   type Faq = {
     id?: number;
     pregunta: string;
@@ -289,6 +290,46 @@ export default function TrainingPage() {
       alert("Error al guardar el número de WhatsApp.");
     } finally {
       setWaSaving(false);
+    }
+  };
+
+  const handleDisconnectWhatsApp = async () => {
+    if (
+      !window.confirm(
+        "¿Seguro que quieres desconectar WhatsApp de este negocio? Podrás volver a conectarlo cuando quieras."
+      )
+    ) {
+      return;
+    }
+
+    setIsDisconnecting(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/meta/whatsapp/connection`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok) {
+        console.error("❌ Error al desconectar WA:", data);
+        alert(data?.error || "No se pudo desconectar la cuenta de WhatsApp.");
+        return;
+      }
+
+      // Limpia estado local
+      setSettings((prev) => ({
+        ...prev,
+        whatsapp_phone_number: null,
+        whatsapp_status: "disconnected",
+      }));
+      setWaAccounts(null);
+
+      alert("WhatsApp desconectado correctamente ✅");
+    } catch (err) {
+      console.error("❌ Error al desconectar WhatsApp:", err);
+      alert("Error al desconectar WhatsApp. Intenta de nuevo.");
+    } finally {
+      setIsDisconnecting(false);
     }
   };
 
@@ -786,6 +827,20 @@ export default function TrainingPage() {
                       activos en tu cuenta de Meta.
                     </p>
                   )}
+              </div>
+            )}
+
+            {/* 👇 NUEVO: botón para desconectar cuando hay número */}
+            {settings.whatsapp_phone_number && (
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleDisconnectWhatsApp}
+                  disabled={isDisconnecting}
+                  className="px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isDisconnecting ? "Desconectando..." : "Desconectar WhatsApp"}
+                </button>
               </div>
             )}
           </div>
