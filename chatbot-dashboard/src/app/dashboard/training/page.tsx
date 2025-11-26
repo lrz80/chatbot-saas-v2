@@ -87,20 +87,21 @@ export default function TrainingPage() {
   
   const [intents, setIntents] = useState<Intent[]>([]);
 
-    type WhatsAppAccount = {
-    business_id: string;
-    business_name: string | null;
+    type WhatsAppNumberOption = {
     waba_id: string;
-    waba_name: string | null;
+    business_id: string;
+    business_name: string;
     phone_number_id: string;
     phone_number: string;
     verified_name: string | null;
   };
 
-  const [waAccounts, setWaAccounts] = useState<WhatsAppAccount[] | null>(null);
+  const [waAccounts, setWaAccounts] = useState<WhatsAppNumberOption[] | null>(
+    null
+  );
   const [waLoading, setWaLoading] = useState(false);
   const [waSaving, setWaSaving] = useState(false);
-  const [isDisconnecting, setIsDisconnecting] = useState(false); // 👈 NUEVO
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
 
   type Faq = {
     id?: number;
@@ -223,32 +224,57 @@ export default function TrainingPage() {
   const loadWhatsAppAccounts = async () => {
     try {
       setWaLoading(true);
-      const res = await fetch(`${BACKEND_URL}/api/meta/whatsapp/accounts`, {
-        method: "GET",
-        credentials: "include",
-      });
+
+      const res = await fetch(
+        `${BACKEND_URL}/api/meta/whatsapp/phone-numbers`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
       const data = await res.json();
       if (!res.ok) {
-        console.error("❌ Error listando cuentas WA:", data);
-        alert(data?.error || "No se pudieron obtener las cuentas de WhatsApp.");
+        console.error("[WA META] Error listando números:", data);
+        alert(
+          data?.error || "No se pudieron obtener los números de WhatsApp."
+        );
+        setWaAccounts([]);
         return;
       }
-      setWaAccounts(data.accounts || []);
+
+      const flat: WhatsAppNumberOption[] = [];
+
+      (data.accounts || []).forEach((acc: any) => {
+        (acc.phone_numbers || []).forEach((pn: any) => {
+          flat.push({
+            waba_id: acc.waba_id,
+            business_id: acc.business_id,
+            business_name: acc.business_name,
+            phone_number_id: pn.phone_number_id,
+            phone_number: pn.display_phone_number,
+            verified_name: pn.verified_name ?? null,
+          });
+        });
+      });
+
+      setWaAccounts(flat);
     } catch (err) {
-      console.error("❌ Error listando cuentas WA:", err);
-      alert("Error al obtener las cuentas de WhatsApp desde Meta.");
+      console.error("[WA META] Error listando números WA:", err);
+      alert("Error al obtener los números de WhatsApp desde Meta.");
+      setWaAccounts([]);
     } finally {
       setWaLoading(false);
     }
   };
 
-  const handleSelectWhatsAppNumber = async (acc: WhatsAppAccount) => {
-    if (!acc) return;
+  const handleSelectWhatsAppNumber = async (opt: WhatsAppNumberOption) => {
+    if (!opt) return;
 
     if (
       !window.confirm(
-        `¿Quieres usar el número ${acc.phone_number} (${
-          acc.verified_name || "sin nombre verificado"
+        `¿Quieres usar el número ${opt.phone_number} (${
+          opt.verified_name || "sin nombre verificado"
         }) para este negocio?`
       )
     ) {
@@ -257,6 +283,7 @@ export default function TrainingPage() {
 
     try {
       setWaSaving(true);
+
       const res = await fetch(
         `${BACKEND_URL}/api/meta/whatsapp/select-number`,
         {
@@ -264,15 +291,16 @@ export default function TrainingPage() {
           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            waba_id: acc.waba_id,
-            phone_number_id: acc.phone_number_id,
-            phone_number: acc.phone_number,
+            wabaId: opt.waba_id,
+            phoneNumberId: opt.phone_number_id,
+            displayPhoneNumber: opt.phone_number,
           }),
         }
       );
-      const data = await res.json();
+
+      const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        console.error("❌ Error guardando número WA:", data);
+        console.error("[WA META] Error guardando número WA:", data);
         alert(data?.error || "No se pudo guardar el número seleccionado.");
         return;
       }
@@ -280,13 +308,13 @@ export default function TrainingPage() {
       // Actualiza el estado local para reflejar el número activo
       setSettings((prev) => ({
         ...prev,
-        whatsapp_phone_number: acc.phone_number,
+        whatsapp_phone_number: opt.phone_number,
         whatsapp_status: "connected",
       }));
 
       alert("Número de WhatsApp actualizado para este negocio ✅");
     } catch (err) {
-      console.error("❌ Error guardando número WA:", err);
+      console.error("[WA META] Error guardando número WA:", err);
       alert("Error al guardar el número de WhatsApp.");
     } finally {
       setWaSaving(false);
@@ -789,29 +817,28 @@ export default function TrainingPage() {
                   </button>
                 )}
 
-                {Array.isArray(waAccounts) && waAccounts.length > 0 && (
+                  {Array.isArray(waAccounts) && waAccounts.length > 0 && (
                   <div className="mt-3 space-y-2 max-h-52 overflow-y-auto text-sm">
-                    {waAccounts.map((acc) => (
+                    {waAccounts.map((opt) => (
                       <button
-                        key={acc.phone_number_id}
+                        key={opt.phone_number_id}
                         type="button"
-                        onClick={() => handleSelectWhatsAppNumber(acc)}
+                        onClick={() => handleSelectWhatsAppNumber(opt)}
                         disabled={waSaving}
                         className="w-full text-left px-3 py-2 rounded-md bg-white/5 hover:bg-white/10 border border-white/10"
                       >
                         <div className="flex justify-between items-center gap-2">
                           <div>
                             <div className="font-semibold">
-                              {acc.verified_name ||
-                                acc.waba_name ||
+                              {opt.verified_name ||
                                 "WhatsApp Business Account"}
                             </div>
                             <div className="font-mono text-xs text-emerald-200">
-                              {acc.phone_number}
+                              {opt.phone_number}
                             </div>
                           </div>
                           <span className="text-xs text-emerald-200">
-                            {acc.business_name || "Business"}
+                            {opt.business_name || "Business"}
                           </span>
                         </div>
                       </button>
