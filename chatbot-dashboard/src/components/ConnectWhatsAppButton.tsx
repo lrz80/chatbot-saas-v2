@@ -7,7 +7,7 @@ type Props = {
   tenantId?: string;
 };
 
-export default function ConnectWhatsAppButton({ disabled, tenantId }: Props) {
+export default function ConnectWhatsAppButton({ disabled }: Props) {
   const handleClick = async () => {
     if (disabled) return;
 
