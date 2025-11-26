@@ -14,17 +14,11 @@ export default function ConnectWhatsAppButton({ disabled, tenantId }: Props) {
     try {
       console.log("[WA META] Iniciando flujo de conexión con Meta…");
 
-      const res = await fetch(
-        `${BACKEND_URL}/api/meta/whatsapp-onboard/start`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ tenantId }), // opcional: el backend puede usar req.user.tenant_id
-        }
-      );
+      const res = await fetch(`${BACKEND_URL}/api/meta/whatsapp-onboard/start`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
 
       if (!res.ok) {
         console.error(
