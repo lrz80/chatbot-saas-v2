@@ -25,24 +25,21 @@ export default function ConnectWhatsAppButton({ disabled }: Props) {
   const [loading, setLoading] = useState(false);
   const [fbReady, setFbReady] = useState(false);
 
-  // ✅ Cargar el SDK de Facebook una sola vez
+  // Cargar el SDK de Facebook una sola vez
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Si ya está cargado, marcamos listo
     if (window.FB) {
       setFbReady(true);
       return;
     }
 
-    // Si ya existe el script, esperamos a que cargue
     const existingScript = document.getElementById("facebook-jssdk");
     if (existingScript) {
       existingScript.addEventListener("load", () => setFbReady(true));
       return;
     }
 
-    // Definimos fbAsyncInit y cargamos el script
     window.fbAsyncInit = function () {
       window.FB?.init({
         appId: META_APP_ID,
@@ -63,7 +60,7 @@ export default function ConnectWhatsAppButton({ disabled }: Props) {
     document.body.appendChild(js);
   }, []);
 
-  const handleClick = async () => {
+  const handleClick = () => {
     if (disabled || loading) return;
 
     if (!fbReady || !window.FB) {
@@ -89,67 +86,73 @@ export default function ConnectWhatsAppButton({ disabled }: Props) {
       console.log("[WA META] Iniciando Embedded Signup con FB.login…");
 
       window.FB.login(
-        async (response: any) => {
+        (response: any) => {
           console.log("[WA META] Respuesta FB.login:", response);
 
-          try {
-            if (
-              response.status === "connected" &&
-              response.authResponse &&
-              response.authResponse.code
-            ) {
-              const code = response.authResponse.code as string;
-              console.log("[WA META] Código recibido de Embedded Signup:", code);
+          // ⚠️ Importante: NO hacer async directamente en el callback
+          (async () => {
+            try {
+              if (
+                response.status === "connected" &&
+                response.authResponse &&
+                response.authResponse.code
+              ) {
+                const code = response.authResponse.code as string;
+                console.log(
+                  "[WA META] Código recibido de Embedded Signup:",
+                  code
+                );
 
-              const res = await fetch(
-                `${BACKEND_URL}/api/meta/whatsapp/exchange-code`,
-                {
-                  method: "POST",
-                  credentials: "include",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({ code }),
+                const res = await fetch(
+                  `${BACKEND_URL}/api/meta/whatsapp/exchange-code`,
+                  {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ code }),
+                  }
+                );
+
+                if (!res.ok) {
+                  const detail = await res.json().catch(() => ({}));
+                  console.error(
+                    "[WA META] Error al intercambiar code en backend:",
+                    res.status,
+                    detail
+                  );
+                  alert(
+                    "No se pudo guardar la conexión de WhatsApp en el servidor. Inténtalo nuevamente o contacta al administrador."
+                  );
+                } else {
+                  console.log(
+                    "[WA META] Código intercambiado y token guardado correctamente"
+                  );
+                  alert("WhatsApp se ha conectado correctamente 🎉");
+                  // TODO: refetch del estado en el dashboard
                 }
-              );
-
-              if (!res.ok) {
-                const detail = await res.json().catch(() => ({}));
-                console.error(
-                  "[WA META] Error al intercambiar code en backend:",
-                  res.status,
-                  detail
+              } else {
+                console.warn(
+                  "[WA META] Usuario canceló o no completó el Embedded Signup:",
+                  response
                 );
                 alert(
-                  "No se pudo guardar la conexión de WhatsApp en el servidor. Inténtalo nuevamente o contacta al administrador."
+                  "No se completó la conexión con WhatsApp. Vuelve a intentarlo si fue un error."
                 );
-              } else {
-                console.log(
-                  "[WA META] Código intercambiado y token guardado correctamente"
-                );
-                alert("WhatsApp se ha conectado correctamente 🎉");
-                // TODO: aquí puedes disparar un refetch del estado en el dashboard
               }
-            } else {
-              console.warn(
-                "[WA META] Usuario canceló o no completó el Embedded Signup:",
-                response
+            } catch (err) {
+              console.error(
+                "[WA META] Error en callback de FB.login / exchange-code:",
+                err
               );
               alert(
-                "No se completó la conexión con WhatsApp. Vuelve a intentarlo si fue un error."
+                "Ocurrió un error al guardar la conexión de WhatsApp. Inténtalo nuevamente."
               );
+            } finally {
+              setLoading(false);
             }
-          } catch (err) {
-            console.error(
-              "[WA META] Error en callback de FB.login / exchange-code:",
-              err
-            );
-            alert(
-              "Ocurrió un error al guardar la conexión de WhatsApp. Inténtalo nuevamente."
-            );
-          } finally {
-            setLoading(false);
-          }
+          })();
         },
         {
           config_id: META_EMBEDDED_SIGNUP_CONFIG_ID,
