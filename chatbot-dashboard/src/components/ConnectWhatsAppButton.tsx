@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 
 type Props = {
@@ -8,39 +8,87 @@ type Props = {
   tenantId?: string;
 };
 
+const META_APP_ID =
+  process.env.NEXT_PUBLIC_META_APP_ID || "672113805196816";
 const META_EMBEDDED_SIGNUP_CONFIG_ID =
-  process.env.NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID || "";
+  process.env.NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID ||
+  "1588077632361933";
+
+declare global {
+  interface Window {
+    fbAsyncInit?: () => void;
+    FB?: any;
+  }
+}
 
 export default function ConnectWhatsAppButton({ disabled }: Props) {
   const [loading, setLoading] = useState(false);
+  const [fbReady, setFbReady] = useState(false);
+
+  // ✅ Cargar el SDK de Facebook una sola vez
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Si ya está cargado, marcamos listo
+    if (window.FB) {
+      setFbReady(true);
+      return;
+    }
+
+    // Si ya existe el script, esperamos a que cargue
+    const existingScript = document.getElementById("facebook-jssdk");
+    if (existingScript) {
+      existingScript.addEventListener("load", () => setFbReady(true));
+      return;
+    }
+
+    // Definimos fbAsyncInit y cargamos el script
+    window.fbAsyncInit = function () {
+      window.FB?.init({
+        appId: META_APP_ID,
+        cookie: true,
+        xfbml: false,
+        version: "v18.0",
+      });
+      setFbReady(true);
+      console.log("[WA META] FB SDK inicializado");
+    };
+
+    const js = document.createElement("script");
+    js.id = "facebook-jssdk";
+    js.src = "https://connect.facebook.net/en_US/sdk.js";
+    js.onload = () => {
+      console.log("[WA META] Script FB SDK cargado");
+    };
+    document.body.appendChild(js);
+  }, []);
 
   const handleClick = async () => {
     if (disabled || loading) return;
 
+    if (!fbReady || !window.FB) {
+      console.error("[WA META] FB SDK aún no está listo");
+      alert(
+        "Estamos cargando la conexión con Meta. Espera un momento y vuelve a intentar."
+      );
+      return;
+    }
+
+    if (!META_EMBEDDED_SIGNUP_CONFIG_ID) {
+      console.error(
+        "[WA META] Falta NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID"
+      );
+      alert(
+        "Falta configuración de WhatsApp en el frontend. Contacta al administrador."
+      );
+      return;
+    }
+
     try {
-      if (!META_EMBEDDED_SIGNUP_CONFIG_ID) {
-        console.error(
-          "[WA META] Falta NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID en el frontend"
-        );
-        alert(
-          "Falta configuración de WhatsApp en el frontend. Contacta al administrador."
-        );
-        return;
-      }
-
-      const FB = (window as any).FB;
-      if (!FB) {
-        console.error("[WA META] FB SDK no está cargado (window.FB es undefined)");
-        alert(
-          "No se pudo inicializar la conexión con Meta. Recarga la página e inténtalo nuevamente."
-        );
-        return;
-      }
-
-      console.log("[WA META] Iniciando Embedded Signup con FB.login…");
       setLoading(true);
+      console.log("[WA META] Iniciando Embedded Signup con FB.login…");
 
-      FB.login(
+      window.FB.login(
         async (response: any) => {
           console.log("[WA META] Respuesta FB.login:", response);
 
@@ -80,7 +128,7 @@ export default function ConnectWhatsAppButton({ disabled }: Props) {
                   "[WA META] Código intercambiado y token guardado correctamente"
                 );
                 alert("WhatsApp se ha conectado correctamente 🎉");
-                // aquí podrías disparar un refetch del estado de WhatsApp en el dashboard
+                // TODO: aquí puedes disparar un refetch del estado en el dashboard
               }
             } else {
               console.warn(
