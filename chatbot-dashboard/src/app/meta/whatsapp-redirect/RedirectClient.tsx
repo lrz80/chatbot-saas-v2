@@ -1,89 +1,212 @@
-//src/app/meta/whatsapp-redirect/RedirectClient.tsx
+// src/app/meta/whatsapp-redirect/RedirectClient.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { BACKEND_URL } from "@/utils/api";
 
+declare global {
+  interface Window {
+    FB: any;
+  }
+}
+
+const APP_ID = "672113805196816";         // Tu App ID (no es secreto)
+const CONFIG_ID = "1588077632361933";     // Tu config_id del Embedded Signup
+const FB_SDK_URL = "https://connect.facebook.net/en_US/sdk.js";
+
 export default function RedirectClient() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
-  const [message, setMessage] = useState<string>("Procesando conexión...");
+  const [status, setStatus] = useState<string>(
+    "Inicializando conexión con Meta…"
+  );
 
   useEffect(() => {
-    const code = searchParams.get("code");
-    const state = searchParams.get("state"); // tenantId que mandamos en el botón
+    let messageHandler: (event: MessageEvent) => void;
 
-    console.log("🔁 /meta/whatsapp-redirect → code:", code, "state:", state);
+    const loadFacebookSdk = () =>
+      new Promise<void>((resolve, reject) => {
+        if (window.FB) {
+          return resolve();
+        }
 
-    if (!code || !state) {
-      setStatus("error");
-      setMessage(
-        "No se recibieron los datos de Meta correctamente. Cierra esta ventana e inténtalo de nuevo."
-      );
-      return;
-    }
-
-    const run = async () => {
-      try {
-        const res = await fetch(
-          `${BACKEND_URL}/api/meta/whatsapp/onboard-complete`,
-          {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              code,
-              state, // por si quieres usarlo para validaciones extra en el backend
-            }),
-          }
+        const existingScript = document.querySelector<HTMLScriptElement>(
+          `script[src="${FB_SDK_URL}"]`
         );
-
-        const json = await res.json().catch(() => ({} as any));
-        console.log("✅ Respuesta /onboard-complete:", res.status, json);
-
-        if (!res.ok) {
-          setStatus("error");
-          setMessage(
-            json?.error ||
-              "Ocurrió un error guardando la conexión de WhatsApp en Aamy."
-          );
+        if (existingScript) {
+          existingScript.onload = () => resolve();
+          existingScript.onerror = () => reject(new Error("FB SDK error"));
           return;
         }
 
-        setStatus("ok");
-        setMessage(
-          "WhatsApp conectado correctamente. Volviendo al dashboard..."
-        );
+        const script = document.createElement("script");
+        script.src = FB_SDK_URL;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("FB SDK error"));
+        document.body.appendChild(script);
+      });
 
-        setTimeout(() => {
-          router.push("/dashboard/training");
-        }, 2500);
-      } catch (e) {
-        console.error("❌ Error llamando /onboard-complete:", e);
-        setStatus("error");
-        setMessage(
-          "Error de red al conectar con Aamy. Cierra esta ventana e inténtalo de nuevo."
-        );
+    const initFacebook = () => {
+      if (!window.FB) {
+        throw new Error("FB SDK no disponible");
       }
+
+      window.FB.init({
+        appId: APP_ID,
+        autoLogAppEvents: true,
+        xfbml: false,
+        version: "v24.0",
+      });
     };
 
-    run();
-  }, [searchParams, router]);
+    const registerMessageListener = () => {
+      messageHandler = async (event: MessageEvent) => {
+        if (
+          event.origin !== "https://www.facebook.com" &&
+          event.origin !== "https://web.facebook.com"
+        ) {
+          return;
+        }
+
+        try {
+          const data = JSON.parse(event.data as string);
+
+          if (data.type === "WA_EMBEDDED_SIGNUP") {
+            if (data.event === "FINISH") {
+              // ✅ Usuario terminó el flujo
+              const { phone_number_id, waba_id } = data.data || {};
+
+              console.log("[WA META] FINISH:", { phone_number_id, waba_id });
+              setStatus("Guardando número de WhatsApp en Aamy…");
+
+              try {
+                const res = await fetch(
+                  `${BACKEND_URL}/api/meta/whatsapp/onboard-complete`,
+                  {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      phoneNumberId: phone_number_id,
+                      wabaId: waba_id,
+                    }),
+                  }
+                );
+
+                if (!res.ok) {
+                  console.error(
+                    "[WA META] Error al guardar en backend:",
+                    res.status,
+                    res.statusText
+                  );
+                  setStatus(
+                    "Error guardando la conexión en Aamy. Contacta al administrador."
+                  );
+                  return;
+                }
+
+                setStatus("Conexión completada. Cerrando ventana…");
+
+                // 🔁 Refrescar dashboard y cerrar popup
+                try {
+                  if (window.opener && !window.opener.closed) {
+                    window.opener.location.href =
+                      "/dashboard/training?whatsapp=connected";
+                    window.close();
+                  } else {
+                    window.location.href =
+                      "/dashboard/training?whatsapp=connected";
+                  }
+                } catch (e) {
+                  console.error("Error cerrando ventana:", e);
+                  window.location.href =
+                    "/dashboard/training?whatsapp=connected";
+                }
+              } catch (err) {
+                console.error(
+                  "[WA META] Error inesperado al llamar onboard-complete:",
+                  err
+                );
+                setStatus(
+                  "Error inesperado guardando la conexión en Aamy. Intenta nuevamente."
+                );
+              }
+            } else if (data.event === "CANCEL") {
+              console.warn("[WA META] Usuario canceló el Embedded Signup");
+              setStatus("Conexión cancelada.");
+            } else if (data.event === "ERROR") {
+              console.error("[WA META] Error en Embedded Signup:", data.data);
+              setStatus("Ocurrió un error en el flujo de Meta.");
+            }
+          }
+        } catch (e) {
+          // Algunos mensajes de Meta no son JSON
+          // console.log("Non JSON response:", event.data);
+        }
+      };
+
+      window.addEventListener("message", messageHandler);
+    };
+
+    const launchWhatsAppSignup = () => {
+      setStatus("Abriendo flujo de conexión de WhatsApp…");
+
+      const fbLoginCallback = (response: any) => {
+        console.log("[WA META] fbLoginCallback response:", response);
+        // No usamos el "code" por ahora; el ID de número/WABA viene por WA_EMBEDDED_SIGNUP
+      };
+
+      window.FB.login(fbLoginCallback, {
+        config_id: CONFIG_ID,
+        response_type: "code",
+        override_default_response_type: true,
+        extras: { version: "v3" },
+      });
+    };
+
+    (async () => {
+      try {
+        setStatus("Cargando SDK de Facebook…");
+        await loadFacebookSdk();
+        initFacebook();
+        registerMessageListener();
+        launchWhatsAppSignup();
+      } catch (e) {
+        console.error("[WA META] Error inicializando Embedded Signup:", e);
+        setStatus(
+          "No se pudo iniciar el flujo de conexión con Meta. Intenta nuevamente."
+        );
+      }
+    })();
+
+    return () => {
+      if (messageHandler) {
+        window.removeEventListener("message", messageHandler);
+      }
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050516] text-white">
-      <div className="max-w-md w-full text-center px-6 py-8 border border-white/10 rounded-xl bg-white/5">
-        <h1 className="text-2xl font-bold mb-3">Conexión de WhatsApp</h1>
-        <p className="mb-4">{message}</p>
-        {status === "loading" && (
-          <p className="text-sm text-white/60">
-            Por favor, no cierres esta ventana…
-          </p>
-        )}
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        background: "#050515",
+        color: "#fff",
+        padding: "1.5rem",
+        textAlign: "center",
+      }}
+    >
+      <div>
+        <h1 style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>
+          Conectando tu número de WhatsApp…
+        </h1>
+        <p style={{ opacity: 0.85 }}>{status}</p>
       </div>
     </div>
   );
