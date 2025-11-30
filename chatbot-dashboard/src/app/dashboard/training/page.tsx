@@ -300,22 +300,25 @@ export default function TrainingPage() {
 
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        console.error("[WA META] Error guardando número WA:", data);
-        alert(data?.error || "No se pudo guardar el número seleccionado.");
+        console.error("[WA META] Error saving WA number:", data);
+        alert(data?.error || "Unable to save the selected number.");
         return;
       }
 
-      // Actualiza el estado local para reflejar el número activo
+      // Update local state
       setSettings((prev) => ({
         ...prev,
         whatsapp_phone_number: opt.phone_number,
         whatsapp_status: "connected",
       }));
 
-      alert("WhatsApp number updated for this business ✅");
+      alert("WhatsApp number updated for this business. ✅");
+
+      // 👉 Automatically refresh the UI with updated data
+      router.refresh(); // ⬅⬅ REQUIRED
     } catch (err) {
-      console.error("[WA META] Error guardando número WA:", err);
-      alert("Error al guardar el número de WhatsApp.");
+      console.error("[WA META] Error saving WA number:", err);
+      alert("Error while saving the WhatsApp number.");
     } finally {
       setWaSaving(false);
     }
@@ -339,12 +342,12 @@ export default function TrainingPage() {
 
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        console.error("❌ Error al desconectar WA:", data);
-        alert(data?.error || "No se pudo desconectar la cuenta de WhatsApp.");
+        console.error("❌ Error disconnecting WhatsApp:", data);
+        alert(data?.error || "Unable to disconnect WhatsApp account.");
         return;
       }
 
-      // Limpia estado local
+      // Clear local state
       setSettings((prev) => ({
         ...prev,
         whatsapp_phone_number: null,
@@ -353,9 +356,12 @@ export default function TrainingPage() {
       setWaAccounts(null);
 
       alert("WhatsApp disconnected successfully for this business. ✅");
+
+      // 🔄 Refresh page data automatically
+      router.refresh();  // ⬅ REQUIRED
     } catch (err) {
-      console.error("❌ Error al desconectar WhatsApp:", err);
-      alert("Error al desconectar WhatsApp. Intenta de nuevo.");
+      console.error("❌ Error disconnecting WhatsApp:", err);
+      alert("Error disconnecting WhatsApp. Please try again.");
     } finally {
       setIsDisconnecting(false);
     }
