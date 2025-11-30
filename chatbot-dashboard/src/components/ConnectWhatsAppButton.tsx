@@ -94,7 +94,7 @@ export default function ConnectWhatsAppButton({ disabled }: Props) {
 
         const data = await res.json();
 
-        // ✅ Soportamos el formato nuevo { accounts } y el viejo { phoneNumbers }
+        // Soportar tanto el formato nuevo como el viejo
         const phones =
           (Array.isArray(data?.accounts) && data.accounts) ||
           (Array.isArray(data?.phoneNumbers) && data.phoneNumbers) ||
@@ -103,22 +103,19 @@ export default function ConnectWhatsAppButton({ disabled }: Props) {
         if (phones.length > 0) {
           console.log("[WA META] Número detectado en backend:", phones);
 
-          // Cortamos el polling
           setChecking(false);
           clearInterval(interval);
 
-          // Cerramos el popup si sigue abierto
           if (popupRef.current && !popupRef.current.closed) {
             popupRef.current.close();
           }
 
-          // Refrescamos la vista para que se vea el número
           router.refresh();
         }
       } catch (e) {
         console.error("[WA META] Error consultando estado de WhatsApp:", e);
       }
-    }, 5000); // cada 5 segundos
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [checking, router]);
