@@ -94,28 +94,25 @@ export default function ConnectWhatsAppButton({ disabled }: Props) {
 
         const data = await res.json();
 
-        // Soportar tanto el formato nuevo como el viejo
-        const phones =
-          (Array.isArray(data?.accounts) && data.accounts) ||
-          (Array.isArray(data?.phoneNumbers) && data.phoneNumbers) ||
-          [];
-
-        if (phones.length > 0) {
-          console.log("[WA META] Número detectado en backend:", phones);
+        // Si ya hay al menos un número conectado en DB, damos por finalizado
+        if (Array.isArray(data?.phoneNumbers) && data.phoneNumbers.length > 0) {
+          console.log("[WA META] Número detectado en DB:", data.phoneNumbers);
 
           setChecking(false);
           clearInterval(interval);
 
+          // Cerramos popup si sigue abierto
           if (popupRef.current && !popupRef.current.closed) {
             popupRef.current.close();
           }
 
+          // Refrescamos la página / estado para que ChannelStatus muestre "conectado"
           router.refresh();
         }
       } catch (e) {
         console.error("[WA META] Error consultando estado de WhatsApp:", e);
       }
-    }, 5000);
+    }, 5000); // cada 5 segundos
 
     return () => clearInterval(interval);
   }, [checking, router]);
