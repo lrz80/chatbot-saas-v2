@@ -273,9 +273,9 @@ export default function TrainingPage() {
 
     if (
       !window.confirm(
-        `¿Quieres usar el número ${opt.phone_number} (${
-          opt.verified_name || "sin nombre verificado"
-        }) para este negocio?`
+        `Do you want to assign number ${opt.phone_number} (${
+          opt.verified_name || "Unverified name"
+        }) to this business?`
       )
     ) {
       return;
@@ -312,7 +312,7 @@ export default function TrainingPage() {
         whatsapp_status: "connected",
       }));
 
-      alert("Número de WhatsApp actualizado para este negocio ✅");
+      alert("WhatsApp number updated for this business ✅");
     } catch (err) {
       console.error("[WA META] Error guardando número WA:", err);
       alert("Error al guardar el número de WhatsApp.");
@@ -324,7 +324,7 @@ export default function TrainingPage() {
   const handleDisconnectWhatsApp = async () => {
     if (
       !window.confirm(
-        "¿Seguro que quieres desconectar WhatsApp de este negocio? Podrás volver a conectarlo cuando quieras."
+        "Are you sure you want to disconnect WhatsApp from this business? You can connect it again at any time."
       )
     ) {
       return;
@@ -352,7 +352,7 @@ export default function TrainingPage() {
       }));
       setWaAccounts(null);
 
-      alert("WhatsApp desconectado correctamente ✅");
+      alert("WhatsApp disconnected successfully for this business. ✅");
     } catch (err) {
       console.error("❌ Error al desconectar WhatsApp:", err);
       alert("Error al desconectar WhatsApp. Intenta de nuevo.");
