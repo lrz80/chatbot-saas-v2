@@ -732,6 +732,24 @@ export default function TrainingPage() {
     );
   };
 
+  // 🔔 Escuchar el mensaje del popup de WhatsApp para refrescar la página
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // El popup viene desde api.aamy.ai
+      if (event.origin !== "https://api.aamy.ai") return;
+
+      if (event.data && event.data.type === "WHATSAPP_CONNECTED") {
+        console.log("[TRAINING] WhatsApp connected, reloading page...");
+        // Opción simple y segura: recargar completamente la página
+        window.location.reload();
+        // Alternativa (si prefieres): router.refresh();
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
   if (loading) return <p className="text-center">Cargando configuración...</p>;
   
   return (
