@@ -668,20 +668,25 @@ const handleDisconnect = async () => {
             <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
               <SiMeta /> Uso de Facebook / Instagram
             </h3>
+
             <p className="text-white text-sm mb-2">
               {usoMeta.usados ?? 0} de {usoMeta.limite} mensajes enviados (incluye créditos extra)
             </p>
-            {usoMeta.limite > 500 && (
+
+            {/* ✅ Solo mostramos “extra comprados” si hay creditos_extras reales */}
+            {usoMeta.creditos_extras > 0 && (
               <p className="text-green-300 text-sm">
-                Incluye {usoMeta.limite - 500} mensajes extra comprados.
+                Incluye {usoMeta.creditos_extras} mensajes extra comprados.
               </p>
             )}
+
             <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
               <div
                 className={`h-full ${colorBarra(calcularPorcentaje(usoMeta.usados, usoMeta.limite))} transition-all duration-500`}
                 style={{ width: `${calcularPorcentaje(usoMeta.usados, usoMeta.limite)}%` }}
               />
             </div>
+
             <div className="flex gap-2">
               {[500, 1000, 2000].map((extra) => (
                 <button
