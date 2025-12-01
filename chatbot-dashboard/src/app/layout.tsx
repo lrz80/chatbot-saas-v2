@@ -30,6 +30,10 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
+        {/* Etiqueta para que los navegadores detecten correctamente el idioma original */}
+        <meta httpEquiv="content-language" content="es" />
+
+        {/* Facebook domain verification */}
         <meta
           name="facebook-domain-verification"
           content="yw55oh02053to5oxntgp0pvm19sw2z"
