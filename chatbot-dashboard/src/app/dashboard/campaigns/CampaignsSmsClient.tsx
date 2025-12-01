@@ -620,14 +620,18 @@ export default function CampaignsSmsClient() {
           <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
             <MdSms /> Uso mensual de SMS
           </h3>
+
           <p className="text-white text-sm mb-2">
-            {usoSms.usados ?? 0} de {usoSms.limite} mensajes enviados (incluye créditos extra)
+            {usoSms.usados ?? 0} de {usoSms.limite} mensajes enviados
+            {(usoSms.limite ?? 0) > 500 && " (incluye créditos extra)"}
           </p>
-          {usoSms.limite > 500 && (
+
+          {(usoSms.limite ?? 0) > 500 && (
             <p className="text-green-300 text-sm">
               Incluye {usoSms.limite - 500} mensajes extra comprados.
             </p>
           )}
+
           <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
             <div
               className={`h-full ${colorBarraSms} transition-all duration-500`}
@@ -653,14 +657,18 @@ export default function CampaignsSmsClient() {
           <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
             <FaAddressBook /> Contactos
           </h3>
+
           <p className="text-white text-sm mb-2">
-            {usoContactos.usados} de {usoContactos.limite} contactos usados (incluye créditos extra)
+            {usoContactos.usados} de {usoContactos.limite} contactos usados
+            {(usoContactos.limite ?? 0) > 500 && " (incluye créditos extra)"}
           </p>
-          {usoContactos.limite > 500 && (
+
+          {(usoContactos.limite ?? 0) > 500 && (
             <p className="text-green-300 text-sm">
               Incluye {usoContactos.limite - 500} contactos extra comprados.
             </p>
           )}
+
           <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
             <div
               className={`h-full ${colorBarra} transition-all duration-500`}

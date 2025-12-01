@@ -686,14 +686,18 @@ export default function CampaignsEmailClient() {
             <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
               <SiMinutemailer /> Campañas por Email
             </h3>
+
             <p className="text-white text-sm mb-2">
-              {usoEmail.usados} de {usoEmail.limite} campañas usadas este mes (incluye créditos extra)
+              {usoEmail.usados} de {usoEmail.limite} campañas usadas este mes
+              {(usoEmail.limite ?? BASE_EMAIL_LIMIT) > BASE_EMAIL_LIMIT && " (incluye créditos extra)"}
             </p>
-            {usoEmail.limite > BASE_EMAIL_LIMIT && (
+
+            {(usoEmail.limite ?? BASE_EMAIL_LIMIT) > BASE_EMAIL_LIMIT && (
               <p className="text-green-300 text-sm">
                 Incluye {usoEmail.limite - BASE_EMAIL_LIMIT} campañas extra compradas.
               </p>
             )}
+
             <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
               <div
                 className={`h-full ${
@@ -706,6 +710,7 @@ export default function CampaignsEmailClient() {
                 style={{ width: `${(usoEmail.usados / usoEmail.limite) * 100}%` }}
               />
             </div>
+
             <div className="flex gap-2 mb-2">
               {[500, 1000, 2000].map((extra) => (
                 <button
@@ -725,14 +730,18 @@ export default function CampaignsEmailClient() {
             <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
               <FaAddressBook /> Contactos
             </h3>
+
             <p className="text-white text-sm mb-2">
-              {usoContactos.usados} de {usoContactos.limite} contactos usados (incluye créditos extra)
+              {usoContactos.usados} de {usoContactos.limite} contactos usados
+              {(usoContactos.limite ?? 500) > 500 && " (incluye créditos extra)"}
             </p>
-            {usoContactos.limite > 500 && (
+
+            {(usoContactos.limite ?? 500) > 500 && (
               <p className="text-green-300 text-sm">
                 Incluye {usoContactos.limite - 500} contactos extra comprados.
               </p>
             )}
+
             <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
               <div
                 className={`h-full ${colorBarra} transition-all duration-500`}

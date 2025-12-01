@@ -172,20 +172,32 @@ export default function FollowUpSettingsPage() {
           <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
             <SiSpeedtest /> Seguimiento de Leads (Follow-up)
           </h3>
+
           <p className="text-white text-sm mb-2">
-            {usoFollowup.usados ?? 0} de {usoFollowup.limite} seguimientos realizados (incluye créditos extra)
+            {usoFollowup.usados ?? 0} de {usoFollowup.limite} seguimientos realizados
+            {(usoFollowup.creditos_extras ?? 0) > 0 && " (incluye créditos extra)"}
           </p>
-          {usoFollowup.limite > 500 && (
+
+          {(usoFollowup.creditos_extras ?? 0) > 0 && (
             <p className="text-green-300 text-sm">
-              Incluye {usoFollowup.limite - 500} seguimientos extra comprados.
+              Incluye {usoFollowup.creditos_extras} seguimientos extra comprados.
             </p>
           )}
+
           <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
             <div
-              className={`h-full ${colorBarra(calcularPorcentaje(usoFollowup.usados, usoFollowup.limite))} transition-all duration-500`}
-              style={{ width: `${calcularPorcentaje(usoFollowup.usados, usoFollowup.limite)}%` }}
+              className={`h-full ${colorBarra(
+                calcularPorcentaje(usoFollowup.usados, usoFollowup.limite)
+              )} transition-all duration-500`}
+              style={{
+                width: `${calcularPorcentaje(
+                  usoFollowup.usados,
+                  usoFollowup.limite
+                )}%`,
+              }}
             />
           </div>
+
           <div className="flex gap-2">
             {[500, 1000, 2000].map((extra) => (
               <button
