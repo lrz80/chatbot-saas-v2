@@ -670,11 +670,11 @@ const handleDisconnect = async () => {
             </h3>
 
             <p className="text-white text-sm mb-2">
-              {usoMeta.usados ?? 0} de {usoMeta.limite} mensajes enviados (incluye créditos extra)
+              {usoMeta.usados ?? 0} de {usoMeta.limite} mensajes enviados
+              {(usoMeta.creditos_extras ?? 0) > 0 && " (incluye créditos extra)"}
             </p>
 
-            {/* ✅ Solo mostramos “extra comprados” si hay creditos_extras reales */}
-            {usoMeta.creditos_extras > 0 && (
+            {(usoMeta.creditos_extras ?? 0) > 0 && (
               <p className="text-green-300 text-sm">
                 Incluye {usoMeta.creditos_extras} mensajes extra comprados.
               </p>
@@ -682,8 +682,15 @@ const handleDisconnect = async () => {
 
             <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
               <div
-                className={`h-full ${colorBarra(calcularPorcentaje(usoMeta.usados, usoMeta.limite))} transition-all duration-500`}
-                style={{ width: `${calcularPorcentaje(usoMeta.usados, usoMeta.limite)}%` }}
+                className={`h-full ${colorBarra(
+                  calcularPorcentaje(usoMeta.usados, usoMeta.limite)
+                )} transition-all duration-500`}
+                style={{
+                  width: `${calcularPorcentaje(
+                    usoMeta.usados,
+                    usoMeta.limite
+                  )}%`,
+                }}
               />
             </div>
 
