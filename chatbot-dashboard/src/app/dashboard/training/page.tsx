@@ -936,20 +936,32 @@ export default function TrainingPage() {
             <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
               <MdWhatsapp /> Uso de WhatsApp
             </h3>
+
             <p className="text-white text-sm mb-2">
-              {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite} mensajes enviados (incluye créditos extra)
+              {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite} mensajes enviados
+              { (usoWhatsapp.creditos_extras ?? 0) > 0 && " (incluye créditos extra)" }
             </p>
-            {usoWhatsapp.limite > 500 && (
+
+            {(usoWhatsapp.creditos_extras ?? 0) > 0 && (
               <p className="text-green-300 text-sm">
-                Incluye {usoWhatsapp.limite - 500} mensajes extra comprados.
+                Incluye {usoWhatsapp.creditos_extras} mensajes extra comprados.
               </p>
             )}
+
             <div className="w-full bg-white/20 h-2 rounded mb-4 overflow-hidden">
               <div
-                className={`h-full ${colorBarra(calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite))} transition-all duration-500`}
-                style={{ width: `${calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite)}%` }}
+                className={`h-full ${colorBarra(
+                  calcularPorcentaje(usoWhatsapp.usados, usoWhatsapp.limite)
+                )} transition-all duration-500`}
+                style={{
+                  width: `${calcularPorcentaje(
+                    usoWhatsapp.usados,
+                    usoWhatsapp.limite
+                  )}%`,
+                }}
               />
             </div>
+
             <div className="flex gap-2">
               {[500, 1000, 2000].map((extra) => (
                 <button
