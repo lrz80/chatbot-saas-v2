@@ -180,7 +180,7 @@ export default function MessageHistory() {
   return (
     <div className="w-full px-4 sm:px-6 py-6 text-white max-w-6xl mx-auto">
       <h2 className="text-2xl md:text-3xl font-bold mb-6 text-indigo-300 flex items-center gap-2">
-        {currentIcon} Interaction History
+        {currentIcon} Historial de Interacciones
       </h2>
 
       <div className="mb-4 text-sm text-white/70 flex flex-wrap gap-4">
