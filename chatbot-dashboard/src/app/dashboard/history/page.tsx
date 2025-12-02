@@ -240,13 +240,13 @@ export default function MessageHistory() {
                       </div>
                     )}
 
-                    {msg.intencion && (
+                    {msg.nivel_interes !== undefined && msg.nivel_interes !== null && (
                       <div className="text-green-400 text-xs mt-1">
                         🧠 Intención detectada:{" "}
-                        <span className="font-semibold">{msg.intencion}</span>
-                        {msg.nivel_interes !== undefined ? ` (Nivel ${msg.nivel_interes})` : ""}
+                        <span className="font-semibold">Nivel {msg.nivel_interes}</span>
                       </div>
                     )}
+
                   </div>
                 </div>
               );
