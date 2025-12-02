@@ -812,6 +812,8 @@ export default function TrainingPage() {
           membershipInactive={membershipInactive} // ✅ nuevo
         />
 
+        <TrainingHelp context="training" />
+        
         {/* Conexión de número oficial de WhatsApp (Meta Business / Cloud API) */}
         <ConnectWhatsAppButton
           disabled={!canConnectWhatsApp}
@@ -910,8 +912,6 @@ export default function TrainingPage() {
             )}
           </div>
         )}
-
-        <TrainingHelp context="training" />
 
         {/* 🛠️ Mantenimiento real */}
         {channelState?.maintenance && (
