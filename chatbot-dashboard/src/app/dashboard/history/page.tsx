@@ -30,41 +30,30 @@ export default function MessageHistory() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [canal, setCanal] = useState("");
+  const [canal, setCanal] = useState(""); // filtro seleccionado
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
   const lastIdRef = useRef<number | null>(null);
   const mensajesGlobalesRef = useRef<Msg[]>([]);
 
-  const [conteo, setConteo] = useState({
-    whatsapp: 0,
-    facebook: 0,
-    instagram: 0,
-    voice: 0,
-  });
+  // 👉 Calcula los contadores a partir de los mensajes cargados
+  const conteo = messages.reduce(
+    (acc, msg) => {
+      const c = normalizeCanal(msg.canal);
+      const role = (msg.role || "").toLowerCase();
 
-  const fetchConteoGlobal = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/messages/conteo`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Error al obtener conteo global");
-      const data = await res.json();
-      console.log("📥 Conteo global recibido (History):", data);
+      if (role !== "user") return acc; // solo mensajes del cliente
 
-      // Normalizar y asegurar números
-      setConteo((prev) => ({
-        ...prev,
-        whatsapp: Number(data.whatsapp) || 0,
-        facebook: Number(data.facebook) || 0,
-        instagram: Number(data.instagram) || 0,
-        voice: Number(data.voice) || 0,
-      }));
-    } catch (err) {
-      console.error("❌ Error en conteo global:", err);
-    }
-  };
+      if (c === "whatsapp") acc.whatsapp += 1;
+      if (c === "facebook") acc.facebook += 1;
+      if (c === "instagram") acc.instagram += 1;
+      if (c === "voice" || c === "voz") acc.voice += 1;
+
+      return acc;
+    },
+    { whatsapp: 0, facebook: 0, instagram: 0, voice: 0 }
+  );
 
   const fetchMessages = async (reset = false) => {
     try {
@@ -90,7 +79,9 @@ export default function MessageHistory() {
       // merge + dedupe por id
       const base = reset ? [] : mensajesGlobalesRef.current;
       const merged = [...base, ...nuevosMensajes];
-      const mensajesUnicos = Array.from(new Map(merged.map((m) => [m.id, m])).values());
+      const mensajesUnicos = Array.from(
+        new Map(merged.map((m) => [m.id, m])).values()
+      );
 
       mensajesGlobalesRef.current = mensajesUnicos;
 
@@ -112,7 +103,6 @@ export default function MessageHistory() {
       );
 
       setMessages(ordenadosDesc);
-      await fetchConteoGlobal();
     } catch (error) {
       console.error("❌ Error al obtener mensajes:", error);
     } finally {
@@ -139,7 +129,9 @@ export default function MessageHistory() {
 
       if (nuevos.length > 0) {
         const todos = [...mensajesGlobalesRef.current, ...nuevos];
-        const mensajesUnicos = Array.from(new Map(todos.map((m) => [m.id, m])).values());
+        const mensajesUnicos = Array.from(
+          new Map(todos.map((m) => [m.id, m])).values()
+        );
 
         mensajesGlobalesRef.current = mensajesUnicos;
 
@@ -153,7 +145,6 @@ export default function MessageHistory() {
         setMessages(ordenadosDesc);
 
         lastIdRef.current = nuevos[nuevos.length - 1].id;
-        await fetchConteoGlobal();
       }
     } catch (err) {
       console.error("❌ Error en polling de nuevos mensajes:", err);
@@ -168,12 +159,14 @@ export default function MessageHistory() {
     setPage(1);
     setHasMore(true);
     fetchMessages(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canal]);
 
   // Polling cada 5s
   useEffect(() => {
     const interval = setInterval(fetchMensajesNuevos, 5000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canal]);
 
   const canalIcons: Record<string, ReactNode> = {
@@ -197,11 +190,6 @@ export default function MessageHistory() {
         <span>{canalIcons.facebook} Facebook ({conteo.facebook})</span>
         <span>{canalIcons.instagram} Instagram ({conteo.instagram})</span>
         <span>{canalIcons.voice} Voz ({conteo.voice})</span>
-      </div>
-
-      {/* DEBUG TEMPORAL: ver exactamente qué tiene el estado */}
-      <div className="mb-4 text-xs text-white/60 bg-white/5 p-2 rounded">
-        DEBUG conteo: {JSON.stringify(conteo)}
       </div>
 
       <div className="mb-6">
