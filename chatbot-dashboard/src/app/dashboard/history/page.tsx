@@ -51,6 +51,7 @@ export default function MessageHistory() {
       });
       if (!res.ok) throw new Error("Error al obtener conteo global");
       const data = await res.json();
+      console.log("📥 Conteo global recibido:", data);
       setConteo(data);
     } catch (err) {
       console.error("❌ Error en conteo global:", err);
