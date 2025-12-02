@@ -37,14 +37,12 @@ export default function MessageHistory() {
   const lastIdRef = useRef<number | null>(null);
   const mensajesGlobalesRef = useRef<Msg[]>([]);
 
-  // 👉 Calcula los contadores a partir de los mensajes cargados
+  // 👉 1) Calcula los contadores SOLO a partir de los mensajes cargados
   const conteo = messages.reduce(
     (acc, msg) => {
       const c = normalizeCanal(msg.canal);
-      const role = (msg.role || "").toLowerCase();
 
-      if (role !== "user") return acc; // solo mensajes del cliente
-
+      // Contamos todos los mensajes por canal, sin filtrar por role
       if (c === "whatsapp") acc.whatsapp += 1;
       if (c === "facebook") acc.facebook += 1;
       if (c === "instagram") acc.instagram += 1;
@@ -93,7 +91,7 @@ export default function MessageHistory() {
         lastIdRef.current = nuevosMensajes[nuevosMensajes.length - 1].id;
       }
 
-      // aplicar filtro activo (el backend ya filtra por canal, pero dejamos por si acaso)
+      // aplicar filtro activo (por si acaso, aunque el backend ya filtra)
       const filtrados = canal
         ? mensajesUnicos.filter((m) => m.canal === canal)
         : mensajesUnicos;
