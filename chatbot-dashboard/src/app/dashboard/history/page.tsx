@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { BACKEND_URL } from "@/utils/api";
 import { SiWhatsapp, SiFacebook, SiInstagram } from "react-icons/si";
 import { FiGlobe, FiPhoneCall } from "react-icons/fi";
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 const PAGE_SIZE = 10;
 
@@ -24,7 +24,8 @@ type Msg = {
   nivel_interes?: string | number;
 };
 
-const normalizeCanal = (c?: string) => (c || "").toString().trim().toLowerCase();
+const normalizeCanal = (c?: string) =>
+  (c || "").toString().trim().toLowerCase();
 
 export default function MessageHistory() {
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -75,14 +76,17 @@ export default function MessageHistory() {
       const nuevosMensajes: Msg[] = (data.mensajes || [])
         .sort(
           (a: Msg, b: Msg) =>
-            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+            new Date(a.timestamp).getTime() -
+            new Date(b.timestamp).getTime()
         )
         .map((m: Msg) => ({ ...m, canal: normalizeCanal(m.canal) }));
 
       // merge + dedupe por id
       const base = reset ? [] : mensajesGlobalesRef.current;
       const merged = [...base, ...nuevosMensajes];
-      const mensajesUnicos = Array.from(new Map(merged.map((m) => [m.id, m])).values());
+      const mensajesUnicos = Array.from(
+        new Map(merged.map((m) => [m.id, m])).values()
+      );
 
       mensajesGlobalesRef.current = mensajesUnicos;
 
@@ -91,7 +95,8 @@ export default function MessageHistory() {
       setHasMore(nuevosMensajes.length === PAGE_SIZE);
 
       if (nuevosMensajes.length > 0) {
-        lastIdRef.current = nuevosMensajes[nuevosMensajes.length - 1].id;
+        lastIdRef.current =
+          nuevosMensajes[nuevosMensajes.length - 1].id;
       }
 
       // aplicar filtro activo (el backend ya filtra por canal, pero dejamos por si acaso)
@@ -100,11 +105,12 @@ export default function MessageHistory() {
         : mensajesUnicos;
 
       const ordenadosDesc = filtrados.sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        (a, b) =>
+          new Date(b.timestamp).getTime() -
+          new Date(a.timestamp).getTime()
       );
 
       setMessages(ordenadosDesc);
-      await fetchConteoGlobal();
     } catch (error) {
       console.error("❌ Error al obtener mensajes:", error);
     } finally {
@@ -131,7 +137,9 @@ export default function MessageHistory() {
 
       if (nuevos.length > 0) {
         const todos = [...mensajesGlobalesRef.current, ...nuevos];
-        const mensajesUnicos = Array.from(new Map(todos.map((m) => [m.id, m])).values());
+        const mensajesUnicos = Array.from(
+          new Map(todos.map((m) => [m.id, m])).values()
+        );
 
         mensajesGlobalesRef.current = mensajesUnicos;
 
@@ -140,12 +148,13 @@ export default function MessageHistory() {
           : mensajesUnicos;
 
         const ordenadosDesc = filtrados.sort(
-          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          (a, b) =>
+            new Date(b.timestamp).getTime() -
+            new Date(a.timestamp).getTime()
         );
         setMessages(ordenadosDesc);
 
         lastIdRef.current = nuevos[nuevos.length - 1].id;
-        await fetchConteoGlobal();
       }
     } catch (err) {
       console.error("❌ Error en polling de nuevos mensajes:", err);
@@ -159,7 +168,9 @@ export default function MessageHistory() {
     lastIdRef.current = null;
     setPage(1);
     setHasMore(true);
+
     fetchMessages(true);
+    fetchConteoGlobal(); // ← se carga el conteo una sola vez por canal
   }, [canal]);
 
   // Polling cada 5s
@@ -174,9 +185,11 @@ export default function MessageHistory() {
     instagram: <SiInstagram className="inline text-pink-400" />,
     voice: <FiPhoneCall className="inline text-purple-400" />,
     "": <FiGlobe className="inline text-white/70" />,
-  };  
+  };
 
-  const currentIcon = canalIcons[canal as keyof typeof canalIcons] ?? canalIcons[""];
+  const currentIcon =
+    canalIcons[canal as keyof typeof canalIcons] ??
+    canalIcons[""];
 
   return (
     <div className="w-full px-4 sm:px-6 py-6 text-white max-w-6xl mx-auto">
@@ -185,14 +198,24 @@ export default function MessageHistory() {
       </h2>
 
       <div className="mb-4 text-sm text-white/70 flex flex-wrap gap-4">
-        <span>{canalIcons.whatsapp} WhatsApp ({conteo.whatsapp})</span>
-        <span>{canalIcons.facebook} Facebook ({conteo.facebook})</span>
-        <span>{canalIcons.instagram} Instagram ({conteo.instagram})</span>
-        <span>{canalIcons.voice} Voz ({conteo.voice})</span>
+        <span>
+          {canalIcons.whatsapp} WhatsApp ({conteo.whatsapp})
+        </span>
+        <span>
+          {canalIcons.facebook} Facebook ({conteo.facebook})
+        </span>
+        <span>
+          {canalIcons.instagram} Instagram ({conteo.instagram})
+        </span>
+        <span>
+          {canalIcons.voice} Voz ({conteo.voice})
+        </span>
       </div>
 
       <div className="mb-6">
-        <label className="text-sm font-medium text-white mr-2">Filtrar por canal:</label>
+        <label className="text-sm font-medium text-white mr-2">
+          Filtrar por canal:
+        </label>
         <select
           value={canal}
           onChange={(e) => setCanal(e.target.value)}
@@ -207,24 +230,54 @@ export default function MessageHistory() {
       </div>
 
       {loading ? (
-        <p className="text-center text-white/60">Cargando mensajes...</p>
+        <p className="text-center text-white/60">
+          Cargando mensajes...
+        </p>
       ) : messages.length === 0 ? (
-        <p className="text-center text-white/50">No hay mensajes recientes.</p>
+        <p className="text-center text-white/50">
+          No hay mensajes recientes.
+        </p>
       ) : (
         <>
           <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
             {messages.map((msg) => {
-              const isUser = msg.role?.toLowerCase() === "user";
-              const isBot = msg.role?.toLowerCase() === "assistant";
-              const icono = isUser ? "👤" : isBot ? "🤖" : "❓";
-              const remitente = isUser ? (msg.nombre_cliente || "Cliente") : isBot ? "Amy" : "Desconocido";
+              const isUser =
+                msg.role?.toLowerCase() === "user";
+              const isBot =
+                msg.role?.toLowerCase() === "assistant";
+              const icono = isUser
+                ? "👤"
+                : isBot
+                ? "🤖"
+                : "❓";
+              const remitente = isUser
+                ? msg.nombre_cliente || "Cliente"
+                : isBot
+                ? "Amy"
+                : "Desconocido";
 
               return (
-                <div key={msg.id} className={`flex ${isUser ? "justify-start" : "justify-end"}`}>
+                <div
+                  key={msg.id}
+                  className={`flex ${
+                    isUser
+                      ? "justify-start"
+                      : "justify-end"
+                  }`}
+                >
                   <div className="w-full sm:max-w-2xl p-4 bg-white/5 border border-white/20 rounded-lg text-sm text-white">
                     <div className="flex justify-between text-white/60 text-xs mb-1">
-                      <span>{format(new Date(msg.timestamp), "dd/MM/yyyy, HH:mm:ss")}</span>
-                      <span>{!msg.nombre_cliente ? (msg.from_number || "anónimo") : ""}</span>
+                      <span>
+                        {format(
+                          new Date(msg.timestamp),
+                          "dd/MM/yyyy, HH:mm:ss"
+                        )}
+                      </span>
+                      <span>
+                        {!msg.nombre_cliente
+                          ? msg.from_number || "anónimo"
+                          : ""}
+                      </span>
                     </div>
 
                     <div className="font-medium text-white break-words whitespace-pre-wrap">
@@ -233,15 +286,23 @@ export default function MessageHistory() {
 
                     {msg.emotion && (
                       <div className="text-purple-300 text-xs mt-1">
-                        Emoción detectada: <span className="font-semibold">{msg.emotion}</span>
+                        Emoción detectada:{" "}
+                        <span className="font-semibold">
+                          {msg.emotion}
+                        </span>
                       </div>
                     )}
 
                     {msg.intencion && (
                       <div className="text-green-400 text-xs mt-1">
                         🧠 Intención detectada:{" "}
-                        <span className="font-semibold">{msg.intencion}</span>
-                        {msg.nivel_interes !== undefined ? ` (Nivel ${msg.nivel_interes})` : ""}
+                        <span className="font-semibold">
+                          {msg.intencion}
+                        </span>
+                        {msg.nivel_interes !==
+                        undefined
+                          ? ` (Nivel ${msg.nivel_interes})`
+                          : ""}
                       </div>
                     )}
                   </div>
@@ -261,7 +322,9 @@ export default function MessageHistory() {
                     : "bg-indigo-500 hover:bg-indigo-600 text-white"
                 }`}
               >
-                {loadingMore ? "Cargando..." : "Ver más"}
+                {loadingMore
+                  ? "Cargando..."
+                  : "Ver más"}
               </button>
             </div>
           )}
