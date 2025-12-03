@@ -286,7 +286,7 @@ const reload = async () => {
       </div>
 
       <p className="text-xs text-gray-300 mt-2">
-        El bot detecta la intención por similitud con <b>intents</b> y, si hay coincidencia, muestra el CTA del canal.
+        Tu Asistente detecta la intención por similitud con <b>intents</b> y, si hay coincidencia, muestra el CTA del canal.
       </p>
     </div>
   );

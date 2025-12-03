@@ -813,7 +813,7 @@ export default function TrainingPage() {
         />
 
         <TrainingHelp context="training" />
-        
+
         {/* Conexión de número oficial de WhatsApp (Meta Business / Cloud API) */}
         <ConnectWhatsAppButton
           disabled={!canConnectWhatsApp}
@@ -825,12 +825,12 @@ export default function TrainingPage() {
           <div className="mt-4 mb-6 p-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10">
             <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
               <MdWhatsapp className="text-green-400" />
-              Número de WhatsApp conectado
+              Número de WhatsApp
             </h2>
 
             {settings.whatsapp_phone_number ? (
               <p className="text-sm text-emerald-100 mb-2">
-                Número actual:{" "}
+                Número Conectado:{" "}
                 <span className="font-mono font-semibold">
                   {settings.whatsapp_phone_number}
                 </span>

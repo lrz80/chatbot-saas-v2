@@ -387,9 +387,6 @@ const handleSave = async () => {
         </div>
 
         {[{
-          label: 'Número del Asistente (WhatsApp)',
-          value: formData.twilio_number
-        }, {
           label: 'Número del Asistente (SMS)',
           value: formData.twilio_sms_number
         }, {
