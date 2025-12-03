@@ -195,7 +195,37 @@ export default function MessageHistory() {
 
     socket.on('message:new', (data) => {
       console.log('📩 Evento message:new recibido EN TIEMPO REAL:', data);
-      // Aquí luego haremos que actualice la lista de mensajes
+
+      const nuevo: Msg = {
+        id: data.id ?? Date.now(), // fallback si no viene id
+        timestamp: data.created_at ?? new Date().toISOString(),
+        role: data.role,
+        content: data.content,
+        canal: normalizeCanal(data.canal),
+        from_number: data.from_number,
+      };
+
+      // 🧠 1. Insertar en memoria global evitando duplicados
+      const existe = mensajesGlobalesRef.current.some((m) => m.id === nuevo.id);
+      if (!existe) {
+        mensajesGlobalesRef.current = [
+          nuevo,
+          ...mensajesGlobalesRef.current,
+        ];
+      }
+
+      // 🧩 2. Aplicar filtro activo
+      const filtrados = canal
+        ? mensajesGlobalesRef.current.filter((m) => m.canal === canal)
+        : mensajesGlobalesRef.current;
+
+      // 🕒 3. Ordenar por fecha descendente
+      const ordenadosDesc = filtrados.sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+
+      // 🎯 4. Render inmediato
+      setMessages([...ordenadosDesc]);
     });
 
     socket.on('disconnect', () => {
