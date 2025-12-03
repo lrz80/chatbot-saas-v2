@@ -8,6 +8,7 @@ import { BACKEND_URL } from "@/utils/api";
 import { SiWhatsapp, SiFacebook, SiInstagram } from "react-icons/si";
 import { FiGlobe, FiPhoneCall } from "react-icons/fi";
 import type { ReactNode } from "react";
+import { io, Socket } from 'socket.io-client';
 
 const PAGE_SIZE = 10;
 
@@ -36,6 +37,7 @@ export default function MessageHistory() {
 
   const lastIdRef = useRef<number | null>(null);
   const mensajesGlobalesRef = useRef<Msg[]>([]);
+  const socketRef = useRef<Socket | null>(null);
 
   // 👉 1) Calcula los contadores SOLO a partir de los mensajes cargados
   const conteo = messages.reduce(
@@ -176,6 +178,34 @@ export default function MessageHistory() {
   };
 
   const currentIcon = canalIcons[canal as keyof typeof canalIcons] ?? canalIcons[""];
+
+  // 🔌 Conexión en tiempo real con Socket.IO
+  useEffect(() => {
+    // Conecta al backend (BACKEND_URL debe ser algo como https://api.aamy.ai)
+    const socket = io(BACKEND_URL, {
+      withCredentials: true,
+      transports: ['websocket'],
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      console.log('🟢 Socket conectado:', socket.id);
+    });
+
+    socket.on('message:new', (data) => {
+      console.log('📩 Evento message:new recibido EN TIEMPO REAL:', data);
+      // Aquí luego haremos que actualice la lista de mensajes
+    });
+
+    socket.on('disconnect', () => {
+      console.log('🔴 Socket desconectado');
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <div className="w-full px-4 sm:px-6 py-6 text-white max-w-6xl mx-auto">
