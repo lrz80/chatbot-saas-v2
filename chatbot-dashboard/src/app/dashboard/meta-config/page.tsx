@@ -561,18 +561,6 @@ const handleDisconnect = async () => {
   
         <TrainingHelp context="meta" />
 
-        {!canMeta && (
-          <div className="mb-4 text-xs bg-white/5 border border-white/10 rounded p-3 text-white/80">
-            <div className="font-semibold mb-1">Meta está bloqueado:</div>
-            <ul className="list-disc ml-5 space-y-1">
-              {!isMembershipActive && <li>Sin membresía activa</li>}
-              {!planHasMeta && <li>Tu plan actual no incluye Meta</li>}
-              {!channelMetaOn && <li>Canal Meta desactivado por el administrador</li>}
-              {channelState.maintenance && <li>Canal en mantenimiento</li>}
-            </ul>
-          </div>
-        )}
-
         {/* 🔗 Integración con Meta: botones SIEMPRE visibles */}
         <div className="mb-6 p-4 rounded-lg border text-sm bg-white/5 border-white/10 text-white">
           <div className="flex flex-col gap-3">
