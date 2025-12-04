@@ -644,10 +644,28 @@ export default function CampaignsEmailClient() {
 
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
-        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex items-center gap-2 mb-8 text-purple-300">
-          <SiMinutemailer className="text-blue-400 animate-pulse" /> Campañas por Email
-        </h1>
-
+        <h1
+        className="
+          text-2xl
+          sm:text-3xl
+          md:text-4xl
+          font-extrabold
+          text-center
+          flex flex-col sm:flex-row
+          justify-center items-center
+          gap-2
+          mb-6 md:mb-8
+          text-purple-300
+        "
+      >
+        <SiMinutemailer
+          size={28}
+          className="text-green-400 animate-pulse sm:size-9"
+        />
+        <span>
+          Campañas por Email
+        </span>
+      </h1>
         <ChannelStatus
           canal="email"
           showBanner
