@@ -51,21 +51,45 @@ export default function ConnectWhatsAppButton({ disabled }: Props) {
         return;
       }
 
+      const url: string = data.url;
+
+      // 🔍 Detección simple de móvil
+      const isMobile =
+        typeof window !== "undefined" &&
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // 📱 En móvil NO usamos popup: redirigimos en la misma pestaña
+        console.log("[WA META] Redirigiendo a flujo Meta en móvil…");
+        window.location.href = url;
+        return; // no activamos checking ni popup
+      }
+
+      // 🖥️ Desktop: intentamos abrir popup centrado
       const width = 1000;
       const height = 800;
       const left = window.screenX + (window.outerWidth - width) / 2;
       const top = window.screenY + (window.outerHeight - height) / 2;
 
-      console.log("[WA META] Abriendo URL de Meta:", data.url);
+      console.log("[WA META] Abriendo URL de Meta en popup:", url);
 
       const popup = window.open(
-        data.url,
+        url,
         "wa-meta-onboard",
         `width=${width},height=${height},left=${left},top=${top}`
       );
 
+      // Si el navegador bloquea el popup → fallback a redirección directa
+      if (!popup) {
+        console.warn(
+          "[WA META] Popup bloqueado, usando redirección directa en desktop…"
+        );
+        window.location.href = url;
+        return;
+      }
+
       popupRef.current = popup;
-      setChecking(true); // empezamos a vigilar el estado
+      setChecking(true); // empezamos a vigilar el estado sólo si hay popup
     } catch (error) {
       console.error(
         "[WA META] Error inesperado en ConnectWhatsAppButton:",
