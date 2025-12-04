@@ -265,9 +265,20 @@ const handleSave = async () => {
             <img src={formData.logo_url} alt="Logo del negocio" className="h-full w-full object-cover" />
           </div>
         ) : null}
-        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
+        <h1
+          className="
+            text-2xl
+            sm:text-3xl
+            md:text-4xl
+            font-extrabold
+            text-center
+            mb-6 md:mb-8
+            text-purple-300
+          "
+        >
           Perfil del Negocio
         </h1>
+
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
