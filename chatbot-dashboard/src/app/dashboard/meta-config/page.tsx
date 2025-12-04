@@ -588,9 +588,9 @@ const handleDisconnect = async () => {
         <TrainingHelp context="meta" />
 
         {/* 🔗 Integración con Meta: botones SIEMPRE visibles */}
-        <div className="mb-6 p-4 rounded-lg border text-sm bg-white/5 border-white/10 text-white">
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="mb-4 sm:mb-6 px-3 py-3 sm:p-4 rounded-xl border text-xs sm:text-sm bg-white/5 border-white/10 text-white">
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="space-y-1">
                 <p className="font-semibold">Integración con Facebook / Instagram</p>
                 <p className="text-white/80 text-xs">
@@ -613,17 +613,18 @@ const handleDisconnect = async () => {
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
                 {/* ÚNICO botón para FB/IG */}
                 <button
                   onClick={goConnectMeta}
                   disabled={disabledAll}
                   aria-disabled={disabledAll}
-                  className={`px-4 py-2 rounded text-white ${
+                  className={`w-full sm:w-auto px-3 py-2 rounded text-sm text-white ${
                     !disabledAll
                       ? "bg-indigo-600 hover:bg-indigo-700"
                       : "bg-white/5 border border-white/10 text-white/40 cursor-not-allowed"
                   }`}
+
                   title={
                     canMeta
                       ? ""
@@ -645,11 +646,12 @@ const handleDisconnect = async () => {
                   onClick={handleDisconnect}
                   disabled={disabledAll || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
                   aria-disabled={disabledAll || (!metaConn.connected && !metaConn.fb && !metaConn.ig)}
-                  className={`px-4 py-2 rounded border ${
+                  className={`w-full sm:w-auto px-3 py-2 rounded border text-sm ${
                     canMeta && (metaConn.connected || metaConn.fb || metaConn.ig)
                       ? "bg-white/10 hover:bg-white/20 border-white/20 text-white"
                       : "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
                   }`}
+
                   title={
                     canMeta
                       ? ""
