@@ -805,33 +805,38 @@ const handleDisconnect = async () => {
           onSave={saveIntents}
         />
 
-        <div ref={previewRef} className="mt-10 bg-[#14142a]/60 backdrop-blur p-6 rounded-xl border border-white/20">
-        <h3 className="text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
-          <SiMinutemailer className="animate-pulse" size={24} />
+        <div
+          ref={previewRef}
+          className="mt-8 sm:mt-10 bg-[#14142a]/60 backdrop-blur px-3 py-4 sm:p-6 rounded-xl border border-white/20"
+        >
+
+        <h3 className="text-lg sm:text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
+          <SiMinutemailer className="animate-pulse" size={20} />
           Vista previa del Asistente
         </h3>
 
           <div
             ref={chatContainerRef}
-            style={{ height: '400px', overflowY: 'auto' }} // ✅ Altura fija
-            className="bg-[#0f0f25]/60 p-4 rounded flex flex-col gap-3 mb-4 border border-white/10"
+            className="bg-[#0f0f25]/60 px-3 py-3 sm:p-4 rounded flex flex-col gap-2 sm:gap-3 mb-4 border border-white/10 h-64 sm:h-72 md:h-80 lg:h-96 overflow-y-auto"
           >
+
             {messages.map((msg, i) => (
               <div
                 key={i}
-                className={`max-w-[80%] p-3 rounded-lg text-sm flex-shrink-0 ${
+                className={`max-w-[85%] sm:max-w-[80%] px-3 py-2 sm:p-3 rounded-lg text-xs sm:text-sm flex-shrink-0 ${
                   msg.role === "user"
                     ? "bg-indigo-400/30 self-end text-right"
                     : "bg-green-400/30 self-start text-left"
                 }`}
               >
+
                 {msg.role === "assistant"
                   ? renderAssistantContent(msg.content)
                   : (typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content))}
               </div>
             ))}
             {isTyping && (
-              <div className="max-w-[80%] bg-green-400/20 self-start text-left text-sm text-white px-4 py-2 rounded-lg italic animate-pulse">
+              <div className="max-w-[85%] sm:max-w-[80%] bg-green-400/20 self-start text-left text-xs sm:text-sm text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg italic animate-pulse">
                 El asistente está escribiendo...
               </div>
             )}
@@ -850,12 +855,12 @@ const handleDisconnect = async () => {
               }}              
               placeholder="Escribe algo..."
               disabled={!canMeta}
-              className="w-full sm:flex-1 border p-3 rounded bg-white/10 border-white/20 text-white placeholder-white/50"
+              className="w-full sm:flex-1 border px-3 py-2.5 sm:p-3 rounded bg-white/10 border-white/20 text-white text-sm placeholder-white/50"
             />
             <button
               onClick={handleSend}
               disabled={!canMeta}
-              className={`w-full sm:w-auto px-4 py-2 rounded ${
+              className={`w-full sm:w-auto px-4 py-2.5 rounded text-sm ${
                 settings.membresia_activa
                   ? "bg-indigo-600 hover:bg-indigo-700 text-white"
                   : "bg-gray-600 text-white/50 cursor-not-allowed"
