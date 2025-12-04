@@ -511,7 +511,6 @@ export default function VoiceConfigPage() {
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded text-white/90 text-sm">
           <p className="font-semibold mb-2">Voz está bloqueado:</p>
           <ul className="list-disc ml-5 space-y-1">
-            {!tieneMembresia && <li>Sin membresía activa</li>}
             {!planVoice && <li>Tu plan actual no incluye Voz</li>}
             {!settingsOn && <li>Canal Voz desactivado por el administrador</li>}
             {inMaintenance && <li>Canal en mantenimiento</li>}
