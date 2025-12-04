@@ -770,9 +770,9 @@ export default function TrainingPage() {
   if (loading) return <p className="text-center">Cargando configuración...</p>;
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
-      <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
-  
+    <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-3 py-4 sm:px-6 md:px-8">
+      <div className="w-full max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-5 sm:p-8">
+
         {/* 🎁 Caso 1: Nunca ha usado el trial → invitar a activar prueba (vía Stripe) */}
         {settings?.trial_disponible && !settings?.can_edit && (
           <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded-lg text-center font-medium">
@@ -803,11 +803,26 @@ export default function TrainingPage() {
           </div>
         )}
 
-        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
-          <SiWhatsapp size={36} className="text-green-400 animate-pulse" />
-          Configuración del Asistente de WhatsApp
+        <h1
+          className="
+            text-2xl
+            sm:text-3xl
+            md:text-4xl
+            font-extrabold
+            text-center
+            flex justify-center items-center gap-2
+            mb-6 md:mb-8
+            text-purple-300
+          "
+        >
+          <SiWhatsapp size={30} className="text-green-400 animate-pulse" />
+          <span className="leading-tight">
+            Configuración del Asistente
+            <br className="sm:hidden" />
+            de WhatsApp
+          </span>
         </h1>
-  
+
         <ChannelStatus
           canal="whatsapp"
           showBanner
