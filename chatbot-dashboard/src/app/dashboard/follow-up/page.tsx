@@ -163,8 +163,27 @@ export default function FollowUpSettingsPage() {
 
   return (
     <div className="p-4 md:p-6 text-white">
-      <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
-        <SiSpeedtest size={36} className="text-sky-400 animate-pulse" /> Seguimiento de Leads
+      <h1
+        className="
+          text-2xl
+          sm:text-3xl
+          md:text-4xl
+          font-extrabold
+          text-center
+          flex flex-col sm:flex-row
+          justify-center items-center
+          gap-2
+          mb-6 md:mb-8
+          text-purple-300
+        "
+      >
+        <SiSpeedtest
+          size={28}
+          className="text-green-400 animate-pulse sm:size-9"
+        />
+        <span>
+          Seguimiento de Leads
+        </span>
       </h1>
 
       {usoFollowup && (
