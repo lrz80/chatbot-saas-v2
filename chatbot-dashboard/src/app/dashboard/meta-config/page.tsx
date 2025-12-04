@@ -121,6 +121,7 @@ const handleDisconnect = async () => {
 });
 
   const isMembershipActive = Boolean(settings?.membresia_activa || settings?.trial_activo); // ✅ trial cuenta como activo
+  const membershipInactive  = !isMembershipActive;
   const planHasMeta        = Boolean(channelState.plan_enabled);
   const channelMetaOn      = Boolean(channelState.settings_enabled);
 
@@ -521,7 +522,12 @@ const handleDisconnect = async () => {
           Configuración del Asistente de Facebook e Instagram
         </h1>
 
-        <ChannelStatus canal="meta" showBanner hideTitle />
+        <ChannelStatus
+          canal="meta"
+          showBanner
+          hideTitle
+          membershipInactive={membershipInactive}
+        />
 
         {/* 🎁 Caso 1: Nunca usó trial → invitar a activar prueba */}
         {settings?.trial_disponible && !settings?.can_edit && (

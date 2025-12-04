@@ -44,23 +44,40 @@ export default function CampaignsSmsClient() {
   const [usoSms, setUsoSms] = useState<{ usados: number; limite: number } | null>(null);
   const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { loading: loadingPlan, features, esTrial } = useFeatures();
-  type ChannelState = {
-   enabled: boolean;
-   maintenance: boolean;
-   plan_enabled: boolean;
-   settings_enabled: boolean;
-   maintenance_message?: string | null;
- };
- const [channelState, setChannelState] = useState<ChannelState | null>(null);
- const [trialDisponible, setTrialDisponible] = useState<boolean>(false);
- const [trialActivo, setTrialActivo] = useState<boolean>(false);
- const [canEdit, setCanEdit] = useState<boolean>(false);
 
- const loadingChannel = channelState === null;
- const canSmsPlan = !loadingPlan && !!features?.sms; // del plan
- const canSms = !!channelState?.enabled;
- const disabledAll = !canSms || !canEdit;
+  // 👇 ESTE hook TIENE que seguir aquí
+  const { loading: loadingPlan, features, esTrial } = useFeatures();
+
+  type ChannelState = {
+    enabled: boolean;
+    maintenance: boolean;
+    plan_enabled: boolean;
+    settings_enabled: boolean;
+    maintenance_message?: string | null;
+  };
+
+  const [channelState, setChannelState] = useState<ChannelState | null>(null);
+  const [trialDisponible, setTrialDisponible] = useState<boolean>(false);
+  const [trialActivo, setTrialActivo] = useState<boolean>(false);
+  const [canEdit, setCanEdit] = useState<boolean>(false);
+
+   // ⬇️ Derivados del estado / plan / membresía
+  const loadingChannel = channelState === null;
+  const canSmsPlan = !loadingPlan && !!features?.sms; // si quieres usarlo luego
+
+  // Canal permitido por backend (plan + settings + sin mantenimiento)
+  const canSms = !!channelState?.enabled;
+
+  // Membresía activa si hay plan o trial vigente
+  const isMembershipActive = Boolean(membresiaActiva || trialActivo);
+
+  // Solo consideramos “membresía inactiva” si NO hay plan NI trial
+  const membershipInactive = !membresiaActiva && !trialActivo;
+
+  // Desactivar UI si:
+  // - canal SMS está bloqueado
+  // - o no hay membresía/trial activo
+  const disabledAll = !canSms || !isMembershipActive;
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
@@ -460,6 +477,7 @@ export default function CampaignsSmsClient() {
       alert(`🛠️ Canal SMS en mantenimiento. ${channelState.maintenance_message || "Inténtalo más tarde."}`);
       return true;
     }
+
     if (!canSms) {
       // bloqueado por plan o por flags de settings
       if (!channelState?.plan_enabled) {
@@ -470,8 +488,9 @@ export default function CampaignsSmsClient() {
       }
       return true;
     }
-    if (!canEdit) {
-      // sin plan y sin trial vigente → upgrade
+
+    // 🔹 aquí solo chequeamos membresía/trial
+    if (!isMembershipActive) {
       const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
       if (confirmar) window.location.href = "/upgrade";
       return true;
@@ -569,7 +588,12 @@ export default function CampaignsSmsClient() {
         <SiTwilio className="text-red-300 animate-pulse" /> Campañas por SMS
       </h1>
 
-      <ChannelStatus canal="sms" showBanner hideTitle />
+      <ChannelStatus
+        canal="sms"
+        showBanner
+        hideTitle
+        membershipInactive={membershipInactive}
+      />
 
       {/* 🎁 Caso 1: Nunca usó trial → invitar a activar prueba */}
       {trialDisponible && !canEdit && (

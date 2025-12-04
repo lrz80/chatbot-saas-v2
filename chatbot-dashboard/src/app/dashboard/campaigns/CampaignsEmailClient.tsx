@@ -65,14 +65,21 @@ export default function CampaignsEmailClient() {
  const [channelState, setChannelState] = useState<ChannelState | null>(null);
 
  // Flags de membresía/trial venidos del backend (/api/settings)
-  const [canEdit, setCanEdit] = useState(false);
-  const [trialDisponible, setTrialDisponible] = useState(false);
-  const [trialActivo, setTrialActivo] = useState(false);
-  const [estadoMembresiaTexto, setEstadoMembresiaTexto] = useState<string>('');
+ const [canEdit, setCanEdit] = useState(false);
+ const [trialDisponible, setTrialDisponible] = useState(false);
+ const [trialActivo, setTrialActivo] = useState(false);
+ const [estadoMembresiaTexto, setEstadoMembresiaTexto] = useState<string>('');
 
  const { esTrial } = useFeatures(); // opcional, solo para textos
- const canEmail = !!channelState?.enabled;           // si el canal está habilitado
- const disabledAll = !canEmail || !canEdit;          // ← ahora usa canEdit (plan activo o trial activo)
+
+ // Canal habilitado por configuración/plan
+ const canEmail = !!channelState?.enabled;
+
+ // Membresía/trial inactivo => bloqueo por membresía
+ const membershipInactive = !canEdit;
+
+ // Desactivar toda la UI si canal bloqueado o sin membresía/trial
+ const disabledAll = !canEmail || membershipInactive;
 
   const cargarCampañas = async () => {
     try {
@@ -641,7 +648,12 @@ export default function CampaignsEmailClient() {
           <SiMinutemailer className="text-blue-400 animate-pulse" /> Campañas por Email
         </h1>
 
-        <ChannelStatus canal="email" showBanner hideTitle />
+        <ChannelStatus
+          canal="email"
+          showBanner
+          hideTitle
+          membershipInactive={membershipInactive}
+        />
 
         {/* 🎁 Caso 1: Trial disponible (nunca lo usó) → invitar a activar */}
         {trialDisponible && !canEdit && (
@@ -1002,10 +1014,7 @@ export default function CampaignsEmailClient() {
       </div>
 
       <button
-        onClick={() => {
-          if (guardEmail()) return;
-          handleSubmit();
-        }}
+        onClick={handleSubmit}
         disabled={disabledAll || loading}
         className={`px-4 py-2 rounded font-semibold disabled:opacity-50 disabled:cursor-not-allowed
           ${disabledAll ? 'bg-gray-500 text-white/70' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}

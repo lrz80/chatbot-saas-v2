@@ -37,6 +37,7 @@ export default function VoiceConfigPage() {
   const [trialDisponible, setTrialDisponible] = useState(false);
   const [trialActivo, setTrialActivo] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
+  const membershipInactive = !Boolean(tieneMembresia || trialActivo);
 
   // 2) Derivados seguros (después del estado). Puedes usar useMemo o booleanos simples:
   const planVoice      = useMemo(() => Boolean(channelState?.plan_enabled),   [channelState]);
@@ -470,7 +471,12 @@ export default function VoiceConfigPage() {
         <SiAudioboom size={36} className="text-sky-400 animate-pulse" /> Configuración de Asistente de Voz
       </h1>
 
-      <ChannelStatus canal="voice" showBanner hideTitle />
+      <ChannelStatus
+        canal="voice"
+        showBanner
+        hideTitle
+        membershipInactive={membershipInactive}
+      />
 
       {/* 🎁 Caso 1: nunca usó trial → invitar a activar */}
       {trialDisponible && !canEdit && (
@@ -507,17 +513,6 @@ export default function VoiceConfigPage() {
 
       <TrainingHelp context="voice" />
 
-      {!canVoice && (
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded text-white/90 text-sm">
-          <p className="font-semibold mb-2">Voz está bloqueado:</p>
-          <ul className="list-disc ml-5 space-y-1">
-            {!planVoice && <li>Tu plan actual no incluye Voz</li>}
-            {!settingsOn && <li>Canal Voz desactivado por el administrador</li>}
-            {inMaintenance && <li>Canal en mantenimiento</li>}
-          </ul>
-        </div>
-      )}
-
       <VoiceMinutesCard />
 
       <div className="flex space-x-4 mb-6">
@@ -540,7 +535,7 @@ export default function VoiceConfigPage() {
       ))}
     </div>
 
-      {!tieneMembresia && (
+      {!tieneMembresia && !trialActivo && (
         <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-6 text-sm border border-yellow-400">
           ⚠️ Tu membresía está inactiva. Puedes visualizar la configuración, pero no puedes guardar ni generar cambios hasta activarla.
         </div>

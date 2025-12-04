@@ -133,8 +133,11 @@ export default function TrainingPage() {
     whatsapp_phone_number: null,
   });
 
-  const isMembershipActive = !!settings.can_edit; // permite edición con plan activo o trial vigente
-  const membershipInactive = !isMembershipActive; // ✅ agrega esta línea
+  const isMembershipActive = Boolean(
+    settings.membresia_activa || settings.trial_activo
+  );
+  const membershipInactive =
+  !settings.membresia_activa && !settings.trial_activo;
   
   useEffect(() => {
     if (!chatContainerRef.current) return;
@@ -809,7 +812,7 @@ export default function TrainingPage() {
           canal="whatsapp"
           showBanner
           hideTitle
-          membershipInactive={membershipInactive} // ✅ nuevo
+          membershipInactive={membershipInactive}
         />
 
         <TrainingHelp context="training" />
