@@ -517,9 +517,29 @@ const handleDisconnect = async () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
       <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
   
-        <h1 className="text-3xl md:text-4xl font-extrabold text-center flex justify-center items-center gap-2 mb-8 text-purple-300">
-          <SiMeta size={36} className="text-green-400 animate-pulse" />
-          Configuración del Asistente de Facebook e Instagram
+        <h1
+          className="
+            text-2xl
+            sm:text-3xl
+            md:text-4xl
+            font-extrabold
+            text-center
+            flex flex-col sm:flex-row
+            justify-center items-center
+            gap-2
+            mb-6 md:mb-8
+            text-purple-300
+          "
+        >
+          <SiMeta
+            size={28}
+            className="text-green-400 animate-pulse sm:size-9"
+          />
+          <span>
+            Configuración del Asistente
+            <br className="sm:hidden" />
+            de Facebook e Instagram
+          </span>
         </h1>
 
         <ChannelStatus
