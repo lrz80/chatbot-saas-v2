@@ -238,98 +238,142 @@ export default function MessageHistory() {
   }, []);
 
   return (
-    <div className="w-full px-4 sm:px-6 py-6 text-white max-w-6xl mx-auto">
-      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-indigo-300 flex items-center gap-2">
-        {currentIcon} Historial de Interacciones
-      </h2>
+    <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
+      <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
 
-      <div className="mb-4 text-sm text-white/70 flex flex-wrap gap-4">
-        <span>{canalIcons.whatsapp} WhatsApp ({conteo.whatsapp})</span>
-        <span>{canalIcons.facebook} Facebook ({conteo.facebook})</span>
-        <span>{canalIcons.instagram} Instagram ({conteo.instagram})</span>
-        <span>{canalIcons.voice} Voz ({conteo.voice})</span>
-      </div>
+        {/* Título principal */}
+        <h2 className="text-2xl md:text-3xl font-extrabold mb-6 text-indigo-300 flex items-center gap-2">
+          {currentIcon} Historial de Interacciones
+        </h2>
 
-      <div className="mb-6">
-        <label className="text-sm font-medium text-white mr-2">Filtrar por canal:</label>
-        <select
-          value={canal}
-          onChange={(e) => setCanal(e.target.value)}
-          className="bg-white/10 border border-white/30 text-white px-4 py-2 rounded-md focus:outline-none"
-        >
-          <option value="">🌐 Todos</option>
-          <option value="whatsapp">📲 WhatsApp</option>
-          <option value="facebook">💬 Facebook</option>
-          <option value="instagram">📸 Instagram</option>
-          <option value="voice">📞 Voz</option>
-        </select>
-      </div>
+        {/* Resumen por canal */}
+        <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-lg text-xs sm:text-sm flex flex-wrap gap-4">
+          <span>{canalIcons.whatsapp} WhatsApp ({conteo.whatsapp})</span>
+          <span>{canalIcons.facebook} Facebook ({conteo.facebook})</span>
+          <span>{canalIcons.instagram} Instagram ({conteo.instagram})</span>
+          <span>{canalIcons.voice} Voz ({conteo.voice})</span>
+        </div>
 
-      {loading ? (
-        <p className="text-center text-white/60">Cargando mensajes...</p>
-      ) : messages.length === 0 ? (
-        <p className="text-center text-white/50">No hay mensajes recientes.</p>
-      ) : (
-        <>
-          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-            {messages.map((msg) => {
-              const isUser = msg.role?.toLowerCase() === "user";
-              const isBot = msg.role?.toLowerCase() === "assistant";
-              const icono = isUser ? "👤" : isBot ? "🤖" : "❓";
-              const remitente = isUser
-                ? msg.nombre_cliente || "Cliente"
-                : isBot
-                ? "Amy"
-                : "Desconocido";
+        {/* Filtro por canal */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+          <label className="text-sm font-medium text-white sm:mr-2">
+            Filtrar por canal:
+          </label>
+          <select
+            value={canal}
+            onChange={(e) => setCanal(e.target.value)}
+            className="bg-white/10 border border-white/30 text-white px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          >
+            <option value="">🌐 Todos</option>
+            <option value="whatsapp">📲 WhatsApp</option>
+            <option value="facebook">💬 Facebook</option>
+            <option value="instagram">📸 Instagram</option>
+            <option value="voice">📞 Voz</option>
+          </select>
+        </div>
 
-              return (
-                <div key={msg.id} className={`flex ${isUser ? "justify-start" : "justify-end"}`}>
-                  <div className="w-full sm:max-w-2xl p-4 bg-white/5 border border-white/20 rounded-lg text-sm text-white">
-                    <div className="flex justify-between text-white/60 text-xs mb-1">
-                      <span>{format(new Date(msg.timestamp), "dd/MM/yyyy, HH:mm:ss")}</span>
-                      <span>{!msg.nombre_cliente ? msg.from_number || "anónimo" : ""}</span>
-                    </div>
+        {/* Contenido principal */}
+        {loading ? (
+          <p className="text-center text-white/60 text-sm">Cargando mensajes...</p>
+        ) : messages.length === 0 ? (
+          <p className="text-center text-white/50 text-sm">
+            No hay mensajes recientes.
+          </p>
+        ) : (
+          <>
+            {/* Lista de mensajes con altura fija y scroll, similar a la vista previa de Meta */}
+            <div className="space-y-3 sm:space-y-4 h-[60vh] sm:h-[65vh] md:h-[70vh] overflow-y-auto pr-1">
+              {messages.map((msg) => {
+                const isUser = msg.role?.toLowerCase() === "user";
+                const isBot = msg.role?.toLowerCase() === "assistant";
+                const icono = isUser ? "👤" : isBot ? "🤖" : "❓";
+                const remitente = isUser
+                  ? msg.nombre_cliente || "Cliente"
+                  : isBot
+                  ? "Amy"
+                  : "Desconocido";
 
-                    <div className="font-medium text-white break-words whitespace-pre-wrap">
-                      {icono} {remitente}: {msg.content}
-                    </div>
-
-                    {msg.emotion && (
-                      <div className="text-purple-300 text-xs mt-1">
-                        Emoción detectada: <span className="font-semibold">{msg.emotion}</span>
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex ${isUser ? "justify-start" : "justify-end"}`}
+                  >
+                    <div
+                      className={`
+                        max-w-[85%] sm:max-w-[70%]
+                        px-3 py-2 sm:p-3
+                        rounded-lg
+                        text-xs sm:text-sm
+                        flex-shrink-0
+                        border border-white/15
+                        ${
+                          isUser
+                            ? "bg-indigo-400/20 self-start text-left"
+                            : "bg-green-400/20 self-end text-left"
+                        }
+                      `}
+                    >
+                      {/* Fecha y número */}
+                      <div className="flex justify-between items-center text-[10px] sm:text-[11px] text-white/60 mb-1 gap-2">
+                        <span>
+                          {format(
+                            new Date(msg.timestamp),
+                            "dd/MM/yyyy, HH:mm:ss"
+                          )}
+                        </span>
+                        <span className="truncate">
+                          {!msg.nombre_cliente ? msg.from_number || "anónimo" : ""}
+                        </span>
                       </div>
-                    )}
 
-                    {msg.nivel_interes !== undefined && msg.nivel_interes !== null && (
-                      <div className="text-green-400 text-xs mt-1">
-                        🧠 Intención detectada:{" "}
-                        <span className="font-semibold">Nivel {msg.nivel_interes}</span>
+                      {/* Contenido del mensaje */}
+                      <div className="font-medium text-white break-words whitespace-pre-wrap">
+                        {icono} {remitente}: {msg.content}
                       </div>
-                    )}
 
+                      {/* Emoción */}
+                      {msg.emotion && (
+                        <div className="text-purple-300 text-[11px] mt-1">
+                          Emoción detectada:{" "}
+                          <span className="font-semibold">{msg.emotion}</span>
+                        </div>
+                      )}
+
+                      {/* Intención / nivel de interés */}
+                      {msg.nivel_interes !== undefined &&
+                        msg.nivel_interes !== null && (
+                          <div className="text-green-300 text-[11px] mt-1">
+                            🧠 Intención detectada:{" "}
+                            <span className="font-semibold">
+                              Nivel {msg.nivel_interes}
+                            </span>
+                          </div>
+                        )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {hasMore && (
-            <div className="text-center mt-6">
-              <button
-                onClick={() => fetchMessages(false)}
-                disabled={loadingMore}
-                className={`px-4 py-2 rounded-xl text-sm ${
-                  loadingMore
-                    ? "bg-indigo-400/40 cursor-not-allowed text-white"
-                    : "bg-indigo-500 hover:bg-indigo-600 text-white"
-                }`}
-              >
-                {loadingMore ? "Cargando..." : "Ver más"}
-              </button>
+                );
+              })}
             </div>
-          )}
-        </>
-      )}
+
+            {/* Botón "Ver más" */}
+            {hasMore && (
+              <div className="text-center mt-6">
+                <button
+                  onClick={() => fetchMessages(false)}
+                  disabled={loadingMore}
+                  className={`px-4 py-2.5 rounded-xl text-sm font-semibold ${
+                    loadingMore
+                      ? "bg-indigo-400/40 cursor-not-allowed text-white"
+                      : "bg-indigo-500 hover:bg-indigo-600 text-white"
+                  }`}
+                >
+                  {loadingMore ? "Cargando..." : "Ver más"}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
