@@ -551,7 +551,7 @@ const handleDisconnect = async () => {
 
         {/* 🎁 Caso 1: Nunca usó trial → invitar a activar prueba */}
         {settings?.trial_disponible && !settings?.can_edit && (
-          <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center font-medium">
+          <div className="mb-4 sm:mb-6 px-3 py-2 sm:p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center text-sm sm:text-base font-medium">
             🎁 <strong>Activa tu prueba gratis</strong> y comienza a usar el canal Meta.
             <button
               onClick={() => router.push('/upgrade')}
@@ -564,14 +564,14 @@ const handleDisconnect = async () => {
 
         {/* 🟡 Caso 2: Trial activo (permitido editar) → mensaje informativo */}
         {!settings?.membresia_activa && settings?.trial_activo && (
-          <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
+          <div className="mb-4 sm:mb-6 px-3 py-2 sm:p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center text-sm sm:text-base font-medium">
             🟡 Estás usando la <strong>prueba gratis</strong>. ¡Aprovecha para configurar tu asistente en Meta!
           </div>
         )}
 
         {/* 🔴 Caso 3: Sin plan y sin trial → banner inactiva */}
         {!settings?.can_edit && !settings?.trial_disponible && !settings?.trial_activo && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-400 text-red-200 rounded text-center font-medium">
+          <div className="mb-4 sm:mb-6 px-3 py-2 sm:p-4 bg-red-500/20 border border-red-400 text-red-200 rounded text-center text-sm sm:text-base font-medium">
             🚫 Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente en Meta.{" "}
             <a onClick={() => router.push('/upgrade')} className="underline cursor-pointer">
               Activa un plan para continuar.
@@ -580,7 +580,7 @@ const handleDisconnect = async () => {
         )}
 
         {usage.porcentaje >= 80 && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium text-sm">
+          <div className="mb-4 sm:mb-6 px-3 py-2 sm:p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center text-sm sm:text-base font-medium">
             ⚠ Estás utilizando el <strong>{usage.porcentaje}%</strong> de tu límite mensual ({usage.used}/{usage.limit} mensajes).<br />Considera actualizar tu plan para evitar interrupciones.
           </div>
         )}
