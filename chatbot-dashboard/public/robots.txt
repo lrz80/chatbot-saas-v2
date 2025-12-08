@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Evita que bots indexen rutas sensibles o irrelevantes
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+Disallow: /verify
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /profile
+Disallow: /training
+Disallow: /meta-config
+Disallow: /voice-config
+Disallow: /history
+Disallow: /follow-up
+Disallow: /campaigns/sms
+Disallow: /campaigns/email
+
+# Sitemap para Google
+Sitemap: https://www.aamy.ai/sitemap.xml
