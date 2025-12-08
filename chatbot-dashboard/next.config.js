@@ -3,9 +3,6 @@ const nextConfig = {
   experimental: {
     serverActions: {},
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   async rewrites() {
     return [
       {
