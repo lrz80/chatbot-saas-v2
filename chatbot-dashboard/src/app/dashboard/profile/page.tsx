@@ -82,7 +82,10 @@ export default function BusinessProfilePage() {
     setFormData({
       tenant_id: settingsData.tenant_id,
       nombre_negocio: settingsData.name,
-      horario_atencion: settingsData.horario_atencion,
+      horario_atencion:
+        settingsData.horario_atencion ??
+        tenantData?.horario_atencion ??
+        '',
       categoria: settingsData.categoria,
       idioma: settingsData.idioma,
       logo_url: settingsData.logo_url,
@@ -176,6 +179,7 @@ const handleSave = async () => {
       name: formData.nombre_negocio,
       categoria: formData.categoria,
       idioma: formData.idioma,
+      horario_atencion: formData.horario_atencion,
       // envía solo si hay valor (el backend valida http/https)
       ...(booking_url ? { booking_url } : {}),
       ...(availability_api_url ? { availability_api_url } : {}),
