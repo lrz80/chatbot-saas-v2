@@ -13,7 +13,15 @@ declare global {
 const APP_ID = process.env.NEXT_PUBLIC_META_APP_ID!;
 const CONFIG_ID = process.env.NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID!;
 
-export default function ConnectWhatsAppButton() {
+type ConnectWhatsAppButtonProps = {
+  disabled?: boolean;
+  tenantId?: string;
+};
+
+export default function ConnectWhatsAppButton({
+  disabled,
+  tenantId,
+}: ConnectWhatsAppButtonProps) {
   const [loading, setLoading] = useState(false);
 
   // 1) Cargar SDK y configurar listeners UNA sola vez
@@ -110,6 +118,10 @@ export default function ConnectWhatsAppButton() {
 
   // 2) Lanzar Embedded Signup con FB.login
   const handleConnect = useCallback(() => {
+    if (disabled || !tenantId) {
+      return;
+    }
+    
     if (typeof window === "undefined" || !window.FB) {
       console.error("[WA ES] FB SDK aún no cargado");
       return;
@@ -160,11 +172,13 @@ export default function ConnectWhatsAppButton() {
     });
   }, []);
 
+  const isDisabled = disabled || !tenantId;
+
   return (
     <button
       type="button"
       onClick={handleConnect}
-      disabled={loading}
+      disabled={isDisabled}
       className="px-4 py-2 rounded-md bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60"
     >
       {loading ? "Conectando WhatsApp…" : "Conectar WhatsApp Cloud"}
