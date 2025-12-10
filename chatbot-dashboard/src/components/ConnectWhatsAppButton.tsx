@@ -1,3 +1,5 @@
+// src/components/ConnectWhatsAppButton.tsx  (ruta que tengas)
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -24,12 +26,10 @@ export default function ConnectWhatsAppButton({
 }: ConnectWhatsAppButtonProps) {
   const [loading, setLoading] = useState(false);
 
-  // 1) Cargar SDK y configurar listeners UNA sola vez
+  // 1) Cargar SDK y listeners solo una vez
   useEffect(() => {
-    // Ya cargado
     if (typeof window === "undefined") return;
 
-    // Listener para recibir WA_EMBEDDED_SIGNUP (waba_id + phone_number_id)
     const messageHandler = async (event: MessageEvent) => {
       if (
         event.origin !== "https://www.facebook.com" &&
@@ -57,7 +57,7 @@ export default function ConnectWhatsAppButton({
             return;
           }
 
-          // Guardar en tu backend (tenants.whatsapp_business_id + phone_number_id)
+          // Guardar en backend
           const res = await fetch(
             `${BACKEND_URL}/api/meta/whatsapp/onboard-complete`,
             {
@@ -83,14 +83,12 @@ export default function ConnectWhatsAppButton({
           console.error("[WA ES] ERROR en Embedded Signup:", data.data);
         }
       } catch (e) {
-        // Muchos mensajes de FB no son JSON → ignoramos
         console.log("[WA ES] Non JSON message:", event.data);
       }
     };
 
     window.addEventListener("message", messageHandler);
 
-    // Cargar SDK si aún no está
     if (!window.FB) {
       const id = "facebook-jssdk";
       if (!document.getElementById(id)) {
@@ -116,12 +114,10 @@ export default function ConnectWhatsAppButton({
     };
   }, []);
 
-  // 2) Lanzar Embedded Signup con FB.login
+  // 2) Lanzar Embedded Signup
   const handleConnect = useCallback(() => {
-    if (disabled || !tenantId) {
-      return;
-    }
-    
+    if (disabled || !tenantId) return;
+
     if (typeof window === "undefined" || !window.FB) {
       console.error("[WA ES] FB SDK aún no cargado");
       return;
@@ -129,48 +125,51 @@ export default function ConnectWhatsAppButton({
 
     setLoading(true);
 
-    const fbLoginCallback = async (response: any) => {
+    // IMPORTANTE: función normal, NO async
+    const fbLoginCallback = (response: any) => {
       console.log("[WA ES] fbLoginCallback:", response);
 
-      if (response?.authResponse?.code) {
-        const code = response.authResponse.code as string;
-        console.log("[WA ES] Code recibido:", code);
-
-        // Mandar el code a tu backend para obtener y guardar access_token
+      // Ejecutamos lógica async dentro de una IIFE
+      (async () => {
         try {
-          const res = await fetch(
-            `${BACKEND_URL}/api/meta/whatsapp/exchange-code`,
-            {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ code }),
-            }
-          );
+          if (response?.authResponse?.code) {
+            const code = response.authResponse.code as string;
+            console.log("[WA ES] Code recibido:", code);
 
-          const json = await res.json();
-          console.log(
-            "[WA ES] Respuesta /exchange-code:",
-            res.status,
-            json
-          );
+            const res = await fetch(
+              `${BACKEND_URL}/api/meta/whatsapp/exchange-code`,
+              {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code }),
+              }
+            );
+
+            const json = await res.json();
+            console.log(
+              "[WA ES] Respuesta /exchange-code:",
+              res.status,
+              json
+            );
+          } else {
+            console.warn("[WA ES] fbLoginCallback sin authResponse");
+          }
         } catch (e) {
           console.error("[WA ES] Error llamando /exchange-code:", e);
+        } finally {
+          setLoading(false);
         }
-      } else {
-        console.warn("[WA ES] fbLoginCallback sin authResponse");
-      }
-
-      setLoading(false);
+      })();
     };
 
     window.FB.login(fbLoginCallback, {
       config_id: CONFIG_ID,
-      response_type: "code", // importante ↩
+      response_type: "code",
       override_default_response_type: true,
       extras: { version: "v3" },
     });
-  }, []);
+  }, [disabled, tenantId]);
 
   const isDisabled = disabled || !tenantId;
 
