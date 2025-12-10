@@ -1,156 +1,173 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
 import { BACKEND_URL } from "@/utils/api";
 
-type Props = {
-  disabled?: boolean;
-  tenantId?: string; // lo dejamos por compatibilidad, aunque no lo usamos
-};
+declare global {
+  interface Window {
+    fbAsyncInit?: () => void;
+    FB: any;
+  }
+}
 
-export default function ConnectWhatsAppButton({ disabled }: Props) {
-  const router = useRouter();
-  const popupRef = useRef<Window | null>(null);
-  const [checking, setChecking] = useState(false);
+const APP_ID = process.env.NEXT_PUBLIC_META_APP_ID!;
+const CONFIG_ID = process.env.NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID!;
 
-  const handleClick = async () => {
-    if (disabled) return;
+export default function ConnectWhatsAppButton() {
+  const [loading, setLoading] = useState(false);
 
-    try {
-      console.log("[WA META] Iniciando flujo de conexión con Meta…");
-
-      const res = await fetch(
-        `${BACKEND_URL}/api/meta/whatsapp-onboard/start`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      if (!res.ok) {
-        console.error(
-          "[WA META] Error al iniciar onboarding:",
-          res.status,
-          res.statusText
-        );
-        alert(
-          "No se pudo iniciar la conexión con WhatsApp Business. Inténtalo de nuevo o contacta al administrador."
-        );
-        return;
-      }
-
-      const data = await res.json();
-
-      if (!data?.url) {
-        console.error("[WA META] Respuesta sin URL válida:", data);
-        alert(
-          "No se recibió la URL de conexión de Meta. Inténtalo más tarde o contacta al administrador."
-        );
-        return;
-      }
-
-      const url: string = data.url;
-
-      // 🔍 Detección simple de móvil
-      const isMobile =
-        typeof window !== "undefined" &&
-        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      if (isMobile) {
-        // 📱 En móvil NO usamos popup: redirigimos en la misma pestaña
-        console.log("[WA META] Redirigiendo a flujo Meta en móvil…");
-        window.location.href = url;
-        return; // no activamos checking ni popup
-      }
-
-      // 🖥️ Desktop: intentamos abrir popup centrado
-      const width = 1000;
-      const height = 800;
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-
-      console.log("[WA META] Abriendo URL de Meta en popup:", url);
-
-      const popup = window.open(
-        url,
-        "wa-meta-onboard",
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
-
-      // Si el navegador bloquea el popup → fallback a redirección directa
-      if (!popup) {
-        console.warn(
-          "[WA META] Popup bloqueado, usando redirección directa en desktop…"
-        );
-        window.location.href = url;
-        return;
-      }
-
-      popupRef.current = popup;
-      setChecking(true); // empezamos a vigilar el estado sólo si hay popup
-    } catch (error) {
-      console.error(
-        "[WA META] Error inesperado en ConnectWhatsAppButton:",
-        error
-      );
-      alert(
-        "Ocurrió un error al iniciar la conexión con WhatsApp Business. Inténtalo nuevamente."
-      );
-    }
-  };
-
-  // Polling para ver cuándo Meta terminó y el tenant quedó conectado
+  // 1) Cargar SDK y configurar listeners UNA sola vez
   useEffect(() => {
-    if (!checking) return;
+    // Ya cargado
+    if (typeof window === "undefined") return;
 
-    const interval = setInterval(async () => {
+    // Listener para recibir WA_EMBEDDED_SIGNUP (waba_id + phone_number_id)
+    const messageHandler = async (event: MessageEvent) => {
+      if (
+        event.origin !== "https://www.facebook.com" &&
+        event.origin !== "https://web.facebook.com"
+      ) {
+        return;
+      }
+
       try {
-        const res = await fetch(
-          `${BACKEND_URL}/api/meta/whatsapp/accounts`,
-          {
-            credentials: "include",
-          }
-        );
+        const data = JSON.parse(event.data as string);
 
-        if (!res.ok) return;
+        if (data?.type !== "WA_EMBEDDED_SIGNUP") return;
 
-        const data = await res.json();
+        console.log("[WA ES] message recibido:", data);
 
-        // Si ya hay al menos un número conectado en DB, damos por finalizado
-        if (Array.isArray(data?.phoneNumbers) && data.phoneNumbers.length > 0) {
-          console.log("[WA META] Número detectado en DB:", data.phoneNumbers);
+        if (data.event === "FINISH") {
+          const { phone_number_id, waba_id } = data.data || {};
 
-          setChecking(false);
-          clearInterval(interval);
+          console.log("[WA ES] FINISH →", { phone_number_id, waba_id });
 
-          // Cerramos popup si sigue abierto
-          if (popupRef.current && !popupRef.current.closed) {
-            popupRef.current.close();
+          if (!phone_number_id || !waba_id) {
+            console.error(
+              "[WA ES] Falta phone_number_id o waba_id en data.data"
+            );
+            return;
           }
 
-          // Refrescamos la página / estado para que ChannelStatus muestre "conectado"
-          router.refresh();
+          // Guardar en tu backend (tenants.whatsapp_business_id + phone_number_id)
+          const res = await fetch(
+            `${BACKEND_URL}/api/meta/whatsapp/onboard-complete`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                wabaId: waba_id,
+                phoneNumberId: phone_number_id,
+              }),
+            }
+          );
+
+          const json = await res.json();
+          console.log(
+            "[WA ES] Respuesta /onboard-complete:",
+            res.status,
+            json
+          );
+        } else if (data.event === "CANCEL") {
+          console.warn("[WA ES] Usuario CANCELÓ el flujo:", data.data);
+        } else if (data.event === "ERROR") {
+          console.error("[WA ES] ERROR en Embedded Signup:", data.data);
         }
       } catch (e) {
-        console.error("[WA META] Error consultando estado de WhatsApp:", e);
+        // Muchos mensajes de FB no son JSON → ignoramos
+        console.log("[WA ES] Non JSON message:", event.data);
       }
-    }, 5000); // cada 5 segundos
+    };
 
-    return () => clearInterval(interval);
-  }, [checking, router]);
+    window.addEventListener("message", messageHandler);
+
+    // Cargar SDK si aún no está
+    if (!window.FB) {
+      const id = "facebook-jssdk";
+      if (!document.getElementById(id)) {
+        const js = document.createElement("script");
+        js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        document.body.appendChild(js);
+      }
+
+      window.fbAsyncInit = function () {
+        window.FB.init({
+          appId: APP_ID,
+          autoLogAppEvents: true,
+          xfbml: false,
+          version: "v18.0",
+        });
+        console.log("[WA ES] FB SDK inicializado");
+      };
+    }
+
+    return () => {
+      window.removeEventListener("message", messageHandler);
+    };
+  }, []);
+
+  // 2) Lanzar Embedded Signup con FB.login
+  const handleConnect = useCallback(() => {
+    if (typeof window === "undefined" || !window.FB) {
+      console.error("[WA ES] FB SDK aún no cargado");
+      return;
+    }
+
+    setLoading(true);
+
+    const fbLoginCallback = async (response: any) => {
+      console.log("[WA ES] fbLoginCallback:", response);
+
+      if (response?.authResponse?.code) {
+        const code = response.authResponse.code as string;
+        console.log("[WA ES] Code recibido:", code);
+
+        // Mandar el code a tu backend para obtener y guardar access_token
+        try {
+          const res = await fetch(
+            `${BACKEND_URL}/api/meta/whatsapp/exchange-code`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code }),
+            }
+          );
+
+          const json = await res.json();
+          console.log(
+            "[WA ES] Respuesta /exchange-code:",
+            res.status,
+            json
+          );
+        } catch (e) {
+          console.error("[WA ES] Error llamando /exchange-code:", e);
+        }
+      } else {
+        console.warn("[WA ES] fbLoginCallback sin authResponse");
+      }
+
+      setLoading(false);
+    };
+
+    window.FB.login(fbLoginCallback, {
+      config_id: CONFIG_ID,
+      response_type: "code", // importante ↩
+      override_default_response_type: true,
+      extras: { version: "v3" },
+    });
+  }, []);
 
   return (
     <button
       type="button"
-      onClick={handleClick}
-      disabled={disabled}
-      className="mt-4 inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+      onClick={handleConnect}
+      disabled={loading}
+      className="px-4 py-2 rounded-md bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60"
     >
-      {checking
-        ? "Conectando número de WhatsApp…"
-        : "Conectar número oficial de WhatsApp"}
+      {loading ? "Conectando WhatsApp…" : "Conectar WhatsApp Cloud"}
     </button>
   );
 }
