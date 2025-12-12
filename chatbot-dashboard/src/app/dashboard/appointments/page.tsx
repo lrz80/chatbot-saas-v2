@@ -20,7 +20,7 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+    useEffect(() => {
     (async () => {
       try {
         setLoading(true);
@@ -34,8 +34,20 @@ export default function AppointmentsPage() {
           throw new Error('No se pudieron cargar las citas');
         }
 
-        const data = await res.json();
-        setAppointments(data || []);
+        const json = await res.json();
+
+        // Soportar varios formatos posibles del backend
+        let list: Appointment[] = [];
+
+        if (Array.isArray(json)) {
+          list = json;
+        } else if (Array.isArray(json.appointments)) {
+          list = json.appointments;
+        } else if (Array.isArray(json.rows)) {
+          list = json.rows;
+        }
+
+        setAppointments(list);
       } catch (err: any) {
         console.error('❌ Error cargando citas:', err);
         setError(err.message || 'Error al cargar citas');
