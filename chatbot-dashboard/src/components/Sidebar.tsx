@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  FiHome, FiUser, FiLogOut, FiMic, FiClock, FiMail, FiUsers, FiMessageSquare,
+  FiHome, FiUser, FiCalendar, FiMic, FiClock, FiMail, FiUsers, FiMessageSquare,
 } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookMessenger } from 'react-icons/fa';
 import ClientOnly from './ClientOnly';
@@ -84,6 +84,7 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
               { href: '/dashboard/meta-config', icon: <FaFacebookMessenger className="text-white" />, label: 'Asistente de Meta' },
               { href: '/dashboard/voice-config', icon: <FiMic />, label: 'Asistente de Voz' },
               { href: '/dashboard/history', icon: <FiClock />, label: 'Historial de Mensajes' },
+              { href: '/dashboard/appointments', icon: <FiCalendar />, label: 'Citas agendadas' },
               { href: '/dashboard/follow-up', icon: <FiUsers />, label: 'Seguimiento de Leads' },
               { href: '/dashboard/campaigns/sms', icon: <FiMessageSquare />, label: 'Campañas SMS' },
               { href: '/dashboard/campaigns/email', icon: <FiMail />, label: 'Campañas Email' },
