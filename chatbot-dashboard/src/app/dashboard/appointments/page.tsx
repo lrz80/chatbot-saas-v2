@@ -207,7 +207,7 @@ export default function AppointmentsPage() {
           </div>
         )}
 
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl">
+        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl overflow-x-auto">
           {/* Cabecera */}
           <div className="grid grid-cols-12 gap-2 px-4 sm:px-6 py-3 text-xs font-semibold text-white/60 bg-white/5 border-b border-white/10">
             <div className="col-span-3 sm:col-span-3 flex items-center gap-2">
