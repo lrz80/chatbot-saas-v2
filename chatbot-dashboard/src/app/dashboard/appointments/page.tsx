@@ -166,7 +166,7 @@ export default function AppointmentsPage() {
           </p>
         </header>
 
-        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+        <div className="relative bg-white/5 border border-white/10 rounded-2xl">
           {/* Header fila */}
           <div className="grid grid-cols-12 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-white/60 border-b border-white/10">
             <div className="col-span-3 flex items-center gap-2">
@@ -258,7 +258,7 @@ export default function AppointmentsPage() {
                     </button>
 
                     {openMenuId === appt.id && (
-                      <div className="absolute right-0 top-9 w-40 bg-[#060014] border border-white/15 rounded-xl shadow-lg z-20 text-xs">
+                      <div className="absolute right-0 top-full mt-2 w-40 bg-[#060014] border border-white/15 rounded-xl shadow-lg z-30 text-xs">
                         {[
                           { value: 'pending', label: 'Pendiente' },
                           { value: 'confirmed', label: 'Confirmada' },
