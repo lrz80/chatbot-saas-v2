@@ -207,7 +207,7 @@ export default function AppointmentsPage() {
           </div>
         )}
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl overflow-x-auto">
+        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl">
           {/* Cabecera */}
           <div className="grid grid-cols-12 gap-2 px-4 sm:px-6 py-3 text-xs font-semibold text-white/60 bg-white/5 border-b border-white/10">
             <div className="col-span-3 sm:col-span-3 flex items-center gap-2">
@@ -300,32 +300,35 @@ export default function AppointmentsPage() {
                       </button>
 
                       {openStatusId === appt.id && (
-                        <div className="absolute right-0 mt-2 w-40 rounded-xl bg-[#050314] border border-white/10 shadow-2xl z-30">
-                          <div className="py-1 text-xs text-white/80">
+                        <div
+                            className="absolute right-0 w-40 rounded-xl bg-[#050314] border border-white/10 shadow-2xl z-30"
+                            style={{ bottom: 'calc(100% + 8px)' }} // 8px arriba del botón
+                        >
+                            <div className="py-1 text-xs text-white/80">
                             {STATUS_OPTIONS.map((opt) => {
-                              const optMeta = STATUS_META[opt];
-                              const isActive = opt === appt.status;
+                                const optMeta = STATUS_META[opt];
+                                const isActive = opt === appt.status;
 
-                              return (
+                                return (
                                 <button
-                                  key={opt}
-                                  type="button"
-                                  onClick={() => handleChangeStatus(appt.id, opt)}
-                                  className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg-white/10 ${
+                                    key={opt}
+                                    type="button"
+                                    onClick={() => handleChangeStatus(appt.id, opt)}
+                                    className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg-white/10 ${
                                     isActive ? 'text-white' : 'text-white/70'
-                                  }`}
-                                  disabled={savingId === appt.id}
+                                    }`}
+                                    disabled={savingId === appt.id}
                                 >
-                                  <span>{optMeta.label}</span>
-                                  {isActive && (
+                                    <span>{optMeta.label}</span>
+                                    {isActive && (
                                     <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                                  )}
+                                    )}
                                 </button>
-                              );
+                                );
                             })}
-                          </div>
+                            </div>
                         </div>
-                      )}
+                        )}
                     </div>
                   </div>
                 </div>
