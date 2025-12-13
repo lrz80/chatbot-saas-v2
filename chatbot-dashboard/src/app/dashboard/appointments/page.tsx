@@ -159,6 +159,53 @@ export default function AppointmentsPage() {
     fetchAppointments();
   }, []);
 
+  // ⬇️ Añade este useEffect después del useEffect que hace el fetch inicial
+  useEffect(() => {
+    // solo cliente
+    if (typeof window === "undefined") return;
+
+    const socket: Socket = io(BACKEND_URL, {
+        transports: ["websocket"],
+        withCredentials: true,
+    });
+
+    console.log("[SOCKET] Conectado en appointments:", socket.id);
+
+    const handleNewAppointment = (payload: any) => {
+        console.log("[SOCKET] appointment:new recibido:", payload);
+
+        // Aseguramos que sea un objeto, no un array u otra cosa
+        const appt = Array.isArray(payload) ? payload[0] : payload;
+
+        if (!appt || !appt.id) {
+        console.warn("[SOCKET] appointment:new sin id válido, se ignora:", appt);
+        return;
+        }
+
+        setAppointments((prev) => {
+        // Filtramos posibles elementos undefined/null por seguridad
+        const safePrev = (prev || []).filter(Boolean) as Appointment[];
+
+        const exists = safePrev.some((a) => a.id === appt.id);
+        if (exists) {
+            console.log("[SOCKET] appointment ya existe, no se duplica:", appt.id);
+            return safePrev;
+        }
+
+        // Insertamos al inicio
+        return [appt as Appointment, ...safePrev];
+        });
+    };
+
+    socket.on("appointment:new", handleNewAppointment);
+
+    return () => {
+        console.log("[SOCKET] Desconectando en appointments...");
+        socket.off("appointment:new", handleNewAppointment);
+        socket.disconnect();
+    };
+  }, []);
+
   // 🔴 NUEVO: conectar Socket.IO y escuchar "appointment:new"
   useEffect(() => {
     // si no tienes BACKEND_URL en socket.io-history, copia el mismo valor que uses allí
