@@ -1,9 +1,11 @@
+// src/app/dashboard/appointments/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react'; // 👈 añadimos useRef
 import { BACKEND_URL } from '@/utils/api';
 import { FiChevronDown } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookMessenger, FaInstagram } from 'react-icons/fa';
+import { io, Socket } from "socket.io-client"; // 👈 ya lo tenías
 
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended';
 
@@ -21,6 +23,12 @@ type Appointment = {
   status: AppointmentStatus;
   created_at: string;
   updated_at: string;
+};
+
+// 👇 opcional, para tipar el payload del socket
+type AppointmentSocketPayload = {
+  tenantId: string;
+  appointment: Appointment;
 };
 
 const STATUS_META: Record<
@@ -113,7 +121,10 @@ export default function AppointmentsPage() {
   const [openStatusId, setOpenStatusId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Cargar citas
+  // 👇 socket ref (igual patrón que history)
+  const socketRef = useRef<Socket | null>(null);
+
+  // Cargar citas (fetch inicial)
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -146,6 +157,44 @@ export default function AppointmentsPage() {
     };
 
     fetchAppointments();
+  }, []);
+
+  // 🔴 NUEVO: conectar Socket.IO y escuchar "appointment:new"
+  useEffect(() => {
+    // si no tienes BACKEND_URL en socket.io-history, copia el mismo valor que uses allí
+    const socket = io(BACKEND_URL, {
+      transports: ["websocket"],
+      withCredentials: true,
+    });
+
+    socketRef.current = socket;
+
+    socket.on("connect", () => {
+      console.log("🔌 [SOCKET] Conectado en appointments:", socket.id);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("❌ [SOCKET] Error de conexión en appointments:", err.message);
+    });
+
+    socket.on("appointment:new", (payload: AppointmentSocketPayload) => {
+      console.log("📥 [SOCKET] appointment:new recibido:", payload);
+
+      const { appointment } = payload;
+
+      // Evitar duplicados por si la cita ya vino en el fetch
+      setAppointments((prev) => {
+        const exists = prev.some((a) => a.id === appointment.id);
+        if (exists) return prev;
+        // agregamos al inicio
+        return [appointment, ...prev];
+      });
+    });
+
+    return () => {
+      console.log("🔌 [SOCKET] Desconectando en appointments...");
+      socket.disconnect();
+    };
   }, []);
 
   const handleChangeStatus = async (id: string, newStatus: AppointmentStatus) => {
@@ -301,34 +350,34 @@ export default function AppointmentsPage() {
 
                       {openStatusId === appt.id && (
                         <div
-                            className="absolute right-0 w-40 rounded-xl bg-[#050314] border border-white/10 shadow-2xl z-30"
-                            style={{ bottom: 'calc(100% + 8px)' }} // 8px arriba del botón
+                          className="absolute right-0 w-40 rounded-xl bg-[#050314] border border-white/10 shadow-2xl z-30"
+                          style={{ bottom: 'calc(100% + 8px)' }} // 8px arriba del botón
                         >
-                            <div className="py-1 text-xs text-white/80">
+                          <div className="py-1 text-xs text-white/80">
                             {STATUS_OPTIONS.map((opt) => {
-                                const optMeta = STATUS_META[opt];
-                                const isActive = opt === appt.status;
+                              const optMeta = STATUS_META[opt];
+                              const isActive = opt === appt.status;
 
-                                return (
+                              return (
                                 <button
-                                    key={opt}
-                                    type="button"
-                                    onClick={() => handleChangeStatus(appt.id, opt)}
-                                    className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg-white/10 ${
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => handleChangeStatus(appt.id, opt)}
+                                  className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg-white/10 ${
                                     isActive ? 'text-white' : 'text-white/70'
-                                    }`}
-                                    disabled={savingId === appt.id}
+                                  }`}
+                                  disabled={savingId === appt.id}
                                 >
-                                    <span>{optMeta.label}</span>
-                                    {isActive && (
+                                  <span>{optMeta.label}</span>
+                                  {isActive && (
                                     <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                                    )}
+                                  )}
                                 </button>
-                                );
+                              );
                             })}
-                            </div>
+                          </div>
                         </div>
-                        )}
+                      )}
                     </div>
                   </div>
                 </div>
