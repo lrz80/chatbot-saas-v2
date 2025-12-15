@@ -109,8 +109,9 @@ export function MetaPageSelector({ onConnected }: MetaPageSelectorProps) {
     );
   }
 
-  const renderPage = (page: any) => {
+  const renderPage = (page: MetaPage) => {
   const isSelected = selectedPageId === page.id;
+  const pic = getPicUrl(page);
 
   return (
     <label
@@ -130,21 +131,46 @@ export function MetaPageSelector({ onConnected }: MetaPageSelectorProps) {
         className="w-5 h-5 accent-indigo-500"
       />
 
-      <img
-        src={page.picture || "/avatar-placeholder.png"}
-        alt={page.name}
-        className="w-12 h-12 rounded-full object-cover border border-white/20"
-      />
+      <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 bg-white/10 flex items-center justify-center shrink-0">
+        {pic ? (
+          <img
+            src={pic}
+            alt={page.name}
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              // si falla la imagen, escondemos el img y queda la letra fallback
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+          />
+        ) : null}
 
-      <div className="flex flex-col">
-        <span className="text-white font-medium">{page.name}</span>
-        {page.instagram_username && (
-          <span className="text-sm text-white/60">
-            IG: @{page.instagram_username}
+        {/* fallback si no hay imagen o falló */}
+        <span className="text-xs text-white/70 font-semibold">
+          {(page?.name ?? "P").slice(0, 1).toUpperCase()}
+        </span>
+      </div>
+
+      <div className="flex flex-col min-w-0">
+        <span className="text-white font-medium truncate">{page.name}</span>
+        {page.instagramUsername && (
+          <span className="text-sm text-white/60 truncate">
+            IG: @{page.instagramUsername}
           </span>
         )}
       </div>
     </label>
+  );
+};
+
+const getPicUrl = (p: any): string => {
+  // casos típicos: string directo o Graph { data: { url } }
+  return (
+    p?.picture?.data?.url ||
+    p?.picture?.url ||
+    p?.picture ||
+    p?.profile_picture_url ||
+    ""
   );
 };
 
