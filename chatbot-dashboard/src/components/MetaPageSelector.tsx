@@ -109,51 +109,76 @@ export function MetaPageSelector({ onConnected }: MetaPageSelectorProps) {
     );
   }
 
+  const renderPage = (page: any) => {
+  const isSelected = selectedPageId === page.id;
+
   return (
-    <div className="mt-4 border rounded-lg p-4 space-y-4 bg-white">
-      <h3 className="font-semibold text-sm">
-        Selecciona la página de Facebook que quieres conectar a este negocio:
-      </h3>
+    <label
+      key={page.id}
+      className={`flex items-center gap-4 p-3 rounded-lg border cursor-pointer transition ${
+        isSelected
+          ? "border-indigo-500 bg-indigo-500/20"
+          : "border-white/20 bg-white/5 hover:bg-white/10"
+      }`}
+    >
+      <input
+        type="radio"
+        name="selectedPage"
+        value={page.id}
+        checked={isSelected}
+        onChange={() => setSelectedPageId(page.id)}
+        className="w-5 h-5 accent-indigo-500"
+      />
 
-      <div className="space-y-2">
-        {pages.map((p) => (
-          <label
-            key={p.id}
-            className="flex items-center gap-3 border rounded-md px-3 py-2 cursor-pointer hover:bg-gray-50"
-          >
-            <input
-              type="radio"
-              name="fb-page"
-              value={p.id}
-              checked={selectedPageId === p.id}
-              onChange={() => setSelectedPageId(p.id)}
-            />
-            {p.pictureUrl && (
-              <img
-                src={p.pictureUrl}
-                alt={p.name}
-                className="w-8 h-8 rounded-full object-cover"
-              />
-            )}
-            <div className="flex flex-col text-sm">
-              <span className="font-medium">{p.name}</span>
-              {p.instagramUsername && (
-                <span className="text-xs text-gray-500">
-                  IG: @{p.instagramUsername}
-                </span>
-              )}
-            </div>
-          </label>
-        ))}
+      <img
+        src={page.picture || "/avatar-placeholder.png"}
+        alt={page.name}
+        className="w-12 h-12 rounded-full object-cover border border-white/20"
+      />
+
+      <div className="flex flex-col">
+        <span className="text-white font-medium">{page.name}</span>
+        {page.instagram_username && (
+          <span className="text-sm text-white/60">
+            IG: @{page.instagram_username}
+          </span>
+        )}
       </div>
+    </label>
+  );
+};
 
-      <button
-        onClick={handleConnect}
-        disabled={!selectedPageId || saving}
-        className="px-4 py-2 text-sm rounded-md bg-black text-white disabled:opacity-60"
-      >
-        {saving ? 'Conectando...' : 'Conectar página seleccionada'}
-      </button>
+  return (
+    <div className="mt-6">
+      <div className="bg-white/10 backdrop-blur rounded-xl border border-white/20 p-4 sm:p-6">
+        <h3 className="text-lg font-semibold text-white mb-3">
+          Selecciona la página a conectar
+        </h3>
+
+        <p className="text-sm text-white/70 mb-4">
+          Elige la página de Facebook o Instagram que deseas conectar con tu asistente.
+        </p>
+
+        {/* 👇 AQUÍ VA LA LISTA */}
+        <div className="space-y-3">
+          {pages.map(renderPage)}
+        </div>
+
+        {/* 👇 BOTÓN */}
+        <div className="mt-6 sticky bottom-0 bg-[#1e1e3f] pt-4">
+          <button
+            onClick={handleConnect}
+            disabled={!selectedPageId || saving}
+            className={`w-full py-3 rounded-lg font-semibold text-white transition ${
+              selectedPageId && !saving
+                ? "bg-indigo-600 hover:bg-indigo-700"
+                : "bg-gray-600 cursor-not-allowed"
+            }`}
+          >
+            {saving ? "Conectando..." : "Conectar página seleccionada"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
