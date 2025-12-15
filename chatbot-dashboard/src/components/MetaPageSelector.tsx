@@ -12,7 +12,11 @@ type MetaPage = {
   instagramUsername: string | null;
 };
 
-export function MetaPageSelector() {
+type MetaPageSelectorProps = {
+  onConnected?: () => void;
+};
+
+export function MetaPageSelector({ onConnected }: MetaPageSelectorProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const fbSession = searchParams.get('fb_session');
@@ -79,8 +83,12 @@ export function MetaPageSelector() {
         throw new Error(data.error || 'Error al conectar la página');
       }
 
+      // ✅ ESTE ES EL PUTO LUGAR
+      onConnected?.();
+
       // Limpia el query param y muestra success
       router.replace('/dashboard/meta-config?connected=success');
+
     } catch (e: any) {
       setError(e.message || 'Error al conectar la página');
     } finally {

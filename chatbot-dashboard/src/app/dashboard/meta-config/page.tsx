@@ -62,6 +62,35 @@ const handleDisconnect = async () => {
   }
 };
 
+// ✅ Refresca el estado de conexión Meta (FB/IG) leyendo la DB
+const refreshMetaConn = async () => {
+  try {
+    const mc = await fetch(`${BACKEND_URL}/api/meta-config`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!mc.ok) {
+      setMetaConn({ connected: false, needsReconnect: true });
+      return;
+    }
+
+    const m = await mc.json();
+    const hasFB = Boolean(m?.facebook_page_id);
+    const hasIG = Boolean(m?.instagram_page_id);
+    const isConnected = hasFB || hasIG;
+
+    setMetaConn({
+      connected: isConnected,
+      needsReconnect: !isConnected,
+      fb: hasFB ? { id: m.facebook_page_id, name: m.facebook_page_name } : undefined,
+      ig: hasIG ? { id: m.instagram_page_id, username: m.instagram_page_name } : undefined,
+    });
+  } catch (e) {
+    console.error("❌ refreshMetaConn error:", e);
+  }
+};
+
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
   type AssistantStructured =
@@ -680,7 +709,7 @@ const handleDisconnect = async () => {
           </div>
         </div>
 
-        <MetaPageSelector />
+        <MetaPageSelector onConnected={refreshMetaConn} />
 
         {usoMeta && (
           <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
