@@ -159,9 +159,7 @@ export default function AppointmentsPage() {
     fetchAppointments();
   }, []);
 
-  // ⬇️ Añade este useEffect después del useEffect que hace el fetch inicial
   useEffect(() => {
-    // solo cliente
     if (typeof window === "undefined") return;
 
     const socket: Socket = io(BACKEND_URL, {
@@ -169,80 +167,47 @@ export default function AppointmentsPage() {
         withCredentials: true,
     });
 
-    console.log("[SOCKET] Conectado en appointments:", socket.id);
+    socketRef.current = socket;
 
-    const handleNewAppointment = (payload: any) => {
-        console.log("[SOCKET] appointment:new recibido:", payload);
+    socket.on("connect", () => {
+        console.log("🔌 [SOCKET] Conectado en appointments:", socket.id);
+    });
 
-        // Aseguramos que sea un objeto, no un array u otra cosa
-        const appt = Array.isArray(payload) ? payload[0] : payload;
+    socket.on("connect_error", (err) => {
+        console.error("❌ [SOCKET] Error de conexión en appointments:", err.message);
+    });
 
-        if (!appt || !appt.id) {
-        console.warn("[SOCKET] appointment:new sin id válido, se ignora:", appt);
+    socket.on("appointment:new", (payload: any) => {
+        console.log("📥 [SOCKET] appointment:new recibido:", payload);
+
+        // Normalizamos: puede venir { appointment: {...} } o puede venir directo {...}
+        const appt = payload?.appointment ?? payload;
+
+        // Validación mínima
+        if (!appt || typeof appt !== "object" || !appt.id) {
+        console.warn("⚠️ [SOCKET] appointment:new inválido, se ignora:", payload);
         return;
         }
 
         setAppointments((prev) => {
-        // Filtramos posibles elementos undefined/null por seguridad
-        const safePrev = (prev || []).filter(Boolean) as Appointment[];
+        // Blindaje: elimina cualquier cosa rara en el state
+        const safePrev = Array.isArray(prev)
+            ? prev.filter((x) => x && typeof x === "object" && (x as any).id)
+            : [];
 
-        const exists = safePrev.some((a) => a.id === appt.id);
-        if (exists) {
-            console.log("[SOCKET] appointment ya existe, no se duplica:", appt.id);
-            return safePrev;
-        }
+        if (safePrev.some((a) => a.id === appt.id)) return safePrev;
 
-        // Insertamos al inicio
         return [appt as Appointment, ...safePrev];
         });
-    };
-
-    socket.on("appointment:new", handleNewAppointment);
+    });
 
     return () => {
-        console.log("[SOCKET] Desconectando en appointments...");
-        socket.off("appointment:new", handleNewAppointment);
+        console.log("🔌 [SOCKET] Desconectando en appointments...");
+        socket.off("appointment:new");
         socket.disconnect();
+        socketRef.current = null;
     };
-  }, []);
-
-  // 🔴 NUEVO: conectar Socket.IO y escuchar "appointment:new"
-  useEffect(() => {
-    // si no tienes BACKEND_URL en socket.io-history, copia el mismo valor que uses allí
-    const socket = io(BACKEND_URL, {
-      transports: ["websocket"],
-      withCredentials: true,
-    });
-
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
-      console.log("🔌 [SOCKET] Conectado en appointments:", socket.id);
-    });
-
-    socket.on("connect_error", (err) => {
-      console.error("❌ [SOCKET] Error de conexión en appointments:", err.message);
-    });
-
-    socket.on("appointment:new", (payload: AppointmentSocketPayload) => {
-      console.log("📥 [SOCKET] appointment:new recibido:", payload);
-
-      const { appointment } = payload;
-
-      // Evitar duplicados por si la cita ya vino en el fetch
-      setAppointments((prev) => {
-        const exists = prev.some((a) => a.id === appointment.id);
-        if (exists) return prev;
-        // agregamos al inicio
-        return [appointment, ...prev];
-      });
-    });
-
-    return () => {
-      console.log("🔌 [SOCKET] Desconectando en appointments...");
-      socket.disconnect();
-    };
-  }, []);
+    }, []);
 
   const handleChangeStatus = async (id: string, newStatus: AppointmentStatus) => {
     try {
@@ -284,6 +249,10 @@ export default function AppointmentsPage() {
       setSavingId(null);
     }
   };
+
+  const safeAppointments = Array.isArray(appointments)
+  ? appointments.filter((x) => x && typeof x === "object" && (x as any).id)
+  : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#050314] via-[#050018] to-[#050010] text-white px-4 sm:px-6 lg:px-8 py-8">
@@ -336,7 +305,7 @@ export default function AppointmentsPage() {
           {/* Filas */}
           {!loading &&
             appointments.length > 0 &&
-            appointments.map((appt) => {
+            safeAppointments.map((appt) => {
               const statusMeta = STATUS_META[appt.status] || STATUS_META.pending;
 
               return (
