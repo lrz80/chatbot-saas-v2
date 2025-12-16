@@ -9,6 +9,13 @@ export default function WhatsAppConnectCallbackPage() {
   const sp = useSearchParams();
 
   useEffect(() => {
+    console.log("[WA CALLBACK] mounted");
+    console.log("[WA CALLBACK] full url:", window.location.href);
+    console.log("[WA CALLBACK] code:", sp.get("code"));
+    console.log("[WA CALLBACK] state:", sp.get("state"));
+    console.log("[WA CALLBACK] error:", sp.get("error"));
+    console.log("[WA CALLBACK] error_description:", sp.get("error_description"));
+
     const run = async () => {
       const code = sp.get('code');
       const state = sp.get('state') || '';

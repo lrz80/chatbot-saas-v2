@@ -14,6 +14,9 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
 
   const appId = process.env.NEXT_PUBLIC_META_APP_ID!;
   const redirectUri = process.env.NEXT_PUBLIC_WA_REDIRECT_URI!;
+  console.log("[WA BTN] appId:", appId);
+  console.log("[WA BTN] redirectUri:", redirectUri);
+  console.log("[WA BTN] tenantId:", tenantId);
 
   const state = useMemo(() => {
     // Anti-CSRF + identificar tenant
@@ -21,6 +24,7 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
   }, [tenantId]);
 
   useEffect(() => {
+    console.log("[WA BTN] useEffect init. appId:", appId);
     if (!appId) return;
 
     if (document.getElementById('facebook-jssdk')) {
@@ -29,6 +33,14 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
     }
 
     window.fbAsyncInit = function () {
+      console.log("[WA BTN] fbAsyncInit fired");
+      window.FB.init({
+        appId,
+        cookie: true,
+        xfbml: false,
+        version: 'v18.0',
+      });
+      console.log("[WA BTN] FB.init OK. window.FB exists?", !!window.FB);
       window.FB.init({
         appId,
         cookie: true,
@@ -47,13 +59,27 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
   }, [appId]);
 
   const start = () => {
+    console.log("[WA BTN] start() clicked", {
+      disabled,
+      sdkReady,
+      hasFB: !!window.FB,
+      tenantId,
+      redirectUri,
+    });
+
     if (disabled) return;
     if (!sdkReady || !window.FB) return;
 
     setLoading(true);
+    setTimeout(() => {
+      console.log("[WA BTN] 8s timeout. Still loading:", true);
+      setLoading(false);
+    }, 8000);
 
+    console.log("[WA BTN] calling FB.login...");
     window.FB.login(
       (response: any) => {
+        console.log("[WA BTN] FB.login response:", response);
         // Si cancelan, authResponse no viene
         if (!response?.authResponse) {
           setLoading(false);
