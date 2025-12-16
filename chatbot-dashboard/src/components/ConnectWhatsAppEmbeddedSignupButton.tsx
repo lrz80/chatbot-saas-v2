@@ -75,6 +75,7 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
         const rData = await r.json();
         console.log('[WA BTN] resolve-waba response:', r.status, rData);
 
+        
     } catch (err) {
       console.error('[WA BTN] ❌ Error llamando save-token:', err);
     }
