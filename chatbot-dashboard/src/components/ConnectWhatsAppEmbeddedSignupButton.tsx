@@ -14,9 +14,6 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
 
   const appId = process.env.NEXT_PUBLIC_META_APP_ID!;
   const redirectUri = process.env.NEXT_PUBLIC_WA_REDIRECT_URI!;
-  console.log("[WA BTN] appId:", appId);
-  console.log("[WA BTN] redirectUri:", redirectUri);
-  console.log("[WA BTN] tenantId:", tenantId);
 
   const state = useMemo(() => {
     // Anti-CSRF + identificar tenant
@@ -25,6 +22,9 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
 
   useEffect(() => {
     console.log("[WA BTN] useEffect init. appId:", appId);
+    console.log("[WA BTN] appId:", appId);
+    console.log("[WA BTN] redirectUri:", redirectUri);
+    console.log("[WA BTN] tenantId:", tenantId);
     if (!appId) return;
 
     if (document.getElementById('facebook-jssdk')) {
@@ -33,22 +33,18 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
     }
 
     window.fbAsyncInit = function () {
-      console.log("[WA BTN] fbAsyncInit fired");
-      window.FB.init({
-        appId,
-        cookie: true,
-        xfbml: false,
-        version: 'v18.0',
-      });
-      console.log("[WA BTN] FB.init OK. window.FB exists?", !!window.FB);
-      window.FB.init({
-        appId,
-        cookie: true,
-        xfbml: false,
-        version: 'v18.0',
-      });
-      setSdkReady(true);
-    };
+        console.log("[WA BTN] fbAsyncInit fired");
+
+        window.FB.init({
+            appId,
+            cookie: true,
+            xfbml: false,
+            version: "v18.0",
+        });
+
+        console.log("[WA BTN] FB.init OK. window.FB exists?", !!window.FB);
+        setSdkReady(true);
+        };
 
     const js = document.createElement('script');
     js.id = 'facebook-jssdk';
@@ -78,23 +74,27 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
 
     console.log("[WA BTN] calling FB.login...");
     window.FB.login(
-      (response: any) => {
+    (response: any) => {
         console.log("[WA BTN] FB.login response:", response);
-        // Si cancelan, authResponse no viene
-        if (!response?.authResponse) {
-          setLoading(false);
-          return;
-        }
-        // Meta redirige automáticamente al redirectUri (callback) con ?code=
-      },
-      {
+        console.log("[WA BTN] response.status:", response?.status);
+        console.log("[WA BTN] authResponse exists?:", !!response?.authResponse);
+        console.log("[WA BTN] authResponse:", response?.authResponse);
+        console.log("[WA BTN] grantedScopes:", response?.authResponse?.grantedScopes);
+
+        setLoading(false);
+
+        if (!response?.authResponse) return;
+
+        // por ahora NO hacemos nada más hasta ver qué contiene authResponse
+    },
+    {
         scope:
-          'whatsapp_business_management,whatsapp_business_messaging,business_management',
+        "whatsapp_business_management,whatsapp_business_messaging,business_management",
         return_scopes: true,
-        auth_type: 'rerequest',
+        auth_type: "rerequest",
         redirect_uri: redirectUri,
         state,
-      }
+    }
     );
   };
 
