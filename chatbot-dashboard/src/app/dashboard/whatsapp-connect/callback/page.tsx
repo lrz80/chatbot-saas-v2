@@ -15,6 +15,11 @@ export default function WhatsAppConnectCallbackPage() {
       const error = sp.get('error');
       const error_description = sp.get('error_description');
 
+      console.log("[WA CALLBACK] query:", Object.fromEntries(sp.entries()));
+      console.log("[WA CALLBACK] code:", code);
+      console.log("[WA CALLBACK] state:", state);
+      console.log("[WA CALLBACK] API_BASE:", process.env.NEXT_PUBLIC_API_BASE_URL);
+
       // A veces Meta puede enviar estos (según flujo). Si no vienen, quedan null.
       const wabaId =
         sp.get('wabaId') ||
