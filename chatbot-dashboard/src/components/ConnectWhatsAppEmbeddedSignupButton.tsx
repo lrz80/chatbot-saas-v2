@@ -66,6 +66,15 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
       }
 
       console.log('[WA BTN] ✅ Token guardado correctamente');
+      console.log('[WA BTN] Resolviendo WABA...');
+        const r = await fetch(`${apiBaseUrl}/api/meta/whatsapp/resolve-waba`, {
+        method: 'GET',
+        credentials: 'include',
+        });
+
+        const rData = await r.json();
+        console.log('[WA BTN] resolve-waba response:', r.status, rData);
+
     } catch (err) {
       console.error('[WA BTN] ❌ Error llamando save-token:', err);
     }
