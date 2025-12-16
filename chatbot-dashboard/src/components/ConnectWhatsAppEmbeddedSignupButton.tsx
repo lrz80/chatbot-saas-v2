@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export default function ConnectWhatsAppEmbeddedSignupButton({
   tenantId,
@@ -75,7 +75,7 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
         const rData = await r.json();
         console.log('[WA BTN] resolve-waba response:', r.status, rData);
 
-        
+
     } catch (err) {
       console.error('[WA BTN] ❌ Error llamando save-token:', err);
     }
@@ -117,42 +117,58 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
     document.body.appendChild(js);
   }, [appId, redirectUri, tenantId, apiBaseUrl]);
 
-  const start = () => {
-    console.log('[WA BTN] start() clicked', {
-      disabled,
-      sdkReady,
-      hasFB: !!(window as any).FB,
-      tenantId,
-      redirectUri,
-      apiBaseUrl,
-    });
+const timeoutRef = useRef<number | null>(null);
 
-    if (disabled) return;
-    if (!sdkReady || !(window as any).FB) return;
+const start = () => {
+  console.log('[WA BTN] start() clicked', {
+    disabled,
+    sdkReady,
+    hasFB: !!(window as any).FB,
+    tenantId,
+    redirectUri,
+    apiBaseUrl,
+  });
 
-    setLoading(true);
-    setTimeout(() => {
-      console.log('[WA BTN] 8s timeout. Still loading:', true);
-      setLoading(false);
-    }, 8000);
+  if (disabled) return;
+  if (!sdkReady || !(window as any).FB) return;
 
-    console.log('[WA BTN] calling FB.login...');
+  setLoading(true);
 
-    // ❗️Callback SYNC (no async)
-    (window as any).FB.login(
-      (response: any) => {
-        handleFBLogin(response);
-      },
-      {
-        scope:
-          'whatsapp_business_management,whatsapp_business_messaging,business_management',
-        return_scopes: true,
-        auth_type: 'rerequest',
-        redirect_uri: redirectUri,
-        state,
+  // Limpia cualquier timeout previo
+  if (timeoutRef.current) {
+    window.clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
+  }
+
+  timeoutRef.current = window.setTimeout(() => {
+    console.log('[WA BTN] 8s timeout. Forcing loading=false');
+    setLoading(false);
+    timeoutRef.current = null;
+  }, 8000);
+
+  console.log('[WA BTN] calling FB.login...');
+
+  // Callback SYNC (no async)
+  (window as any).FB.login(
+    (response: any) => {
+      // si llegó respuesta, cancelamos el timeout
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
-    );
-  };
+
+      handleFBLogin(response); // aquí adentro puedes hacer async sin problema
+    },
+    {
+      scope:
+        'whatsapp_business_management,whatsapp_business_messaging,business_management',
+      return_scopes: true,
+      auth_type: 'rerequest',
+      redirect_uri: redirectUri,
+      state,
+    }
+  );
+};
 
   const isDisabled = disabled || !sdkReady || loading || !tenantId;
 

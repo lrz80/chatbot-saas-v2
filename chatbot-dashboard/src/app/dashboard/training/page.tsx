@@ -288,8 +288,29 @@ export default function TrainingPage() {
     try {
       setWaSaving(true);
 
-      const res = await fetch(
-        `${BACKEND_URL}/api/meta/whatsapp/select-number`,
+      // 1) Guardar selección del número en el tenant
+      const res = await fetch(`${BACKEND_URL}/api/meta/whatsapp/select-number`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wabaId: opt.waba_id,
+          phoneNumberId: opt.phone_number_id,
+          displayPhoneNumber: opt.phone_number,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok || !data?.ok) {
+        console.error("[WA META] Error saving WA number:", data);
+        alert(data?.error || "Unable to save the selected number.");
+        return;
+      }
+
+      // 2) AHORA (CRÍTICO): finalizar onboarding y guardar:
+      // whatsapp_system_user_id, whatsapp_system_user_token, whatsapp_business_manager_id
+      const res2 = await fetch(
+        `${BACKEND_URL}/api/meta/whatsapp/onboard-complete`,
         {
           method: "POST",
           credentials: "include",
@@ -297,29 +318,28 @@ export default function TrainingPage() {
           body: JSON.stringify({
             wabaId: opt.waba_id,
             phoneNumberId: opt.phone_number_id,
-            displayPhoneNumber: opt.phone_number,
           }),
         }
       );
 
-      const data = await res.json().catch(() => ({} as any));
-      if (!res.ok) {
-        console.error("[WA META] Error saving WA number:", data);
-        alert(data?.error || "Unable to save the selected number.");
+      const data2 = await res2.json().catch(() => ({} as any));
+      if (!res2.ok || !data2?.ok) {
+        console.error("[WA META] Error onboard-complete:", data2);
+        alert(
+          data2?.error ||
+            "Se guardó el número, pero falló el onboarding completo (System User/Token)."
+        );
         return;
       }
 
-      // Update local state
-      setSettings((prev) => ({
-        ...prev,
-        whatsapp_phone_number: opt.phone_number,
-        whatsapp_status: "connected",
-      }));
+      console.log("[WA META] onboard-complete OK:", data2);
 
-      alert("WhatsApp number updated for this business. ✅");
+      // 3) NO confíes solo en estado local (te puede mostrar connected aunque DB diga disconnected)
+      // Mejor recargar settings desde backend.
+      alert("WhatsApp conectado correctamente ✅");
 
-      // 👉 Automatically refresh the UI with updated data
-      router.refresh(); // ⬅⬅ REQUIRED
+      // Opción más segura para reflejar DB real:
+      window.location.reload();
     } catch (err) {
       console.error("[WA META] Error saving WA number:", err);
       alert("Error while saving the WhatsApp number.");
