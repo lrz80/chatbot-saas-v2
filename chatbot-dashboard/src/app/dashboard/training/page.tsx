@@ -16,6 +16,7 @@ import CTASection from "@/components/CTASection";
 import ChannelStatus from "@/components/ChannelStatus";
 import MembershipBanner from "@/components/MembershipBanner";
 import ConnectWhatsAppButton from "@/components/ConnectWhatsAppButton";
+import ConnectWhatsAppEmbeddedSignupButton from "@/components/ConnectWhatsAppEmbeddedSignupButton";
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
@@ -838,7 +839,7 @@ export default function TrainingPage() {
         <TrainingHelp context="training" />
 
         {/* Conexión de número oficial de WhatsApp (Meta Business / Cloud API) */}
-        <ConnectWhatsAppButton
+        <ConnectWhatsAppEmbeddedSignupButton
           disabled={!canConnectWhatsApp}
           tenantId={settings.tenant_id}
         />
