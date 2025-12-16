@@ -74,7 +74,7 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
 
     console.log("[WA BTN] calling FB.login...");
     window.FB.login(
-    (response: any) => {
+    async (response: any) => {
         console.log("[WA BTN] FB.login response:", response);
         console.log("[WA BTN] response.status:", response?.status);
         console.log("[WA BTN] authResponse exists?:", !!response?.authResponse);
@@ -83,9 +83,43 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
 
         setLoading(false);
 
-        if (!response?.authResponse) return;
+        if (!response?.authResponse?.accessToken) {
+        console.error("[WA BTN] No accessToken recibido");
+        return;
+        }
 
-        // por ahora NO hacemos nada más hasta ver qué contiene authResponse
+        const accessToken = response.authResponse.accessToken;
+
+        console.log("[WA BTN] Guardando accessToken en backend...");
+
+        try {
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/meta/whatsapp/save-token`,
+            {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                whatsapp_access_token: accessToken,
+            }),
+            }
+        );
+
+        const data = await res.json();
+        console.log("[WA BTN] save-token response:", data);
+
+        if (!res.ok || !data.ok) {
+            console.error("[WA BTN] Error guardando token");
+            return;
+        }
+
+        console.log("[WA BTN] Token guardado correctamente");
+
+        } catch (err) {
+        console.error("[WA BTN] Error llamando save-token:", err);
+        }
     },
     {
         scope:
