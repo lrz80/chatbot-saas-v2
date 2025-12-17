@@ -15,70 +15,32 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
   const appId = process.env.NEXT_PUBLIC_META_APP_ID!;
   const redirectUri = process.env.NEXT_PUBLIC_WA_REDIRECT_URI!;
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL!;
+  const configId = process.env.NEXT_PUBLIC_WA_CONFIG_ID!;
 
   const state = useMemo(() => {
     // Anti-CSRF + identificar tenant
     return `${tenantId || 'no-tenant'}::${Date.now()}`;
   }, [tenantId]);
 
-  // ✅ Handler ASYNC separado (FB.login NO acepta callbacks async)
-  const handleFBLogin = async (response: any) => {
+  // ✅ Embedded Signup: NO dependas de accessToken aquí.
+  // Meta te redirige al redirectUri con ?code=...
+  const handleFBLogin = (response: any) => {
     console.log('[WA BTN] FB.login response:', response);
     console.log('[WA BTN] response.status:', response?.status);
     console.log('[WA BTN] authResponse exists?:', !!response?.authResponse);
     console.log('[WA BTN] authResponse:', response?.authResponse);
     console.log('[WA BTN] grantedScopes:', response?.authResponse?.grantedScopes);
 
-    setLoading(false);
-
-    if (!response?.authResponse?.accessToken) {
-      console.error('[WA BTN] No accessToken recibido');
+    // Si el usuario cancela, no llega authResponse
+    if (!response?.authResponse) {
+      console.warn('[WA BTN] Usuario canceló o no hubo authResponse');
+      setLoading(false);
       return;
     }
 
-    const accessToken = response.authResponse.accessToken;
-
-    console.log('[WA BTN] Guardando accessToken en backend...');
-    console.log('[WA BTN] apiBaseUrl:', apiBaseUrl);
-    console.log('[WA BTN] save-token URL:', `${apiBaseUrl}/api/meta/whatsapp/save-token`);
-    console.log('[WA BTN] token length:', accessToken.length);
-
-    try {
-      const res = await fetch(`${apiBaseUrl}/api/meta/whatsapp/save-token`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          whatsapp_access_token: accessToken,
-        }),
-      });
-
-      console.log('[WA BTN] save-token HTTP status:', res.status);
-
-      const data = await res.json();
-      console.log('[WA BTN] save-token response JSON:', data);
-
-      if (!res.ok || !data?.ok) {
-        console.error('[WA BTN] Error guardando token');
-        return;
-      }
-
-      console.log('[WA BTN] ✅ Token guardado correctamente');
-      console.log('[WA BTN] Resolviendo WABA...');
-        const r = await fetch(`${apiBaseUrl}/api/meta/whatsapp/resolve-waba`, {
-        method: 'GET',
-        credentials: 'include',
-        });
-
-        const rData = await r.json();
-        console.log('[WA BTN] resolve-waba response:', r.status, rData);
-
-
-    } catch (err) {
-      console.error('[WA BTN] ❌ Error llamando save-token:', err);
-    }
+    // En Embedded Signup, lo normal es que Meta redirija automáticamente al redirectUri.
+    console.log('[WA BTN] Embedded Signup iniciado. Esperando redirect a:', redirectUri);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -86,6 +48,7 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
     console.log('[WA BTN] redirectUri:', redirectUri);
     console.log('[WA BTN] tenantId:', tenantId);
     console.log('[WA BTN] apiBaseUrl:', apiBaseUrl);
+    console.log('[WA BTN] configId:', configId);
 
     if (!appId) return;
 
@@ -115,60 +78,78 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
     js.defer = true;
     js.src = 'https://connect.facebook.net/en_US/sdk.js';
     document.body.appendChild(js);
-  }, [appId, redirectUri, tenantId, apiBaseUrl]);
+  }, [appId, redirectUri, tenantId, apiBaseUrl, configId]);
 
-const timeoutRef = useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null);
 
-const start = () => {
-  console.log('[WA BTN] start() clicked', {
-    disabled,
-    sdkReady,
-    hasFB: !!(window as any).FB,
-    tenantId,
-    redirectUri,
-    apiBaseUrl,
-  });
+  const start = () => {
+    console.log('[WA BTN] start() clicked', {
+      disabled,
+      sdkReady,
+      hasFB: !!(window as any).FB,
+      tenantId,
+      redirectUri,
+      apiBaseUrl,
+      configId,
+    });
 
-  if (disabled) return;
-  if (!sdkReady || !(window as any).FB) return;
-
-  setLoading(true);
-
-  // Limpia cualquier timeout previo
-  if (timeoutRef.current) {
-    window.clearTimeout(timeoutRef.current);
-    timeoutRef.current = null;
-  }
-
-  timeoutRef.current = window.setTimeout(() => {
-    console.log('[WA BTN] 8s timeout. Forcing loading=false');
-    setLoading(false);
-    timeoutRef.current = null;
-  }, 8000);
-
-  console.log('[WA BTN] calling FB.login...');
-
-  // Callback SYNC (no async)
-  (window as any).FB.login(
-    (response: any) => {
-      // si llegó respuesta, cancelamos el timeout
-      if (timeoutRef.current) {
-        window.clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-
-      handleFBLogin(response); // aquí adentro puedes hacer async sin problema
-    },
-    {
-      scope:
-        'whatsapp_business_management,whatsapp_business_messaging,business_management',
-      return_scopes: true,
-      auth_type: 'rerequest',
-      redirect_uri: redirectUri,
-      state,
+    if (disabled) return;
+    if (!tenantId) {
+      console.error('[WA BTN] Falta tenantId');
+      return;
     }
-  );
-};
+    if (!sdkReady || !(window as any).FB) {
+      console.error('[WA BTN] FB SDK no listo');
+      return;
+    }
+    if (!configId) {
+      console.error('[WA BTN] Falta NEXT_PUBLIC_WA_CONFIG_ID');
+      return;
+    }
+
+    setLoading(true);
+
+    // Limpia cualquier timeout previo
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    timeoutRef.current = window.setTimeout(() => {
+      console.log('[WA BTN] 12s timeout. Forcing loading=false');
+      setLoading(false);
+      timeoutRef.current = null;
+    }, 12000);
+
+    console.log('[WA BTN] calling FB.login with Embedded Signup config_id:', configId);
+
+    (window as any).FB.login(
+      (response: any) => {
+        // si llegó respuesta, cancelamos el timeout
+        if (timeoutRef.current) {
+          window.clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+        handleFBLogin(response);
+      },
+      {
+        // ✅ Esto activa el Embedded Signup Wizard (Add / Select number)
+        config_id: configId,
+
+        // ✅ fuerza code flow (lo vas a recibir en redirectUri como ?code=...)
+        response_type: 'code',
+        override_default_response_type: true,
+
+        redirect_uri: redirectUri,
+        state,
+
+        // scopes mínimos para WA
+        scope: 'whatsapp_business_management,whatsapp_business_messaging',
+        return_scopes: true,
+        auth_type: 'rerequest',
+      }
+    );
+  };
 
   const isDisabled = disabled || !sdkReady || loading || !tenantId;
 
