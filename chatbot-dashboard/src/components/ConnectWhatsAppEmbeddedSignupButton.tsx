@@ -22,10 +22,41 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
     return `${tenantId || 'no-tenant'}::${Date.now()}`;
   }, [tenantId]);
 
+    const exchangeCode = async (code: string) => {
+    try {
+      console.log('[WA BTN] Exchanging code with backend...', { tenantId });
+
+      const res = await fetch(`${apiBaseUrl}/api/meta/whatsapp/exchange-code`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          tenantId,      // tu backend ya está usando req.user, pero lo mando por compatibilidad
+          redirectUri,   // MUY importante: debe ser EXACTAMENTE el mismo redirect_uri usado en FB.login
+          state,         // opcional, pero recomendado para anti-CSRF/trace
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.error('[WA BTN] exchange-code failed', res.status, data);
+        throw new Error(data?.error || `exchange-code failed (${res.status})`);
+      }
+
+      console.log('[WA BTN] exchange-code OK:', data);
+      return data;
+    } catch (err) {
+      console.error('[WA BTN] exchangeCode error:', err);
+      throw err;
+    }
+  };
+
   // ✅ Embedded Signup: NO dependas de accessToken aquí.
   // Meta te redirige al redirectUri con ?code=...
   console.log('[WA BTN] Using Embedded config_id:', configId);
-  const handleFBLogin = (response: any) => {
+    const handleFBLogin = async (response: any) => {
     console.log('[WA BTN] FB.login response:', response);
     console.log('[WA BTN] response.status:', response?.status);
     console.log('[WA BTN] authResponse exists?:', !!response?.authResponse);
@@ -39,9 +70,31 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
       return;
     }
 
-    // En Embedded Signup, lo normal es que Meta redirija automáticamente al redirectUri.
-    console.log('[WA BTN] Embedded Signup iniciado. Esperando redirect a:', redirectUri);
-    setLoading(false);
+    // ✅ En tu caso SÍ está llegando code, úsalo ya.
+    const code = response?.authResponse?.code;
+    if (!code) {
+      console.warn('[WA BTN] No llegó authResponse.code. (Meta no entregó code)');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // 1) Intercambia el code y persiste WABA/token en DB
+      await exchangeCode(code);
+
+      // 2) Opcional: dispara recarga de números (depende de tu UI/página)
+      // Si tu página ya hace fetch de phone-numbers al montar, con esto basta:
+      window.location.reload();
+
+      // Si prefieres no recargar:
+      // - aquí podrías emitir un custom event, o llamar a un callback prop.
+    } catch (e) {
+      // aquí puedes mostrar toast si tienes
+      console.error('[WA BTN] Error finalizando conexión:', e);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
