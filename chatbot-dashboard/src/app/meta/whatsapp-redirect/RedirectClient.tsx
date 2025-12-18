@@ -1,3 +1,4 @@
+// src/app/meta/whatsapp-redirect/RedirectClient.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -5,45 +6,59 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
+/**
+ * Cloud API + Embedded Signup (OAuth response_type=code)
+ *
+ * Meta NO envía waba_id / phone_number_id en el redirect.
+ * Envía un ?code=... que debemos mandar al backend para:
+ * 1) exchange code -> access_token
+ * 2) descubrir WABA(s)
+ * 3) listar phone_numbers
+ * 4) guardar whatsapp_business_id + whatsapp_phone_number_id en DB
+ */
 export default function RedirectClient() {
   const router = useRouter();
   const sp = useSearchParams();
   const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
 
   useEffect(() => {
-    // 1) Log de todo lo que llega desde Meta
     const all = Object.fromEntries(sp.entries());
     console.log("[WA REDIRECT] ALL PARAMS:", all);
 
-    // 2) Estos son los que nos interesan (Meta suele enviar estos)
-    const wabaId = sp.get("waba_id");
-    const phoneNumberId = sp.get("phone_number_id");
+    const code = sp.get("code");
+    const state = sp.get("state");
+    const error = sp.get("error");
+    const errorDescription = sp.get("error_description");
 
-    console.log("[WA REDIRECT] parsed:", { wabaId, phoneNumberId });
+    if (error) {
+      console.error("[WA REDIRECT] Meta error:", { error, errorDescription, all });
+      setStatus("error");
+      return;
+    }
 
-    if (!wabaId || !phoneNumberId) {
-      console.error("[WA REDIRECT] Missing waba_id or phone_number_id", all);
+    if (!code) {
+      console.error("[WA REDIRECT] Missing `code` in redirect params:", all);
       setStatus("error");
       return;
     }
 
     const run = async () => {
       try {
-        console.log("[WA REDIRECT] POST onboard-complete ->", {
-          url: `${API_BASE}/api/meta/whatsapp/onboard-complete`,
-          wabaId,
-          phoneNumberId,
+        console.log("[WA REDIRECT] POST exchange-code ->", {
+          url: `${API_BASE}/api/meta/whatsapp/exchange-code`,
+          hasCode: true,
+          state,
         });
 
-        const res = await fetch(`${API_BASE}/api/meta/whatsapp/onboard-complete`, {
+        const res = await fetch(`${API_BASE}/api/meta/whatsapp/exchange-code`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wabaId, phoneNumberId }),
+          body: JSON.stringify({ code, state }),
         });
 
-        const data = await res.json();
-        console.log("[WA REDIRECT] onboard-complete result:", res.status, data);
+        const data = await res.json().catch(() => null);
+        console.log("[WA REDIRECT] exchange-code result:", res.status, data);
 
         if (!res.ok || !data?.ok) {
           setStatus("error");
