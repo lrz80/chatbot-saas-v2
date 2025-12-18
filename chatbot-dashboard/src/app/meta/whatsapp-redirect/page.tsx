@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import RedirectClient from "./RedirectClient";
 
 export default function Page() {
-  return <RedirectClient />;
+  return (
+    <Suspense fallback={null}>
+      <RedirectClient />
+    </Suspense>
+  );
 }
