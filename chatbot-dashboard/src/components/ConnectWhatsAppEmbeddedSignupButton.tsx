@@ -24,6 +24,7 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
 
   // ✅ Embedded Signup: NO dependas de accessToken aquí.
   // Meta te redirige al redirectUri con ?code=...
+  console.log('[WA BTN] Using Embedded config_id:', configId);
   const handleFBLogin = (response: any) => {
     console.log('[WA BTN] FB.login response:', response);
     console.log('[WA BTN] response.status:', response?.status);
