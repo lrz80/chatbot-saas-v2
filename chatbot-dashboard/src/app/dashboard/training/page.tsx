@@ -67,6 +67,7 @@ export default function TrainingPage() {
     await callback();
   };
   const previewRef = useRef<HTMLDivElement | null>(null);
+  const waConnectPendingRef = useRef(false);
   const [input, setInput] = useState("");
   type AssistantStructured =
   | string
@@ -827,6 +828,54 @@ export default function TrainingPage() {
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
+    }, []);
+
+    useEffect(() => {
+    const onFocus = async () => {
+      // Solo actuar si el usuario abrió el popup
+      if (!waConnectPendingRef.current) return;
+
+      // Resetea para no estar refrescando siempre
+      waConnectPendingRef.current = false;
+
+      console.log("[TRAINING] Focus back after WA popup: refreshing settings + numbers...");
+
+      try {
+        // 1) Re-consultar settings para traer whatsapp_phone_number_id / whatsapp_phone_number
+        const settingsRes = await fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, {
+          credentials: "include",
+        });
+
+        if (settingsRes.ok) {
+          const data = await settingsRes.json();
+
+          setSettings((prev) => ({
+            ...prev,
+            whatsapp_status: data.whatsapp_status ?? prev.whatsapp_status ?? null,
+            whatsapp_phone_number_id:
+              data.whatsapp_phone_number_id ??
+              data.whatsapp_phoneNumberId ??
+              data.phoneNumberId ??
+              prev.whatsapp_phone_number_id ??
+              null,
+            whatsapp_phone_number:
+              data.whatsapp_phone_number ??
+              data.display_phone_number ??
+              prev.whatsapp_phone_number ??
+              null,
+          }));
+        }
+
+        // 2) Auto-cargar números (sin tocar botón)
+        await loadWhatsAppAccounts();
+      } catch (e) {
+        console.error("[TRAINING] Focus refresh error:", e);
+      }
+    };
+
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <p className="text-center">Cargando configuración...</p>;
@@ -900,10 +949,17 @@ export default function TrainingPage() {
         <TrainingHelp context="training" />
 
         {/* Conexión de número oficial de WhatsApp (Meta Business / Cloud API) */}
-        <ConnectWhatsAppEmbeddedSignupButton
-          disabled={!canConnectWhatsApp}
-          tenantId={settings.tenant_id}
-        />
+        <div
+          onClick={() => {
+            // Marcamos que el usuario abrió el popup. Al volver el foco, refrescamos.
+            waConnectPendingRef.current = true;
+          }}
+        >
+          <ConnectWhatsAppEmbeddedSignupButton
+            disabled={!canConnectWhatsApp}
+            tenantId={settings.tenant_id}
+          />
+        </div>
 
         {/* Selector de WABA / número cuando ya hay tenant y acceso a Meta */}
         {settings.tenant_id && (
