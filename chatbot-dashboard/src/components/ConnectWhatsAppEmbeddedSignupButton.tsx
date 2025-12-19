@@ -17,12 +17,14 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const configId = process.env.NEXT_PUBLIC_WA_CONFIG_ID!;
 
+  const timeoutRef = useRef<number | null>(null);
+
   const state = useMemo(() => {
     // Anti-CSRF + identificar tenant
     return `${tenantId || 'no-tenant'}::${Date.now()}`;
   }, [tenantId]);
 
-    const exchangeCode = async (code: string) => {
+  const exchangeCode = async (code: string) => {
     try {
       console.log('[WA BTN] Exchanging code with backend...', { tenantId });
 
@@ -32,9 +34,11 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code,
-          tenantId,      // tu backend ya está usando req.user, pero lo mando por compatibilidad
-          redirectUri,   // MUY importante: debe ser EXACTAMENTE el mismo redirect_uri usado en FB.login
-          state,         // opcional, pero recomendado para anti-CSRF/trace
+          // backend usa req.user, pero lo mandamos por compatibilidad/trace
+          tenantId,
+          // puedes mandarlo, aunque tu backend actual NO lo valida para el exchange
+          redirectUri,
+          state,
         }),
       });
 
@@ -45,6 +49,11 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
         throw new Error(data?.error || `exchange-code failed (${res.status})`);
       }
 
+      if (!data?.ok) {
+        console.error('[WA BTN] exchange-code returned ok=false', data);
+        throw new Error(data?.error || 'exchange-code ok=false');
+      }
+
       console.log('[WA BTN] exchange-code OK:', data);
       return data;
     } catch (err) {
@@ -53,50 +62,52 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
     }
   };
 
-  // ✅ Embedded Signup: NO dependas de accessToken aquí.
-  // Meta te redirige al redirectUri con ?code=...
-  console.log('[WA BTN] Using Embedded config_id:', configId);
-    const handleFBLogin = async (response: any) => {
-    console.log('[WA BTN] FB.login response:', response);
-    console.log('[WA BTN] response.status:', response?.status);
-    console.log('[WA BTN] authResponse exists?:', !!response?.authResponse);
-    console.log('[WA BTN] authResponse:', response?.authResponse);
-    console.log('[WA BTN] grantedScopes:', response?.authResponse?.grantedScopes);
+  // 1) Listener: recibe code desde /meta/whatsapp-redirect por postMessage
+  useEffect(() => {
+    const onMessage = async (event: MessageEvent) => {
+      const data: any = event.data;
+      if (!data || typeof data !== 'object') return;
 
-    // Si el usuario cancela, no llega authResponse
-    if (!response?.authResponse) {
-      console.warn('[WA BTN] Usuario canceló o no hubo authResponse');
-      setLoading(false);
-      return;
-    }
+      if (data.type === 'WA_EMBEDDED_SIGNUP_CODE' && data.code) {
+        console.log('[WA BTN] Received code from redirect page:', {
+          hasCode: true,
+          state: data.state,
+        });
 
-    // ✅ En tu caso SÍ está llegando code, úsalo ya.
-    const code = response?.authResponse?.code;
-    if (!code) {
-      console.warn('[WA BTN] No llegó authResponse.code. (Meta no entregó code)');
-      setLoading(false);
-      return;
-    }
+        // limpia timeout si estaba corriendo
+        if (timeoutRef.current) {
+          window.clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
 
-    try {
-      setLoading(true);
+        try {
+          setLoading(true);
+          await exchangeCode(String(data.code));
+          window.location.reload();
+        } catch (e) {
+          console.error('[WA BTN] exchange-code failed after redirect:', e);
+          setLoading(false);
+        }
+      }
 
-      // 1) Intercambia el code y persiste WABA/token en DB
-      await exchangeCode(code);
+      if (data.type === 'WA_EMBEDDED_SIGNUP_ERROR') {
+        console.error('[WA BTN] Embedded Signup error:', data);
 
-      // 2) Opcional: dispara recarga de números (depende de tu UI/página)
-      // Si tu página ya hace fetch de phone-numbers al montar, con esto basta:
-      window.location.reload();
+        if (timeoutRef.current) {
+          window.clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
 
-      // Si prefieres no recargar:
-      // - aquí podrías emitir un custom event, o llamar a un callback prop.
-    } catch (e) {
-      // aquí puedes mostrar toast si tienes
-      console.error('[WA BTN] Error finalizando conexión:', e);
-      setLoading(false);
-    }
-  };
+        setLoading(false);
+      }
+    };
 
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId, apiBaseUrl, redirectUri, state]);
+
+  // 2) Cargar FB SDK
   useEffect(() => {
     console.log('[WA BTN] useEffect init. appId:', appId);
     console.log('[WA BTN] redirectUri:', redirectUri);
@@ -134,7 +145,39 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
     document.body.appendChild(js);
   }, [appId, redirectUri, tenantId, apiBaseUrl, configId]);
 
-  const timeoutRef = useRef<number | null>(null);
+  const handleFBLogin = async (response: any) => {
+    console.log('[WA BTN] FB.login response:', response);
+    console.log('[WA BTN] response.status:', response?.status);
+    console.log('[WA BTN] authResponse exists?:', !!response?.authResponse);
+    console.log('[WA BTN] authResponse:', response?.authResponse);
+    console.log('[WA BTN] grantedScopes:', response?.authResponse?.grantedScopes);
+
+    // Si el usuario cancela, no llega authResponse
+    if (!response?.authResponse) {
+      console.warn('[WA BTN] Usuario canceló o no hubo authResponse');
+      setLoading(false);
+      return;
+    }
+
+    // Caso A: Meta devuelve code aquí
+    const code = response?.authResponse?.code;
+    if (code) {
+      try {
+        setLoading(true);
+        await exchangeCode(String(code));
+        window.location.reload();
+      } catch (e) {
+        console.error('[WA BTN] Error finalizando conexión:', e);
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Caso B: Meta no devuelve code en callback. Debe llegar por redirectUri -> postMessage.
+    console.log('[WA BTN] No llegó authResponse.code. Esperando code via redirectUri/postMessage...');
+    // NO pongas loading=false aquí, porque la ventana de redirect puede llegar en segundos.
+    // Deja que el timeout o el postMessage lo resuelva.
+  };
 
   const start = () => {
     console.log('[WA BTN] start() clicked', {
@@ -169,37 +212,34 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
       timeoutRef.current = null;
     }
 
+    // Timeout “suave” (solo para UI)
     timeoutRef.current = window.setTimeout(() => {
-      console.log('[WA BTN] 12s timeout. Forcing loading=false');
+      console.log('[WA BTN] 20s timeout. Forcing loading=false');
       setLoading(false);
       timeoutRef.current = null;
-    }, 12000);
+    }, 20000);
 
     console.log('[WA BTN] calling FB.login with Embedded Signup config_id:', configId);
-
     console.log('[WA BTN] FINAL redirect_uri sent to Meta:', redirectUri);
 
     (window as any).FB.login(
       (response: any) => {
-        // si llegó respuesta, cancelamos el timeout
-        if (timeoutRef.current) {
-          window.clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
+        // si llegó respuesta, cancelamos timeout solo si hay un resultado final.
+        // OJO: si Meta no trae code aquí, el “final” llega por postMessage.
         handleFBLogin(response);
       },
       {
-        // ✅ Esto activa el Embedded Signup Wizard (Add / Select number)
+        // Embedded Signup Wizard
         config_id: configId,
 
-        // ✅ fuerza code flow (lo vas a recibir en redirectUri como ?code=...)
+        // fuerza code flow
         response_type: 'code',
         override_default_response_type: true,
 
         redirect_uri: redirectUri,
         state,
 
-        // scopes mínimos para WA
+        // scopes WA
         scope: 'whatsapp_business_management,whatsapp_business_messaging,business_management',
         return_scopes: true,
         auth_type: 'rerequest',

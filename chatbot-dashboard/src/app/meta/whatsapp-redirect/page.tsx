@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 import RedirectClient from "./RedirectClient";
 
-export default function Page() {
+export default function WhatsAppRedirectPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div style={{ padding: 24 }}>Procesando…</div>}>
       <RedirectClient />
     </Suspense>
   );
