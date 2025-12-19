@@ -226,46 +226,40 @@ export default function TrainingPage() {
     !!settings.can_edit && (channelState?.plan_enabled ?? true);
 
   const loadWhatsAppAccounts = async () => {
+    console.log("[WA UI] loadWhatsAppAccounts() CLICK");
+
     try {
       setWaLoading(true);
 
-      const res = await fetch(
-        `${BACKEND_URL}/api/meta/whatsapp/phone-numbers`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const url = `${base}/api/meta/whatsapp/phone-numbers`;
 
-      const data = await res.json();
-      if (!res.ok) {
-        console.error("[WA META] Error listando números:", data);
-        alert(
-          data?.error || "No se pudieron obtener los números de WhatsApp."
-        );
-        setWaAccounts([]);
-        return;
-      }
+      console.log("[WA UI] base:", base);
+      console.log("[WA UI] GET:", url);
 
-      const flat: WhatsAppNumberOption[] = [];
-
-      (data.accounts || []).forEach((acc: any) => {
-        (acc.phone_numbers || []).forEach((pn: any) => {
-          flat.push({
-            waba_id: acc.waba_id,
-            business_id: acc.business_id,
-            business_name: acc.business_name,
-            phone_number_id: pn.phone_number_id,
-            phone_number: pn.display_phone_number,
-            verified_name: pn.verified_name ?? null,
-          });
-        });
+      const r = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
       });
 
-      setWaAccounts(flat);
+      console.log("[WA UI] status:", r.status);
+
+      const data = await r.json().catch(() => ({}));
+      console.log("[WA UI] body:", data);
+
+      // Ajusta este mapping según tu backend
+      // Si tu backend responde { ok:true, accounts:[...] }
+      const accounts =
+        (data as any)?.accounts ??
+        (data as any)?.data ??
+        (data as any)?.phoneNumbers ??
+        [];
+
+      console.log("[WA UI] parsed accounts length:", Array.isArray(accounts) ? accounts.length : "not-array");
+      setWaAccounts(Array.isArray(accounts) ? accounts : []);
     } catch (err) {
-      console.error("[WA META] Error listando números WA:", err);
-      alert("Error al obtener los números de WhatsApp desde Meta.");
+      console.error("[WA UI] loadWhatsAppAccounts ERROR:", err);
       setWaAccounts([]);
     } finally {
       setWaLoading(false);
@@ -891,7 +885,10 @@ export default function TrainingPage() {
                 {!waAccounts && (
                   <button
                     type="button"
-                    onClick={loadWhatsAppAccounts}
+                    onClick={() => {
+                      console.log("[WA UI] BUTTON CLICK");
+                      loadWhatsAppAccounts();
+                    }}
                     disabled={waLoading}
                     className="px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-60"
                   >
