@@ -235,6 +235,18 @@ export default function TrainingPage() {
     fetchAll();
   }, []);  
   
+  useEffect(() => {
+    // ✅ Si ya tienes token + waba guardados, auto-carga números sin esperar click
+    if (!settings.tenant_id) return;
+
+    // Si ya hay número conectado, no hace falta listar (pero puedes listarlo igual)
+    // Si NO hay número seleccionado, sí queremos cargar la lista para que aparezca.
+    if (!settings.whatsapp_phone_number_id) {
+      loadWhatsAppAccounts();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.tenant_id, settings.whatsapp_phone_number_id]);
+
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
   };
