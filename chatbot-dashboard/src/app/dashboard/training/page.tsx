@@ -88,13 +88,16 @@ export default function TrainingPage() {
   
   const [intents, setIntents] = useState<Intent[]>([]);
 
-    type WhatsAppNumberOption = {
+  type WhatsAppNumberOption = {
+    // viene del "aplanado"
     waba_id: string;
-    business_id: string;
-    business_name: string;
+    waba_name: string | null;
+
     phone_number_id: string;
-    phone_number: string;
+    display_phone_number: string;
+
     verified_name: string | null;
+    code_verification_status?: string | null;
   };
 
   const [waAccounts, setWaAccounts] = useState<any[] | null>(null);
@@ -249,14 +252,26 @@ export default function TrainingPage() {
 
       // Ajusta este mapping según tu backend
       // Si tu backend responde { ok:true, accounts:[...] }
-      const accounts =
-        (data as any)?.accounts ??
-        (data as any)?.data ??
-        (data as any)?.phoneNumbers ??
-        [];
+      const accounts = Array.isArray((data as any)?.accounts) ? (data as any).accounts : [];
 
-      console.log("[WA UI] parsed accounts length:", Array.isArray(accounts) ? accounts.length : "not-array");
-      setWaAccounts(Array.isArray(accounts) ? accounts : []);
+      // ✅ APLANAR accounts -> phone_numbers para que tu UI haga map() de números
+      const flat: WhatsAppNumberOption[] = accounts.flatMap((acc: any) => {
+        const numbers = Array.isArray(acc?.phone_numbers) ? acc.phone_numbers : [];
+        return numbers.map((p: any) => ({
+          waba_id: String(acc?.waba_id),
+          waba_name: acc?.waba_name ?? null,
+
+          phone_number_id: String(p?.phone_number_id),
+          display_phone_number: String(p?.display_phone_number),
+
+          verified_name: p?.verified_name ?? null,
+          code_verification_status: p?.code_verification_status ?? null,
+        }));
+      });
+
+      console.log("[WA UI] flat numbers length:", flat.length);
+      setWaAccounts(flat);
+
     } catch (err) {
       console.error("[WA UI] loadWhatsAppAccounts ERROR:", err);
       setWaAccounts([]);
@@ -270,9 +285,10 @@ export default function TrainingPage() {
 
     if (
       !window.confirm(
-        `Do you want to assign number ${opt.phone_number} (${
+        `Do you want to assign number ${opt.display_phone_number} (${
           opt.verified_name || "Unverified name"
         }) to this business?`
+
       )
     ) {
       return;
@@ -289,7 +305,7 @@ export default function TrainingPage() {
         body: JSON.stringify({
           wabaId: opt.waba_id,
           phoneNumberId: opt.phone_number_id,
-          displayPhoneNumber: opt.phone_number,
+          displayPhoneNumber: opt.display_phone_number,
         }),
       });
 
@@ -923,11 +939,11 @@ export default function TrainingPage() {
                                 "WhatsApp Business Account"}
                             </div>
                             <div className="font-mono text-xs text-emerald-200">
-                              {opt.phone_number}
+                              {opt.display_phone_number}
                             </div>
                           </div>
                           <span className="text-xs text-emerald-200">
-                            {opt.business_name || "Business"}
+                            {opt.waba_name || "Business"}
                           </span>
                         </div>
                       </button>
