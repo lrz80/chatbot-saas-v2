@@ -157,7 +157,8 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
     }, 15000);
 
     (window as any).FB.login(
-      async (response: any) => {
+      (response: any) => {
+        // ✅ callback NO async
         if (timeoutRef.current) {
           window.clearTimeout(timeoutRef.current);
           timeoutRef.current = null;
@@ -168,29 +169,27 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
         const code = response?.authResponse?.code;
         if (!code) {
           setLoading(false);
-          console.warn('[WA BTN] No llegó authResponse.code (usuario canceló o Meta no entregó code)');
+          console.warn('[WA BTN] No llegó authResponse.code');
           return;
         }
 
-        try {
-          // Guardas token / permisos (aunque los IDs lleguen por FINISH)
-          await exchangeCode(code);
-        } catch (err) {
-          console.error('❌ [WA BTN] exchange-code error:', err);
-        } finally {
-          // OJO: NO cerramos el flujo aquí; el guardado final es por postMessage FINISH
-          setLoading(false);
-        }
+        // ✅ haz el async adentro
+        (async () => {
+          try {
+            await exchangeCode(code);
+          } catch (err) {
+            console.error('❌ [WA BTN] exchange-code error:', err);
+          } finally {
+            setLoading(false);
+          }
+        })();
       },
       {
         config_id: configId,
         response_type: 'code',
         override_default_response_type: true,
-
-        // esto puede quedarse; pero lo importante es el code + postMessage
         redirect_uri: redirectUri,
         state,
-
         scope: 'whatsapp_business_management,whatsapp_business_messaging,business_management',
         auth_type: 'rerequest',
         return_scopes: true,
