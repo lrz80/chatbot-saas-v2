@@ -2,6 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+function safeJson(s: string) {
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
+}
+
 export default function ConnectWhatsAppEmbeddedSignupButton({
   tenantId,
   disabled,
@@ -106,6 +114,51 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
     js.src = 'https://connect.facebook.net/en_US/sdk.js';
     document.body.appendChild(js);
   }, [appId]);
+
+  useEffect(() => {
+    const handler = async (event: MessageEvent) => {
+      // ✅ seguridad: solo aceptar orígenes de Meta
+      const okOrigin =
+        event.origin.includes("facebook.com") ||
+        event.origin.includes("meta.com");
+
+      if (!okOrigin) return;
+
+      const raw = event.data;
+      const payload = typeof raw === "string" ? safeJson(raw) : raw;
+
+      if (payload?.type !== "WA_EMBEDDED_SIGNUP") return;
+      if (payload?.event !== "FINISH") return;
+
+      const wabaId = payload?.data?.waba_id;
+      const phoneNumberId = payload?.data?.phone_number_id;
+
+      console.log("[WA EMBEDDED] FINISH ->", { wabaId, phoneNumberId, payload });
+
+      if (!wabaId || !phoneNumberId) return;
+
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/meta/whatsapp/onboard-complete`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ wabaId, phoneNumberId }),
+        });
+
+        const data = await res.json().catch(() => null);
+        console.log("[WA EMBEDDED] onboard-complete:", res.status, data);
+
+        if (res.ok && data?.ok) {
+          window.location.reload();
+        }
+      } catch (e) {
+        console.error("[WA EMBEDDED] onboard-complete error:", e);
+      }
+    };
+
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [apiBaseUrl]);
 
   // 3) Exchange del code (para guardar token y poder consultar Graph)
   const exchangeCode = async (code: string) => {
