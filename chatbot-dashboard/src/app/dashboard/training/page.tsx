@@ -296,6 +296,22 @@ export default function TrainingPage() {
     }
   };
 
+  useEffect(() => {
+    // Si ya hay conexión (por ID o por phone visible), auto-carga números
+    if (!settings.tenant_id) return;
+
+    const connected =
+      !!settings.whatsapp_phone_number_id || !!settings.whatsapp_phone_number;
+
+    if (!connected) return;
+
+    // Si aún no cargó waAccounts, los carga automáticamente
+    if (waAccounts === null) {
+      loadWhatsAppAccounts();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.tenant_id, settings.whatsapp_phone_number_id, settings.whatsapp_phone_number]);
+
   const handleSelectWhatsAppNumber = async (opt: WhatsAppNumberOption) => {
     if (!opt) return;
 
