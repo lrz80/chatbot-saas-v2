@@ -40,6 +40,7 @@ type SettingsState = {
   tenant_id?: string;
   // 👇 NUEVOS
   whatsapp_status?: string | null;
+  whatsapp_phone_number_id?: string | null;
   whatsapp_phone_number?: string | null;
 };
 
@@ -133,6 +134,7 @@ export default function TrainingPage() {
     estado_membresia_texto: "",
     tenant_id: undefined,
     whatsapp_status: null,
+    whatsapp_phone_number_id: null,
     whatsapp_phone_number: null,
   });
 
@@ -179,9 +181,23 @@ export default function TrainingPage() {
             can_edit: !!(data.can_edit ?? data.membresia_activa ?? data.trial_vigente),
             estado_membresia_texto: data.estado_membresia_texto || '',
             tenant_id: data.tenant_id || data.id || prev.tenant_id,
-            // 👇 NUEVO: leemos lo que devuelva el backend si existe
+            // 👇 WhatsApp (Cloud API)
             whatsapp_status: data.whatsapp_status ?? prev.whatsapp_status ?? null,
-            whatsapp_phone_number: data.whatsapp_phone_number ?? prev.whatsapp_phone_number ?? null,
+
+            // ✅ ID REAL (lo que guardas en DB como whatsapp_phone_number_id)
+            whatsapp_phone_number_id:
+              data.whatsapp_phone_number_id ??
+              data.whatsapp_phoneNumberId ??
+              data.phoneNumberId ??
+              prev.whatsapp_phone_number_id ??
+              null,
+
+            // ✅ Texto bonito (si el backend lo manda)
+            whatsapp_phone_number:
+              data.whatsapp_phone_number ??
+              data.display_phone_number ??
+              prev.whatsapp_phone_number ??
+              null,
           }));
           setMessages([
             {
@@ -881,11 +897,11 @@ export default function TrainingPage() {
               Número de WhatsApp
             </h2>
 
-            {settings.whatsapp_phone_number ? (
+            {settings.whatsapp_phone_number_id ? (
               <p className="text-sm text-emerald-100 mb-2">
                 Número Conectado:{" "}
                 <span className="font-mono font-semibold">
-                  {settings.whatsapp_phone_number}
+                  {settings.whatsapp_phone_number ?? "(conectado)"}
                 </span>
               </p>
             ) : (
@@ -963,7 +979,7 @@ export default function TrainingPage() {
             )}
 
             {/* 👇 NUEVO: botón para desconectar cuando hay número */}
-            {settings.whatsapp_phone_number && (
+            {settings.whatsapp_phone_number_id && (
               <div className="mt-4 flex justify-end">
                 <button
                   type="button"
