@@ -200,7 +200,7 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
         state,
 
         // scopes mínimos para WA
-        scope: 'whatsapp_business_management,whatsapp_business_messaging',
+        scope: 'whatsapp_business_management,whatsapp_business_messaging,business_management',
         return_scopes: true,
         auth_type: 'rerequest',
       }
