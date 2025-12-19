@@ -177,6 +177,8 @@ export default function ConnectWhatsAppEmbeddedSignupButton({
 
     console.log('[WA BTN] calling FB.login with Embedded Signup config_id:', configId);
 
+    console.log('[WA BTN] FINAL redirect_uri sent to Meta:', redirectUri);
+
     (window as any).FB.login(
       (response: any) => {
         // si llegó respuesta, cancelamos el timeout
