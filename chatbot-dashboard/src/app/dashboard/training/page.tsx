@@ -435,18 +435,22 @@ export default function TrainingPage() {
         return;
       }
 
-      // Clear local state
+      // ✅ Clear local state COMPLETO (incluye el ID)
       setSettings((prev) => ({
         ...prev,
+        whatsapp_phone_number_id: null,
         whatsapp_phone_number: null,
         whatsapp_status: "disconnected",
       }));
+
+      // ✅ Limpia lista de números y vuelve al estado inicial (botón "Ver números")
       setWaAccounts(null);
 
       alert("WhatsApp disconnected successfully for this business. ✅");
 
-      // 🔄 Refresh page data automatically
-      router.refresh();  // ⬅ REQUIRED
+      // ✅ En client components, esto es lo más confiable para rehidratar
+      window.location.reload();
+
     } catch (err) {
       console.error("❌ Error disconnecting WhatsApp:", err);
       alert("Error disconnecting WhatsApp. Please try again.");
