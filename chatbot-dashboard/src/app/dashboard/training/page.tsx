@@ -67,6 +67,7 @@ export default function TrainingPage() {
     await callback();
   };
   const previewRef = useRef<HTMLDivElement | null>(null);
+  const waPopupOpenedRef = useRef(false);
   const waConnectPendingRef = useRef(false);
   const [input, setInput] = useState("");
   type AssistantStructured =
@@ -289,6 +290,20 @@ export default function TrainingPage() {
       console.log("[WA UI] flat numbers length:", flat.length);
       setWaAccounts(flat);
 
+      // ✅ Si settings no trae phone_number_id desde /api/settings,
+      // usa el primer número encontrado solo para reflejar conexión en UI.
+      setSettings((prev) => {
+        if (prev.whatsapp_phone_number_id || prev.whatsapp_phone_number) return prev;
+        if (!flat.length) return prev;
+
+        return {
+          ...prev,
+          whatsapp_status: "connected",
+          whatsapp_phone_number_id: flat[0].phone_number_id,
+          whatsapp_phone_number: flat[0].display_phone_number,
+        };
+      });
+
     } catch (err) {
       console.error("[WA UI] loadWhatsAppAccounts ERROR:", err);
       setWaAccounts([]);
@@ -376,12 +391,19 @@ export default function TrainingPage() {
 
       console.log("[WA META] onboard-complete OK:", data2);
 
-      // 3) NO confíes solo en estado local (te puede mostrar connected aunque DB diga disconnected)
-      // Mejor recargar settings desde backend.
+      // ✅ 3) Actualiza UI local de inmediato (sin esperar /api/settings)
+      setSettings((prev) => ({
+        ...prev,
+        whatsapp_status: "connected",
+        whatsapp_phone_number_id: opt.phone_number_id,
+        whatsapp_phone_number: opt.display_phone_number,
+      }));
+
       alert("WhatsApp conectado correctamente ✅");
 
-      // Opción más segura para reflejar DB real:
-      window.location.reload();
+      // ✅ 4) Cargar números automáticamente para que se vean sin botón
+      await loadWhatsAppAccounts();
+
     } catch (err) {
       console.error("[WA META] Error saving WA number:", err);
       alert("Error while saving the WhatsApp number.");
@@ -831,52 +853,18 @@ export default function TrainingPage() {
     }, []);
 
     useEffect(() => {
-    const onFocus = async () => {
-      // Solo actuar si el usuario abrió el popup
-      if (!waConnectPendingRef.current) return;
+      const onFocus = async () => {
+        if (!waPopupOpenedRef.current) return;
+        waPopupOpenedRef.current = false;
 
-      // Resetea para no estar refrescando siempre
-      waConnectPendingRef.current = false;
-
-      console.log("[TRAINING] Focus back after WA popup: refreshing settings + numbers...");
-
-      try {
-        // 1) Re-consultar settings para traer whatsapp_phone_number_id / whatsapp_phone_number
-        const settingsRes = await fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, {
-          credentials: "include",
-        });
-
-        if (settingsRes.ok) {
-          const data = await settingsRes.json();
-
-          setSettings((prev) => ({
-            ...prev,
-            whatsapp_status: data.whatsapp_status ?? prev.whatsapp_status ?? null,
-            whatsapp_phone_number_id:
-              data.whatsapp_phone_number_id ??
-              data.whatsapp_phoneNumberId ??
-              data.phoneNumberId ??
-              prev.whatsapp_phone_number_id ??
-              null,
-            whatsapp_phone_number:
-              data.whatsapp_phone_number ??
-              data.display_phone_number ??
-              prev.whatsapp_phone_number ??
-              null,
-          }));
-        }
-
-        // 2) Auto-cargar números (sin tocar botón)
+        console.log("[WA] focus back after popup -> auto load numbers");
         await loadWhatsAppAccounts();
-      } catch (e) {
-        console.error("[TRAINING] Focus refresh error:", e);
-      }
-    };
+      };
 
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      window.addEventListener("focus", onFocus);
+      return () => window.removeEventListener("focus", onFocus);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
   if (loading) return <p className="text-center">Cargando configuración...</p>;
   
@@ -955,10 +943,13 @@ export default function TrainingPage() {
             waConnectPendingRef.current = true;
           }}
         >
-          <ConnectWhatsAppEmbeddedSignupButton
-            disabled={!canConnectWhatsApp}
-            tenantId={settings.tenant_id}
-          />
+          <div onClick={() => (waPopupOpenedRef.current = true)}>
+            <ConnectWhatsAppEmbeddedSignupButton
+              disabled={!canConnectWhatsApp}
+              tenantId={settings.tenant_id}
+            />
+          </div>
+
         </div>
 
         {/* Selector de WABA / número cuando ya hay tenant y acceso a Meta */}
