@@ -97,9 +97,8 @@ export default function TrainingPage() {
     verified_name: string | null;
   };
 
-  const [waAccounts, setWaAccounts] = useState<WhatsAppNumberOption[] | null>(
-    null
-  );
+  const [waAccounts, setWaAccounts] = useState<any[] | null>(null);
+
   const [waLoading, setWaLoading] = useState(false);
   const [waSaving, setWaSaving] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -882,21 +881,30 @@ export default function TrainingPage() {
 
             {canConnectWhatsApp && (
               <div className="mt-3">
-                {!waAccounts && (
+                {waAccounts === null && (
                   <button
                     type="button"
-                    onClick={() => {
-                      console.log("[WA UI] BUTTON CLICK");
-                      loadWhatsAppAccounts();
-                    }}
+                    onClick={loadWhatsAppAccounts}
                     disabled={waLoading}
                     className="px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-60"
                   >
-                    {waLoading
-                      ? "Cargando números..."
-                      : "Ver números disponibles"}
+                    {waLoading ? "Cargando números..." : "Ver números disponibles"}
                   </button>
                 )}
+
+            {waAccounts !== null && (
+              <button
+                type="button"
+                onClick={() => {
+                  setWaAccounts(null);
+                  setTimeout(loadWhatsAppAccounts, 0);
+                }}
+                disabled={waLoading}
+                className="mt-2 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm disabled:opacity-60"
+              >
+                {waLoading ? "Recargando..." : "Recargar números"}
+              </button>
+            )}
 
                   {Array.isArray(waAccounts) && waAccounts.length > 0 && (
                   <div className="mt-3 space-y-2 max-h-52 overflow-y-auto text-sm">
