@@ -6,6 +6,21 @@ import { useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 import { SiOpenai, SiDatabricks } from 'react-icons/si';
 
+const INFO_TEMPLATE = `Nombre del negocio:
+Tipo de negocio:
+Ubicación:
+Teléfono:
+
+Servicios principales:
+- 
+
+Horarios:
+
+Precios o cómo consultar precios:
+
+Reservas / contacto:
+`;
+
 interface PromptGeneratorProps {
   infoClave: string;
   funcionesAsistente: string;
@@ -75,28 +90,31 @@ export default function PromptGenerator({
         ¿Qué debe hacer tu asistente?
       </label>
       <textarea
-        placeholder="Ej: Atiende clientes, agenda citas, responde dudas sobre mis servicios..."
+        placeholder={`Ej:
+      - Responder preguntas frecuentes
+      - Dar información sobre precios
+      - Ayudar a reservar citas
+      - Ofrecer seguimiento si no hay respuesta`}
         value={funcionesAsistente}
         onChange={(e) => setFuncionesAsistente(e.target.value)}
-        rows={3}
-        className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white placeholder-white/50"
+        rows={4}
+        className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white placeholder-white/50 font-mono"
         disabled={!membresiaActiva}
       />
-  
+
       <label className="block font-medium mb-1 flex items-center gap-2 text-teal-300">
         <SiDatabricks size={18} />
         Información que el Asistente debe conocer
       </label>
       <textarea
-        value={infoClave}
+        value={infoClave || INFO_TEMPLATE}
         onChange={(e) => setInfoClave(e.target.value)}
-        rows={5}
-        className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-        placeholder="Ej: Servicios, links, ubicación, precios..."
+        rows={8}
+        className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white font-mono"
         disabled={!membresiaActiva}
-        style={{ whiteSpace: 'pre-line' }}
+        style={{ whiteSpace: "pre-line" }}
       />
-  
+
       <button
         onClick={handleGenerate}
         disabled={!membresiaActiva || loading}
