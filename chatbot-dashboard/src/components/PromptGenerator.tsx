@@ -6,7 +6,12 @@ import { useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 import { SiOpenai, SiDatabricks } from 'react-icons/si';
 
-const INFO_TEMPLATE = `Nombre del negocio:
+const INFO_TEMPLATE = `MODO_PROMPT: ATENCION
+
+# Si tu negocio vende un servicio con activación (setup / instalación),
+# cambia ATENCION por ACTIVACION y borra este comentario.
+
+Nombre del negocio:
 Tipo de negocio:
 Ubicación:
 Teléfono:
