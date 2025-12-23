@@ -7,9 +7,27 @@ import { FaWhatsapp, FaFacebookMessenger } from 'react-icons/fa';
 import ClientOnly from './ClientOnly';
 import { useEffect, useState } from 'react';
 import { BACKEND_URL } from '@/utils/api';
+import { useRouter } from "next/navigation";
+
 
 export default function Sidebar({ onLogout, isOpen, onClose }: any) {
   const [tenant, setTenant] = useState<any>(null);
+
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${BACKEND_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) {
+      console.warn("⚠️ Logout request falló, igual redirijo:", e);
+    } finally {
+      router.push("/login");
+      router.refresh();
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -108,7 +126,7 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
         >
           <ClientOnly>
             <button
-              onClick={onLogout}
+              onClick={handleLogout}
               className="w-full rounded-2xl py-3 font-medium shadow bg-red-600 hover:bg-red-700 text-white"
             >
               Cerrar sesión
