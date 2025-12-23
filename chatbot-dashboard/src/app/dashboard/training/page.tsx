@@ -901,7 +901,7 @@ export default function TrainingPage() {
       // Regla: si va a cloudapi y NO hay conexión, ok, pero UI le pedirá conectar.
       // Regla: si va a twilio y NO hay twilio_number, ok, pero UI mostrará setup.
 
-      const res = await fetch(`${BACKEND_URL}/api/settings/whatsapp-mode`, {
+      const res = await fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
