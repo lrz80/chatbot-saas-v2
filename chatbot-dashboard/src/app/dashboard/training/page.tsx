@@ -42,6 +42,10 @@ type SettingsState = {
   whatsapp_status?: string | null;
   whatsapp_phone_number_id?: string | null;
   whatsapp_phone_number?: string | null;
+  // ✅ NUEVOS: soporte modo WhatsApp
+  whatsapp_mode?: "twilio" | "cloudapi" | null;
+  // ✅ Twilio
+  twilio_number?: string | null;
 };
 
 export default function TrainingPage() {
@@ -138,6 +142,8 @@ export default function TrainingPage() {
     whatsapp_status: null,
     whatsapp_phone_number_id: null,
     whatsapp_phone_number: null,
+    whatsapp_mode: null,
+    twilio_number: null,
   });
 
   const isMembershipActive = Boolean(
@@ -145,6 +151,9 @@ export default function TrainingPage() {
   );
   const membershipInactive =
   !settings.membresia_activa && !settings.trial_activo;
+
+  const waMode: "twilio" | "cloudapi" =
+    settings.whatsapp_mode === "twilio" ? "twilio" : "cloudapi";
   
   useEffect(() => {
     if (!chatContainerRef.current) return;
@@ -200,6 +209,12 @@ export default function TrainingPage() {
               data.display_phone_number ??
               prev.whatsapp_phone_number ??
               null,
+
+            // ✅ Modo WhatsApp
+            whatsapp_mode: (data.whatsapp_mode ?? prev.whatsapp_mode ?? null),
+
+            // ✅ Twilio number (si backend lo manda)
+            twilio_number: data.twilio_number ?? prev.twilio_number ?? null,
           }));
           setMessages([
             {
@@ -236,16 +251,13 @@ export default function TrainingPage() {
   }, []);  
   
   useEffect(() => {
-    // ✅ Si ya tienes token + waba guardados, auto-carga números sin esperar click
+    if (waMode !== "cloudapi") return;
     if (!settings.tenant_id) return;
-
-    // Si ya hay número conectado, no hace falta listar (pero puedes listarlo igual)
-    // Si NO hay número seleccionado, sí queremos cargar la lista para que aparezca.
     if (!settings.whatsapp_phone_number_id) {
       loadWhatsAppAccounts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.tenant_id, settings.whatsapp_phone_number_id]);
+  }, [waMode, settings.tenant_id, settings.whatsapp_phone_number_id]);
 
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
@@ -263,10 +275,8 @@ export default function TrainingPage() {
     try {
       setWaLoading(true);
 
-      const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const url = `${base}/api/meta/whatsapp/phone-numbers`;
+      const url = `${BACKEND_URL}/api/meta/whatsapp/phone-numbers`;
 
-      console.log("[WA UI] base:", base);
       console.log("[WA UI] GET:", url);
 
       const r = await fetch(url, {
@@ -325,7 +335,7 @@ export default function TrainingPage() {
   };
 
   useEffect(() => {
-    // Si ya hay conexión (por ID o por phone visible), auto-carga números
+    if (waMode !== "cloudapi") return;
     if (!settings.tenant_id) return;
 
     const connected =
@@ -333,12 +343,11 @@ export default function TrainingPage() {
 
     if (!connected) return;
 
-    // Si aún no cargó waAccounts, los carga automáticamente
     if (waAccounts === null) {
       loadWhatsAppAccounts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.tenant_id, settings.whatsapp_phone_number_id, settings.whatsapp_phone_number]);
+  }, [waMode, settings.tenant_id, settings.whatsapp_phone_number_id, settings.whatsapp_phone_number]);
 
   const handleSelectWhatsAppNumber = async (opt: WhatsAppNumberOption) => {
     if (!opt) return;
@@ -882,8 +891,43 @@ export default function TrainingPage() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+  const setWhatsAppMode = async (mode: "twilio" | "cloudapi") => {
+    try {
+      if (!settings.can_edit) {
+        router.push("/upgrade");
+        return;
+      }
+
+      // Regla: si va a cloudapi y NO hay conexión, ok, pero UI le pedirá conectar.
+      // Regla: si va a twilio y NO hay twilio_number, ok, pero UI mostrará setup.
+
+      const res = await fetch(`${BACKEND_URL}/api/settings/whatsapp-mode`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ whatsapp_mode: mode }),
+      });
+
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok) {
+        alert(data?.error || "Error actualizando modo de WhatsApp");
+        return;
+      }
+
+      setSettings((prev) => ({ ...prev, whatsapp_mode: mode }));
+
+      // Si cambia a cloudapi, opcionalmente refresca lista si no hay número
+      if (mode === "cloudapi" && !settings.whatsapp_phone_number_id) {
+        setWaAccounts(null);
+      }
+    } catch (e) {
+      console.error("❌ setWhatsAppMode error:", e);
+      alert("Error actualizando modo de WhatsApp");
+    }
+  };
+
   if (loading) return <p className="text-center">Cargando configuración...</p>;
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-3 py-4 sm:px-6 md:px-8">
       <div className="w-full max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-5 sm:p-8">
@@ -952,24 +996,84 @@ export default function TrainingPage() {
 
         <TrainingHelp context="training" />
 
-        {/* Conexión de número oficial de WhatsApp (Meta Business / Cloud API) */}
-        <div
-          onClick={() => {
-            // Marcamos que el usuario abrió el popup. Al volver el foco, refrescamos.
-            waConnectPendingRef.current = true;
-          }}
-        >
-          <div onClick={() => (waPopupOpenedRef.current = true)}>
-            <ConnectWhatsAppEmbeddedSignupButton
-              disabled={!canConnectWhatsApp}
-              tenantId={settings.tenant_id}
-            />
-          </div>
+        {/* ✅ MODO WHATSAPP */}
+        <div className="mb-4 p-4 rounded-lg border border-white/10 bg-white/5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <div className="font-semibold">Modo de WhatsApp</div>
+              <div className="text-xs text-white/70">
+                Cloud API = conexión con Meta. Twilio = tu número Twilio en tabla tenants.
+              </div>
+            </div>
 
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setWhatsAppMode("cloudapi")}
+                disabled={!settings.can_edit}
+                className={`px-3 py-1.5 rounded-md text-sm border ${
+                  waMode === "cloudapi"
+                    ? "bg-green-600 border-green-500"
+                    : "bg-white/5 border-white/20 hover:bg-white/10"
+                } ${!settings.can_edit ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                Cloud API
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setWhatsAppMode("twilio")}
+                disabled={!settings.can_edit}
+                className={`px-3 py-1.5 rounded-md text-sm border ${
+                  waMode === "twilio"
+                    ? "bg-indigo-600 border-indigo-500"
+                    : "bg-white/5 border-white/20 hover:bg-white/10"
+                } ${!settings.can_edit ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                Twilio
+              </button>
+            </div>
+          </div>
         </div>
 
+
+        {/* ✅ CONEXIÓN WHATSAPP SEGÚN MODO */}
+        {waMode === "cloudapi" ? (
+          <div
+            onClick={() => {
+              waConnectPendingRef.current = true;
+            }}
+          >
+            <div onClick={() => (waPopupOpenedRef.current = true)}>
+              <ConnectWhatsAppEmbeddedSignupButton
+                disabled={!canConnectWhatsApp}
+                tenantId={settings.tenant_id}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="mb-4 p-4 rounded-lg border border-indigo-500/30 bg-indigo-500/10">
+            <div className="font-semibold mb-1">Twilio WhatsApp</div>
+
+            {settings.twilio_number ? (
+              <div className="text-sm text-white/80">
+                Número Twilio asignado:
+                <span className="ml-2 font-mono font-semibold">{settings.twilio_number}</span>
+              </div>
+            ) : (
+              <div className="text-sm text-white/80">
+                No hay número Twilio asignado a este negocio. (Admin debe asignarlo en tabla <span className="font-mono">tenants.twilio_number</span>)
+              </div>
+            )}
+
+            <div className="text-xs text-white/60 mt-2">
+              En Twilio, el webhook de inbound debe apuntar a tu endpoint de WhatsApp (Twilio webhook).
+            </div>
+          </div>
+        )}
+
         {/* Selector de WABA / número cuando ya hay tenant y acceso a Meta */}
-        {settings.tenant_id && (
+        {waMode === "cloudapi" && settings.tenant_id && (
           <div className="mt-4 mb-6 p-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10">
             <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
               <MdWhatsapp className="text-green-400" />
