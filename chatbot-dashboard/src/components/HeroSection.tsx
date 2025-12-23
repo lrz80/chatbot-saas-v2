@@ -55,7 +55,7 @@ export default function HeroSection() {
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
-            href="/upgrade"
+            href="/login"
             className="bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
           >
             Activar Atención 24/7

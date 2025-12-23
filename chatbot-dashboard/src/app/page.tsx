@@ -150,7 +150,7 @@ export default function LandingPage() {
         <p className="mb-6 text-white/80 max-w-xl mx-auto">
           Activa tu membresía y desbloquea el potencial completo de tu Asistente Virtual para optimizar la atención al cliente de tu negocio.
         </p>
-        <a href="/upgrade">
+        <a href="/login">
           <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg transition">
             Activar Atención Automática 24/7
           </button>
