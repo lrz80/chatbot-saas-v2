@@ -14,26 +14,42 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled }: 
     if (disabled) return;
 
     try {
-      setLoading(true);
+        setLoading(true);
 
-      const res = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/start-embedded-signup`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
+        const res = await fetch(
+        `${BACKEND_URL}/api/twilio/whatsapp/start-embedded-signup`,
+        {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+        }
+        );
 
-      const data = await res.json().catch(() => ({} as any));
-      if (!res.ok) throw new Error(data?.error || 'No se pudo iniciar Twilio Embedded Signup');
-      if (!data?.signupUrl) throw new Error('No se recibió signupUrl desde backend');
+        const data = await res.json().catch(() => ({} as any));
 
-      window.location.href = data.signupUrl;
+        if (!res.ok) {
+        throw new Error(data?.error || "No se pudo iniciar Twilio (subcuenta)");
+        }
+
+        // ✅ Nuevo contrato del backend (sin signupUrl)
+        // data = { ok:true, status:'pending'|'approved'|'connected', message:'...' }
+        const status = String(data?.status || "pending").toLowerCase();
+
+        if (status === "approved" || status === "connected") {
+        alert("WhatsApp conectado correctamente ✅");
+        } else {
+        alert(
+            data?.message ||
+            "Subcuenta Twilio creada/validada. Falta comprar y asignar el número de WhatsApp. La activación puede tardar hasta 24 horas."
+        );
+        }
     } catch (e: any) {
-      console.error('❌ Twilio start-embedded-signup error:', e);
-      alert(e?.message || 'Error iniciando conexión con Twilio');
+        console.error("❌ Twilio start-embedded-signup error:", e);
+        alert(e?.message || "Error iniciando conexión con Twilio");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+    };
 
   return (
     <button
