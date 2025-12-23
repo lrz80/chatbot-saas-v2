@@ -17,6 +17,7 @@ import ChannelStatus from "@/components/ChannelStatus";
 import MembershipBanner from "@/components/MembershipBanner";
 import ConnectWhatsAppButton from "@/components/ConnectWhatsAppButton";
 import ConnectWhatsAppEmbeddedSignupButton from "@/components/ConnectWhatsAppEmbeddedSignupButton";
+import ConnectWhatsAppTwilioEmbeddedSignupButton from "@/components/ConnectWhatsAppTwilioEmbeddedSignupButton";
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
@@ -153,7 +154,7 @@ export default function TrainingPage() {
   !settings.membresia_activa && !settings.trial_activo;
 
   const waMode: "twilio" | "cloudapi" =
-    settings.whatsapp_mode === "twilio" ? "twilio" : "cloudapi";
+    settings.whatsapp_mode === "cloudapi" ? "cloudapi" : "twilio";
   
   useEffect(() => {
     if (!chatContainerRef.current) return;
@@ -1053,21 +1054,34 @@ export default function TrainingPage() {
           </div>
         ) : (
           <div className="mb-4 p-4 rounded-lg border border-indigo-500/30 bg-indigo-500/10">
-            <div className="font-semibold mb-1">Twilio WhatsApp</div>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="font-semibold">Twilio WhatsApp</div>
+                <div className="text-xs text-white/70">
+                  Conecta WhatsApp con Twilio Embedded Signup o usa un número ya asignado.
+                </div>
+              </div>
 
-            {settings.twilio_number ? (
-              <div className="text-sm text-white/80">
-                Número Twilio asignado:
-                <span className="ml-2 font-mono font-semibold">{settings.twilio_number}</span>
-              </div>
-            ) : (
-              <div className="text-sm text-white/80">
-                No hay número Twilio asignado a este negocio. (Admin debe asignarlo en tabla <span className="font-mono">tenants.twilio_number</span>)
-              </div>
-            )}
+              <ConnectWhatsAppTwilioEmbeddedSignupButton disabled={!canConnectWhatsApp} />
+            </div>
+
+            <div className="mt-3 text-sm text-white/80">
+              {settings.twilio_number ? (
+                <>
+                  Número Twilio asignado:
+                  <span className="ml-2 font-mono font-semibold">{settings.twilio_number}</span>
+                </>
+              ) : (
+                <>
+                  Aún no hay número Twilio guardado en{" "}
+                  <span className="font-mono">tenants.twilio_number</span>.
+                  Si completas el Embedded Signup, se guardará automáticamente.
+                </>
+              )}
+            </div>
 
             <div className="text-xs text-white/60 mt-2">
-              En Twilio, el webhook de inbound debe apuntar a tu endpoint de WhatsApp (Twilio webhook).
+              Nota: el webhook inbound de Twilio debe apuntar a tu endpoint Twilio WhatsApp (backend).
             </div>
           </div>
         )}
