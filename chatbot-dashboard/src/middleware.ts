@@ -2,25 +2,25 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
+  const token = req.cookies.get("token")?.value;
   const { pathname } = req.nextUrl;
 
-  // Protege todo lo que esté dentro de /dashboard
-  if (pathname.startsWith("/dashboard")) {
-    const token = req.cookies.get("token")?.value;
+  // proteger upgrade y dashboard
+  const protectedRoute =
+    pathname === "/upgrade" ||
+    pathname.startsWith("/upgrade/") ||
+    pathname.startsWith("/dashboard");
 
-    // Si no hay token, redirige a login
-    if (!token) {
-      const url = req.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
-    }
+  if (protectedRoute && !token) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();
 }
 
-// Aplica solo a rutas necesarias
 export const config = {
-  matcher: ["/dashboard/:path*", "/upgrade"],
+  matcher: ["/upgrade", "/upgrade/:path*", "/dashboard/:path*"],
 };
