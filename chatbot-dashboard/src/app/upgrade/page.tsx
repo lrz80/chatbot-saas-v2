@@ -17,10 +17,18 @@ export default function UpgradePage() {
   useEffect(() => {
     (async () => {
       try {
-        const s = await fetch(`${BACKEND_URL}/api/settings`, {
+        const r = await fetch(`${BACKEND_URL}/api/settings`, {
           credentials: "include",
           cache: "no-store",
-        }).then((r) => r.json());
+        });
+
+        // ✅ Si no hay sesión, saca al usuario
+        if (r.status === 401) {
+          window.location.href = "/register";
+          return;
+        }
+
+        const s = await r.json();
 
         setSettings({
           membresia_activa: !!s.membresia_activa,
