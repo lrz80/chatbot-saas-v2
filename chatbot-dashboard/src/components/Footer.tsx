@@ -12,7 +12,7 @@ export default function Footer() {
   return (
     <footer className="text-center text-gray-400 text-xs mt-12 py-6">
       <p>
-        © {new Date().getFullYear()} Aamy.ai — Todos los derechos reservados.
+        © {new Date().getFullYear()} Aamy.ai — Automatización de atención 24/7 para negocios.
       </p>
 
       <div className="mt-2 flex justify-center gap-4">
@@ -36,5 +36,3 @@ export default function Footer() {
     </footer>
   );
 }
-
-

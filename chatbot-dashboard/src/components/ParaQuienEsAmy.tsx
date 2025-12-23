@@ -14,13 +14,13 @@ const targetList = [
     icon: <ShoppingBag size={36} />,
     title: 'E-commerce y ventas por catálogo',
     description:
-      'Tiendas online, ventas por WhatsApp, Instagram y dropshipping.',
+      'Tiendas online y negocios que reciben pedidos por WhatsApp, Instagram y Facebook.',
   },
   {
     icon: <Dumbbell size={36} />,
     title: 'Academias y estudios',
     description:
-      'Gimnasios, indoor cycling, yoga, escuelas de idiomas, cursos y talleres.',
+      'Gimnasios, indoor cycling, yoga, cursos, talleres y escuelas.',
   },
 ];
 
@@ -30,8 +30,10 @@ export default function ParaQuienEsAmy() {
       <h2 className="text-3xl md:text-4xl font-extrabold text-purple-300 text-center mb-6">
         ¿Para quién es Amy?
       </h2>
+
       <p className="text-center text-gray-300 text-base md:text-lg mb-10">
-        Amy es el asistente ideal para automatizar mensajes, responder clientes y aumentar tus ventas sin esfuerzo.
+        Para cualquier negocio que reciba mensajes y no quiera perder clientes por no responder a tiempo.
+        Amy responde 24/7 por WhatsApp, Instagram y Facebook, y hace seguimiento automático hasta 23 horas.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

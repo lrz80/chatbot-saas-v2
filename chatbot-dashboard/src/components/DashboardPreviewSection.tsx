@@ -12,11 +12,12 @@ export default function DashboardPreviewSection() {
         transition={{ duration: 0.8 }}
         className="text-3xl md:text-5xl font-bold text-white mb-10"
       >
-        Tu Dashboard de <span className="text-purple-400">Automatización</span>
+        Tu panel de <span className="text-purple-400">Atención 24/7</span>
       </motion.h2>
 
       <p className="text-white/80 max-w-2xl mx-auto mb-12">
-        Entrena tu asistente, configura tus canales, lanza campañas y analiza resultados. Todo desde un solo lugar.
+        Revisa conversaciones y actividad de tu atención automática en WhatsApp, Instagram y Facebook.
+        Nosotros lo instalamos y lo dejamos funcionando igual para todos.
       </p>
 
       <motion.div
@@ -30,8 +31,8 @@ export default function DashboardPreviewSection() {
 
         {/* 🖼 Imagen del dashboard */}
         <img
-          src="/mockup-dashboard.png" // 📁 Asegúrate de colocar esta imagen en /public
-          alt="Vista previa del dashboard de Amy"
+          src="/mockup-dashboard.png"
+          alt="Vista previa del panel de atención 24/7 de Amy"
           className="relative z-10 rounded-2xl border border-white/10 shadow-2xl"
         />
       </motion.div>
