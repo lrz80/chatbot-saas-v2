@@ -25,49 +25,29 @@ import {
 const features = [
   {
     icon: <FaRobot size={28} className="text-purple-400 drop-shadow" />,
-    title: "Automatización 24/7",
-    description: "Tu asistente responde a clientes en cualquier momento, sin pausas ni descansos.",
-  },
-  {
-    icon: <FaChartBar size={28} className="text-purple-300 drop-shadow" />,
-    title: "Estadísticas en tiempo real",
-    description: "Mide interacciones, usuarios únicos y rendimiento con visualizaciones automáticas.",
+    title: "Respuesta inmediata 24/7",
+    description: "Todos los mensajes reciben respuesta al instante, a cualquier hora, sin que tú estés pendiente.",
   },
   {
     icon: <FaWhatsapp size={28} className="text-green-400 drop-shadow" />,
-    title: "WhatsApp Automatizado",
-    description: "Envía respuestas inteligentes y automatizadas directamente en WhatsApp.",
-  },
-  {
-    icon: <FaFacebookMessenger size={28} className="text-blue-400 drop-shadow" />,
-    title: "Facebook Messenger",
-    description: "Atiende consultas y vende directamente desde Messenger con IA natural.",
-  },
-  {
-    icon: <FaInstagram size={28} className="text-pink-400 drop-shadow" />,
-    title: "Instagram DM",
-    description: "Responde mensajes y dirige a venta desde los DMs de Instagram en minutos.",
-  },
-  {
-    icon: <FaMicrophoneAlt size={28} className="text-indigo-400 drop-shadow" />,
-    title: "Asistente de Voz AI",
-    description: "Recibe llamadas con una voz natural que resuelve dudas y agenda citas automáticamente.",
+    title: "WhatsApp, Instagram y Facebook",
+    description: "Atiende tus DMs y mensajes desde los 3 canales en un solo sistema.",
   },
   {
     icon: <FaUserCheck size={28} className="text-yellow-400 drop-shadow" />,
-    title: "Seguimiento de Leads",
-    description: "Detecta intención de compra y agenda seguimientos automáticos para no perder ventas.",
+    title: "Captura de leads automática",
+    description: "Obtiene nombre y motivo del cliente para que no se pierda ninguna oportunidad.",
+  },
+  {
+    icon: <FaChartBar size={28} className="text-purple-300 drop-shadow" />,
+    title: "Respuestas con info real",
+    description: "Responde con servicios, horarios, ubicación y preguntas frecuentes del negocio.",
   },
   {
     icon: <FaBullhorn size={28} className="text-orange-400 drop-shadow" />,
-    title: "Campañas de Marketing",
-    description: "Crea y programa campañas de Marketing por Email y SMS con promociones personalizadas.",
+    title: "Seguimiento hasta 23 horas",
+    description: "Si el cliente no responde, el sistema hace seguimiento automático hasta 23h y se detiene si responde.",
   },
-  //{
-  //  icon: <FaInstagram size={28} className="text-pink-300 drop-shadow" />,
-  //  title: "Auto-publicaciones (próximamente)",
-  //  description: "Programa publicaciones automáticas en Instagram y Facebook. En desarrollo.",
-  //},
 ];
 
 export default function LandingPage() {
@@ -170,11 +150,15 @@ export default function LandingPage() {
         <p className="mb-6 text-white/80 max-w-xl mx-auto">
           Activa tu membresía y desbloquea el potencial completo de tu Asistente Virtual para optimizar la atención al cliente de tu negocio.
         </p>
-        <a href="/login">
+        <a href="/upgrade">
           <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg transition">
-            Probar Amy AI Gratis
+            Activar Atención Automática 24/7
           </button>
         </a>
+        <p className="mt-3 text-white/70 text-sm">
+          $399 instalación + primer mes • $199/mes desde el mes 2
+        </p>
+
       </section>
 
       <Footer />
