@@ -11,6 +11,8 @@ Tipo de negocio:
 Ubicación:
 Teléfono:
 
+Experiencia:
+
 Servicios principales:
 - 
 
