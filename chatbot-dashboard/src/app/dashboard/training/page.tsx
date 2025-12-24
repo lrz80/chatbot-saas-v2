@@ -47,6 +47,8 @@ type SettingsState = {
   whatsapp_mode?: "twilio" | "cloudapi" | null;
   // ✅ Twilio
   twilio_number?: string | null;
+    twilio_subaccount_sid?: string | null;
+  twilio_subaccount_auth_token?: string | null; // opcional para UI, pero útil
 };
 
 export default function TrainingPage() {
@@ -145,6 +147,8 @@ export default function TrainingPage() {
     whatsapp_phone_number: null,
     whatsapp_mode: null,
     twilio_number: null,
+    twilio_subaccount_sid: null,
+    twilio_subaccount_auth_token: null,
   });
 
   const isMembershipActive = Boolean(
@@ -216,6 +220,8 @@ export default function TrainingPage() {
 
             // ✅ Twilio number (si backend lo manda)
             twilio_number: data.twilio_number ?? prev.twilio_number ?? null,
+            twilio_subaccount_sid: data.twilio_subaccount_sid ?? prev.twilio_subaccount_sid ?? null,
+            twilio_subaccount_auth_token: data.twilio_subaccount_auth_token ?? prev.twilio_subaccount_auth_token ?? null,
           }));
           setMessages([
             {
@@ -332,6 +338,24 @@ export default function TrainingPage() {
       setWaAccounts([]);
     } finally {
       setWaLoading(false);
+    }
+  };
+
+  const reloadSettings = async () => {
+    try {
+      const r = await fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, { credentials: "include" });
+      if (!r.ok) return;
+      const data = await r.json();
+
+      setSettings((prev) => ({
+        ...prev,
+        whatsapp_status: data.whatsapp_status ?? prev.whatsapp_status ?? null,
+        whatsapp_mode: data.whatsapp_mode ?? prev.whatsapp_mode ?? null,
+        twilio_number: data.twilio_number ?? prev.twilio_number ?? null,
+        twilio_subaccount_sid: data.twilio_subaccount_sid ?? prev.twilio_subaccount_sid ?? null,
+      }));
+    } catch (e) {
+      console.error("reloadSettings error:", e);
     }
   };
 
@@ -1058,25 +1082,45 @@ export default function TrainingPage() {
               <div>
                 <div className="font-semibold">Twilio WhatsApp</div>
                 <div className="text-xs text-white/70">
-                  Conecta WhatsApp con Twilio Embedded Signup o usa un número ya asignado.
+                  Usa tu número de Twilio (asignación manual por ahora).
                 </div>
               </div>
 
-              <ConnectWhatsAppTwilioEmbeddedSignupButton disabled={!canConnectWhatsApp} />
+              {/* Botón */}
+              <ConnectWhatsAppTwilioEmbeddedSignupButton
+                disabled={!canConnectWhatsApp}
+                onComplete={reloadSettings}
+              />
             </div>
 
-            <div className="mt-3 text-sm text-white/80">
+            {/* ESTADO */}
+            <div className="mt-3 text-sm">
+              {/* Conectado = hay número */}
               {settings.twilio_number ? (
-                <>
-                  Número Twilio asignado:
-                  <span className="ml-2 font-mono font-semibold">{settings.twilio_number}</span>
-                </>
+                <div className="text-green-300">
+                  Estado: <span className="font-semibold">Conectado</span>
+                  <div className="mt-1 text-white/80">
+                    Número asignado:{" "}
+                    <span className="ml-2 font-mono font-semibold">{settings.twilio_number}</span>
+                  </div>
+                </div>
+              ) : settings.twilio_subaccount_sid ? (
+                /* Pending = existe subcuenta pero no hay número */
+                <div className="text-yellow-300">
+                  Estado: <span className="font-semibold">Pendiente</span>
+                  <div className="mt-1 text-white/80">
+                    Subcuenta Twilio creada. Falta comprar y asignar el número de WhatsApp.
+                    La activación puede tardar hasta 24 horas.
+                  </div>
+                </div>
               ) : (
-                <>
-                  Aún no hay número Twilio guardado en{" "}
-                  <span className="font-mono">tenants.twilio_number</span>.
-                  Si completas el Embedded Signup, se guardará automáticamente.
-                </>
+                /* Desconectado = no hay subcuenta ni número */
+                <div className="text-red-300">
+                  Estado: <span className="font-semibold">Desconectado</span>
+                  <div className="mt-1 text-white/80">
+                    Aún no has iniciado la configuración con Twilio.
+                  </div>
+                </div>
               )}
             </div>
 
