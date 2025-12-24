@@ -12,33 +12,23 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
   const [loading, setLoading] = useState(false);
 
   const start = async () => {
-    if (disabled) return;
+    setLoading(true);
 
-    try {
-        setLoading(true);
-
-        const res = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/start-embedded-signup`, {
+    // 1) Crear subcuenta si no existe
+    await fetch(`${BACKEND_URL}/api/twilio/whatsapp/start-embedded-signup`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        });
+    });
 
-        const data = await res.json().catch(() => ({} as any));
-        if (!res.ok) throw new Error(data?.error || "No se pudo iniciar la conexión con Twilio");
+    // 2) Sincronizar número ya aprobado
+    await fetch(`${BACKEND_URL}/api/twilio/whatsapp/sync-sender`, {
+        method: "POST",
+        credentials: "include",
+    });
 
-        // ✅ NO redirigir a Twilio
-        // ✅ NO alert
-        // Solo refrescar settings para que UI muestre "Pendiente"
-        onComplete?.();
-
-    } catch (e: any) {
-        console.error("❌ Twilio start-embedded-signup error:", e);
-        // Si quieres, aquí puedes setear un estado local para mostrar error en UI,
-        // pero por ahora lo dejamos solo log.
-    } finally {
-        setLoading(false);
-    }
-  };
+    alert("WhatsApp Twilio conectado correctamente.");
+    window.location.reload();
+    };
 
   return (
     <button
