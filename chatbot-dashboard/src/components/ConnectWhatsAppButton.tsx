@@ -5,13 +5,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { BACKEND_URL } from "@/utils/api";
 
-declare global {
-  interface Window {
-    fbAsyncInit?: () => void;
-    FB: any;
-  }
-}
-
 const APP_ID = process.env.NEXT_PUBLIC_META_APP_ID!;
 const CONFIG_ID = process.env.NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID!;
 
