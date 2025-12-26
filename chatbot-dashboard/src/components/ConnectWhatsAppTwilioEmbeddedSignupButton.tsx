@@ -180,6 +180,13 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
 
         opts.extras = extras;
 
+        // ✅ DEBUG (FRONT): ver valores reales antes de abrir el popup
+        console.log("=== WA Embedded Signup DEBUG ===");
+        console.log("CONFIG_ID:", CONFIG_ID);
+        console.log("SOLUTION_ID:", SOLUTION_ID);
+        console.log("numberType:", numberType);
+        console.log("opts:", opts);
+        
         (window as any).FB.login(
         (response: any) => {
             console.log('[EmbeddedSignup] FB.login response:', response);
