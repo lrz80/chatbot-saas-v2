@@ -53,6 +53,8 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
   // 2) Listener para capturar datos del Embedded Signup
   useEffect(() => {
     const handler = async (event: MessageEvent) => {
+      console.log('[postMessage raw]', { origin: event.origin, data: event.data });
+      
       const allowedOrigins = ['https://www.facebook.com', 'https://web.facebook.com'];
       if (!allowedOrigins.includes(event.origin)) return;
 
@@ -186,7 +188,7 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
         console.log("SOLUTION_ID:", SOLUTION_ID);
         console.log("numberType:", numberType);
         console.log("opts:", opts);
-        
+
         (window as any).FB.login(
         (response: any) => {
             console.log('[EmbeddedSignup] FB.login response:', response);
