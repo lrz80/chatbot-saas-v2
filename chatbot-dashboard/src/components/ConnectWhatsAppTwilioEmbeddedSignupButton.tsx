@@ -10,6 +10,7 @@ type Props = {
 
 const META_APP_ID = '672113805196816';
 const CONFIG_ID = '632870913208512';
+const SOLUTION_ID = process.env.NEXT_PUBLIC_TWILIO_PARTNER_SOLUTION_ID;
 
 type NumberType = 'twilio' | 'personal';
 
@@ -153,31 +154,45 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
       if (!r1.ok) throw new Error(j1?.error || 'Error preparando WhatsApp');
 
       // 1) Abrir Embedded Signup
-      const opts: any = {
+      if (!SOLUTION_ID) {
+        throw new Error('Falta NEXT_PUBLIC_TWILIO_PARTNER_SOLUTION_ID (solutionID).');
+        }
+
+        const opts: any = {
         config_id: CONFIG_ID,
         response_type: 'code',
         override_default_response_type: true,
         scope: 'whatsapp_business_management,whatsapp_business_messaging',
-      };
+        auth_type: 'rerequest',
+        };
 
-      // Si es Twilio, pedimos "solo compartir WABA" para que Meta NO pida número/OTP en el popup.
-      if (numberType === 'twilio') {
-        opts.extras = { featureType: 'only_waba_sharing' };
-      }
+        const extras: any = {
+        sessionInfoVersion: 3,
+        setup: {
+            solutionID: SOLUTION_ID,
+        },
+        };
 
-      (window as any).FB.login(
+        // SOLO cuando el número es Twilio: salta pantallas de número/OTP
+        if (numberType === 'twilio') {
+        extras.featureType = 'only_waba_sharing';
+        }
+
+        opts.extras = extras;
+
+        (window as any).FB.login(
         (response: any) => {
-          console.log('[EmbeddedSignup] FB.login response:', response);
-          // Lo importante llega por postMessage
+            console.log('[EmbeddedSignup] FB.login response:', response);
         },
         opts
-      );
-    } catch (e: any) {
-      console.error('❌ WhatsApp connect start error:', e);
-      alert(e?.message || 'Error iniciando Embedded Signup');
-      setLoading(false);
-    }
-  };
+        );
+
+        } catch (e: any) {
+        console.error('❌ WhatsApp connect start error:', e);
+        alert(e?.message || 'Error iniciando Embedded Signup');
+        setLoading(false);
+        }
+    };
 
   return (
     <div className="flex flex-col gap-2">
@@ -223,7 +238,7 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
       <p className="text-xs opacity-70 leading-relaxed">
         {numberType === 'twilio'
           ? 'Twilio: el popup no pedirá número/OTP. Tu sistema registrará el sender por API usando tu número Twilio.'
-          : 'Personal: el popup pedirá tu número y validación OTP en Meta. Twilio sender no aplica en este modo.'}
+          : 'Personal: el popup pedirá tu número y validación OTP en Meta. Luego tu sistema registrará el sender en Twilio por API con ese número.'}
       </p>
     </div>
   );
