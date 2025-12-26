@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BACKEND_URL } from '@/utils/api';
 
 type Props = {
@@ -11,9 +11,19 @@ type Props = {
 const META_APP_ID = '672113805196816';
 const CONFIG_ID = '632870913208512';
 
+type NumberType = 'twilio' | 'personal';
+
 export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, onComplete }: Props) {
   const [loading, setLoading] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
+  const [numberType, setNumberType] = useState<NumberType>('twilio');
+
+  const buttonLabel = useMemo(() => {
+    if (loading) return 'Conectando…';
+    return numberType === 'twilio'
+      ? 'Conectar WhatsApp (Número Twilio)'
+      : 'Conectar WhatsApp (Mi número personal)';
+  }, [loading, numberType]);
 
   // 1) Cargar SDK
   useEffect(() => {
@@ -22,8 +32,8 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
       return;
     }
 
-    window.fbAsyncInit = function () {
-      window.FB.init({
+    (window as any).fbAsyncInit = function () {
+      (window as any).FB.init({
         appId: META_APP_ID,
         cookie: true,
         xfbml: false,
@@ -50,8 +60,6 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
         if (typeof data === 'string') data = JSON.parse(data);
       } catch {}
 
-      // IMPORTANTE: aquí no asumimos estructura exacta: log y extraemos lo que podamos
-      // En producción, cuando veamos el payload real, afinamos.
       const payload = data?.payload ?? data;
 
       const wabaId =
@@ -64,20 +72,25 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
         payload?.business_manager_id ||
         payload?.businessId;
 
+      // En modo "personal" suele existir phone_number_id (pero depende del payload real)
       const phoneNumberId =
         payload?.phone_number_id ||
         payload?.whatsapp_phone_number_id ||
         payload?.phoneNumberId;
 
-      // Si no hay nada útil, ignorar
       if (!wabaId && !businessId && !phoneNumberId) return;
 
-      console.log('✅ EmbeddedSignup capturado:', { wabaId, businessId, phoneNumberId, raw: data });
+      console.log('✅ EmbeddedSignup capturado:', {
+        numberType,
+        wabaId,
+        businessId,
+        phoneNumberId,
+        raw: data,
+      });
 
       try {
         setLoading(true);
 
-        // 3) Guardar resultado del signup + que backend registre sender en Twilio
         const r = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/embedded-signup/complete`, {
           method: 'POST',
           credentials: 'include',
@@ -86,21 +99,24 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
             waba_id: wabaId,
             business_id: businessId,
             phone_number_id: phoneNumberId,
-            raw: data, // opcional: si quieres guardar el raw para debug
+            raw: data,
           }),
         });
 
         const j = await r.json().catch(() => ({} as any));
         if (!r.ok) throw new Error(j?.error || 'Error completando Embedded Signup');
 
-        if (j?.status === 'approved') {
-          alert(`✅ WhatsApp Twilio conectado: ${j.twilio_number || ''}`);
+        // Backend puede devolver:
+        // - { mode: "personal", status: "connected" }
+        // - { mode: "twilio", status: "pending" | "connected", whatsapp_sender_sid, ... }
+        if (j?.status === 'connected') {
+          alert('✅ WhatsApp conectado correctamente.');
           onComplete?.();
           window.location.reload();
           return;
         }
 
-        alert('⏳ Embedded Signup OK. El sender está pendiente de aprobación o falta número. Revisa Twilio > WhatsApp Senders.');
+        alert('⏳ Embedded Signup OK. El estado está pendiente (puede requerir verificación/tiempo).');
         onComplete?.();
       } catch (e: any) {
         console.error('❌ EmbeddedSignup complete error:', e);
@@ -112,59 +128,103 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
 
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [onComplete]);
+  }, [onComplete, numberType]);
 
   const start = async () => {
     if (disabled || loading) return;
-    if (!sdkReady || !window.FB) {
+    if (!sdkReady || !(window as any).FB) {
       alert('FB SDK no está listo todavía.');
       return;
     }
 
     setLoading(true);
     try {
-      // (Opcional) Si tu backend necesita preparar subcuenta/estado interno, deja este paso:
+      // 0) Preparar backend + guardar whatsapp_number_type
       const r1 = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/start-embedded-signup`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          whatsapp_number_type: numberType, // "twilio" | "personal"
+        }),
       });
 
       const j1 = await r1.json().catch(() => ({} as any));
-      if (!r1.ok) throw new Error(j1?.error || 'Error preparando Twilio');
+      if (!r1.ok) throw new Error(j1?.error || 'Error preparando WhatsApp');
 
-      // Ahora sí: abrir Embedded Signup (NO hacemos sync-sender aquí)
-      window.FB.login(
+      // 1) Abrir Embedded Signup
+      const opts: any = {
+        config_id: CONFIG_ID,
+        response_type: 'code',
+        override_default_response_type: true,
+        scope: 'whatsapp_business_management,whatsapp_business_messaging',
+      };
+
+      // Si es Twilio, pedimos "solo compartir WABA" para que Meta NO pida número/OTP en el popup.
+      if (numberType === 'twilio') {
+        opts.extras = { featureType: 'only_waba_sharing' };
+      }
+
+      (window as any).FB.login(
         (response: any) => {
           console.log('[EmbeddedSignup] FB.login response:', response);
-          // Lo importante llega por postMessage (listener)
+          // Lo importante llega por postMessage
         },
-        {
-          config_id: CONFIG_ID,
-          response_type: 'code',
-          override_default_response_type: true,
-          scope: 'whatsapp_business_management,whatsapp_business_messaging',
-        }
+        opts
       );
     } catch (e: any) {
-      console.error('❌ Twilio connect start error:', e);
+      console.error('❌ WhatsApp connect start error:', e);
       alert(e?.message || 'Error iniciando Embedded Signup');
       setLoading(false);
     }
   };
 
   return (
-    <button
-      type="button"
-      onClick={start}
-      disabled={disabled || loading}
-      className={`px-3 py-1.5 rounded-md text-sm border ${
-        disabled || loading
-          ? 'opacity-60 cursor-not-allowed bg-white/5 border-white/20'
-          : 'bg-indigo-600 hover:bg-indigo-700 border-indigo-500'
-      }`}
-    >
-      {loading ? 'Conectando…' : 'Conectar WhatsApp (Twilio)'}
-    </button>
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-3 items-center text-sm">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name="whatsapp-number-type"
+            value="twilio"
+            checked={numberType === 'twilio'}
+            onChange={() => setNumberType('twilio')}
+            disabled={disabled || loading}
+          />
+          <span>Usar número Twilio</span>
+        </label>
+
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name="whatsapp-number-type"
+            value="personal"
+            checked={numberType === 'personal'}
+            onChange={() => setNumberType('personal')}
+            disabled={disabled || loading}
+          />
+          <span>Usar mi número personal</span>
+        </label>
+      </div>
+
+      <button
+        type="button"
+        onClick={start}
+        disabled={disabled || loading}
+        className={`px-3 py-1.5 rounded-md text-sm border ${
+          disabled || loading
+            ? 'opacity-60 cursor-not-allowed bg-white/5 border-white/20'
+            : 'bg-indigo-600 hover:bg-indigo-700 border-indigo-500'
+        }`}
+      >
+        {buttonLabel}
+      </button>
+
+      <p className="text-xs opacity-70 leading-relaxed">
+        {numberType === 'twilio'
+          ? 'Twilio: el popup no pedirá número/OTP. Tu sistema registrará el sender por API usando tu número Twilio.'
+          : 'Personal: el popup pedirá tu número y validación OTP en Meta. Twilio sender no aplica en este modo.'}
+      </p>
+    </div>
   );
 }
