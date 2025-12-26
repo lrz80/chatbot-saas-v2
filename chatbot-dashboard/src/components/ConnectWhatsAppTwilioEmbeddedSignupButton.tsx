@@ -54,7 +54,7 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
   useEffect(() => {
     const handler = async (event: MessageEvent) => {
       console.log('[postMessage raw]', { origin: event.origin, data: event.data });
-      
+
       const allowedOrigins = ['https://www.facebook.com', 'https://web.facebook.com'];
       if (!allowedOrigins.includes(event.origin)) return;
 
@@ -63,23 +63,33 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({ disabled, on
         if (typeof data === 'string') data = JSON.parse(data);
       } catch {}
 
-      const payload = data?.payload ?? data;
+    // Meta manda el FINISH con la info dentro de data.data
+    const root = data?.payload ?? data;
+    const metaData = root?.data ?? root; // <-- CLAVE
 
-      const wabaId =
-        payload?.waba_id ||
-        payload?.whatsapp_business_account_id ||
-        payload?.wabaId;
+    const wabaId =
+    metaData?.waba_id ||
+    metaData?.whatsapp_business_account_id ||
+    metaData?.wabaId;
 
-      const businessId =
-        payload?.business_id ||
-        payload?.business_manager_id ||
-        payload?.businessId;
+    const businessId =
+    metaData?.business_id ||
+    metaData?.business_manager_id ||
+    metaData?.businessId;
 
-      // En modo "personal" suele existir phone_number_id (pero depende del payload real)
-      const phoneNumberId =
-        payload?.phone_number_id ||
-        payload?.whatsapp_phone_number_id ||
-        payload?.phoneNumberId;
+    const phoneNumberId =
+    metaData?.phone_number_id ||
+    metaData?.whatsapp_phone_number_id ||
+    metaData?.phoneNumberId;
+
+    // (Opcional) si quieres asegurar que solo dispare al final:
+    const eventType = root?.type || metaData?.type;
+    const eventName = root?.event || metaData?.event;
+
+    console.log('✅ [WA EMBEDDED] event:', { eventType, eventName, metaData });
+
+    if (!wabaId && !businessId && !phoneNumberId) return;
+
 
       if (!wabaId && !businessId && !phoneNumberId) return;
 
