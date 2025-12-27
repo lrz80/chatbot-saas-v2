@@ -21,24 +21,34 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
         method: "POST",
         credentials: "include",
       });
-    } catch (e) {
-      console.warn("⚠️ Logout request falló, igual redirijo:", e);
     } finally {
-      router.push("/login");
-      router.refresh();
+      // ⛔ mata cualquier estado React / Next / cache
+      window.location.href = "/login";
     }
   };
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include' });
-        if (!res.ok) throw new Error('Error al cargar datos del tenant');
-        setTenant(await res.json());
+        const res = await fetch(`${BACKEND_URL}/api/settings`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!res.ok) return; // 👈 CLAVE
+
+        const data = await res.json();
+        if (!cancelled) setTenant(data);
       } catch (err) {
-        console.error('❌ Error al cargar tenant:', err);
+        console.error("❌ Error al cargar tenant:", err);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
