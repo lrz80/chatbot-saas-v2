@@ -198,7 +198,10 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
       (window as any).FB.login(
         (response: any) => {
           console.log('[ESU] FB.login response:', response);
-          // Nota: el “finish real” llega por postMessage, no por este callback.
+          // ✅ si canceló o no autorizó, libera el botón
+          if (!response || response.status !== 'connected') {
+            setLoading(false);
+          }
         },
         opts
       );
