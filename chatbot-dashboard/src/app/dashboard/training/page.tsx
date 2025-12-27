@@ -653,6 +653,8 @@ export default function TrainingPage() {
     );
   };
 
+  const canSync = !!settings?.can_edit && channelState?.maintenance !== true;
+  
   if (loading) return <p className="text-center">Cargando configuración...</p>;
 
   return (
@@ -777,7 +779,7 @@ export default function TrainingPage() {
           <div className="mt-3 flex gap-2">
             <button
               type="button"
-              disabled={!settings?.twilio_subaccount_sid}
+              disabled={!canSync}
               onClick={async () => {
                 try {
                   const r = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/sync-sender`, {
