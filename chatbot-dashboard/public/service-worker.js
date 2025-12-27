@@ -1,5 +1,5 @@
 // /public/service-worker.js
-const CACHE_NAME = "aamy-cache-v2";
+const CACHE_NAME = "aamy-cache-v3";
 
 // Solo estáticos propios SIN hash que sí conviene cachear.
 // No incluyas "/_next/*" ni páginas HTML aquí.
@@ -43,10 +43,10 @@ self.addEventListener("activate", (event) => {
 });
 
 // ✅ Fetch:
-// - No tocar "/_next/*" (Next ya versiona y cachea con hash).
-// - Para navegaciones (HTML), siempre red → evita servir HTML viejo.
-// - Para assets de nuestra lista, cache-first.
-// - Para el resto, pasa directo a red.
+// - NO interceptar backend ni auth/api
+// - NO tocar "/_next/*"
+// - Navegaciones HTML: siempre a red
+// - Assets propios: cache-first
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -54,14 +54,23 @@ self.addEventListener("fetch", (event) => {
   // Ignora métodos no-GET
   if (req.method !== "GET") return;
 
-  // 1) Nunca interceptar estáticos de Next.js
+  // 🚫 0) Nunca interceptar llamadas al backend ni endpoints de auth/api
+  const isBackend = url.hostname === "api.aamy.ai";
+  const isApiPath =
+    url.pathname.startsWith("/api") ||
+    url.pathname.startsWith("/auth");
+
+  if (isBackend || isApiPath) {
+    return; // Bypass total
+  }
+
+  // 🚫 1) Nunca interceptar estáticos de Next.js
   if (url.pathname.startsWith("/_next/")) return;
 
-  // 2) Navegaciones (HTML): Network-first sin cachear
+  // 🌐 2) Navegaciones (HTML): network-first (sin cachear)
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req).catch(async () => {
-        // Si estás offline, podrías retornar una offline.html si la añades a urlsToCache
         const cache = await caches.open(CACHE_NAME);
         return (await cache.match("/")) || Response.error();
       })
@@ -69,7 +78,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 3) Nuestros estáticos listados: Cache-first
+  // 📦 3) Assets propios listados: cache-first
   if (urlsToCache.includes(url.pathname)) {
     event.respondWith(
       (async () => {
@@ -84,6 +93,5 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 4) Resto: ir a red (deja que el navegador maneje cache headers)
-  // Puedes agregar aquí SWR para imágenes externas si quieres.
+  // 🌍 4) Resto: ir directo a red (sin interceptar)
 });
