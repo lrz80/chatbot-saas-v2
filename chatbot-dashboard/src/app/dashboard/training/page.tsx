@@ -260,11 +260,14 @@ export default function TrainingPage() {
     setSettings({ ...settings, [e.target.name]: e.target.value });
   };
 
-  const canWhats = channelState?.enabled === true && !channelState?.maintenance;
+  const canWhats =
+  channelState ? (channelState.enabled === true && !channelState.maintenance) : true;
   const disabledAll = !isMembershipActive || !canWhats;
 
   const canConnectWhatsApp =
-    !!settings.can_edit && (channelState?.plan_enabled ?? true);
+    !!settings.can_edit &&
+    channelState?.enabled === true &&
+    channelState?.maintenance !== true;
 
   const reloadSettings = async () => {
     try {
@@ -731,9 +734,12 @@ export default function TrainingPage() {
             </div>
 
             <ConnectWhatsAppTwilioEmbeddedSignupButton
-              disabled={!settings?.twilio_subaccount_sid}
+              disabled={!canConnectWhatsApp}
               onComplete={reloadSettings}
             />
+            <div className="mt-2 text-[11px] text-white/60">
+              can_edit={String(settings.can_edit)} | enabled={String(channelState?.enabled)} | maintenance={String(channelState?.maintenance)} | canConnect={String(canConnectWhatsApp)} | twilio_subaccount_sid={String(!!settings.twilio_subaccount_sid)}
+            </div>
           </div>
 
           {/* ESTADO REAL */}
