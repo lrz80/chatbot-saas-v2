@@ -23,7 +23,7 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
       });
     } finally {
       // ⛔ mata cualquier estado React / Next / cache
-      window.location.href = "/login";
+      window.location.replace("/login");
     }
   };
 
