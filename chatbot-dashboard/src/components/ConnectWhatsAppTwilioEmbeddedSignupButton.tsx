@@ -173,7 +173,11 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
       // 1) Abrir Embedded Signup (ESU)
       const opts: any = {
         config_id: CONFIG_ID,
-        // NO usar response_type/override_default_response_type aquí para ESU
+
+        // ✅ CLAVE: fuerza Authorization Code Flow (evita response_type=token)
+        override_default_response_type: true,
+        response_type: 'code',
+
         auth_type: 'rerequest',
         scope: 'whatsapp_business_management,whatsapp_business_messaging',
         extras: {

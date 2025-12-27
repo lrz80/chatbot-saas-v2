@@ -737,9 +737,6 @@ export default function TrainingPage() {
               disabled={!canConnectWhatsApp}
               onComplete={reloadSettings}
             />
-            <div className="mt-2 text-[11px] text-white/60">
-              can_edit={String(settings.can_edit)} | enabled={String(channelState?.enabled)} | maintenance={String(channelState?.maintenance)} | canConnect={String(canConnectWhatsApp)} | twilio_subaccount_sid={String(!!settings.twilio_subaccount_sid)}
-            </div>
           </div>
 
           {/* ESTADO REAL */}
