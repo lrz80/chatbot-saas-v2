@@ -15,8 +15,6 @@ import IntentSection, { Intent } from "@/components/IntentSection";
 import CTASection from "@/components/CTASection";
 import ChannelStatus from "@/components/ChannelStatus";
 import MembershipBanner from "@/components/MembershipBanner";
-import ConnectWhatsAppButton from "@/components/ConnectWhatsAppButton";
-import ConnectWhatsAppEmbeddedSignupButton from "@/components/ConnectWhatsAppEmbeddedSignupButton";
 import ConnectWhatsAppTwilioEmbeddedSignupButton from "@/components/ConnectWhatsAppTwilioEmbeddedSignupButton";
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
@@ -41,6 +39,7 @@ type SettingsState = {
   tenant_id?: string;
   // 👇 NUEVOS
   whatsapp_status?: string | null;
+  whatsapp_sender_sid?: string | null;
   whatsapp_phone_number_id?: string | null;
   whatsapp_phone_number?: string | null;
   // ✅ NUEVOS: soporte modo WhatsApp
@@ -75,7 +74,6 @@ export default function TrainingPage() {
   };
   const previewRef = useRef<HTMLDivElement | null>(null);
   const waPopupOpenedRef = useRef(false);
-  const waConnectPendingRef = useRef(false);
   const [input, setInput] = useState("");
   type AssistantStructured =
   | string
@@ -143,6 +141,7 @@ export default function TrainingPage() {
     estado_membresia_texto: "",
     tenant_id: undefined,
     whatsapp_status: null,
+    whatsapp_sender_sid: null,
     whatsapp_phone_number_id: null,
     whatsapp_phone_number: null,
     whatsapp_mode: null,
@@ -157,8 +156,7 @@ export default function TrainingPage() {
   const membershipInactive =
   !settings.membresia_activa && !settings.trial_activo;
 
-  const waMode: "twilio" | "cloudapi" =
-    settings.whatsapp_mode === "cloudapi" ? "cloudapi" : "twilio";
+  const waMode: "twilio" = "twilio";
   
   useEffect(() => {
     if (!chatContainerRef.current) return;
@@ -199,6 +197,7 @@ export default function TrainingPage() {
             tenant_id: data.tenant_id || data.id || prev.tenant_id,
             // 👇 WhatsApp (Cloud API)
             whatsapp_status: data.whatsapp_status ?? prev.whatsapp_status ?? null,
+            whatsapp_sender_sid: data.whatsapp_sender_sid ?? prev.whatsapp_sender_sid ?? null,
 
             // ✅ ID REAL (lo que guardas en DB como whatsapp_phone_number_id)
             whatsapp_phone_number_id:
@@ -256,15 +255,6 @@ export default function TrainingPage() {
   
     fetchAll();
   }, []);  
-  
-  useEffect(() => {
-    if (waMode !== "cloudapi") return;
-    if (!settings.tenant_id) return;
-    if (!settings.whatsapp_phone_number_id) {
-      loadWhatsAppAccounts();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [waMode, settings.tenant_id, settings.whatsapp_phone_number_id]);
 
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
@@ -276,71 +266,6 @@ export default function TrainingPage() {
   const canConnectWhatsApp =
     !!settings.can_edit && (channelState?.plan_enabled ?? true);
 
-  const loadWhatsAppAccounts = async () => {
-    console.log("[WA UI] loadWhatsAppAccounts() CLICK");
-
-    try {
-      setWaLoading(true);
-
-      const url = `${BACKEND_URL}/api/meta/whatsapp/phone-numbers`;
-
-      console.log("[WA UI] GET:", url);
-
-      const r = await fetch(url, {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      console.log("[WA UI] status:", r.status);
-
-      const data = await r.json().catch(() => ({}));
-      console.log("[WA UI] body:", data);
-
-      // Ajusta este mapping según tu backend
-      // Si tu backend responde { ok:true, accounts:[...] }
-      const accounts = Array.isArray((data as any)?.accounts) ? (data as any).accounts : [];
-
-      // ✅ APLANAR accounts -> phone_numbers para que tu UI haga map() de números
-      const flat: WhatsAppNumberOption[] = accounts.flatMap((acc: any) => {
-        const numbers = Array.isArray(acc?.phone_numbers) ? acc.phone_numbers : [];
-        return numbers.map((p: any) => ({
-          waba_id: String(acc?.waba_id),
-          waba_name: acc?.waba_name ?? null,
-
-          phone_number_id: String(p?.phone_number_id),
-          display_phone_number: String(p?.display_phone_number),
-
-          verified_name: p?.verified_name ?? null,
-          code_verification_status: p?.code_verification_status ?? null,
-        }));
-      });
-
-      console.log("[WA UI] flat numbers length:", flat.length);
-      setWaAccounts(flat);
-
-      // ✅ Si settings no trae phone_number_id desde /api/settings,
-      // usa el primer número encontrado solo para reflejar conexión en UI.
-      setSettings((prev) => {
-        if (prev.whatsapp_phone_number_id || prev.whatsapp_phone_number) return prev;
-        if (!flat.length) return prev;
-
-        return {
-          ...prev,
-          whatsapp_status: "connected",
-          whatsapp_phone_number_id: flat[0].phone_number_id,
-          whatsapp_phone_number: flat[0].display_phone_number,
-        };
-      });
-
-    } catch (err) {
-      console.error("[WA UI] loadWhatsAppAccounts ERROR:", err);
-      setWaAccounts([]);
-    } finally {
-      setWaLoading(false);
-    }
-  };
-
   const reloadSettings = async () => {
     try {
       const r = await fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, { credentials: "include" });
@@ -350,158 +275,13 @@ export default function TrainingPage() {
       setSettings((prev) => ({
         ...prev,
         whatsapp_status: data.whatsapp_status ?? prev.whatsapp_status ?? null,
+        whatsapp_sender_sid: data.whatsapp_sender_sid ?? prev.whatsapp_sender_sid ?? null,
         whatsapp_mode: data.whatsapp_mode ?? prev.whatsapp_mode ?? null,
         twilio_number: data.twilio_number ?? prev.twilio_number ?? null,
         twilio_subaccount_sid: data.twilio_subaccount_sid ?? prev.twilio_subaccount_sid ?? null,
       }));
     } catch (e) {
       console.error("reloadSettings error:", e);
-    }
-  };
-
-  useEffect(() => {
-    if (waMode !== "cloudapi") return;
-    if (!settings.tenant_id) return;
-
-    const connected =
-      !!settings.whatsapp_phone_number_id || !!settings.whatsapp_phone_number;
-
-    if (!connected) return;
-
-    if (waAccounts === null) {
-      loadWhatsAppAccounts();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [waMode, settings.tenant_id, settings.whatsapp_phone_number_id, settings.whatsapp_phone_number]);
-
-  const handleSelectWhatsAppNumber = async (opt: WhatsAppNumberOption) => {
-    if (!opt) return;
-
-    if (
-      !window.confirm(
-        `Do you want to assign number ${opt.display_phone_number} (${
-          opt.verified_name || "Unverified name"
-        }) to this business?`
-
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setWaSaving(true);
-
-      // 1) Guardar selección del número en el tenant
-      const res = await fetch(`${BACKEND_URL}/api/meta/whatsapp/select-number`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          wabaId: opt.waba_id,
-          phoneNumberId: opt.phone_number_id,
-          displayPhoneNumber: opt.display_phone_number,
-        }),
-      });
-
-      const data = await res.json().catch(() => ({} as any));
-      if (!res.ok || !data?.ok) {
-        console.error("[WA META] Error saving WA number:", data);
-        alert(data?.error || "Unable to save the selected number.");
-        return;
-      }
-
-      // 2) AHORA (CRÍTICO): finalizar onboarding y guardar:
-      // whatsapp_system_user_id, whatsapp_system_user_token, whatsapp_business_manager_id
-      const res2 = await fetch(
-        `${BACKEND_URL}/api/meta/whatsapp/onboard-complete`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            wabaId: opt.waba_id,
-            phoneNumberId: opt.phone_number_id,
-          }),
-        }
-      );
-
-      const data2 = await res2.json().catch(() => ({} as any));
-      if (!res2.ok || !data2?.ok) {
-        console.error("[WA META] Error onboard-complete:", data2);
-        alert(
-          data2?.error ||
-            "Se guardó el número, pero falló el onboarding completo (System User/Token)."
-        );
-        return;
-      }
-
-      console.log("[WA META] onboard-complete OK:", data2);
-
-      // ✅ 3) Actualiza UI local de inmediato (sin esperar /api/settings)
-      setSettings((prev) => ({
-        ...prev,
-        whatsapp_status: "connected",
-        whatsapp_phone_number_id: opt.phone_number_id,
-        whatsapp_phone_number: opt.display_phone_number,
-      }));
-
-      alert("WhatsApp conectado correctamente ✅");
-
-      // ✅ 4) Cargar números automáticamente para que se vean sin botón
-      await loadWhatsAppAccounts();
-
-    } catch (err) {
-      console.error("[WA META] Error saving WA number:", err);
-      alert("Error while saving the WhatsApp number.");
-    } finally {
-      setWaSaving(false);
-    }
-  };
-
-  const handleDisconnectWhatsApp = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to disconnect WhatsApp from this business? You can connect it again at any time."
-      )
-    ) {
-      return;
-    }
-
-    setIsDisconnecting(true);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/meta/whatsapp/connection`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      const data = await res.json().catch(() => ({} as any));
-      if (!res.ok) {
-        console.error("❌ Error disconnecting WhatsApp:", data);
-        alert(data?.error || "Unable to disconnect WhatsApp account.");
-        return;
-      }
-
-      // ✅ Clear local state COMPLETO (incluye el ID)
-      setSettings((prev) => ({
-        ...prev,
-        whatsapp_phone_number_id: null,
-        whatsapp_phone_number: null,
-        whatsapp_status: "disconnected",
-      }));
-
-      // ✅ Limpia lista de números y vuelve al estado inicial (botón "Ver números")
-      setWaAccounts(null);
-
-      alert("WhatsApp disconnected successfully for this business. ✅");
-
-      // ✅ En client components, esto es lo más confiable para rehidratar
-      window.location.reload();
-
-    } catch (err) {
-      console.error("❌ Error disconnecting WhatsApp:", err);
-      alert("Error disconnecting WhatsApp. Please try again.");
-    } finally {
-      setIsDisconnecting(false);
     }
   };
 
@@ -870,87 +650,6 @@ export default function TrainingPage() {
     );
   };
 
-  // 🟢 Escuchar mensaje del popup de WhatsApp
-  useEffect(() => {
-    function handleMessage(event: MessageEvent) {
-      // Opcional: validar origen
-      // if (!event.origin.includes("aamy.ai")) return;
-
-      const data = event.data;
-      if (!data) return;
-
-      // Coincide con lo que realmente envía el popup:
-      // { connected: true, channel: 'whatsapp' }
-      const isWhatsAppConnected =
-        typeof data === "object" &&
-        data.connected === true &&
-        data.channel === "whatsapp";
-
-      if (isWhatsAppConnected) {
-        console.log("[TRAINING] WhatsApp connected: refreshing UI...");
-
-        // 2 opciones válidas:
-        // Opción 1: Recarga toda la página (seguro y funciona siempre)
-        window.location.reload();
-
-        // O bien, si quieres mantener estado:
-        // router.refresh();
-      }
-    }
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-    }, []);
-
-    useEffect(() => {
-      const onFocus = async () => {
-        if (!waPopupOpenedRef.current) return;
-        waPopupOpenedRef.current = false;
-
-        console.log("[WA] focus back after popup -> auto load numbers");
-        await loadWhatsAppAccounts();
-      };
-
-      window.addEventListener("focus", onFocus);
-      return () => window.removeEventListener("focus", onFocus);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-  const setWhatsAppMode = async (mode: "twilio" | "cloudapi") => {
-    try {
-      if (!settings.can_edit) {
-        router.push("/upgrade");
-        return;
-      }
-
-      // Regla: si va a cloudapi y NO hay conexión, ok, pero UI le pedirá conectar.
-      // Regla: si va a twilio y NO hay twilio_number, ok, pero UI mostrará setup.
-
-      const res = await fetch(`${BACKEND_URL}/api/settings?canal=whatsapp`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ whatsapp_mode: mode }),
-      });
-
-      const data = await res.json().catch(() => ({} as any));
-      if (!res.ok) {
-        alert(data?.error || "Error actualizando modo de WhatsApp");
-        return;
-      }
-
-      setSettings((prev) => ({ ...prev, whatsapp_mode: mode }));
-
-      // Si cambia a cloudapi, opcionalmente refresca lista si no hay número
-      if (mode === "cloudapi" && !settings.whatsapp_phone_number_id) {
-        setWaAccounts(null);
-      }
-    } catch (e) {
-      console.error("❌ setWhatsAppMode error:", e);
-      alert("Error actualizando modo de WhatsApp");
-    }
-  };
-
   if (loading) return <p className="text-center">Cargando configuración...</p>;
 
   return (
@@ -1021,219 +720,96 @@ export default function TrainingPage() {
 
         <TrainingHelp context="training" />
 
-        {/* ✅ MODO WHATSAPP */}
-        <div className="mb-4 p-4 rounded-lg border border-white/10 bg-white/5">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        {/* ✅ CONEXIÓN WHATSAPP (Twilio-only) */}
+        <div className="mb-4 p-4 rounded-lg border border-indigo-500/30 bg-indigo-500/10">
+          <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="font-semibold">Modo de WhatsApp</div>
+              <div className="font-semibold">Twilio WhatsApp</div>
               <div className="text-xs text-white/70">
-                Cloud API = conexión con Meta. Twilio = tu número Twilio en tabla tenants.
+                Conexión self-serve por Embedded Signup. Cada negocio usa su subcuenta Twilio.
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setWhatsAppMode("cloudapi")}
-                disabled={!settings.can_edit}
-                className={`px-3 py-1.5 rounded-md text-sm border ${
-                  waMode === "cloudapi"
-                    ? "bg-green-600 border-green-500"
-                    : "bg-white/5 border-white/20 hover:bg-white/10"
-                } ${!settings.can_edit ? "opacity-60 cursor-not-allowed" : ""}`}
-              >
-                Cloud API
-              </button>
+            <ConnectWhatsAppTwilioEmbeddedSignupButton
+              disabled={!settings?.twilio_subaccount_sid}
+              onComplete={reloadSettings}
+            />
+          </div>
 
-              <button
-                type="button"
-                onClick={() => setWhatsAppMode("twilio")}
-                disabled={!settings.can_edit}
-                className={`px-3 py-1.5 rounded-md text-sm border ${
-                  waMode === "twilio"
-                    ? "bg-indigo-600 border-indigo-500"
-                    : "bg-white/5 border-white/20 hover:bg-white/10"
-                } ${!settings.can_edit ? "opacity-60 cursor-not-allowed" : ""}`}
-              >
-                Twilio
-              </button>
-            </div>
+          {/* ESTADO REAL */}
+          <div className="mt-3 text-sm">
+            {settings.whatsapp_status === "connected" ? (
+              <div className="text-green-300">
+                Estado: <span className="font-semibold">Conectado</span>
+                <div className="mt-1 text-white/80">
+                  Número:{" "}
+                  <span className="ml-2 font-mono font-semibold">
+                    {settings.twilio_number || "(no disponible)"}
+                  </span>
+                </div>
+                <div className="mt-1 text-white/70">
+                  Sender:{" "}
+                  <span className="ml-2 font-mono">
+                    {settings.whatsapp_sender_sid || "(no disponible)"}
+                  </span>
+                </div>
+              </div>
+            ) : settings.twilio_subaccount_sid ? (
+              <div className="text-yellow-300">
+                Estado: <span className="font-semibold">Pendiente</span>
+                <div className="mt-1 text-white/80">
+                  Si acabas de conectar, espera 1–3 minutos y luego presiona “Sincronizar”.
+                </div>
+              </div>
+            ) : (
+              <div className="text-red-300">
+                Estado: <span className="font-semibold">Desconectado</span>
+                <div className="mt-1 text-white/80">
+                  Aún no has iniciado la conexión. Presiona “Conectar WhatsApp”.
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              disabled={!settings?.twilio_subaccount_sid}
+              onClick={async () => {
+                try {
+                  const r = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/sync-sender`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({}),
+                  });
+                  const j = await r.json().catch(() => ({} as any));
+                  if (!r.ok) throw new Error(j?.error || "Error sincronizando sender");
+                  if (j?.status === "connected") {
+                    alert("✅ WhatsApp conectado (sender ONLINE).");
+                    reloadSettings?.();
+                  } else {
+                    alert("⏳ Aún pendiente. Reintenta en 1–3 minutos.");
+                  }
+                } catch (e: any) {
+                  console.error("❌ sync-sender error:", e);
+                  alert(e?.message || "Error sincronizando");
+                }
+              }}
+              className={`px-3 py-1.5 rounded-md text-sm border ${
+                !settings?.twilio_subaccount_sid
+                  ? "opacity-60 cursor-not-allowed bg-white/5 border-white/20"
+                  : "bg-white/5 border-white/20 hover:bg-white/10"
+              }`}
+            >
+              Sincronizar
+            </button>
+          </div>
+
+          <div className="text-xs text-white/60 mt-2">
+            Nota: Aamy registra automáticamente el webhook del Sender hacia tu endpoint de WhatsApp.
           </div>
         </div>
-
-
-        {/* ✅ CONEXIÓN WHATSAPP SEGÚN MODO */}
-        {waMode === "cloudapi" ? (
-          <div
-            onClick={() => {
-              waConnectPendingRef.current = true;
-            }}
-          >
-            <div onClick={() => (waPopupOpenedRef.current = true)}>
-              <ConnectWhatsAppEmbeddedSignupButton
-                disabled={!canConnectWhatsApp}
-                tenantId={settings.tenant_id}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="mb-4 p-4 rounded-lg border border-indigo-500/30 bg-indigo-500/10">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="font-semibold">Twilio WhatsApp</div>
-                <div className="text-xs text-white/70">
-                  Usa tu número de Twilio (asignación manual por ahora).
-                </div>
-              </div>
-
-              {/* Botón */}
-              <ConnectWhatsAppTwilioEmbeddedSignupButton
-                disabled={!canConnectWhatsApp}
-                onComplete={reloadSettings}
-              />
-            </div>
-
-            {/* ESTADO */}
-            <div className="mt-3 text-sm">
-              {/* Conectado = hay número */}
-              {settings.twilio_number ? (
-                <div className="text-green-300">
-                  Estado: <span className="font-semibold">Conectado</span>
-                  <div className="mt-1 text-white/80">
-                    Número asignado:{" "}
-                    <span className="ml-2 font-mono font-semibold">{settings.twilio_number}</span>
-                  </div>
-                </div>
-              ) : settings.twilio_subaccount_sid ? (
-                /* Pending = existe subcuenta pero no hay número */
-                <div className="text-yellow-300">
-                  Estado: <span className="font-semibold">Pendiente</span>
-                  <div className="mt-1 text-white/80">
-                    Subcuenta Twilio creada. Falta comprar y asignar el número de WhatsApp.
-                    La activación puede tardar hasta 24 horas.
-                  </div>
-                </div>
-              ) : (
-                /* Desconectado = no hay subcuenta ni número */
-                <div className="text-red-300">
-                  Estado: <span className="font-semibold">Desconectado</span>
-                  <div className="mt-1 text-white/80">
-                    Aún no has iniciado la configuración con Twilio.
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="text-xs text-white/60 mt-2">
-              Nota: el webhook inbound de Twilio debe apuntar a tu endpoint Twilio WhatsApp (backend).
-            </div>
-          </div>
-        )}
-
-        {/* Selector de WABA / número cuando ya hay tenant y acceso a Meta */}
-        {waMode === "cloudapi" && settings.tenant_id && (
-          <div className="mt-4 mb-6 p-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10">
-            <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
-              <MdWhatsapp className="text-green-400" />
-              Número de WhatsApp
-            </h2>
-
-            {settings.whatsapp_phone_number_id ? (
-              <p className="text-sm text-emerald-100 mb-2">
-                Número Conectado:{" "}
-                <span className="font-mono font-semibold">
-                  {settings.whatsapp_phone_number ?? "(conectado)"}
-                </span>
-              </p>
-            ) : (
-              <p className="text-sm text-emerald-100 mb-2">
-                Aún no hay un número seleccionado. Conecta WhatsApp y luego
-                elige uno de tu cuenta de Meta.
-              </p>
-            )}
-
-            {canConnectWhatsApp && (
-              <div className="mt-3">
-                {waAccounts === null && (
-                  <button
-                    type="button"
-                    onClick={loadWhatsAppAccounts}
-                    disabled={waLoading}
-                    className="px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-60"
-                  >
-                    {waLoading ? "Cargando números..." : "Ver números disponibles"}
-                  </button>
-                )}
-
-            {waAccounts !== null && (
-              <button
-                type="button"
-                onClick={() => {
-                  setWaAccounts(null);
-                  setTimeout(loadWhatsAppAccounts, 0);
-                }}
-                disabled={waLoading}
-                className="mt-2 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white text-sm disabled:opacity-60"
-              >
-                {waLoading ? "Recargando..." : "Recargar números"}
-              </button>
-            )}
-
-                  {Array.isArray(waAccounts) && waAccounts.length > 0 && (
-                  <div className="mt-3 space-y-2 max-h-52 overflow-y-auto text-sm">
-                    {waAccounts.map((opt) => (
-                      <button
-                        key={opt.phone_number_id}
-                        type="button"
-                        onClick={() => handleSelectWhatsAppNumber(opt)}
-                        disabled={waSaving}
-                        className="w-full text-left px-3 py-2 rounded-md bg-white/5 hover:bg-white/10 border border-white/10"
-                      >
-                        <div className="flex justify-between items-center gap-2">
-                          <div>
-                            <div className="font-semibold">
-                              {opt.verified_name ||
-                                "WhatsApp Business Account"}
-                            </div>
-                            <div className="font-mono text-xs text-emerald-200">
-                              {opt.display_phone_number}
-                            </div>
-                          </div>
-                          <span className="text-xs text-emerald-200">
-                            {opt.waba_name || "Business"}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {Array.isArray(waAccounts) &&
-                  waAccounts.length === 0 &&
-                  !waLoading && (
-                    <p className="text-xs text-emerald-200 mt-2">
-                      No encontramos cuentas de WhatsApp Business con números
-                      activos en tu cuenta de Meta.
-                    </p>
-                  )}
-              </div>
-            )}
-
-            {/* 👇 NUEVO: botón para desconectar cuando hay número */}
-            {settings.whatsapp_phone_number_id && (
-              <div className="mt-4 flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleDisconnectWhatsApp}
-                  disabled={isDisconnecting}
-                  className="px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isDisconnecting ? "Desconectando..." : "Desconectar WhatsApp"}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* 🛠️ Mantenimiento real */}
         {channelState?.maintenance && (
