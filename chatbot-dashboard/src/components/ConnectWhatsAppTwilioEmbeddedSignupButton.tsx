@@ -192,9 +192,13 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
         scope: 'whatsapp_business_management,whatsapp_business_messaging',
         extras: {
           sessionInfoVersion: 3,
-          featureType: 'only_waba_sharing',
+
+          // ✅ NO fuerces "only_waba_sharing" (eso dispara Cloud API / WABA sharing)
+          // featureType: 'only_waba_sharing',
+
           setup: {
-            solutionID: SOLUTION_ID,
+              // ✅ clave correcta que Meta/Twilio esperan:
+              solution_id: SOLUTION_ID,
           },
         },
       };
@@ -203,6 +207,12 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
         CONFIG_ID,
         SOLUTION_ID,
         opts,
+      });
+
+      console.log("=== WA ESU PARAMS CHECK ===", {
+        has_only_waba_sharing: opts?.extras?.featureType,
+        setup_keys: Object.keys(opts?.extras?.setup || {}),
+        setup: opts?.extras?.setup,
       });
 
       (window as any).FB.login(
