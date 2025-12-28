@@ -652,10 +652,13 @@ export default function TrainingPage() {
       </div>
     );
   };
-
-  const canSync = !!settings?.can_edit && channelState?.maintenance !== true;
   
   if (loading) return <p className="text-center">Cargando configuración...</p>;
+
+  const canSync =
+    !!settings?.twilio_subaccount_sid &&
+    !!settings?.twilio_number &&
+    settings?.whatsapp_status !== "connected";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-3 py-4 sm:px-6 md:px-8">
@@ -737,7 +740,20 @@ export default function TrainingPage() {
 
             <ConnectWhatsAppTwilioEmbeddedSignupButton
               disabled={!canConnectWhatsApp}
-              onComplete={reloadSettings}
+              onComplete={async () => {
+                await reloadSettings();
+                setTimeout(async () => {
+                  try {
+                    await fetch(`${BACKEND_URL}/api/twilio/whatsapp/sync-sender`, {
+                      method: "POST",
+                      credentials: "include",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({}),
+                    });
+                    await reloadSettings();
+                  } catch {}
+                }, 20000); // 20s
+              }}
             />
           </div>
 
@@ -759,12 +775,19 @@ export default function TrainingPage() {
                   </span>
                 </div>
               </div>
-            ) : settings.twilio_subaccount_sid ? (
+            ) : (settings.whatsapp_status === "pending" ||
+                !!settings.whatsapp_sender_sid ||
+                !!settings.twilio_subaccount_sid) ? (
               <div className="text-yellow-300">
                 Estado: <span className="font-semibold">Pendiente</span>
                 <div className="mt-1 text-white/80">
                   Si acabas de conectar, espera 1–3 minutos y luego presiona “Sincronizar”.
                 </div>
+                {!!settings.twilio_number && (
+                  <div className="mt-1 text-white/70">
+                    Número asignado: <span className="ml-2 font-mono">{settings.twilio_number}</span>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-red-300">
@@ -776,39 +799,42 @@ export default function TrainingPage() {
             )}
           </div>
 
+
           <div className="mt-3 flex gap-2">
             <button
-              type="button"
-              disabled={!canSync}
-              onClick={async () => {
-                try {
-                  const r = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/sync-sender`, {
-                    method: "POST",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({}),
-                  });
-                  const j = await r.json().catch(() => ({} as any));
-                  if (!r.ok) throw new Error(j?.error || "Error sincronizando sender");
-                  if (j?.status === "connected") {
-                    alert("✅ WhatsApp conectado (sender ONLINE).");
-                    reloadSettings?.();
-                  } else {
-                    alert("⏳ Aún pendiente. Reintenta en 1–3 minutos.");
-                  }
-                } catch (e: any) {
-                  console.error("❌ sync-sender error:", e);
-                  alert(e?.message || "Error sincronizando");
+            type="button"
+            disabled={!canSync}
+            onClick={async () => {
+              try {
+                const r = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/sync-sender`, {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({}),
+                });
+                const j = await r.json().catch(() => ({} as any));
+                if (!r.ok) throw new Error(j?.error || "Error sincronizando sender");
+
+                if (j?.status === "connected") {
+                  alert("✅ WhatsApp conectado (sender ONLINE).");
+                  reloadSettings?.();
+                } else {
+                  alert("⏳ Aún pendiente. Reintenta en 1–3 minutos.");
+                  reloadSettings?.();
                 }
-              }}
-              className={`px-3 py-1.5 rounded-md text-sm border ${
-                !settings?.twilio_subaccount_sid
-                  ? "opacity-60 cursor-not-allowed bg-white/5 border-white/20"
-                  : "bg-white/5 border-white/20 hover:bg-white/10"
-              }`}
-            >
-              Sincronizar
-            </button>
+              } catch (e: any) {
+                console.error("❌ sync-sender error:", e);
+                alert(e?.message || "Error sincronizando");
+              }
+            }}
+            className={`px-3 py-1.5 rounded-md text-sm border ${
+              !canSync
+                ? "opacity-60 cursor-not-allowed bg-white/5 border-white/20"
+                : "bg-white/5 border-white/20 hover:bg-white/10"
+            }`}
+          >
+            Sincronizar
+          </button>
           </div>
 
           <div className="text-xs text-white/60 mt-2">

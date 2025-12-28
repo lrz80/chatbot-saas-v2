@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { BACKEND_URL } from '@/utils/api';
 
 type Props = {
@@ -18,6 +18,7 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
+  const finishOnceRef = useRef(false);
 
   const buttonLabel = useMemo(() => {
     if (loading) return 'Conectando…';
@@ -51,7 +52,12 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
   // 2) Capturar postMessage del Embedded Signup
   useEffect(() => {
     const handler = async (event: MessageEvent) => {
-      const allowedOrigins = ['https://www.facebook.com', 'https://web.facebook.com'];
+      const allowedOrigins = [
+        'https://www.facebook.com',
+        'https://web.facebook.com',
+        'https://business.facebook.com',
+      ];
+
       if (!allowedOrigins.includes(event.origin)) return;
 
       let payload: any = event.data;
@@ -72,12 +78,12 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
       // Solo dispara cuando ESU termina.
       // En distintos builds, Meta manda valores diferentes; estos cubren lo típico.
       const isFinish =
-        eventType.includes('finish') ||
-        eventName.includes('finish') ||
-        eventType.includes('complete') ||
-        eventName.includes('complete') ||
-        eventType.includes('embedded_signup') ||
-        eventName.includes('embedded_signup');
+        eventType === 'finish' ||
+        eventType === 'complete' ||
+        eventName === 'finish' ||
+        eventName === 'complete' ||
+        eventName === 'embedded_signup_finish' ||
+        eventName === 'embedded_signup_complete';
 
       const wabaId =
         metaData?.waba_id ||
@@ -107,8 +113,11 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
       // Si no es fin, no hagas nada (evita dobles llamadas)
       if (!isFinish) return;
 
+      if (finishOnceRef.current) return;
+      finishOnceRef.current = true;
+
       // En el fin deben existir al menos waba_id (lo exigimos en backend)
-      if (!wabaId) return;
+      if (!wabaId || !businessId) return;
 
       try {
         setLoading(true);
@@ -135,6 +144,7 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
         alert(e?.message || 'Error finalizando conexión');
       } finally {
         setLoading(false);
+        finishOnceRef.current = false;
       }
     };
 
