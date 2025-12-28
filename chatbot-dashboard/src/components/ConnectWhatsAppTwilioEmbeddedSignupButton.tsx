@@ -193,12 +193,11 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
         extras: {
           sessionInfoVersion: 3,
 
-          // ✅ NO fuerces "only_waba_sharing" (eso dispara Cloud API / WABA sharing)
-          // featureType: 'only_waba_sharing',
+          // 🔥 OBLIGATORIO
+          only_waba_sharing: true,
 
           setup: {
-              // ✅ clave correcta que Meta/Twilio esperan:
-              solution_id: SOLUTION_ID,
+            solution_id: SOLUTION_ID, // snake_case, no camelCase
           },
         },
       };
