@@ -9,7 +9,7 @@ type Props = {
 };
 
 const META_APP_ID = '672113805196816';
-const CONFIG_ID = '3284508805036871';
+const CONFIG_ID = '4374739139515059';
 const SOLUTION_ID = process.env.NEXT_PUBLIC_TWILIO_PARTNER_SOLUTION_ID;
 
 export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
