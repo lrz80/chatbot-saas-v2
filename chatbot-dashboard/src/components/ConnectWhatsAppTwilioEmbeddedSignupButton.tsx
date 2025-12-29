@@ -67,86 +67,88 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
         // si no es JSON, igual puede venir como object
       }
 
-      // Meta suele envolver en { payload: { ... } } y/o { data: { ... } }
-      const root = payload?.payload ?? payload;
-      const metaData = root?.data ?? root;
+    // ... dentro del handler(event)
 
-      // Intentar identificar evento final
-      const eventType = String(root?.type || metaData?.type || '').toLowerCase();
-      const eventName = String(root?.event || metaData?.event || '').toLowerCase();
+    const root = payload?.payload ?? payload;
+    const metaData = root?.data ?? root;
 
-      // Solo dispara cuando ESU termina.
-      // En distintos builds, Meta manda valores diferentes; estos cubren lo típico.
-      const isFinish =
-        eventType === 'finish' ||
-        eventType === 'complete' ||
-        eventName === 'finish' ||
-        eventName === 'complete' ||
-        eventName === 'embedded_signup_finish' ||
-        eventName === 'embedded_signup_complete';
+    // Meta manda mucho en estas 2 claves:
+    const rawType = root?.type ?? payload?.type ?? metaData?.type;
+    const rawEvent = root?.event ?? payload?.event ?? metaData?.event;
 
-      const wabaId =
-        metaData?.waba_id ||
-        metaData?.whatsapp_business_account_id ||
-        metaData?.wabaId;
+    const eventType = String(rawType || '').toLowerCase();     // ej: "wa_embedded_signup"
+    const eventName = String(rawEvent || '').toLowerCase();    // ej: "finish_only_waba"
 
-      const businessId =
-        metaData?.business_id ||
-        metaData?.business_manager_id ||
-        metaData?.businessId;
+    // ✅ Detecta FINISH correctamente
+    const isFinish =
+    eventType === 'wa_embedded_signup' &&
+    (eventName === 'finish' ||
+    eventName === 'complete' ||
+    eventName === 'finish_only_waba' ||           // 👈 CLAVE
+    eventName === 'embedded_signup_finish' ||
+    eventName === 'embedded_signup_complete' ||
+    eventName.startsWith('finish'));              // por si cambian variantes
 
-      const phoneNumberId =
-        metaData?.phone_number_id ||
-        metaData?.whatsapp_phone_number_id ||
-        metaData?.phoneNumberId;
+    const wabaId =
+    metaData?.waba_id ||
+    metaData?.whatsapp_business_account_id ||
+    metaData?.wabaId;
 
-      // Debug útil
-      console.log('✅ [WA ESU] postMessage:', {
-        eventType,
-        eventName,
-        wabaId,
-        businessId,
-        phoneNumberId,
+    const businessId =
+    metaData?.business_id ||
+    metaData?.business_manager_id ||
+    metaData?.businessId;
+
+    const phoneNumberId =
+    metaData?.phone_number_id ||
+    metaData?.whatsapp_phone_number_id ||
+    metaData?.phoneNumberId;
+
+    // Debug
+    console.log('✅ [WA ESU] postMessage:', { eventType, eventName, wabaId, businessId, phoneNumberId, raw: payload });
+
+    // Si no es finish, no hagas nada
+    if (!isFinish) return;
+
+    // ✅ Si llegó FINISH pero no vino waba/business, NO te quedes pegado
+    if (!wabaId || !businessId) {
+    console.warn('⚠️ FINISH recibido pero faltan IDs. Liberando UI.');
+    setLoading(false);
+    finishOnceRef.current = false;
+    return;
+    }
+
+    if (finishOnceRef.current) return;
+    finishOnceRef.current = true;
+
+    try {
+    setLoading(true);
+
+    const r = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/embedded-signup/complete`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+        waba_id: wabaId,
+        business_id: businessId,
+        phone_number_id: phoneNumberId || null,
         raw: payload,
-      });
+        }),
+    });
 
-      // Si no es fin, no hagas nada (evita dobles llamadas)
-      if (!isFinish) return;
+    const j = await r.json().catch(() => ({} as any));
+    if (!r.ok) throw new Error(j?.error || 'Error completando Embedded Signup');
 
-      if (finishOnceRef.current) return;
-      finishOnceRef.current = true;
-
-      // En el fin deben existir al menos waba_id (lo exigimos en backend)
-      if (!wabaId || !businessId) return;
-
-      try {
-        setLoading(true);
-
-        const r = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/embedded-signup/complete`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            waba_id: wabaId,
-            business_id: businessId,
-            phone_number_id: phoneNumberId,
-            raw: payload,
-          }),
-        });
-
-        const j = await r.json().catch(() => ({} as any));
-        if (!r.ok) throw new Error(j?.error || 'Error completando Embedded Signup');
-
-        alert('⏳ Embedded Signup OK. El sender se está registrando. Revisa Sync en 1-3 minutos.');
-        onComplete?.();
-      } catch (e: any) {
-        console.error('❌ ESU complete error:', e);
-        alert(e?.message || 'Error finalizando conexión');
-      } finally {
-        setLoading(false);
-        finishOnceRef.current = false;
-      }
-    };
+    alert('⏳ Embedded Signup OK. El sender se está registrando. Revisa Sync en 1-3 minutos.');
+    onComplete?.();
+    } catch (e: any) {
+    console.error('❌ ESU complete error:', e);
+    alert(e?.message || 'Error finalizando conexión');
+    } finally {
+    setLoading(false);
+    finishOnceRef.current = false;
+    }
+   };
 
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
@@ -165,7 +167,6 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
       return;
     }
 
-    setLoading(true);
     try {
       // 0) Preparar backend: subcuenta + número Twilio (Twilio-only)
       const r1 = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/start-embedded-signup`, {
@@ -185,23 +186,16 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
         config_id: CONFIG_ID,
         response_type: 'code',
         override_default_response_type: true,
-
-        // opcional
         auth_type: 'rerequest',
         scope: 'whatsapp_business_management,whatsapp_business_messaging',
-
         extras: {
             sessionInfoVersion: 3,
-
-            // ✅ ESTO es lo que quita el OTP / número
             featureType: 'only_waba_sharing',
-
-            // ✅ Twilio Tech Provider Program
             setup: {
-            solutionID: SOLUTION_ID, // ✅ camelCase exacto
+            solutionID: SOLUTION_ID,
             },
         },
-        };
+      };
 
       console.log("=== WA ESU PARAMS CHECK ===", {
         featureType: opts?.extras?.featureType,
