@@ -657,10 +657,14 @@ export default function TrainingPage() {
 
   const canSync =
     settings.whatsapp_mode === "twilio" &&
-    !!settings.twilio_number &&
     !!settings.can_edit &&
     channelState?.enabled !== false &&
-    channelState?.maintenance !== true;
+    channelState?.maintenance !== true &&
+    (
+      settings.whatsapp_status === "pending" ||
+      (settings.whatsapp_status !== "connected" && !!settings.twilio_number) ||
+      (!!settings.twilio_subaccount_sid && !!settings.twilio_number && settings.whatsapp_status !== "connected")
+    );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-3 py-4 sm:px-6 md:px-8">
