@@ -656,8 +656,11 @@ export default function TrainingPage() {
   if (loading) return <p className="text-center">Cargando configuración...</p>;
 
   const canSync =
-    !!settings?.twilio_subaccount_sid &&
-    !!settings?.twilio_number;
+    settings.whatsapp_mode === "twilio" &&
+    !!settings.twilio_number &&
+    !!settings.can_edit &&
+    channelState?.enabled !== false &&
+    channelState?.maintenance !== true;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-3 py-4 sm:px-6 md:px-8">
