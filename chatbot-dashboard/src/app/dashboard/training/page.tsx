@@ -288,6 +288,36 @@ export default function TrainingPage() {
     }
   };
 
+  const disconnectWhatsApp = async () => {
+    if (!verificarPermiso()) return;
+
+    const ok = window.confirm(
+      "¿Seguro que quieres desconectar WhatsApp?\n\nAl desconectar, tu asistente dejará de responder mensajes automáticamente. Podrás reconectarlo cuando quieras."
+    );
+    if (!ok) return;
+
+    setIsDisconnecting(true);
+    try {
+      const r = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/disconnect`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}), // por si luego agregas flags
+      });
+
+      const j = await r.json().catch(() => ({} as any));
+      if (!r.ok) throw new Error(j?.error || "No se pudo desconectar WhatsApp");
+
+      alert("✅ WhatsApp desconectado.");
+      await reloadSettings();
+    } catch (e: any) {
+      console.error("❌ disconnect error:", e);
+      alert(e?.message || "Error desconectando WhatsApp");
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
   const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
     if (channelState?.maintenance) {
       e?.preventDefault();
@@ -666,6 +696,16 @@ export default function TrainingPage() {
       (!!settings.twilio_subaccount_sid && !!settings.twilio_number && settings.whatsapp_status !== "connected")
     );
 
+  const canDisconnect =
+    !!settings.can_edit &&
+    channelState?.enabled !== false &&
+    channelState?.maintenance !== true &&
+    // permitir desconectar si hay algo conectado/persistido
+    (settings.whatsapp_status === "connected" ||
+      settings.whatsapp_status === "pending" ||
+      !!settings.twilio_number ||
+      !!settings.twilio_subaccount_sid);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-3 py-4 sm:px-6 md:px-8">
       <div className="w-full max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-5 sm:p-8">
@@ -736,30 +776,45 @@ export default function TrainingPage() {
 
         {/* ✅ CONEXIÓN WHATSAPP (Twilio-only) */}
         <div className="mb-4 p-4 rounded-lg border border-indigo-500/30 bg-indigo-500/10">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <div className="font-semibold">Twilio WhatsApp</div>
-              <div className="text-xs text-white/70">
-              </div>
+              <div className="text-xs text-white/70"></div>
             </div>
 
-            <ConnectWhatsAppTwilioEmbeddedSignupButton
-              disabled={!canConnectWhatsApp}
-              onComplete={async () => {
-                await reloadSettings();
-                setTimeout(async () => {
-                  try {
-                    await fetch(`${BACKEND_URL}/api/twilio/whatsapp/sync-sender`, {
-                      method: "POST",
-                      credentials: "include",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({}),
-                    });
-                    await reloadSettings();
-                  } catch {}
-                }, 20000); // 20s
-              }}
-            />
+            {/* Botones: móvil apilados / desktop en fila */}
+            <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end">
+              <ConnectWhatsAppTwilioEmbeddedSignupButton
+                disabled={!canConnectWhatsApp}
+                onComplete={async () => {
+                  await reloadSettings();
+                  setTimeout(async () => {
+                    try {
+                      await fetch(`${BACKEND_URL}/api/twilio/whatsapp/sync-sender`, {
+                        method: "POST",
+                        credentials: "include",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({}),
+                      });
+                      await reloadSettings();
+                    } catch {}
+                  }, 20000);
+                }}
+              />
+
+              <button
+                type="button"
+                onClick={disconnectWhatsApp}
+                disabled={!canDisconnect || isDisconnecting}
+                className={`w-full sm:w-auto px-4 py-2 rounded-md text-sm border ${
+                  !canDisconnect || isDisconnecting
+                    ? "opacity-60 cursor-not-allowed bg-white/5 border-white/20"
+                    : "bg-red-500/10 border-red-500/40 hover:bg-red-500/20 text-red-200"
+                }`}
+              >
+                {isDisconnecting ? "Desconectando..." : "Desconectar"}
+              </button>
+            </div>
           </div>
 
           {/* ESTADO REAL */}
@@ -771,12 +826,6 @@ export default function TrainingPage() {
                   Número:{" "}
                   <span className="ml-2 font-mono font-semibold">
                     {settings.twilio_number || "(no disponible)"}
-                  </span>
-                </div>
-                <div className="mt-1 text-white/70">
-                  Sender:{" "}
-                  <span className="ml-2 font-mono">
-                    {settings.whatsapp_sender_sid || "(no disponible)"}
                   </span>
                 </div>
               </div>
@@ -805,7 +854,7 @@ export default function TrainingPage() {
           </div>
 
 
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex flex-col sm:flex-row gap-2">
             <button
             type="button"
             disabled={!canSync}
@@ -832,7 +881,7 @@ export default function TrainingPage() {
                 alert(e?.message || "Error sincronizando");
               }
             }}
-            className={`px-3 py-1.5 rounded-md text-sm border ${
+            className={`w-full sm:w-auto px-3 py-1.5 rounded-md ${
               !canSync
                 ? "opacity-60 cursor-not-allowed bg-white/5 border-white/20"
                 : "bg-white/5 border-white/20 hover:bg-white/10"
