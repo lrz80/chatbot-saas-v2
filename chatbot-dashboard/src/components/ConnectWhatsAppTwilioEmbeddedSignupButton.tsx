@@ -241,8 +241,6 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
       </button>
 
       <p className="text-xs opacity-70 leading-relaxed">
-        Twilio-only: tu sistema asigna un número Twilio en la subcuenta y registra el sender por API.
-        El popup no debe pedir número/OTP.
       </p>
     </div>
   );

@@ -740,7 +740,6 @@ export default function TrainingPage() {
             <div>
               <div className="font-semibold">Twilio WhatsApp</div>
               <div className="text-xs text-white/70">
-                Conexión self-serve por Embedded Signup. Cada negocio usa su subcuenta Twilio.
               </div>
             </div>
 
@@ -844,7 +843,6 @@ export default function TrainingPage() {
           </div>
 
           <div className="text-xs text-white/60 mt-2">
-            Nota: Aamy registra automáticamente el webhook del Sender hacia tu endpoint de WhatsApp.
           </div>
         </div>
 
