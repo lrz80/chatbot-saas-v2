@@ -183,29 +183,29 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
       // 1) Abrir Embedded Signup (ESU)
       const opts: any = {
         config_id: CONFIG_ID,
-
-        // ✅ CLAVE: fuerza Authorization Code Flow (evita response_type=token)
-        override_default_response_type: true,
         response_type: 'code',
+        override_default_response_type: true,
 
+        // opcional
         auth_type: 'rerequest',
         scope: 'whatsapp_business_management,whatsapp_business_messaging',
+
         extras: {
-          sessionInfoVersion: 3,
+            sessionInfoVersion: 3,
 
-          // 🔥 OBLIGATORIO
-          only_waba_sharing: true,
+            // ✅ ESTO es lo que quita el OTP / número
+            featureType: 'only_waba_sharing',
 
-          setup: {
-            solution_id: SOLUTION_ID, // snake_case, no camelCase
-          },
+            // ✅ Twilio Tech Provider Program
+            setup: {
+            solutionID: SOLUTION_ID, // ✅ camelCase exacto
+            },
         },
-      };
+        };
 
-      console.log('=== WA ESU DEBUG (Twilio-only) ===', {
-        CONFIG_ID,
-        SOLUTION_ID,
-        opts,
+      console.log("=== WA ESU PARAMS CHECK ===", {
+        featureType: opts?.extras?.featureType,
+        solutionID: opts?.extras?.setup?.solutionID,
       });
 
       console.log("=== WA ESU PARAMS CHECK ===", {
