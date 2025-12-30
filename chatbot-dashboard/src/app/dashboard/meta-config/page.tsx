@@ -116,11 +116,22 @@ const refreshMetaConn = async () => {
   const [clientOnly, setClientOnly] = useState(false);
   // ✅ usa este estado nuevo:
   const [channelState, setChannelState] = useState<{
-    enabled: boolean;          // final para la UI
-    plan_enabled: boolean;     // plan lo incluye
-    settings_enabled: boolean; // toggle admin en DB
-    maintenance: boolean;      // mantenimiento activo
-  }>({ enabled: false, plan_enabled: false, settings_enabled: false, maintenance: false });
+    enabled: boolean;
+    plan_enabled: boolean;
+    settings_enabled: boolean;
+    maintenance: boolean;
+
+    // ✅ subcanales (por defecto ON)
+    facebook_enabled: boolean;
+    instagram_enabled: boolean;
+  }>({
+    enabled: false,
+    plan_enabled: false,
+    settings_enabled: false,
+    maintenance: false,
+    facebook_enabled: true,
+    instagram_enabled: true,
+  });
 
   useEffect(() => {
     setClientOnly(true);
@@ -158,6 +169,9 @@ const refreshMetaConn = async () => {
   // ✅ Desbloquea si: plan lo incluye + toggle ON + sin mantenimiento + (plan activo o trial activo)
   const canMeta = Boolean(planHasMeta && channelMetaOn && !channelState.maintenance && (settings?.can_edit || isMembershipActive));
 
+  const canFacebook = Boolean(canMeta && channelState.facebook_enabled);
+  const canInstagram = Boolean(canMeta && channelState.instagram_enabled);
+
   const disabledAll = !canMeta;
 
   // 🔎 Exponer al window para inspeccionar en consola
@@ -190,6 +204,16 @@ const refreshMetaConn = async () => {
             trial_disponible: Boolean(sdata?.trial_disponible),
             trial_activo: Boolean(sdata?.trial_vigente || sdata?.trial_activo),
             can_edit: Boolean(sdata?.can_edit ?? sdata?.membresia_activa ?? (sdata?.trial_vigente || sdata?.trial_activo)),
+          }));
+
+          // ✅ subcanales Meta (si no vienen, asumimos ON)
+          const fbOn = sdata?.meta_subchannel_flags?.facebook !== false;
+          const igOn = sdata?.meta_subchannel_flags?.instagram !== false;
+
+          setChannelState((prev) => ({
+            ...prev,
+            facebook_enabled: fbOn,
+            instagram_enabled: igOn,
           }));
         }
 
@@ -284,15 +308,27 @@ const refreshMetaConn = async () => {
           });
           if (ch.ok) {
             const data = await ch.json();
-            setChannelState({
+
+            setChannelState((prev) => ({
+              ...prev,
               enabled: Boolean(data.enabled),
               plan_enabled: Boolean(data.plan_enabled),
               settings_enabled: Boolean(data.settings_enabled),
               maintenance: Boolean(data.maintenance),
-            });
+
+              // ✅ si tu endpoint ya los manda, se usan; si no, quedan como venían
+              facebook_enabled: data.facebook_enabled !== undefined
+                ? Boolean(data.facebook_enabled)
+                : prev.facebook_enabled,
+
+              instagram_enabled: data.instagram_enabled !== undefined
+                ? Boolean(data.instagram_enabled)
+                : prev.instagram_enabled,
+            }));
+
             (window as any).__channelState = data;
             console.log("channel-state(meta):", data);
-          } else {
+          }else {
             console.warn("⚠️ /api/channel-settings(meta) status:", ch.status);
           }
         } catch (e) {
@@ -311,6 +347,40 @@ const refreshMetaConn = async () => {
 
   const handleChange = (e: any) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
+  };
+
+  const patchSettings = async (payload: any) => {
+    const r = await fetch(`${BACKEND_URL}/api/settings`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j?.error || r.statusText);
+    return j;
+  };
+
+  const toggleFacebook = async (next: boolean) => {
+    if (!canMeta) { router.push("/upgrade"); return; }
+    setChannelState((p) => ({ ...p, facebook_enabled: next })); // optimista
+    try {
+      await patchSettings({ facebook_enabled: next });
+    } catch (e: any) {
+      setChannelState((p) => ({ ...p, facebook_enabled: !next })); // rollback
+      alert(`❌ No se pudo actualizar Facebook: ${e?.message || "Error"}`);
+    }
+  };
+
+  const toggleInstagram = async (next: boolean) => {
+    if (!canMeta) { router.push("/upgrade"); return; }
+    setChannelState((p) => ({ ...p, instagram_enabled: next })); // optimista
+    try {
+      await patchSettings({ instagram_enabled: next });
+    } catch (e: any) {
+      setChannelState((p) => ({ ...p, instagram_enabled: !next })); // rollback
+      alert(`❌ No se pudo actualizar Instagram: ${e?.message || "Error"}`);
+    }
   };
 
   const handleSave = async () => {
@@ -578,6 +648,61 @@ const refreshMetaConn = async () => {
           hideTitle
           membershipInactive={membershipInactive}
         />
+
+        {/* ✅ Subcanales Meta: Facebook / Instagram */}
+        <div className="mb-4 sm:mb-6 px-3 py-3 sm:p-4 rounded-xl border bg-white/5 border-white/10 text-white">
+          <div className="flex flex-col gap-3">
+            <p className="font-semibold">Activar subcanales</p>
+
+            <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+              <div>
+                <p className="text-sm font-medium">Facebook</p>
+                <p className="text-xs text-white/60">Permite responder mensajes de Facebook.</p>
+              </div>
+
+              <button
+                onClick={() => toggleFacebook(!channelState.facebook_enabled)}
+                disabled={!canMeta}
+                aria-disabled={!canMeta}
+                className={`px-3 py-1.5 rounded text-sm border ${
+                  !canMeta
+                    ? "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
+                    : channelState.facebook_enabled
+                      ? "bg-green-600/30 border-green-500/40 text-green-100"
+                      : "bg-red-600/20 border-red-500/30 text-red-100"
+                }`}
+              >
+                {channelState.facebook_enabled ? "ON" : "OFF"}
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+              <div>
+                <p className="text-sm font-medium">Instagram</p>
+                <p className="text-xs text-white/60">Permite responder mensajes de Instagram.</p>
+              </div>
+
+              <button
+                onClick={() => toggleInstagram(!channelState.instagram_enabled)}
+                disabled={!canMeta}
+                aria-disabled={!canMeta}
+                className={`px-3 py-1.5 rounded text-sm border ${
+                  !canMeta
+                    ? "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
+                    : channelState.instagram_enabled
+                      ? "bg-green-600/30 border-green-500/40 text-green-100"
+                      : "bg-red-600/20 border-red-500/30 text-red-100"
+                }`}
+              >
+                {channelState.instagram_enabled ? "ON" : "OFF"}
+              </button>
+            </div>
+
+            <p className="text-[12px] text-white/60">
+              Si está OFF, el sistema no debe responder ni registrar actividad en ese subcanal.
+            </p>
+          </div>
+        </div>
 
         {/* 🎁 Caso 1: Nunca usó trial → invitar a activar prueba */}
         {settings?.trial_disponible && !settings?.can_edit && (
@@ -893,7 +1018,7 @@ const refreshMetaConn = async () => {
               onClick={handleSend}
               disabled={!canMeta}
               className={`w-full sm:w-auto px-4 py-2.5 rounded text-sm ${
-                settings.membresia_activa
+                canMeta
                   ? "bg-indigo-600 hover:bg-indigo-700 text-white"
                   : "bg-gray-600 text-white/50 cursor-not-allowed"
               }`}
