@@ -690,6 +690,7 @@ export default function TrainingPage() {
     !!settings.can_edit &&
     channelState?.enabled !== false &&
     channelState?.maintenance !== true &&
+    settings.whatsapp_status !== "disconnected" &&
     (
       settings.whatsapp_status === "pending" ||
       (settings.whatsapp_status !== "connected" && !!settings.twilio_number) ||
@@ -829,9 +830,16 @@ export default function TrainingPage() {
                   </span>
                 </div>
               </div>
-            ) : (settings.whatsapp_status === "pending" ||
-                !!settings.whatsapp_sender_sid ||
-                !!settings.twilio_subaccount_sid) ? (
+
+            ) : settings.whatsapp_status === "disconnected" ? (
+              <div className="text-red-300">
+                Estado: <span className="font-semibold">Desconectado</span>
+                <div className="mt-1 text-white/80">
+                  WhatsApp está desconectado. Presiona “Conectar WhatsApp” para activarlo.
+                </div>
+              </div>
+
+            ) : settings.whatsapp_status === "pending" ? (
               <div className="text-yellow-300">
                 Estado: <span className="font-semibold">Pendiente</span>
                 <div className="mt-1 text-white/80">
@@ -843,6 +851,7 @@ export default function TrainingPage() {
                   </div>
                 )}
               </div>
+
             ) : (
               <div className="text-red-300">
                 Estado: <span className="font-semibold">Desconectado</span>
