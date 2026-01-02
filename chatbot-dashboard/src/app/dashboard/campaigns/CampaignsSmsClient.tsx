@@ -78,14 +78,6 @@ export default function CampaignsSmsClient() {
   // - canal SMS está bloqueado
   // - o no hay membresía/trial activo
   const disabledAll = !canSms || !isMembershipActive;
-  console.log({
-    channelState,
-    canSms,
-    membresiaActiva,
-    trialActivo,
-    isMembershipActive,
-    disabledAll
-  });
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
