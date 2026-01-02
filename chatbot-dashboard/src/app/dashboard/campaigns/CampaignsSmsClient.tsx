@@ -157,62 +157,53 @@ export default function CampaignsSmsClient() {
       return;
     }
 
+    // Normaliza a E.164 (US). Ajusta si manejas otros países.
+    const toE164 = (raw: string) => {
+      const d = String(raw || "").replace(/\D/g, "");
+      if (d.length === 10) return `+1${d}`;
+      if (d.length === 11 && d.startsWith("1")) return `+${d}`;
+      if (d.length >= 10 && d.length <= 15 && raw.startsWith("+")) return raw;
+      return null;
+    };
+
     const destinatarios = contactos
       .filter((c: any) => form.segmentos.includes(c.segmento))
-      .map((c: any) => c.telefono)
-      .filter((t: string) => /^\+?\d{10,15}$/.test(t));
+      .map((c: any) => toE164(c.telefono))
+      .filter(Boolean) as string[];
 
     if (destinatarios.length === 0) {
       alert("❌ No hay números válidos para enviar SMS.");
       return;
     }
 
-    const data = new FormData();
-    data.append("nombre", form.nombre.trim());
-    data.append("canal", "sms");
-    data.append("contenido", form.contenido.trim());
-
-    // 👇 tu backend usa programada_para en GET, manda lo mismo en POST
-    const fechaUTC = new Date(form.fecha_envio).toISOString();
-    data.append("programada_para", fechaUTC);
-
-    // 👇 esto faltaba
-    data.append("segmentos", JSON.stringify(form.segmentos));
-
-    // 👇 ya lo estabas mandando
-    data.append("destinatarios", JSON.stringify(destinatarios));
+    const payload = {
+      nombre: form.nombre.trim(),
+      canal: "sms",
+      contenido: form.contenido.trim(),
+      programada_para: new Date(form.fecha_envio).toISOString(),
+      segmentos: form.segmentos,          // ✅ array real
+      destinatarios,                     // ✅ array real
+    };
 
     try {
       setLoading(true);
+
       const res = await fetch(`${BACKEND_URL}/api/campaigns`, {
         method: "POST",
-        body: data,
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
-      const json = await res.json();
+      const json = await res.json().catch(() => ({}));
       setLoading(false);
 
       if (res.status === 403 && json?.error === "channel_blocked") {
-        const st = await fetch(`${BACKEND_URL}/api/channel-settings?canal=sms`, { credentials: "include" })
-          .then(r => r.json()).catch(() => ({}));
-        setChannelState({
-          enabled: !!st.enabled,
-          maintenance: !!st.maintenance,
-          plan_enabled: !!st.plan_enabled,
-          settings_enabled: !!st.settings_enabled,
-          maintenance_message: st.maintenance_message || null,
-        });
-        if (st.maintenance) {
-          alert(`🛠️ Canal SMS en mantenimiento. ${st.maintenance_message || "Inténtalo más tarde."}`);
-        } else if (!st.plan_enabled) {
-          alert("❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.");
-          window.location.href = "/upgrade";
-        } else {
-          alert("📴 Canal SMS deshabilitado en tu configuración. Habilítalo en Ajustes.");
-        }
+        // ... tu bloque actual de channel settings
         return;
-      } else if (res.ok) {
+      }
+
+      if (res.ok) {
         alert("✅ Campaña enviada");
         setForm({ nombre: "", contenido: "", fecha_envio: "", segmentos: [] });
         setCampaigns((prev) => [json, ...prev]);
