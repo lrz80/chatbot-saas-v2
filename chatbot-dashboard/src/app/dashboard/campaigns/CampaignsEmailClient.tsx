@@ -137,7 +137,7 @@ export default function CampaignsEmailClient() {
       setUsoEmail({ usados: email?.usados ?? 0, limite: email?.limite ?? BASE_EMAIL_LIMIT });
   
       const usoContactos = data.usos?.find((u: any) => u.canal === "contactos");
-      setLimiteContactos(usoContactos?.limite || 500);
+      setLimiteContactos(usoContactos?.limite ?? 500);
     } catch (err) {
       console.error("❌ Error cargando uso de email/contactos:", err);
     }
