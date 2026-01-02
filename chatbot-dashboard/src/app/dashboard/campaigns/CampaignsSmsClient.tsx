@@ -166,13 +166,42 @@ export default function CampaignsSmsClient() {
       return null;
     };
 
+    const normalizePhone = (raw: any) => {
+      if (!raw) return null;
+
+      let s = String(raw).trim().replace(/^tel:/i, "");
+
+      // Si ya viene con +, limpiamos dejando + y dígitos
+      if (s.startsWith("+")) {
+        const plusDigits = "+" + s.slice(1).replace(/\D/g, "");
+        const len = plusDigits.slice(1).length;
+        return len >= 10 && len <= 15 ? plusDigits : null;
+      }
+
+      // Si no viene con +, dejamos solo dígitos
+      const d = s.replace(/\D/g, "");
+
+      // USA: 10 dígitos -> +1
+      if (d.length === 10) return `+1${d}`;
+
+      // USA: 11 y empieza por 1 -> +...
+      if (d.length === 11 && d.startsWith("1")) return `+${d}`;
+
+      // Internacional: 11-15 -> +
+      if (d.length >= 11 && d.length <= 15) return `+${d}`;
+
+      return null;
+    };
+
+    const segSelected = new Set(form.segmentos.map(s => s.trim().toLowerCase()));
+
     const destinatarios = contactos
-      .filter((c: any) => form.segmentos.includes(c.segmento))
-      .map((c: any) => toE164(c.telefono))
+      .filter((c: any) => segSelected.has(String(c.segmento || "").trim().toLowerCase()))
+      .map((c: any) => normalizePhone(c.telefono))
       .filter(Boolean) as string[];
 
     if (destinatarios.length === 0) {
-      alert("❌ No hay números válidos para enviar SMS.");
+      alert("❌ No hay números válidos en los segmentos seleccionados. Revisa el formato de teléfonos (deben ser +E164).");
       return;
     }
 
@@ -180,9 +209,18 @@ export default function CampaignsSmsClient() {
       nombre: form.nombre.trim(),
       canal: "sms",
       contenido: form.contenido.trim(),
+
+      // ✅ OBLIGATORIO para el backend:
+      fecha_envio: new Date(form.fecha_envio).toISOString(),
+
+      // opcional (puedes dejarlo, pero no lo usa el validator)
       programada_para: new Date(form.fecha_envio).toISOString(),
-      segmentos: form.segmentos,          // ✅ array real
-      destinatarios,                     // ✅ array real
+
+      // ✅ OBLIGATORIO para el backend:
+      segmentos: form.segmentos,
+
+      // opcional, tu backend NO lo usa actualmente (ver nota abajo)
+      destinatarios,
     };
 
     try {
