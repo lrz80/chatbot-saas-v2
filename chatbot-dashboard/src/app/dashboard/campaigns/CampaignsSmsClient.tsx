@@ -152,7 +152,7 @@ export default function CampaignsSmsClient() {
   };
 
   const handleSubmit = async () => {
-    if (!form.nombre || !form.fecha_envio || form.segmentos.length === 0) {
+    if (!form.nombre || !form.contenido || !form.fecha_envio || form.segmentos.length === 0) {
       alert("Completa todos los campos.");
       return;
     }
@@ -168,12 +168,18 @@ export default function CampaignsSmsClient() {
     }
 
     const data = new FormData();
-    data.append("nombre", form.nombre);
+    data.append("nombre", form.nombre.trim());
     data.append("canal", "sms");
-    data.append("contenido", form.contenido);
+    data.append("contenido", form.contenido.trim());
 
+    // 👇 tu backend usa programada_para en GET, manda lo mismo en POST
     const fechaUTC = new Date(form.fecha_envio).toISOString();
-    data.append("fecha_envio", fechaUTC);
+    data.append("programada_para", fechaUTC);
+
+    // 👇 esto faltaba
+    data.append("segmentos", JSON.stringify(form.segmentos));
+
+    // 👇 ya lo estabas mandando
     data.append("destinatarios", JSON.stringify(destinatarios));
 
     try {
