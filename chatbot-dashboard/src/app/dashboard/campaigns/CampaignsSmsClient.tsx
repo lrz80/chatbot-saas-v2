@@ -60,6 +60,7 @@ export default function CampaignsSmsClient() {
   const [trialDisponible, setTrialDisponible] = useState<boolean>(false);
   const [trialActivo, setTrialActivo] = useState<boolean>(false);
   const [canEdit, setCanEdit] = useState<boolean>(false);
+  const [segmentoCsv, setSegmentoCsv] = useState<"cliente" | "leads" | "otros">("leads");
 
    // ⬇️ Derivados del estado / plan / membresía
   const loadingChannel = channelState === null;
@@ -273,7 +274,8 @@ export default function CampaignsSmsClient() {
     try {
       const formData = new FormData();
       formData.append("file", archivoCsv);
-  
+      formData.append("segmento_forzado", segmentoCsv); // 👈 NUEVO (esto fuerza el segmento del CSV)
+
       const res = await fetch(`${BACKEND_URL}/api/contactos`, {
         method: "POST",
         credentials: "include",
@@ -588,35 +590,6 @@ export default function CampaignsSmsClient() {
     fn();
   };
 
-  const handleClaimTrial = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/billing/claim-trial`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      const j = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        alert(`❌ ${j?.error || 'No se pudo activar la prueba'}`);
-        return;
-      }
-      alert('✅ ¡Prueba gratis activada!');
-      // refrescamos settings para actualizar banners y canEdit
-      await fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include', cache: 'no-store' })
-        .then(r => r.json())
-        .then(d => {
-          setMembresiaActiva(d?.membresia_activa === true);
-          setTrialDisponible(Boolean(d?.trial_disponible));
-          setTrialActivo(Boolean(d?.trial_vigente || d?.trial_activo));
-          setCanEdit(Boolean(
-            d?.can_edit ?? d?.membresia_activa ?? (d?.trial_vigente || d?.trial_activo)
-          ));
-        }).catch(() => {});
-    } catch (e) {
-      console.error(e);
-      alert('❌ Error activando la prueba');
-    }
-  };
-
   return (
     <div className="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md p-8">
       <h1
@@ -769,6 +742,20 @@ export default function CampaignsSmsClient() {
               <label className="block text-sm font-semibold text-white">
                 Subir archivo CSV de contactos
               </label>
+              <label className="block text-sm font-semibold text-white">
+                Segmento para este CSV
+              </label>
+
+              <select
+                value={segmentoCsv}
+                onChange={(e) => setSegmentoCsv(e.target.value as any)}
+                disabled={disabledAll}
+                className="w-full p-2 rounded bg-white/10 border border-white/20 text-white mb-2"
+              >
+                <option value="leads">leads</option>
+                <option value="cliente">cliente</option>
+                <option value="otros">otros</option>
+              </select>
               <input
                 type="file"
                 accept=".csv"
