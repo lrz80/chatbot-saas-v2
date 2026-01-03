@@ -198,8 +198,8 @@ export default function CampaignsSmsClient() {
 
     const destinatarios = contactos
       .filter((c: any) => segSelected.has(String(c.segmento || "").trim().toLowerCase()))
-      .map((c: any) => normalizePhone(c.telefono))
-      .filter(Boolean) as string[];
+      .map((c: any) => c.telefono)
+      .filter((t: any) => typeof t === "string" && t.startsWith("+"))
 
     if (destinatarios.length === 0) {
       alert("❌ No hay números válidos en los segmentos seleccionados. Revisa el formato de teléfonos (deben ser +E164).");
