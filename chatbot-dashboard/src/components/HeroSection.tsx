@@ -47,7 +47,7 @@ export default function HeroSection() {
         <p className="text-lg md:text-xl text-white/90 mb-6 leading-relaxed drop-shadow">
           Aamy responde en segundos las preguntas que más se repiten y convierte mensajes en leads por{' '}
           <strong>WhatsApp, Instagram y Facebook</strong>. Si el cliente no responde, hace{' '}
-          <strong>seguimiento automático hasta 23 horas</strong> para recuperarlo.
+          <strong>seguimiento automático</strong> para recuperarlo.
         </p>
 
         {/* Micro “qué NO es” (reduce objeciones y malos fit) */}
