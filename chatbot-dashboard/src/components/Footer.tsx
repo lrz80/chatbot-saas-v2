@@ -12,16 +12,16 @@ export default function Footer() {
   return (
     <footer className="text-center text-gray-400 text-xs mt-12 py-6">
       <p>
-        © {new Date().getFullYear()} Aamy.ai — Automatización de atención 24/7 para negocios.
+        © {new Date().getFullYear()} Aamy.ai — Plataforma de atención automática 24/7 para negocios.
       </p>
 
       <div className="mt-2 flex justify-center gap-4">
-        <Link href="/privacy-policy" className="underline hover:text-purple-400 transition">
-          Política de Privacidad
-        </Link>
-        <span>|</span>
         <Link href="/terms-of-service" className="underline hover:text-purple-400 transition">
           Términos de Servicio
+        </Link>
+        <span>|</span>
+        <Link href="/privacy-policy" className="underline hover:text-purple-400 transition">
+          Política de Privacidad
         </Link>
 
         {showDeleteLink && (
@@ -33,6 +33,10 @@ export default function Footer() {
           </>
         )}
       </div>
+
+      <p className="mt-3 text-[10px] text-gray-500 max-w-xl mx-auto">
+        Aamy responde con la información proporcionada por cada negocio. Los resultados pueden variar según uso y configuración.
+      </p>
     </footer>
   );
 }
