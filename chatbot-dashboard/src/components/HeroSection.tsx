@@ -45,7 +45,7 @@ export default function HeroSection() {
         </h1>
 
         <p className="text-lg md:text-xl text-white/90 mb-6 leading-relaxed drop-shadow">
-          Aamy responde en segundos las preguntas que más se repiten y convierte mensajes en leads por{' '}
+          Aamy responde en segundos las preguntas y convierte mensajes en leads por{' '}
           <strong>WhatsApp, Instagram y Facebook</strong>. Si el cliente no responde, hace{' '}
           <strong>seguimiento automático</strong> para recuperarlo.
         </p>
