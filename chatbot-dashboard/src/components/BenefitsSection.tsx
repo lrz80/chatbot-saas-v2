@@ -8,27 +8,27 @@ export default function BenefitsSection() {
   const benefits = [
     {
       icon: <Sparkles className="w-8 h-8 text-purple-400" />,
-      title: "Respuesta inmediata 24/7",
+      title: "Responde en segundos, 24/7",
       description:
-        "Amy responde al instante a todos los mensajes, a cualquier hora, para que tu negocio nunca deje a un cliente sin respuesta.",
+        "Aamy contesta al instante para que no pierdas ventas cuando estás ocupado o fuera de horario.",
     },
     {
       icon: <BotMessageSquare className="w-8 h-8 text-purple-400" />,
-      title: "3 canales en un solo sistema",
+      title: "WhatsApp, Instagram y Facebook en un solo panel",
       description:
-        "Funciona en WhatsApp, Instagram y Facebook con el mismo comportamiento y la misma calidad de respuesta.",
+        "Centraliza tus mensajes en un sistema y, si lo deseas, puedes personalizar el comportamiento por canal.",
     },
     {
       icon: <BarChart3 className="w-8 h-8 text-purple-400" />,
-      title: "Respuestas con la info real de tu negocio",
+      title: "Respuestas con la información real de tu negocio",
       description:
-        "Responde usando tus servicios, horarios, ubicación y preguntas frecuentes para dar información precisa sin depender de ti.",
+        "Responde con tus servicios, horarios, ubicación y FAQs. No inventa datos: se configura con tu información.",
     },
     {
       icon: <Share2 className="w-8 h-8 text-purple-400" />,
-      title: "Seguimiento automático hasta 23 horas",
+      title: "Seguimiento automático",
       description:
-        "Si el cliente no responde, Amy hace seguimiento automático hasta 23h y se detiene en cuanto el cliente contesta.",
+        "Si el cliente no responde, hace seguimiento automático y se detiene en cuanto el cliente contesta o tú intervienes.",
     },
   ];
 
@@ -40,7 +40,7 @@ export default function BenefitsSection() {
         transition={{ duration: 0.8 }}
         className="text-3xl md:text-5xl font-bold text-center mb-12 text-white"
       >
-        ¿Qué hace <span className="text-purple-400">Amy</span> por tu negocio?
+        ¿Qué gana tu negocio con <span className="text-purple-400">Aamy</span>?
       </motion.h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
