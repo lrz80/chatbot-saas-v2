@@ -29,8 +29,7 @@ export default function HeroSection() {
       />
 
       {/* 🌑 Overlay con degradado */}
-      <div className="absolute inset-0 bg-black/65 z-0" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/55 to-black/70 z-0" />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-black/45 to-transparent z-0" />
 
       {/* 🌟 Hero Content animado */}
       <motion.div
