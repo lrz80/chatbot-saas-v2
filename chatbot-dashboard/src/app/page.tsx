@@ -14,12 +14,10 @@ import {
   FaRobot,
   FaChartBar,
   FaWhatsapp,
-  FaFacebookMessenger,
-  FaInstagram,
-  FaMicrophoneAlt,
   FaBullhorn,
   FaUserCheck,
 } from 'react-icons/fa';
+import WhatsAppDemoButton from '@/components/WhatsAppDemoButton';
 
 // 🔥 Features con estilos y descripciones más claras
 const features = [
@@ -165,6 +163,8 @@ export default function LandingPage() {
         </p>
 
       </section>
+
+      <WhatsAppDemoButton />
 
       <Footer />
     </div>
