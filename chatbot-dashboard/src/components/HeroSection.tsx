@@ -64,7 +64,7 @@ export default function HeroSection() {
         </div>
 
         {/* Lógica económica (sin promesa) */}
-        <div className="mb-6 text-white/70 text-xs md:text-sm">
+        <div className="mb-4 text-white/70 text-xs md:text-sm">
           💡 Un solo cliente recuperado al mes suele pagar el servicio.
         </div>
 
@@ -74,13 +74,6 @@ export default function HeroSection() {
             className="bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
           >
             Activar Aamy 24/7
-          </a>
-
-          <a
-            href="#benefits"
-            className="bg-white/10 hover:bg-white/15 text-white px-10 py-4 rounded-full font-semibold text-lg border border-white/15 shadow-lg transition-all duration-300"
-          >
-            Ver demo
           </a>
         </div>
 
