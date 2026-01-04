@@ -5,19 +5,32 @@ import Image from 'next/image';
 
 export default function DemoWhatsApp() {
   const mensajes = [
-    { de: 'cliente', texto: 'Hola, ¿cuánto cuesta el facial?' },
-    { de: 'amy', texto: 'Hola 👋 Soy Amy, asistente de AC Studio. El facial cuesta $60 e incluye limpieza facial profunda.' },
-    { de: 'cliente', texto: '¿Tienen citas hoy?' },
-    { de: 'amy', texto: 'Sí, tenemos disponibilidad a las 3:00 pm y 5:30 pm. ¿Cuál prefieres?' },
+    { de: 'cliente', texto: 'Hola, ¿me puedes dar información?' },
+    {
+      de: 'amy',
+      texto:
+        'Hola 👋 Soy Amy, asistente del negocio. Con gusto te ayudo. ¿Qué información te gustaría conocer?',
+    },
+    { de: 'cliente', texto: 'Quería saber el precio' },
+    {
+      de: 'amy',
+      texto:
+        'Claro 😊 El precio depende del servicio que te interese. Puedo explicarte las opciones disponibles.',
+    },
+    {
+      de: 'amy',
+      texto:
+        'Si quieres, dime qué estás buscando y te doy la información correcta.',
+    },
   ];
 
   return (
     <section className="mt-20 px-6 py-12 max-w-[1000px] mx-auto text-center">
       <h2 className="text-3xl md:text-4xl font-extrabold text-purple-300 mb-6">
-        Interacción automatizada con Amy
+        Así responde Aamy cuando un cliente escribe
       </h2>
       <p className="text-gray-300 text-base md:text-lg mb-10">
-        Atiende a tus clientes 24/7 con respuestas inteligentes
+        Respuestas inmediatas y seguimiento automático sin que tengas que estar pendiente
       </p>
 
       {/* Contenedor del mockup y mensajes */}
