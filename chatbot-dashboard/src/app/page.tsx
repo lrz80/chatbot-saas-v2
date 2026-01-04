@@ -26,7 +26,7 @@ const features = [
   {
     icon: <FaRobot size={28} className="text-purple-400 drop-shadow" />,
     title: "Respuesta inmediata 24/7",
-    description: "Todos los mensajes reciben respuesta al instante, a cualquier hora, sin que tú estés pendiente.",
+    description: "Responde en segundos la mayoría de preguntas frecuentes, 24/7, sin que estés pendiente.",
   },
   {
     icon: <FaWhatsapp size={28} className="text-green-400 drop-shadow" />,
@@ -36,7 +36,7 @@ const features = [
   {
     icon: <FaUserCheck size={28} className="text-yellow-400 drop-shadow" />,
     title: "Captura de leads automática",
-    description: "Obtiene nombre y motivo del cliente para que no se pierda ninguna oportunidad.",
+    description: "Captura datos del cliente cuando aplica (nombre y motivo) para que puedas darle seguimiento.",
   },
   {
     icon: <FaChartBar size={28} className="text-purple-300 drop-shadow" />,
@@ -103,7 +103,7 @@ export default function LandingPage() {
 
       <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#0f0a1e] to-[#1c1236]">
         <h2 className="text-3xl font-bold text-center mb-12 text-white">
-          ¿Qué puedes hacer con nuestro Asistente Virtual?
+          Lo que Aamy hace para que no pierdas clientes
         </h2>
         <div
           ref={sliderRef}
@@ -138,7 +138,7 @@ export default function LandingPage() {
           </div>
           <div className="w-full max-w-xs bg-white/10 border border-white/10 p-6 rounded-xl shadow-lg">
             <p className="italic text-sm text-white/80">
-              “Automatizar mis mensajes me ahorra más de 10 horas a la semana.”
+              “Automatizar mis mensajes nos responde incluso fuera de horario.”
             </p>
             <p className="mt-4 font-bold text-purple-300">— Luis, Indoor Cycling Studio</p>
           </div>
@@ -148,8 +148,13 @@ export default function LandingPage() {
       <section className="py-16 px-4 sm:px-6 md:px-8 bg-indigo-950/40 text-center backdrop-blur-md">
         <h2 className="text-2xl font-bold mb-4 text-white">¿Listo para comenzar?</h2>
         <p className="mb-6 text-white/80 max-w-xl mx-auto">
-          Activa tu membresía y desbloquea el potencial completo de tu Asistente Virtual para optimizar la atención al cliente de tu negocio.
+          Te lo dejamos configurado con la información de tu negocio para que empieces a responder 24/7.
         </p>
+
+        <p className="mt-2 text-white/60 text-sm">
+          💡 Un solo cliente recuperado al mes suele pagar el servicio.
+        </p>
+
         <a href="/login">
           <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg transition">
             Activar Atención Automática 24/7
