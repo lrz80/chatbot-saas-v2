@@ -80,63 +80,77 @@ export default function CampaignsSmsClient() {
   // - o no hay membresía/trial activo
   const disabledAll = !canSms || !isMembershipActive;
 
-  useEffect(() => {
-    fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" })
-      .then((res) => res.json())
-      .then(async (data) => {
-        const smsOnly = (data || []).filter((c: any) => c.canal === "sms");
+  const refreshingRef = useRef(false);
 
-        const enriched = await Promise.all(
-          smsOnly.map(async (c: any) => {
-            try {
-              const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}/sms-status`, {
-                credentials: "include",
-              });
-              const entregas = res.ok ? await res.json() : [];
-              return { ...c, entregas };
-            } catch {
-              return { ...c, entregas: [] };
-            }
-          })
-        );
+  // ✅ Refresca TODO (campañas, entregas, contactos, límites, usage, settings)
+  const refreshAll = async () => {
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
 
-        setCampaigns(enriched);
-      });
+    try {
+      // 1) Campañas + entregas
+      const campRes = await fetch(`${BACKEND_URL}/api/campaigns`, { credentials: "include" });
+      const campData = await campRes.json();
+      const smsOnly = (campData || []).filter((c: any) => c.canal === "sms");
 
-    fetch(`${BACKEND_URL}/api/contactos/limite`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        setLimiteContactos(data.limite || 500);
-        setCantidadContactos(data.total || 0);
-      })
-      .catch((err) => console.error("❌ Error cargando límite de contactos:", err));
+      const enriched = await Promise.all(
+        smsOnly.map(async (c: any) => {
+          try {
+            const res = await fetch(`${BACKEND_URL}/api/campaigns/${c.id}/sms-status`, {
+              credentials: "include",
+            });
+            const entregas = res.ok ? await res.json() : [];
+            return { ...c, entregas };
+          } catch {
+            return { ...c, entregas: [] };
+          }
+        })
+      );
 
-    fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => setContactos(data || []));
+      setCampaigns(enriched);
 
-    fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        setMembresiaActiva(data?.membresia_activa === true);
-        setTrialDisponible(Boolean(data?.trial_disponible));
-        setTrialActivo(Boolean(data?.trial_vigente || data?.trial_activo));
-        setCanEdit(Boolean(
-          data?.can_edit ??
-          data?.membresia_activa ??
-          (data?.trial_vigente || data?.trial_activo)
-        ));
-      })
-      .catch(err => console.error("❌ Error obteniendo membresía:", err));
+      // 2) Contactos + límite
+      const limRes = await fetch(`${BACKEND_URL}/api/contactos/limite`, { credentials: "include" });
+      const limData = await limRes.json();
+      setLimiteContactos(limData.limite || 500);
+      setCantidadContactos(limData.total || 0);
 
-    fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        const sms = (data.usos || []).find((u: any) => u.canal === "sms");
-        setUsoSms({ usados: sms?.usados ?? 0, limite: sms?.limite ?? 500 });
-      })
-      .catch((err) => console.error("❌ Error cargando uso SMS:", err));
-  }, []);
+      const contRes = await fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" });
+      const contData = await contRes.json();
+      setContactos(contData || []);
+
+      // 3) Settings (membresía/trial/edit)
+      const setRes = await fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" });
+      const setData = await setRes.json();
+      setMembresiaActiva(setData?.membresia_activa === true);
+      setTrialDisponible(Boolean(setData?.trial_disponible));
+      setTrialActivo(Boolean(setData?.trial_vigente || setData?.trial_activo));
+      setCanEdit(Boolean(
+        setData?.can_edit ??
+        setData?.membresia_activa ??
+        (setData?.trial_vigente || setData?.trial_activo)
+      ));
+
+      // 4) Usage (SMS + contactos desde /usage)
+      const usoRes = await fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" });
+      const usoData = await usoRes.json();
+
+      const sms = (usoData.usos || []).find((u: any) => u.canal === "sms");
+      setUsoSms({ usados: sms?.usados ?? 0, limite: sms?.limite ?? 500 });
+
+      const usoContactos = (usoData.usos || []).find((u: any) => u.canal === "contactos");
+      if (usoContactos?.limite) setLimiteContactos(usoContactos.limite);
+
+    } catch (err) {
+    console.error("❌ refreshAll error:", err);
+    } finally {
+      refreshingRef.current = false;
+    }
+  };
+
+ useEffect(() => {
+   refreshAll();
+ }, []);
 
   const toggleSegmento = (id: string) => {
     setForm((prev) => ({
@@ -157,42 +171,6 @@ export default function CampaignsSmsClient() {
       alert("Completa todos los campos.");
       return;
     }
-
-    // Normaliza a E.164 (US). Ajusta si manejas otros países.
-    const toE164 = (raw: string) => {
-      const d = String(raw || "").replace(/\D/g, "");
-      if (d.length === 10) return `+1${d}`;
-      if (d.length === 11 && d.startsWith("1")) return `+${d}`;
-      if (d.length >= 10 && d.length <= 15 && raw.startsWith("+")) return raw;
-      return null;
-    };
-
-    const normalizePhone = (raw: any) => {
-      if (!raw) return null;
-
-      let s = String(raw).trim().replace(/^tel:/i, "");
-
-      // Si ya viene con +, limpiamos dejando + y dígitos
-      if (s.startsWith("+")) {
-        const plusDigits = "+" + s.slice(1).replace(/\D/g, "");
-        const len = plusDigits.slice(1).length;
-        return len >= 10 && len <= 15 ? plusDigits : null;
-      }
-
-      // Si no viene con +, dejamos solo dígitos
-      const d = s.replace(/\D/g, "");
-
-      // USA: 10 dígitos -> +1
-      if (d.length === 10) return `+1${d}`;
-
-      // USA: 11 y empieza por 1 -> +...
-      if (d.length === 11 && d.startsWith("1")) return `+${d}`;
-
-      // Internacional: 11-15 -> +
-      if (d.length >= 11 && d.length <= 15) return `+${d}`;
-
-      return null;
-    };
 
     const segSelected = new Set(form.segmentos.map(s => s.trim().toLowerCase()));
 
@@ -245,7 +223,7 @@ export default function CampaignsSmsClient() {
       if (res.ok) {
         alert("✅ Campaña enviada");
         setForm({ nombre: "", contenido: "", fecha_envio: "", segmentos: [] });
-        setCampaigns((prev) => [json, ...prev]);
+        await refreshAll();
       } else {
         alert(`❌ ${json.error || "Error desconocido"}`);
       }
@@ -308,6 +286,7 @@ export default function CampaignsSmsClient() {
         inputRef.current?.value && (inputRef.current.value = "");
         setArchivoCsv(null);
         setCantidadContactos((prev) => prev + json.nuevos);
+        await refreshAll();
       } else {
         alert(`❌ ${json.error || "Error al subir archivo"}`);
       }
@@ -331,6 +310,7 @@ export default function CampaignsSmsClient() {
     if (res.ok) {
       setCampaigns((prev) => prev.filter((c) => c.id !== id));
       alert("✅ Campaña eliminada");
+      await refreshAll();
     } else {
       if (res.status === 403) {
         try {
@@ -380,6 +360,7 @@ export default function CampaignsSmsClient() {
         alert("✅ Contactos eliminados correctamente");
         setContactos([]);
         setCantidadContactos(0);
+        await refreshAll();
       } else {
         alert(`❌ ${json.error || "No se pudo eliminar"}`);
       }
@@ -442,34 +423,25 @@ export default function CampaignsSmsClient() {
   };  
   
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        const usoContactos = (data.usos || []).find((u: any) => u.canal === "contactos");
-        setLimiteContactos(usoContactos?.limite ?? 500);
-      })
-      .catch((err) => console.error("❌ Error cargando uso de contactos:", err));
-  }, []);
-  
-  useEffect(() => {
     const url = new URL(window.location.href);
     let updated = false;
-  
+
     if (creditoOk) {
       url.searchParams.delete("credito");
       updated = true;
     }
-  
+
     if (contactosOk) {
       url.searchParams.delete("contactos");
       updated = true;
     }
-  
+
     if (updated) {
       window.history.replaceState({}, document.title, url.toString());
+      refreshAll(); // ✅ aquí, una sola vez
     }
-  }, [creditoOk, contactosOk]);  
-  
+  }, [creditoOk, contactosOk]);
+
   const usoContactos = {
     usados: contactos.length || 0,
     limite: limiteContactos || 500,
