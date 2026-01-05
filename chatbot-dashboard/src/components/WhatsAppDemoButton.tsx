@@ -1,8 +1,14 @@
 'use client';
 
 import { FaWhatsapp } from 'react-icons/fa';
+import { usePathname } from 'next/navigation';
 
 export default function WhatsAppDemoButton() {
+  const pathname = usePathname();
+
+  // 🔒 Solo mostrar en la home
+  if (pathname !== '/') return null;
+
   const phone = '17752786976';
   const text = 'Hola, quiero probar el demo de Aamy';
 
@@ -13,7 +19,7 @@ export default function WhatsAppDemoButton() {
       rel="noopener noreferrer"
       aria-label="Probar demo por WhatsApp"
       className="
-        fixed bottom-6 right-6 z-[9999]
+        fixed bottom-8 right-6 z-[9999]
         w-14 h-14 md:w-16 md:h-16
         rounded-full
         bg-[#25D366]
@@ -26,17 +32,38 @@ export default function WhatsAppDemoButton() {
     >
       <FaWhatsapp className="text-white w-7 h-7 md:w-8 md:h-8" />
 
-      {/* Tooltip tipo WhatsApp */}
+      {/* Tooltip */}
       <span
         className="
-          absolute right-20
+          absolute
+          bottom-full left-1/2 -translate-x-1/2
+          mb-3
           bg-white text-black text-xs
           px-3 py-2 rounded-lg
           shadow-md
           whitespace-nowrap
+
+          md:bottom-auto md:left-auto md:mb-0
+          md:top-1/2 md:-translate-y-1/2
+          md:right-20 md:translate-x-0
         "
       >
         Probar demo
+
+        {/* Flechita */}
+        <span
+          className="
+            absolute left-1/2 -translate-x-1/2 top-full
+            w-0 h-0
+            border-l-6 border-l-transparent
+            border-r-6 border-r-transparent
+            border-t-6 border-t-white
+
+            md:left-full md:top-1/2 md:-translate-y-1/2
+            md:border-t-transparent md:border-l-6 md:border-l-white
+            md:border-r-0
+          "
+        />
       </span>
     </a>
   );
