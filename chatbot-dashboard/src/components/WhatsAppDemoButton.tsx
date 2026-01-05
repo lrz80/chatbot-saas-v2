@@ -34,7 +34,6 @@ export default function WhatsAppDemoButton() {
           px-3 py-2 rounded-lg
           shadow-md
           whitespace-nowrap
-          hidden md:block
         "
       >
         Probar demo
