@@ -6,17 +6,10 @@ import { useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 import { SiOpenai, SiDatabricks } from 'react-icons/si';
 
-const INFO_TEMPLATE = `MODO_PROMPT: ATENCION
-
-# Si tu negocio vende un servicio con activación (setup / instalación),
-# cambia ATENCION por ACTIVACION y borra este comentario.
-
-Nombre del negocio:
+const INFO_TEMPLATE = `Nombre del negocio:
 Tipo de negocio:
 Ubicación:
 Teléfono:
-
-Experiencia:
 
 Servicios principales:
 - 
@@ -26,6 +19,10 @@ Horarios:
 Precios o cómo consultar precios:
 
 Reservas / contacto:
+- 
+
+Políticas importantes (si aplica):
+- 
 `;
 
 interface PromptGeneratorProps {
@@ -57,6 +54,11 @@ export default function PromptGenerator({
 
     if (!funcionesAsistente.trim()) {
       alert("Por favor describe qué debe hacer el asistente.");
+      return;
+    }
+
+    if (!infoClave.trim()) {
+      alert("Por favor completa la información básica del negocio.");
       return;
     }
 
@@ -114,10 +116,11 @@ export default function PromptGenerator({
         Información que el Asistente debe conocer
       </label>
       <textarea
-        value={infoClave || INFO_TEMPLATE}
+        value={infoClave}
+        placeholder={INFO_TEMPLATE}
         onChange={(e) => setInfoClave(e.target.value)}
         rows={8}
-        className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white font-mono"
+        className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white font-mono placeholder-white/40"
         disabled={!membresiaActiva}
         style={{ whiteSpace: "pre-line" }}
       />
