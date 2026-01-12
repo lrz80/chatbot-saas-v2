@@ -48,7 +48,7 @@ export default function WhatsAppDemoButton() {
           md:right-20 md:translate-x-0
         "
       >
-        Como funicona
+        Ver como funciona
 
         {/* Flechita */}
         <span
