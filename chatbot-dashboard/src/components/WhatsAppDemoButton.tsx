@@ -10,7 +10,7 @@ export default function WhatsAppDemoButton() {
   if (pathname !== '/') return null;
 
   const phone = '17752786976';
-  const text = 'Hola, quiero probar el demo de Aamy';
+  const text = 'Hola, quiero saber como funciona';
 
   return (
     <a
@@ -48,7 +48,7 @@ export default function WhatsAppDemoButton() {
           md:right-20 md:translate-x-0
         "
       >
-        Hola, muestrame mas
+        Como funicona
 
         {/* Flechita */}
         <span
