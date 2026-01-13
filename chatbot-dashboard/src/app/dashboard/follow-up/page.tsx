@@ -173,7 +173,7 @@ export default function FollowUpSettingsPage() {
 async function loadFollowupFlags() {
   try {
     setFollowupLoading(true);
-    const res = await fetch("/api/followup/settings", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/followup/settings`, {
       method: "GET",
       credentials: "include",
     });
@@ -211,7 +211,7 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
   try {
     setFollowupLoading(true);
 
-    const res = await fetch("/api/followup/settings", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/followup/settings`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
