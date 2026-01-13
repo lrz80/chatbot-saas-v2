@@ -160,20 +160,10 @@ export default function FollowUpSettingsPage() {
   const colorBarra = (p: number) =>
     p > 80 ? "bg-red-500" : p > 50 ? "bg-yellow-500" : "bg-green-500";
 
-  useEffect(() => {
-    fetchSettings();
-    fetchMensajesEnviados();
-    loadFollowupFlags();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  if (loading) {
-    return <div className="text-white p-10">Cargando configuración...</div>;
-  }
-
-async function loadFollowupFlags() {
+  async function loadFollowupFlags() {
   try {
     setFollowupLoading(true);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/followup/settings`, {
+    const res = await fetch(`${BACKEND_URL}/api/follow-up-settings/settings`, {
       method: "GET",
       credentials: "include",
     });
@@ -211,7 +201,7 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
   try {
     setFollowupLoading(true);
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/followup/settings`, {
+    const res = await fetch(`${BACKEND_URL}/api/follow-up-settings/settings`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -227,6 +217,15 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
     setFollowupLoading(false);
   }
 }
+  useEffect(() => {
+    fetchSettings();
+    fetchMensajesEnviados();
+    loadFollowupFlags();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (loading) {
+    return <div className="text-white p-10">Cargando configuración...</div>;
+  }
 
   return (
     <div className="p-4 md:p-6 text-white">
