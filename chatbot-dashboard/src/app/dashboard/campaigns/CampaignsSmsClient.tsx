@@ -117,7 +117,17 @@ export default function CampaignsSmsClient() {
 
       const contRes = await fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" });
       const contData = await contRes.json();
-      setContactos(contData || []);
+
+      // Soporta: array directo o { contactos: [...] } o { data: [...] }
+      const lista = Array.isArray(contData)
+        ? contData
+        : Array.isArray(contData?.contactos)
+          ? contData.contactos
+          : Array.isArray(contData?.data)
+            ? contData.data
+            : [];
+
+      setContactos(lista);
 
       // 3) Settings (membresía/trial/edit)
       const setRes = await fetch(`${BACKEND_URL}/api/settings`, { credentials: "include" });
@@ -736,19 +746,28 @@ export default function CampaignsSmsClient() {
                 ref={inputRef}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file && file.name.toLowerCase().endsWith(".csv")) {
-                    setArchivoCsv(file);
-                  } else {
+                  if (!file) return;
+
+                  if (!file.name.toLowerCase().endsWith(".csv")) {
                     alert("Por favor selecciona un archivo CSV válido.");
+                    if (inputRef.current) inputRef.current.value = "";
+                    setArchivoCsv(null);
+                    return;
                   }
+
+                  setArchivoCsv(file);
                 }}
                 className="cursor-pointer block w-full text-sm text-white
-                          file:mr-0 file:py-2 file:px-4 file:rounded
+                          file:mr-4 file:py-2 file:px-4 file:rounded
                           file:border-0 file:text-sm file:font-semibold
                           file:bg-indigo-600 file:text-white
                           hover:file:bg-indigo-500"
-                style={{ color: "transparent" }}
               />
+
+              <p className="text-white/80 text-xs">
+                {archivoCsv ? `Archivo seleccionado: ${archivoCsv.name}` : "Ningún archivo seleccionado"}
+              </p>
+
               {archivoCsv && (
                 <div className="flex items-center justify-between bg-white/10 border border-white/20 rounded px-4 py-2 text-sm text-white">
                   <span className="truncate">{archivoCsv.name}</span>
@@ -784,23 +803,23 @@ export default function CampaignsSmsClient() {
                   Eliminar contactos
                 </button>
 
-                {archivoCsv && (
-                  <button
-                    onClick={() => {
-                      if (disabledAll) {
-                        alert("❌ Canal SMS deshabilitado o membresía inactiva.");
-                        return;
-                      }
-                      handleSubirCsv();
-                    }}
-                    disabled={disabledAll}
-                    className={`px-4 py-2 rounded font-semibold w-full sm:w-auto ${
-                      !disabledAll ? 'bg-green-600 hover:bg-green-500 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                    }`}
-                  >
-                    Subir contactos
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    if (disabledAll) {
+                      alert("❌ Canal SMS deshabilitado o membresía inactiva.");
+                      return;
+                    }
+                    handleSubirCsv();
+                  }}
+                  disabled={disabledAll || !archivoCsv}
+                  className={`px-4 py-2 rounded font-semibold w-full sm:w-auto ${
+                    (!disabledAll && archivoCsv)
+                      ? "bg-green-600 hover:bg-green-500 text-white"
+                      : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  }`}
+                >
+                  Subir contactos
+                </button>
               </div>
             </div>
           </div>
