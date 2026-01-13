@@ -26,6 +26,14 @@ export default function FollowUpSettingsPage() {
   const router = useRouter();
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
+  const [followupLoading, setFollowupLoading] = useState(false);
+
+  const [followupFlags, setFollowupFlags] = useState({
+    followup_whatsapp_enabled: true,
+    followup_facebook_enabled: true,
+    followup_instagram_enabled: true,
+  });
+
   const fetchSettings = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/follow-up-settings`, {
@@ -155,11 +163,70 @@ export default function FollowUpSettingsPage() {
   useEffect(() => {
     fetchSettings();
     fetchMensajesEnviados();
+    loadFollowupFlags();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
     return <div className="text-white p-10">Cargando configuración...</div>;
   }
+
+async function loadFollowupFlags() {
+  try {
+    setFollowupLoading(true);
+    const res = await fetch("/api/followup/settings", {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!res.ok) throw new Error("No se pudo cargar settings de followup");
+
+    const data = await res.json();
+    setFollowupFlags({
+      followup_whatsapp_enabled: !!data.followup_whatsapp_enabled,
+      followup_facebook_enabled: !!data.followup_facebook_enabled,
+      followup_instagram_enabled: !!data.followup_instagram_enabled,
+    });
+  } catch (e) {
+    console.error(e);
+  } finally {
+    setFollowupLoading(false);
+  }
+}
+
+type FollowupKey =
+  | "followup_whatsapp_enabled"
+  | "followup_facebook_enabled"
+  | "followup_instagram_enabled";
+
+async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
+  const key: FollowupKey =
+    canal === "whatsapp"
+      ? "followup_whatsapp_enabled"
+      : canal === "facebook"
+      ? "followup_facebook_enabled"
+      : "followup_instagram_enabled";
+
+  const nextEnabled = !followupFlags[key];
+
+  try {
+    setFollowupLoading(true);
+
+    const res = await fetch("/api/followup/settings", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ canal, enabled: nextEnabled }),
+    });
+
+    if (!res.ok) throw new Error("No se pudo actualizar followup");
+
+    setFollowupFlags((prev) => ({ ...prev, [key]: nextEnabled }));
+  } catch (e) {
+    console.error(e);
+  } finally {
+    setFollowupLoading(false);
+  }
+}
 
   return (
     <div className="p-4 md:p-6 text-white">
@@ -185,6 +252,86 @@ export default function FollowUpSettingsPage() {
           Seguimiento de Leads
         </span>
       </h1>
+
+      {/* ✅ Activar subcanales de Follow-up (clon de Meta Config) */}
+<div className="mb-4 sm:mb-6 px-3 py-3 sm:p-4 rounded-xl border text-xs sm:text-sm bg-white/5 border-white/10 text-white">
+  <div className="flex flex-col gap-2">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="space-y-1">
+        <p className="font-semibold">Activar subcanales de seguimiento</p>
+        <p className="text-white/70 text-xs">
+          Si está OFF, el sistema no debe enviar seguimientos automáticos en ese canal.
+        </p>
+      </div>
+    </div>
+
+    {/* WhatsApp */}
+    <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+      <div className="space-y-0.5">
+        <p className="font-semibold">WhatsApp</p>
+        <p className="text-white/70 text-xs">Permite enviar seguimientos automáticos por WhatsApp.</p>
+      </div>
+
+      <button
+        onClick={() => toggleFollowup("whatsapp")}
+        disabled={followupLoading}
+        aria-disabled={followupLoading}
+        className={`px-4 py-2 rounded text-sm text-white ${
+          followupFlags.followup_whatsapp_enabled
+            ? "bg-green-600 hover:bg-green-700"
+            : "bg-white/10 hover:bg-white/20 border border-white/20"
+        } ${followupLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+        title={followupLoading ? "Cargando..." : ""}
+      >
+        {followupFlags.followup_whatsapp_enabled ? "ON" : "OFF"}
+      </button>
+    </div>
+
+    {/* Facebook */}
+    <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+      <div className="space-y-0.5">
+        <p className="font-semibold">Facebook</p>
+        <p className="text-white/70 text-xs">Permite enviar seguimientos automáticos por Facebook.</p>
+      </div>
+
+      <button
+        onClick={() => toggleFollowup("facebook")}
+        disabled={followupLoading}
+        aria-disabled={followupLoading}
+        className={`px-4 py-2 rounded text-sm text-white ${
+          followupFlags.followup_facebook_enabled
+            ? "bg-green-600 hover:bg-green-700"
+            : "bg-white/10 hover:bg-white/20 border border-white/20"
+        } ${followupLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+        title={followupLoading ? "Cargando..." : ""}
+      >
+        {followupFlags.followup_facebook_enabled ? "ON" : "OFF"}
+      </button>
+    </div>
+
+        {/* Instagram */}
+        <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+          <div className="space-y-0.5">
+            <p className="font-semibold">Instagram</p>
+            <p className="text-white/70 text-xs">Permite enviar seguimientos automáticos por Instagram.</p>
+          </div>
+
+          <button
+            onClick={() => toggleFollowup("instagram")}
+            disabled={followupLoading}
+            aria-disabled={followupLoading}
+            className={`px-4 py-2 rounded text-sm text-white ${
+              followupFlags.followup_instagram_enabled
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-white/10 hover:bg-white/20 border border-white/20"
+            } ${followupLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            title={followupLoading ? "Cargando..." : ""}
+          >
+            {followupFlags.followup_instagram_enabled ? "ON" : "OFF"}
+          </button>
+        </div>
+      </div>
+    </div>
 
       {usoFollowup && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">

@@ -80,6 +80,8 @@ export default function CampaignsSmsClient() {
   // - o no hay membresía/trial activo
   const disabledAll = !canSms || !isMembershipActive;
 
+  const smsBloqueado = !canSms;
+
   const refreshingRef = useRef(false);
 
   // ✅ Refresca TODO (campañas, entregas, contactos, límites, usage, settings)
@@ -719,6 +721,21 @@ export default function CampaignsSmsClient() {
               </button>
             ))}
           </div>
+
+          {smsBloqueado && (
+            <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-sm text-center">
+              📵 El canal SMS está deshabilitado.  
+              Para cargar contactos y usar campañas, primero debes habilitar SMS.
+              <div className="mt-2">
+                <button
+                  onClick={() => window.location.href = "/upgrade"}
+                  className="bg-yellow-500 hover:bg-yellow-400 text-black px-3 py-1 rounded font-semibold text-sm"
+                >
+                  Habilitar SMS
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="w-full space-y-2">
               <label className="block text-sm font-semibold text-white">
