@@ -55,6 +55,7 @@ export default function CampaignsEmailClient() {
   const [cargandoLogsId, setCargandoLogsId] = useState<number | null>(null);
   const [errorLogsCampana, setErrorLogsCampana] = useState<number | null>(null);
   const [previewHtml, setPreviewHtml] = useState("");
+  const [segmentoCsv, setSegmentoCsv] = useState<"leads" | "cliente" | "otros">("leads");
 
   type ChannelState = {
    enabled: boolean;
@@ -302,21 +303,30 @@ export default function CampaignsEmailClient() {
 
   const handleSubirCsv = async () => {
     if (guardEmail()) return;
-    
-    if (!archivoCsv) return;
-    
-    // Validación básica: ejemplo, tamaño 5MB max y .csv
-    if (archivoCsv.size > 5 * 1024 * 1024 || !archivoCsv.name.endsWith(".csv")) {
-      alert("❌ El archivo debe ser .csv y pesar menos de 5MB");
+
+    if (!archivoCsv) {
+      alert("❌ Selecciona un archivo CSV.");
       return;
     }
-  
+
+    // Validación básica: tamaño 5MB max y .csv
+    const nameLower = archivoCsv.name.toLowerCase();
+    if (!nameLower.endsWith(".csv")) {
+      alert("❌ El archivo debe ser .csv");
+      return;
+    }
+    if (archivoCsv.size > 5 * 1024 * 1024) {
+      alert("❌ El CSV no puede pesar más de 5MB");
+      return;
+    }
+
     // Validar límite
     if (cantidadContactos >= limiteContactos) {
       alert("❌ Has alcanzado el límite de contactos. Compra más para subir tu lista.");
       return;
     }
-  
+
+    // Requerir opt-in
     if (!declaraOptIn) {
       alert("❌ Debes confirmar que tienes opt-in para importar contactos para campañas.");
       return;
@@ -325,25 +335,32 @@ export default function CampaignsEmailClient() {
     try {
       const formData = new FormData();
       formData.append("file", archivoCsv);
-      formData.append("declara_opt_in", String(declaraOptIn));
+      formData.append("declara_opt_in", "true"); // ya validamos que está en true
+      formData.append("segmento_forzado", segmentoCsv);
 
-  
       const res = await fetch(`${BACKEND_URL}/api/contactos`, {
         method: "POST",
         credentials: "include",
         body: formData,
       });
-  
-      const json = await res.json();
-  
+
+      const json = await res.json().catch(() => ({}));
+
       if (res.ok) {
-        alert(`✅ ${json.nuevos} contactos agregados`);
+        const nuevos = Number(json?.nuevos ?? 0);
+
+        alert(`✅ ${nuevos} contactos agregados`);
+
+        // limpiar UI
         if (csvInputRef.current) csvInputRef.current.value = "";
         setArchivoCsv(null);
         setDeclaraOptIn(false);
-        setCantidadContactos((prev) => prev + json.nuevos);
+
+        // ✅ refrescar fuente real de verdad (para que contactos.length y límite queden correctos)
+        await Promise.all([cargarContactos(), cargarLimite(), cargarUso()]);
+
       } else {
-        alert(`❌ ${json.error || "Error al subir archivo"}`);
+        alert(`❌ ${json?.error || "Error al subir archivo"}`);
       }
     } catch (err) {
       console.error("❌ Error al subir archivo:", err);
@@ -839,6 +856,21 @@ export default function CampaignsEmailClient() {
                 </span>
               </label>
 
+              <label className="block text-sm font-semibold text-white">
+                Segmento para este CSV
+              </label>
+
+              <select
+                value={segmentoCsv}
+                onChange={(e) => setSegmentoCsv(e.target.value as any)}
+                disabled={disabledAll}
+                className="w-full p-2 rounded bg-white/10 border border-white/20 text-white mb-2"
+              >
+                <option value="leads">leads</option>
+                <option value="cliente">cliente</option>
+                <option value="otros">otros</option>
+              </select>
+
               <input
                 type="file"
                 accept=".csv"
@@ -896,34 +928,46 @@ export default function CampaignsEmailClient() {
               )}
 
               <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-              <button
-                onClick={() => {
-                  if (!canEmail) { alert('Bloqueado por tu plan'); window.location.href='/upgrade'; return; }
-                  if (!canEdit) return requerirMembresia();
-                  handleEliminarContactos();
-                }}
-                disabled={disabledAll}
-                className={`px-4 py-2 rounded font-semibold w-full sm:w-auto
-                  ${disabledAll ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 text-white'}`}
-              >
-                Eliminar contactos
-              </button>
-
-              {archivoCsv && (
                 <button
                   onClick={() => {
-                    if (!canEmail) { alert('Bloqueado por tu plan'); window.location.href='/upgrade'; return; }
+                    if (!canEmail) {
+                      alert("Bloqueado por tu plan");
+                      window.location.href = "/upgrade";
+                      return;
+                    }
+                    if (!canEdit) return requerirMembresia();
+                    handleEliminarContactos();
+                  }}
+                  disabled={contactos.length === 0}
+                  className={`px-4 py-2 rounded font-semibold w-full sm:w-auto ${
+                    contactos.length > 0
+                      ? "bg-red-600 hover:bg-red-500 text-white"
+                      : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  }`}
+                  title={contactos.length === 0 ? "No hay contactos para eliminar" : "Eliminar todos los contactos"}
+                >
+                  Eliminar contactos
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (!canEmail) {
+                      alert("Bloqueado por tu plan");
+                      window.location.href = "/upgrade";
+                      return;
+                    }
                     if (!canEdit) return requerirMembresia();
                     handleSubirCsv();
                   }}
-                  disabled={disabledAll}
-                  className={`px-4 py-2 rounded font-semibold w-full sm:w-auto
-                    ${disabledAll ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 text-white'}`}
+                  disabled={disabledAll || !archivoCsv}
+                  className={`px-4 py-2 rounded font-semibold w-full sm:w-auto ${
+                    !disabledAll && archivoCsv
+                      ? "bg-green-600 hover:bg-green-500 text-white"
+                      : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  }`}
                 >
                   Subir contactos
                 </button>
-              )}
-
               </div>
             </div>
           </div>
