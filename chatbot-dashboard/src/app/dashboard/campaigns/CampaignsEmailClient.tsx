@@ -49,6 +49,7 @@ export default function CampaignsEmailClient() {
   const [membresiaActiva, setMembresiaActiva] = useState<boolean>(false);
   const [usoEmail, setUsoEmail] = useState<{ usados: number; limite: number } | null>(null);
   const [archivoCsv, setArchivoCsv] = useState<File | null>(null);
+  const [declaraOptIn, setDeclaraOptIn] = useState<boolean>(false);
   const csvInputRef   = useRef<HTMLInputElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const [cargandoLogsId, setCargandoLogsId] = useState<number | null>(null);
@@ -110,13 +111,23 @@ export default function CampaignsEmailClient() {
   const cargarContactos = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/contactos`, { credentials: "include" });
-      const data = await res.json();
-      setContactos(data || []);
+      const contData = await res.json();
+
+      const lista = Array.isArray(contData)
+        ? contData
+        : Array.isArray(contData?.contactos)
+          ? contData.contactos
+          : Array.isArray(contData?.data)
+            ? contData.data
+            : [];
+
+      setContactos(lista);
     } catch (err) {
       console.error("❌ Error cargando contactos:", err);
+      setContactos([]);
     }
   };
-  
+
   const cargarLimite = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/contactos/limite`, { credentials: "include" });
@@ -202,7 +213,13 @@ export default function CampaignsEmailClient() {
     }
 
     // validación mínima: que existan contactos en esos segmentos
-    const hayContactos = contactos.some((c: any) => form.segmentos.includes(c.segmento) && c.email);
+    const hayContactos = contactos.some(
+      (c: any) =>
+        form.segmentos.includes(c.segmento) &&
+        Boolean(c.email) &&
+        c.marketing_opt_in === true
+    );
+
     if (!hayContactos) {
       alert("❌ No hay contactos válidos en los segmentos seleccionados.");
       return;
@@ -270,7 +287,11 @@ export default function CampaignsEmailClient() {
         });
         setCampaigns((prev) => [json, ...prev]);
       } else {
-        alert(`❌ ${json.error || "Error desconocido"}`);
+        if (json?.code === "no_opt_in_recipients") {
+          alert("❌ No puedes enviar campañas a contactos sin consentimiento (opt-in). Importa con opt-in o marca opt-in en tus contactos.");
+        } else {
+          alert(`❌ ${json.error || "Error desconocido"}`);
+        }
       }
     } catch (err) {
       setLoading(false);
@@ -296,9 +317,16 @@ export default function CampaignsEmailClient() {
       return;
     }
   
+    if (!declaraOptIn) {
+      alert("❌ Debes confirmar que tienes opt-in para importar contactos para campañas.");
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("file", archivoCsv);
+      formData.append("declara_opt_in", String(declaraOptIn));
+
   
       const res = await fetch(`${BACKEND_URL}/api/contactos`, {
         method: "POST",
@@ -312,6 +340,7 @@ export default function CampaignsEmailClient() {
         alert(`✅ ${json.nuevos} contactos agregados`);
         if (csvInputRef.current) csvInputRef.current.value = "";
         setArchivoCsv(null);
+        setDeclaraOptIn(false);
         setCantidadContactos((prev) => prev + json.nuevos);
       } else {
         alert(`❌ ${json.error || "Error al subir archivo"}`);
@@ -794,6 +823,21 @@ export default function CampaignsEmailClient() {
               <label className="block text-sm font-semibold text-white">
                 Subir archivo CSV de contactos
               </label>
+              <label className="flex items-start gap-2 text-white text-sm bg-white/5 border border-white/10 rounded p-3">
+                <input
+                  type="checkbox"
+                  checked={declaraOptIn}
+                  onChange={(e) => setDeclaraOptIn(e.target.checked)}
+                  disabled={disabledAll}
+                  className="mt-1"
+                />
+                <span className="leading-snug">
+                  Declaro que estos contactos me dieron consentimiento explícito para recibir mensajes promocionales (opt-in).
+                  <span className="block text-white/60 text-xs mt-1">
+                    Si no marcas esto, los contactos se importarán como <strong>sin opt-in</strong> y no podrás enviarles campañas.
+                  </span>
+                </span>
+              </label>
 
               <input
                 type="file"
@@ -805,18 +849,21 @@ export default function CampaignsEmailClient() {
                   const file = e.target.files?.[0] || null;
                   if (!file) {
                     setArchivoCsv(null);
+                    setDeclaraOptIn(false);
                     return;
                   }
                   if (!file.name.toLowerCase().endsWith(".csv")) {
                     alert("❌ El archivo debe ser .csv");
                     if (csvInputRef.current) csvInputRef.current.value = "";
                     setArchivoCsv(null);
+                    setDeclaraOptIn(false);
                     return;
                   }
                   if (file.size > 5 * 1024 * 1024) {
                     alert("❌ El CSV no puede pesar más de 5MB");
                     if (csvInputRef.current) csvInputRef.current.value = "";
                     setArchivoCsv(null);
+                    setDeclaraOptIn(false);
                     return;
                   }
                   setArchivoCsv(file);
@@ -831,6 +878,7 @@ export default function CampaignsEmailClient() {
                     onClick={() => {
                       if (disabledAll) { alert("❌ No puedes eliminar…"); return; }
                       setArchivoCsv(null);
+                      setDeclaraOptIn(false);
                       if (csvInputRef.current) csvInputRef.current.value = "";
                     }}
                     disabled={disabledAll}

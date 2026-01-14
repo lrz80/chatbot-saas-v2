@@ -61,6 +61,7 @@ export default function CampaignsSmsClient() {
   const [trialActivo, setTrialActivo] = useState<boolean>(false);
   const [canEdit, setCanEdit] = useState<boolean>(false);
   const [segmentoCsv, setSegmentoCsv] = useState<"cliente" | "leads" | "otros">("leads");
+  const [declaraOptIn, setDeclaraOptIn] = useState<boolean>(false);
 
    // ⬇️ Derivados del estado / plan / membresía
   const loadingChannel = channelState === null;
@@ -188,8 +189,9 @@ export default function CampaignsSmsClient() {
 
     const destinatarios = contactos
       .filter((c: any) => segSelected.has(String(c.segmento || "").trim().toLowerCase()))
+      .filter((c: any) => c.marketing_opt_in === true) // ✅ SOLO opt-in
       .map((c: any) => c.telefono)
-      .filter((t: any) => typeof t === "string" && t.startsWith("+"))
+      .filter((t: any) => typeof t === "string" && t.startsWith("+"));
 
     if (destinatarios.length === 0) {
       alert("❌ No hay números válidos en los segmentos seleccionados. Revisa el formato de teléfonos (deben ser +E164).");
@@ -237,7 +239,11 @@ export default function CampaignsSmsClient() {
         setForm({ nombre: "", contenido: "", fecha_envio: "", segmentos: [] });
         await refreshAll();
       } else {
-        alert(`❌ ${json.error || "Error desconocido"}`);
+        if (json?.code === "no_opt_in_recipients") {
+          alert("❌ No puedes enviar campañas a contactos sin consentimiento (opt-in). Importa con opt-in o marca opt-in en tus contactos.");
+        } else {
+          alert(`❌ ${json.error || "Error desconocido"}`);
+        }
       }
     } catch (err) {
       setLoading(false);
@@ -265,6 +271,7 @@ export default function CampaignsSmsClient() {
       const formData = new FormData();
       formData.append("file", archivoCsv);
       formData.append("segmento_forzado", segmentoCsv); // 👈 NUEVO (esto fuerza el segmento del CSV)
+      formData.append("declara_opt_in", String(declaraOptIn));
 
       const res = await fetch(`${BACKEND_URL}/api/contactos`, {
         method: "POST",
@@ -297,6 +304,7 @@ export default function CampaignsSmsClient() {
         alert(`✅ ${json.nuevos} contactos agregados`);
         inputRef.current?.value && (inputRef.current.value = "");
         setArchivoCsv(null);
+        setDeclaraOptIn(false);
         setCantidadContactos((prev) => prev + json.nuevos);
         await refreshAll();
       } else {
@@ -480,17 +488,6 @@ export default function CampaignsSmsClient() {
   } else if (porcentajeSms >= 70) {
     colorBarraSms = "bg-yellow-400";
   }
-
-  const requerirMembresia = (callback?: () => void) => {
-    if (!membresiaActiva) {
-      const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
-      if (confirmar) {
-        window.location.href = "/upgrade";
-      }
-    } else {
-      if (callback) callback();
-    }
-  };
   
   // 🔒 Guard sencillo para bloquear acciones por plan/membresía
   const guardSms = () => {
@@ -741,6 +738,22 @@ export default function CampaignsSmsClient() {
               <label className="block text-sm font-semibold text-white">
                 Subir archivo CSV de contactos
               </label>
+              <label className="flex items-start gap-2 text-white text-sm bg-white/5 border border-white/10 rounded p-3">
+                <input
+                  type="checkbox"
+                  checked={declaraOptIn}
+                  onChange={(e) => setDeclaraOptIn(e.target.checked)}
+                  disabled={disabledAll}
+                  className="mt-1"
+                />
+                <span className="leading-snug">
+                  Declaro que estos contactos me dieron consentimiento explícito para recibir mensajes promocionales (opt-in).
+                  <span className="block text-white/60 text-xs mt-1">
+                    Si no marcas esto, los contactos se importarán como <strong>sin opt-in</strong> y no podrás enviarles campañas.
+                  </span>
+                </span>
+              </label>
+
               <label className="block text-sm font-semibold text-white">
                 Segmento para este CSV
               </label>
@@ -769,6 +782,7 @@ export default function CampaignsSmsClient() {
                     alert("Por favor selecciona un archivo CSV válido.");
                     if (inputRef.current) inputRef.current.value = "";
                     setArchivoCsv(null);
+                    setDeclaraOptIn(false);
                     return;
                   }
 
@@ -795,6 +809,7 @@ export default function CampaignsSmsClient() {
                         return;
                       }
                       setArchivoCsv(null);
+                      setDeclaraOptIn(false);
                       if (inputRef.current) inputRef.current.value = "";
                     }}
                     className={`text-xs font-semibold ml-4 ${
