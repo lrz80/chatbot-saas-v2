@@ -14,21 +14,21 @@ export default function BenefitsSection() {
     },
     {
       icon: <BotMessageSquare className="w-8 h-8 text-purple-400" />,
-      title: "WhatsApp, Instagram y Facebook en un solo panel",
+      title: "Todos tus mensajes en un solo lugar",
       description:
-        "Centraliza tus mensajes en un sistema y, si lo deseas, puedes personalizar el comportamiento por canal.",
+        "WhatsApp, Instagram y Facebook centralizados para que no se te escape ningún cliente.",
     },
     {
       icon: <BarChart3 className="w-8 h-8 text-purple-400" />,
       title: "Respuestas con la información real de tu negocio",
       description:
-        "Responde con tus servicios, horarios, ubicación y FAQs. No inventa datos: se configura con tu información.",
+        "Aamy responde solo con la información de tu negocio. No improvisa ni da datos falsos.",
     },
     {
       icon: <Share2 className="w-8 h-8 text-purple-400" />,
-      title: "Seguimiento automático",
+      title: "Seguimiento que recupera clientes",
       description:
-        "Si el cliente no responde, hace seguimiento automático y se detiene en cuanto el cliente contesta o tú intervienes.",
+        "Si el cliente no responde, Aamy hace seguimiento automático para recuperarlo.",
     },
   ];
 
@@ -58,6 +58,20 @@ export default function BenefitsSection() {
           </motion.div>
         ))}
       </div>
+      {/* FRASE DE CIERRE */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+        className="mt-12 text-center"
+      >
+        <p className="text-base md:text-lg text-white/80">
+          Cada minuto sin responder cuesta dinero.{" "}
+          <span className="font-semibold text-white">
+            Aamy trabaja por ti 24/7.
+          </span>
+        </p>
+      </motion.div>
     </section>
   );
 }
