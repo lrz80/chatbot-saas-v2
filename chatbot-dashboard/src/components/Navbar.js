@@ -25,7 +25,7 @@ export default function Navbar() {
       <ul className={`md:flex gap-6 font-medium items-center ${open ? 'block mt-4 md:mt-0' : 'hidden md:flex'}`}>
         <li>
           <a href="#benefits" className="hover:text-purple-400 transition" onClick={() => setOpen(false)}>
-            Ver cómo funciona
+            Beneficios
           </a>
         </li>
 
