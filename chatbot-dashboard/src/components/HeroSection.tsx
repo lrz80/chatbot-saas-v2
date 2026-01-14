@@ -45,25 +45,29 @@ export default function HeroSection() {
         </h1>
 
         <p className="text-lg md:text-xl text-white/90 mb-6 leading-relaxed drop-shadow">
-          Aamy responde en segundos las preguntas y convierte mensajes en leads por{' '}
-          <strong>WhatsApp, Instagram y Facebook</strong>. Si el cliente no responde, hace{' '}
-          <strong>seguimiento automático</strong> para recuperarlo.
+          Cada mensaje sin responder es una venta perdida.{' '}
+          <strong>Aamy responde en segundos</strong> y convierte mensajes en clientes por{' '}
+          <strong>WhatsApp, Instagram y Facebook</strong>.  
+          Si el cliente no responde, <strong>Aamy hace seguimiento automático</strong> hasta recuperarlo.
         </p>
 
         {/* Micro “qué NO es” (reduce objeciones y malos fit) */}
         <div className="mx-auto mb-4 max-w-2xl text-sm text-white/80">
-          <span className="font-semibold text-white">No es</span> un bot genérico que inventa información. Responde con lo que tú
-          defines (servicios, horarios, ubicación, FAQs) y te deja intervenir cuando quieras.
+          <span className="font-semibold text-white">No es un bot genérico.</span>{' '}
+          Aamy no inventa respuestas ni improvisa.  
+          Responde solo con la información real de tu negocio y{' '}
+          <span className="font-semibold text-white">te permite intervenir cuando quieras.</span>
         </div>
 
         {/* Precio visible (sin tabla) */}
         <div className="mb-2 text-white/85 text-sm">
-          <span className="font-semibold text-white">$399</span> instalación (incluye el primer mes) ·{" "}
-          <span className="font-semibold text-white">$199</span>/mes desde el mes 2
+          <span className="font-semibold text-white">$399 USD</span> instalación (incluye el primer mes) ·{" "}
+          <span className="font-semibold text-white">$199 USD</span>/mes desde el mes 2
         </div>
 
         <div className="mb-5 text-white/70 text-xs">
-          💡 Un solo cliente recuperado al mes suele pagar el servicio.
+          💡 Con recuperar <span className="font-semibold text-white">un solo cliente al mes</span>, 
+          Aamy normalmente <span className="font-semibold text-white">se paga sola</span>.
         </div>
 
         <div className="flex justify-center">
