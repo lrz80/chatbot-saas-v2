@@ -106,6 +106,9 @@ export default function FollowUpSettingsPage() {
       });
 
       if (!res.ok) throw new Error('Error al guardar configuración');
+      await fetchSettings(); // ✅ recarga desde DB inmediatamente
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 4000);
 
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 4000);
@@ -217,7 +220,7 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
   useEffect(() => {
     fetchSettings();
     fetchMensajesEnviados();
-    loadFollowupFlags();
+    // loadFollowupFlags();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
