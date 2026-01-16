@@ -220,7 +220,7 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
   useEffect(() => {
     fetchSettings();
     fetchMensajesEnviados();
-    // loadFollowupFlags();
+    loadFollowupFlags();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
