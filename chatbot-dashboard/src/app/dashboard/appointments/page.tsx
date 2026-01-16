@@ -127,22 +127,18 @@ export default function AppointmentsPage() {
   // 👇 socket ref (igual patrón que history)
   const socketRef = useRef<Socket | null>(null);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchBookingSettings = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/booking-settings`, {
           credentials: "include",
         });
         const data = await res.json();
-        if (data?.ok) {
-          setBookingEnabled(!!data.booking_enabled);
-          setBookingLink(data.booking_link || null);
-        }
+        if (data?.ok) setBookingEnabled(!!data.booking_enabled);
       } catch (e) {
-        console.warn("⚠️ No se pudo cargar booking-settings:", e);
+        console.warn("⚠️ booking-settings no cargó:", e);
       }
     };
-
     fetchBookingSettings();
   }, []);
 
@@ -276,8 +272,9 @@ export default function AppointmentsPage() {
   ? appointments.filter((x) => x && typeof x === "object" && (x as any).id)
   : [];
 
-    const toggleBooking = async () => {
+      const toggleBooking = async () => {
     const next = !bookingEnabled;
+
     try {
       setBookingSaving(true);
       setError(null);
@@ -290,14 +287,11 @@ export default function AppointmentsPage() {
       });
 
       const data = await res.json();
-      if (!res.ok || !data?.ok) {
-        throw new Error(data?.error || `Error (${res.status})`);
-      }
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
 
       setBookingEnabled(!!data.booking_enabled);
     } catch (err: any) {
-      console.error("❌ Error toggling booking:", err);
-      setError(err?.message || "No se pudo cambiar el estado de agendamiento.");
+      setError(err?.message || "No se pudo cambiar el estado de booking.");
     } finally {
       setBookingSaving(false);
     }
@@ -315,18 +309,11 @@ export default function AppointmentsPage() {
           </p>
           <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
             <div className="flex flex-col">
-              <div className="text-sm font-semibold text-white">
-                Agendamiento (Booking)
-              </div>
+              <div className="text-sm font-semibold text-white">Agendamiento</div>
               <div className="text-xs text-white/60">
                 {bookingEnabled
                   ? "Activo: Aamy puede iniciar el flujo de agendar."
-                  : "Desactivado: Aamy no agendará (ni por Google Calendar ni por link)."}
-                {bookingLink ? (
-                  <span className="block mt-1 text-white/50 truncate max-w-[680px]">
-                    Link: {bookingLink}
-                  </span>
-                ) : null}
+                  : "Desactivado: Aamy no iniciará agendamiento aunque el prompt tenga link."}
               </div>
             </div>
 
