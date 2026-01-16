@@ -120,9 +120,31 @@ export default function AppointmentsPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [openStatusId, setOpenStatusId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [bookingEnabled, setBookingEnabled] = useState<boolean>(true);
+  const [bookingSaving, setBookingSaving] = useState<boolean>(false);
+  const [bookingLink, setBookingLink] = useState<string | null>(null);
 
   // 👇 socket ref (igual patrón que history)
   const socketRef = useRef<Socket | null>(null);
+
+    useEffect(() => {
+    const fetchBookingSettings = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/booking-settings`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (data?.ok) {
+          setBookingEnabled(!!data.booking_enabled);
+          setBookingLink(data.booking_link || null);
+        }
+      } catch (e) {
+        console.warn("⚠️ No se pudo cargar booking-settings:", e);
+      }
+    };
+
+    fetchBookingSettings();
+  }, []);
 
   // Cargar citas (fetch inicial)
   useEffect(() => {
@@ -254,6 +276,33 @@ export default function AppointmentsPage() {
   ? appointments.filter((x) => x && typeof x === "object" && (x as any).id)
   : [];
 
+    const toggleBooking = async () => {
+    const next = !bookingEnabled;
+    try {
+      setBookingSaving(true);
+      setError(null);
+
+      const res = await fetch(`${BACKEND_URL}/api/booking-settings`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_enabled: next }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || `Error (${res.status})`);
+      }
+
+      setBookingEnabled(!!data.booking_enabled);
+    } catch (err: any) {
+      console.error("❌ Error toggling booking:", err);
+      setError(err?.message || "No se pudo cambiar el estado de agendamiento.");
+    } finally {
+      setBookingSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#050314] via-[#050018] to-[#050010] text-white px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-6xl mx-auto">
@@ -264,6 +313,35 @@ export default function AppointmentsPage() {
           <p className="mt-2 text-sm text-white/60 max-w-2xl">
             Aquí verás las citas que Aamy genera automáticamente desde WhatsApp, Facebook e Instagram. (Fase 1 – sin Google Calendar aún).
           </p>
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold text-white">
+                Agendamiento (Booking)
+              </div>
+              <div className="text-xs text-white/60">
+                {bookingEnabled
+                  ? "Activo: Aamy puede iniciar el flujo de agendar."
+                  : "Desactivado: Aamy no agendará (ni por Google Calendar ni por link)."}
+                {bookingLink ? (
+                  <span className="block mt-1 text-white/50 truncate max-w-[680px]">
+                    Link: {bookingLink}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+
+            <button
+              onClick={toggleBooking}
+              disabled={bookingSaving}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition
+                ${bookingEnabled
+                  ? "bg-emerald-600/80 border-emerald-400/40 hover:bg-emerald-600"
+                  : "bg-red-600/70 border-red-400/40 hover:bg-red-600"}
+                ${bookingSaving ? "opacity-60 cursor-not-allowed" : ""}`}
+            >
+              {bookingSaving ? "Guardando..." : bookingEnabled ? "ON" : "OFF"}
+            </button>
+          </div>
         </header>
 
         {error && (
