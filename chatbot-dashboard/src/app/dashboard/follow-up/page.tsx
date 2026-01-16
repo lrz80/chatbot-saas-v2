@@ -11,10 +11,9 @@ export default function FollowUpSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [horasEspera, setHorasEspera] = useState<number>(0);
-  const [mensajePrecio, setMensajePrecio] = useState('');
-  const [mensajeAgendar, setMensajeAgendar] = useState('');
-  const [mensajeUbicacion, setMensajeUbicacion] = useState('');
-  const [mensajeGeneral, setMensajeGeneral] = useState('');
+  const [mensajeNivelBajo, setMensajeNivelBajo] = useState('');
+  const [mensajeNivelMedio, setMensajeNivelMedio] = useState('');
+  const [mensajeNivelAlto, setMensajeNivelAlto] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
   const [mensajesEnviados, setMensajesEnviados] = useState<any[]>([]);
@@ -45,10 +44,9 @@ export default function FollowUpSettingsPage() {
       if (data) {
         const totalMinutos = data.minutos_espera || 60;
         setHorasEspera(Math.floor(totalMinutos / 60));
-        setMensajePrecio(data.mensaje_precio || '');
-        setMensajeAgendar(data.mensaje_agendar || '');
-        setMensajeUbicacion(data.mensaje_ubicacion || '');
-        setMensajeGeneral(data.mensaje_general || '');
+        setMensajeNivelBajo(data.mensaje_nivel_bajo || '');
+        setMensajeNivelMedio(data.mensaje_nivel_medio || '');
+        setMensajeNivelAlto(data.mensaje_nivel_alto || '');
         setMembresiaActiva(data.membresia_activa ?? false);
       }
     } catch (error) {
@@ -101,10 +99,9 @@ export default function FollowUpSettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           minutos_espera: totalMinutos,
-          mensaje_precio: mensajePrecio,
-          mensaje_agendar: mensajeAgendar,
-          mensaje_ubicacion: mensajeUbicacion,
-          mensaje_general: mensajeGeneral,
+          mensaje_nivel_bajo: mensajeNivelBajo,
+          mensaje_nivel_medio: mensajeNivelMedio,
+          mensaje_nivel_alto: mensajeNivelAlto,
         }),
       });
 
@@ -415,40 +412,36 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
         </h2>
 
         <div>
-          <label className="block text-sm mb-2 font-semibold text-purple-200">Mensaje para clientes que preguntan precios:</label>
+          <label className="block text-sm mb-2 font-semibold text-purple-200">
+            Nivel Bajo (1) — Interés bajo / curioso:
+          </label>
           <textarea
-            value={mensajePrecio}
-            onChange={(e) => setMensajePrecio(e.target.value)}
+            value={mensajeNivelBajo}
+            onChange={(e) => setMensajeNivelBajo(e.target.value)}
             rows={3}
             className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white resize-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm mb-2 font-semibold text-purple-200">Mensaje para clientes que desean agendar cita:</label>
+          <label className="block text-sm mb-2 font-semibold text-purple-200">
+            Nivel Medio (2) — Pidiendo información:
+          </label>
           <textarea
-            value={mensajeAgendar}
-            onChange={(e) => setMensajeAgendar(e.target.value)}
+            value={mensajeNivelMedio}
+            onChange={(e) => setMensajeNivelMedio(e.target.value)}
             rows={3}
             className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white resize-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm mb-2 font-semibold text-purple-200">Mensaje para clientes que preguntan ubicación:</label>
+          <label className="block text-sm mb-2 font-semibold text-purple-200">
+            Nivel Alto (3) — Intención clara de compra:
+          </label>
           <textarea
-            value={mensajeUbicacion}
-            onChange={(e) => setMensajeUbicacion(e.target.value)}
-            rows={3}
-            className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white resize-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm mb-2 font-semibold text-purple-200">Mensaje general para otros casos:</label>
-          <textarea
-            value={mensajeGeneral}
-            onChange={(e) => setMensajeGeneral(e.target.value)}
+            value={mensajeNivelAlto}
+            onChange={(e) => setMensajeNivelAlto(e.target.value)}
             rows={3}
             className="w-full p-3 rounded-lg bg-white/10 border border-white/20 focus:outline-none text-white resize-none"
           />
