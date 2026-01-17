@@ -125,6 +125,7 @@ export default function AppointmentsPage() {
   const [bookingLink, setBookingLink] = useState<string | null>(null);
   const [gcStatus, setGcStatus] = useState<{connected: boolean; calendar_id?: string}>({connected:false});
   const [gcLoading, setGcLoading] = useState(false);
+  const [gcConnecting, setGcConnecting] = useState(false);
 
   // 👇 socket ref (igual patrón que history)
   const socketRef = useRef<Socket | null>(null);
@@ -157,11 +158,20 @@ export default function AppointmentsPage() {
   useEffect(() => {
     const loadGc = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/integrations/google-calendar/status`, { credentials: "include" });
+        const res = await fetch(`${BACKEND_URL}/api/integrations/google-calendar/status`, {
+          credentials: "include",
+        });
+
+        if (!res.ok) return; // opcional
         const data = await res.json();
-        if (data?.ok) setGcStatus({ connected: !!data.connected, calendar_id: data.calendar_id });
+
+        setGcStatus({
+          connected: !!data.connected,
+          calendar_id: data.calendar_id,
+        });
       } catch {}
     };
+
     loadGc();
   }, []);
 
@@ -251,7 +261,10 @@ export default function AppointmentsPage() {
     }, []);
 
   const handleConnectGoogle = () => {
-    window.location.href = `${BACKEND_URL}/api/integrations/google-calendar/connect`;
+    if (gcConnecting) return;
+    setGcConnecting(true);
+
+    window.location.assign(`${BACKEND_URL}/api/integrations/google-calendar/connect`);
   };
 
   const handleDisconnectGoogle = async () => {
@@ -391,11 +404,12 @@ export default function AppointmentsPage() {
               </button>
             ) : (
               <button
+                type="button"
                 onClick={handleConnectGoogle}
-                disabled={gcLoading}
+                disabled={gcLoading || gcConnecting}
                 className="px-4 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-sm font-semibold"
               >
-                Conectar
+                {gcConnecting ? "Conectando..." : "Conectar"}
               </button>
             )}
           </div>
