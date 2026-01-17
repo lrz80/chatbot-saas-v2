@@ -157,7 +157,7 @@ export default function AppointmentsPage() {
   useEffect(() => {
     const loadGc = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/google-calendar/status`, { credentials: "include" });
+        const res = await fetch(`${BACKEND_URL}/api/integrations/google-calendar/status`, { credentials: "include" });
         const data = await res.json();
         if (data?.ok) setGcStatus({ connected: !!data.connected, calendar_id: data.calendar_id });
       } catch {}
@@ -253,7 +253,7 @@ export default function AppointmentsPage() {
   const handleConnectGoogle = async () => {
     try {
       setGcLoading(true);
-      const res = await fetch(`${BACKEND_URL}/api/google-calendar/oauth/start`, {
+      const res = await fetch(`${BACKEND_URL}/api/integrations/google-calendar/connect`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -371,7 +371,6 @@ export default function AppointmentsPage() {
                 {bookingEnabled
                   ? "Activo: Aamy puede iniciar el flujo de agendar."
                   : "Desactivado: Aamy no iniciará agendamiento aunque el prompt tenga link."}
-                  DEBUG bookingEnabled: {String(bookingEnabled)}
               </div>
             </div>
 
