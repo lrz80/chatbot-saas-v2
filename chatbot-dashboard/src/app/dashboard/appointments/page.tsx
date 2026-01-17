@@ -257,7 +257,7 @@ export default function AppointmentsPage() {
   const handleDisconnectGoogle = async () => {
     try {
       setGcLoading(true);
-      const res = await fetch(`${BACKEND_URL}/api/google-calendar/disconnect`, {
+      const res = await fetch(`${BACKEND_URL}/api/integrations/google-calendar/disconnect`, {
         method: "POST",
         credentials: "include",
       });
