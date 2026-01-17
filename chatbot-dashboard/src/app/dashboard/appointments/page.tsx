@@ -135,16 +135,14 @@ export default function AppointmentsPage() {
       try {
         console.log("🟡 [UI] Antes fetch bookingEnabled:", bookingEnabled);
 
-        const res = await fetch(`${BACKEND_URL}/api/booking-settings`, {
+        const res = await fetch(`${BACKEND_URL}/api/channel-settings`, {
           credentials: "include",
         });
         const data = await res.json();
 
-        console.log("🟢 [UI] booking-settings response:", data);
-
         if (data?.ok) {
-          setBookingEnabled(!!data.booking_enabled);
-          console.log("🟣 [UI] setBookingEnabled ->", !!data.booking_enabled);
+          setBookingEnabled(!!data.google_calendar_enabled);
+          console.log("🟣 [UI] setBookingEnabled ->", !!data.google_calendar_enabled);
         }
       } catch (e) {
         console.warn("⚠️ booking-settings no cargó:", e);
@@ -328,24 +326,24 @@ export default function AppointmentsPage() {
   ? appointments.filter((x) => x && typeof x === "object" && (x as any).id)
   : [];
 
-      const toggleBooking = async () => {
+    const toggleBooking = async () => {
     const next = !bookingEnabled;
 
     try {
       setBookingSaving(true);
       setError(null);
 
-      const res = await fetch(`${BACKEND_URL}/api/booking-settings`, {
-        method: "PUT",
+      const res = await fetch(`${BACKEND_URL}/api/channel-settings`, {
+        method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ booking_enabled: next }),
+        body: JSON.stringify({ google_calendar_enabled: next }),
       });
 
       const data = await res.json();
       if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
 
-      setBookingEnabled(!!data.booking_enabled);
+      setBookingEnabled(!!data.google_calendar_enabled);
     } catch (err: any) {
       setError(err?.message || "No se pudo cambiar el estado de booking.");
     } finally {
