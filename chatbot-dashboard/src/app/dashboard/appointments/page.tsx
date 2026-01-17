@@ -132,16 +132,26 @@ export default function AppointmentsPage() {
   useEffect(() => {
     const fetchBookingSettings = async () => {
       try {
+        console.log("🟡 [UI] Antes fetch bookingEnabled:", bookingEnabled);
+
         const res = await fetch(`${BACKEND_URL}/api/booking-settings`, {
           credentials: "include",
         });
         const data = await res.json();
-        if (data?.ok) setBookingEnabled(!!data.booking_enabled);
+
+        console.log("🟢 [UI] booking-settings response:", data);
+
+        if (data?.ok) {
+          setBookingEnabled(!!data.booking_enabled);
+          console.log("🟣 [UI] setBookingEnabled ->", !!data.booking_enabled);
+        }
       } catch (e) {
         console.warn("⚠️ booking-settings no cargó:", e);
       }
     };
+
     fetchBookingSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -361,6 +371,7 @@ export default function AppointmentsPage() {
                 {bookingEnabled
                   ? "Activo: Aamy puede iniciar el flujo de agendar."
                   : "Desactivado: Aamy no iniciará agendamiento aunque el prompt tenga link."}
+                  DEBUG bookingEnabled: {String(bookingEnabled)}
               </div>
             </div>
 
