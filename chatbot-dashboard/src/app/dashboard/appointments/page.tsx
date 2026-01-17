@@ -123,6 +123,8 @@ export default function AppointmentsPage() {
   const [bookingEnabled, setBookingEnabled] = useState<boolean>(true);
   const [bookingSaving, setBookingSaving] = useState<boolean>(false);
   const [bookingLink, setBookingLink] = useState<string | null>(null);
+  const [gcStatus, setGcStatus] = useState<{connected: boolean; calendar_id?: string}>({connected:false});
+  const [gcLoading, setGcLoading] = useState(false);
 
   // 👇 socket ref (igual patrón que history)
   const socketRef = useRef<Socket | null>(null);
@@ -140,6 +142,17 @@ export default function AppointmentsPage() {
       }
     };
     fetchBookingSettings();
+  }, []);
+
+  useEffect(() => {
+    const loadGc = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/google-calendar/status`, { credentials: "include" });
+        const data = await res.json();
+        if (data?.ok) setGcStatus({ connected: !!data.connected, calendar_id: data.calendar_id });
+      } catch {}
+    };
+    loadGc();
   }, []);
 
   // Cargar citas (fetch inicial)
@@ -226,6 +239,40 @@ export default function AppointmentsPage() {
         socketRef.current = null;
     };
     }, []);
+
+  const handleConnectGoogle = async () => {
+    try {
+      setGcLoading(true);
+      const res = await fetch(`${BACKEND_URL}/api/google-calendar/oauth/start`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (!data?.ok || !data?.authUrl) throw new Error("No authUrl");
+      window.location.href = data.authUrl; // redirige a Google
+    } catch (e) {
+      setError("No se pudo iniciar la conexión con Google Calendar.");
+    } finally {
+      setGcLoading(false);
+    }
+  };
+
+  const handleDisconnectGoogle = async () => {
+    try {
+      setGcLoading(true);
+      const res = await fetch(`${BACKEND_URL}/api/google-calendar/disconnect`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data?.ok) setGcStatus({ connected: false });
+    } catch {
+      setError("No se pudo desconectar Google Calendar.");
+    } finally {
+      setGcLoading(false);
+    }
+  };
 
   const handleChangeStatus = async (id: string, newStatus: AppointmentStatus) => {
     try {
@@ -328,6 +375,33 @@ export default function AppointmentsPage() {
             >
               {bookingSaving ? "Guardando..." : bookingEnabled ? "ON" : "OFF"}
             </button>
+          </div>
+
+          <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 flex items-center justify-between">
+            <div>
+              <div className="text-sm font-semibold">Google Calendar</div>
+              <div className="text-xs text-white/60 mt-1">
+                Estado: {gcStatus.connected ? "Conectado" : "No conectado"}
+              </div>
+            </div>
+
+            {gcStatus.connected ? (
+              <button
+                onClick={handleDisconnectGoogle}
+                disabled={gcLoading}
+                className="px-4 py-2 rounded-xl bg-red-600/80 hover:bg-red-500 text-sm font-semibold"
+              >
+                Desconectar
+              </button>
+            ) : (
+              <button
+                onClick={handleConnectGoogle}
+                disabled={gcLoading}
+                className="px-4 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-sm font-semibold"
+              >
+                Conectar
+              </button>
+            )}
           </div>
         </header>
 
