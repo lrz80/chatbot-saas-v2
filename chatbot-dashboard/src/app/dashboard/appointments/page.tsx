@@ -135,14 +135,15 @@ export default function AppointmentsPage() {
       try {
         console.log("🟡 [UI] Antes fetch bookingEnabled:", bookingEnabled);
 
-        const res = await fetch(`${BACKEND_URL}/api/channel-settings`, {
-          credentials: "include",
-        });
+        const res = await fetch(
+          `${BACKEND_URL}/api/channel-settings?canal=google_calendar`,
+          { credentials: "include" }
+        );
         const data = await res.json();
 
-        if (data?.ok) {
-          setBookingEnabled(!!data.google_calendar_enabled);
-          console.log("🟣 [UI] setBookingEnabled ->", !!data.google_calendar_enabled);
+        // en tu backend NO existe data.ok en este endpoint, devuelve { canal, enabled, settings_enabled, ... }
+        if (data?.canal === "google_calendar") {
+          setBookingEnabled(!!data.settings_enabled);
         }
       } catch (e) {
         console.warn("⚠️ booking-settings no cargó:", e);
@@ -337,7 +338,7 @@ export default function AppointmentsPage() {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ google_calendar_enabled: next }),
+        body: JSON.stringify({ canal: "google_calendar", enabled: next })
       });
 
       const data = await res.json();
