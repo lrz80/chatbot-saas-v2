@@ -250,22 +250,8 @@ export default function AppointmentsPage() {
     };
     }, []);
 
-  const handleConnectGoogle = async () => {
-    try {
-      setGcLoading(true);
-      const res = await fetch(`${BACKEND_URL}/api/integrations/google-calendar/connect`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await res.json();
-      if (!data?.ok || !data?.authUrl) throw new Error("No authUrl");
-      window.location.href = data.authUrl; // redirige a Google
-    } catch (e) {
-      setError("No se pudo iniciar la conexión con Google Calendar.");
-    } finally {
-      setGcLoading(false);
-    }
+  const handleConnectGoogle = () => {
+    window.location.href = `${BACKEND_URL}/api/integrations/google-calendar/connect`;
   };
 
   const handleDisconnectGoogle = async () => {
