@@ -275,7 +275,7 @@ export default function AppointmentsPage() {
         credentials: "include",
       });
       const data = await res.json();
-      if (data?.ok) setGcStatus({ connected: false });
+      setGcStatus({ connected: !!data.connected, calendar_id: data.calendar_id });
     } catch {
       setError("No se pudo desconectar Google Calendar.");
     } finally {
