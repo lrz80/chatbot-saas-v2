@@ -6,6 +6,7 @@ import { BACKEND_URL } from '@/utils/api';
 import { FiChevronDown } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookMessenger, FaInstagram } from 'react-icons/fa';
 import { io, Socket } from "socket.io-client"; // 👈 ya lo tenías
+import AppointmentSettingsCard from "@/components/AppointmentSettingsCard";
 
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended';
 
@@ -412,6 +413,7 @@ export default function AppointmentsPage() {
               </button>
             )}
           </div>
+            <AppointmentSettingsCard />
         </header>
 
         {error && (
