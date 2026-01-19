@@ -423,8 +423,8 @@ export default function AppointmentsPage() {
         )}
 
         <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl">
-          {/* Cabecera */}
-          <div className="grid grid-cols-12 gap-2 px-4 sm:px-6 py-3 text-xs font-semibold text-white/60 bg-white/5 border-b border-white/10">
+          {/* Cabecera (solo desktop) */}
+          <div className="hidden sm:grid grid-cols-12 gap-2 px-4 sm:px-6 py-3 text-xs font-semibold text-white/60 bg-white/5 border-b border-white/10">
             <div className="col-span-3 sm:col-span-3 flex items-center gap-2">
               <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/15 text-[10px]">
                 ⏱
@@ -453,104 +453,209 @@ export default function AppointmentsPage() {
           )}
 
           {/* Filas */}
-          {!loading &&
-            appointments.length > 0 &&
-            safeAppointments.map((appt) => {
-              const statusMeta = STATUS_META[appt.status] || STATUS_META.pending;
+        {!loading && appointments.length > 0 && (
+          <>
+            {/* MOBILE: Cards */}
+            <div className="sm:hidden p-3 space-y-3">
+              {safeAppointments.map((appt) => {
+                const statusMeta = STATUS_META[appt.status] || STATUS_META.pending;
 
-              return (
-                <div
-                  key={appt.id}
-                  className="grid grid-cols-12 gap-2 px-4 sm:px-6 py-4 border-t border-white/5 hover:bg-white/5 transition-colors"
-                >
-                  {/* Fecha / hora */}
-                  <div className="col-span-3 sm:col-span-3">
-                    <div className="text-sm font-medium text-white">
-                      {formatDateTime(appt.start_time)}
-                    </div>
-                    <div className="mt-1 text-[11px] text-white/45">
-                      Creada: {formatDateTime(appt.created_at)}
-                    </div>
-                  </div>
-
-                  {/* Canal */}
-                  <div className="col-span-2 sm:col-span-2 flex items-center">
-                    {getChannelBadge(appt.channel)}
-                  </div>
-
-                  {/* Cliente */}
-                  <div className="col-span-3 sm:col-span-3 flex flex-col justify-center">
-                    <div className="text-sm text-white">
-                      {appt.customer_name || appt.customer_phone || 'Cliente sin nombre'}
-                    </div>
-                    <div className="text-[11px] text-white/40 truncate max-w-[220px]">
-                      ID: {appt.id}
-                    </div>
-                  </div>
-
-                  {/* Teléfono */}
-                  <div className="col-span-2 sm:col-span-2 flex items-center text-sm text-white">
-                    {appt.customer_phone || '-'}
-                  </div>
-
-                  {/* Estado + dropdown */}
-                  <div className="col-span-2 sm:col-span-2 flex items-center justify-end relative">
-                    <div className="relative inline-block text-left">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setOpenStatusId(
-                            openStatusId === appt.id ? null : appt.id
-                          )
-                        }
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#050314] focus:ring-purple-500 ${statusMeta.badgeClass}`}
-                        disabled={savingId === appt.id}
-                      >
-                        <span>{statusMeta.label}</span>
-                        <FiChevronDown
-                          className={`text-sm transition-transform ${
-                            openStatusId === appt.id ? 'rotate-180' : ''
-                          }`}
-                        />
-                      </button>
-
-                      {openStatusId === appt.id && (
-                        <div
-                          className="absolute right-0 w-40 rounded-xl bg-[#050314] border border-white/10 shadow-2xl z-30"
-                          style={{ bottom: 'calc(100% + 8px)' }} // 8px arriba del botón
-                        >
-                          <div className="py-1 text-xs text-white/80">
-                            {STATUS_OPTIONS.map((opt) => {
-                              const optMeta = STATUS_META[opt];
-                              const isActive = opt === appt.status;
-
-                              return (
-                                <button
-                                  key={opt}
-                                  type="button"
-                                  onClick={() => handleChangeStatus(appt.id, opt)}
-                                  className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg-white/10 ${
-                                    isActive ? 'text-white' : 'text-white/70'
-                                  }`}
-                                  disabled={savingId === appt.id}
-                                >
-                                  <span>{optMeta.label}</span>
-                                  {isActive && (
-                                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
+                return (
+                  <div
+                    key={appt.id}
+                    className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-xl"
+                  >
+                    {/* Top: Fecha + Estado */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-white">
+                          {formatDateTime(appt.start_time)}
                         </div>
-                      )}
+                        <div className="mt-1 text-[11px] text-white/45">
+                          Creada: {formatDateTime(appt.created_at)}
+                        </div>
+                      </div>
+
+                      {/* Estado dropdown (mismo que tenías, pero en móvil) */}
+                      <div className="relative shrink-0">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenStatusId(openStatusId === appt.id ? null : appt.id)
+                          }
+                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#050314] focus:ring-purple-500 ${statusMeta.badgeClass}`}
+                          disabled={savingId === appt.id}
+                        >
+                          <span>{statusMeta.label}</span>
+                          <FiChevronDown
+                            className={`text-sm transition-transform ${
+                              openStatusId === appt.id ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+
+                        {openStatusId === appt.id && (
+                          <div
+                            className="absolute right-0 w-44 rounded-xl bg-[#050314] border border-white/10 shadow-2xl z-30"
+                            style={{ top: "calc(100% + 8px)" }}
+                          >
+                            <div className="py-1 text-xs text-white/80">
+                              {STATUS_OPTIONS.map((opt) => {
+                                const optMeta = STATUS_META[opt];
+                                const isActive = opt === appt.status;
+
+                                return (
+                                  <button
+                                    key={opt}
+                                    type="button"
+                                    onClick={() => handleChangeStatus(appt.id, opt)}
+                                    className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg-white/10 ${
+                                      isActive ? "text-white" : "text-white/70"
+                                    }`}
+                                    disabled={savingId === appt.id}
+                                  >
+                                    <span>{optMeta.label}</span>
+                                    {isActive && (
+                                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Middle: Canal */}
+                    <div className="mt-3">
+                      <div className="text-[11px] text-white/50 mb-1">CANAL</div>
+                      <div>{getChannelBadge(appt.channel)}</div>
+                    </div>
+
+                    {/* Bottom: Cliente + Tel */}
+                    <div className="mt-3 grid grid-cols-1 gap-3">
+                      <div className="min-w-0">
+                        <div className="text-[11px] text-white/50 mb-1">CLIENTE</div>
+                        <div className="text-sm text-white truncate">
+                          {appt.customer_name || appt.customer_phone || "Cliente sin nombre"}
+                        </div>
+                        <div className="text-[11px] text-white/40 truncate">
+                          ID: {appt.id}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-[11px] text-white/50 mb-1">TELÉFONO</div>
+                        <div className="text-sm text-white">
+                          {appt.customer_phone || "-"}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-        </div>
+                );
+              })}
+            </div>
+
+            {/* DESKTOP: Grid/Table (tu versión actual) */}
+            <div className="hidden sm:block">
+              {safeAppointments.map((appt) => {
+                const statusMeta = STATUS_META[appt.status] || STATUS_META.pending;
+
+                return (
+                  <div
+                    key={appt.id}
+                    className="grid grid-cols-12 gap-2 px-4 sm:px-6 py-4 border-t border-white/5 hover:bg-white/5 transition-colors"
+                  >
+                    {/* Fecha / hora */}
+                    <div className="col-span-3 sm:col-span-3">
+                      <div className="text-sm font-medium text-white">
+                        {formatDateTime(appt.start_time)}
+                      </div>
+                      <div className="mt-1 text-[11px] text-white/45">
+                        Creada: {formatDateTime(appt.created_at)}
+                      </div>
+                    </div>
+
+                    {/* Canal */}
+                    <div className="col-span-2 sm:col-span-2 flex items-center">
+                      {getChannelBadge(appt.channel)}
+                    </div>
+
+                    {/* Cliente */}
+                    <div className="col-span-3 sm:col-span-3 flex flex-col justify-center">
+                      <div className="text-sm text-white">
+                        {appt.customer_name || appt.customer_phone || "Cliente sin nombre"}
+                      </div>
+                      <div className="text-[11px] text-white/40 truncate max-w-[220px]">
+                        ID: {appt.id}
+                      </div>
+                    </div>
+
+                    {/* Teléfono */}
+                    <div className="col-span-2 sm:col-span-2 flex items-center text-sm text-white">
+                      {appt.customer_phone || "-"}
+                    </div>
+
+                    {/* Estado + dropdown */}
+                    <div className="col-span-2 sm:col-span-2 flex items-center justify-end relative">
+                      <div className="relative inline-block text-left">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenStatusId(openStatusId === appt.id ? null : appt.id)
+                          }
+                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#050314] focus:ring-purple-500 ${statusMeta.badgeClass}`}
+                          disabled={savingId === appt.id}
+                        >
+                          <span>{statusMeta.label}</span>
+                          <FiChevronDown
+                            className={`text-sm transition-transform ${
+                              openStatusId === appt.id ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+
+                        {openStatusId === appt.id && (
+                          <div
+                            className="absolute right-0 w-40 rounded-xl bg-[#050314] border border-white/10 shadow-2xl z-30"
+                            style={{ bottom: "calc(100% + 8px)" }}
+                          >
+                            <div className="py-1 text-xs text-white/80">
+                              {STATUS_OPTIONS.map((opt) => {
+                                const optMeta = STATUS_META[opt];
+                                const isActive = opt === appt.status;
+
+                                return (
+                                  <button
+                                    key={opt}
+                                    type="button"
+                                    onClick={() => handleChangeStatus(appt.id, opt)}
+                                    className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg-white/10 ${
+                                      isActive ? "text-white" : "text-white/70"
+                                    }`}
+                                    disabled={savingId === appt.id}
+                                  >
+                                    <span>{optMeta.label}</span>
+                                    {isActive && (
+                                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     </div>
+  </div>
   );
 }
