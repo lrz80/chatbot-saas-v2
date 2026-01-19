@@ -52,7 +52,7 @@ export default function LoginPage() {
     setResendSuccess(false);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/auth/login`, {
+      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -112,7 +112,7 @@ export default function LoginPage() {
     }
     
     try {
-      const res = await fetch(`${BACKEND_URL}/auth/resend-code`, {
+      const res = await fetch(`${BACKEND_URL}/api/auth/resend-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
