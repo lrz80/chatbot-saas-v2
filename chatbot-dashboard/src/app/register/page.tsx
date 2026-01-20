@@ -13,6 +13,7 @@ import {
   FaBullhorn,
 } from "react-icons/fa";
 import { BACKEND_URL } from "@/utils/api";
+import { track } from '@/lib/metaPixel';
 
 const nodos = [
   { icon: <FaRobot size={36} style={{ color: '#a855f7' }} />, title: 'Atención 24/7', desc: 'Siempre online para tu negocio.', posClass: 'top-[5%] left-[10%]', x: 10, y: 5 },
@@ -75,6 +76,12 @@ export default function RegisterPage() {
         const msg = data?.error || "Registro fallido";
         throw new Error(msg);
       }
+
+      // ✅ Meta Pixel: registro completado
+      track("CompleteRegistration", {
+        content_name: "Aamy AI Register",
+        status: "success",
+      });
 
       // 2) Fallback: intenta fijar timezone en el tenant (por si /auth/register no la guarda)
       try {
