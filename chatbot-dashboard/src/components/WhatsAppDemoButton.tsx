@@ -2,6 +2,7 @@
 
 import { FaWhatsapp } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
+import { track } from '@/lib/metaPixel';
 
 export default function WhatsAppDemoButton() {
   const pathname = usePathname();
@@ -18,6 +19,12 @@ export default function WhatsAppDemoButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Probar demo por WhatsApp"
+      onClick={() =>
+        track('Contact', {
+          content_name: 'WhatsApp Floating Button',
+          source: 'landing_home',
+        })
+      }
       className="
         fixed bottom-8 right-6 z-[9999]
         w-14 h-14 md:w-16 md:h-16

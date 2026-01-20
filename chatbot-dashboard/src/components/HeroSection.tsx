@@ -3,6 +3,7 @@
 
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { track } from "@/lib/metaPixel";
 
 export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -73,6 +74,10 @@ export default function HeroSection() {
         <div className="flex justify-center">
           <a
             href="/login"
+            onClick={() => {
+              // Evento de intención fuerte (CTA principal)
+              track("Lead", { content_name: "CTA Activar Aamy 24/7" });
+            }}
             className="bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
           >
             Activar Aamy 24/7
