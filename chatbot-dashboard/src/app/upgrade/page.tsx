@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
+import { track } from "@/lib/metaPixel";
 
 type SettingsResp = {
   membresia_activa: boolean;
@@ -46,6 +47,13 @@ export default function UpgradePage() {
     try {
       setStartingCheckout(true);
       setError(null);
+
+      // ✅ Meta Pixel: inició checkout
+      track("InitiateCheckout", {
+        content_name: "Plan 24/7 (3 canales)",
+        value: 399,
+        currency: "USD",
+      });
 
       const r = await fetch(`${BACKEND_URL}/api/stripe/checkout`, {
         method: "POST",

@@ -12,6 +12,7 @@ import {
   FaMicrophoneAlt,
   FaBullhorn,
 } from 'react-icons/fa';
+import { track } from '@/lib/metaPixel';
 
 const nodos = [
   { icon: <FaRobot size={36} style={{ color: '#a855f7' }} />, title: 'Atención 24/7', desc: 'Siempre online para tu negocio.', posClass: 'top-[5%] left-[10%]', x: 10, y: 5 },
@@ -88,6 +89,8 @@ export default function LoginPage() {
         setError('UID no recibido del servidor');
         return;
       }
+
+      track('CompleteRegistration', { content_name: 'Login OK' });
 
       await new Promise((r) => setTimeout(r, 100));
       router.push('/dashboard');
