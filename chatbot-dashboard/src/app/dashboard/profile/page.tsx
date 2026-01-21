@@ -46,29 +46,9 @@ export default function BusinessProfilePage() {
   const [metaPixelId, setMetaPixelId] = useState('');
   const [metaPixelEnabled, setMetaPixelEnabled] = useState(false);
 
-  // Helpers para leer anidados de settings (soporta distintos alias)
-  const pickBookingUrl = (settings: any): string => {
-    const s = settings || {};
-    const b = s.booking || {};
-    return (
-      b.booking_url ||
-      s.booking_url ||
-      s.reservas_url ||
-      s.agenda_url ||
-      s.booking ||
-      ''
-    );
-  };
-  const pickAvailabilityUrl = (settings: any): string => {
-    const s = settings || {};
-    const b = s.booking || {};
-    return b.api_url || s.availability_api_url || s.booking_api_url || '';
-  };
-  const pickAvailabilityHeaders = (settings: any): Record<string, any> | null => {
-    const s = settings || {};
-    const b = s.booking || {};
-    return b.headers || s.availability_headers || null;
-  };
+  // ✅ NUEVO (Solo CAPI)
+  const [metaCapiToken, setMetaCapiToken] = useState('');
+  const [metaCapiTokenEverSet, setMetaCapiTokenEverSet] = useState(false);
 
   // 🚀 Mover fetchSettings fuera del useEffect
   const fetchSettings = async () => {
@@ -122,6 +102,10 @@ export default function BusinessProfilePage() {
     setMetaPixelId(settingsData.meta_pixel_id || '');
     setMetaPixelEnabled(Boolean(settingsData.meta_pixel_enabled));
 
+    // ✅ CAPI Token (si el backend lo devuelve; si no, déjalo vacío)
+    setMetaCapiToken(settingsData.meta_capi_token || '');
+    setMetaCapiTokenEverSet(Boolean(settingsData.meta_capi_token_configured));
+
     // 👇 toma los nuevos valores del tenant.settings si existen
     const s = tenantData?.settings || {};
     setBookingUrl(s?.booking?.booking_url || '');
@@ -146,9 +130,23 @@ const handleSave = async () => {
   }
 
   setSaving(true);
+
+  if (metaPixelEnabled) {
+    if (!metaPixelId.trim()) {
+      alert("⚠️ Para activar CAPI necesitas ingresar el Pixel/Dataset ID.");
+      setSaving(false);
+      return;
+    }
+    if (!metaCapiTokenEverSet && !metaCapiToken.trim()) {
+      alert("⚠️ Para activar CAPI necesitas ingresar el CAPI Token.");
+      setSaving(false);
+      return;
+    }
+  }
+
   try {
     // 1) Ajustes "clásicos"
-    await fetch(`${BACKEND_URL}/api/settings`, {
+    const resS = await fetch(`${BACKEND_URL}/api/settings`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -161,11 +159,16 @@ const handleSave = async () => {
         direccion,
         email_negocio: formData.email_negocio || '',
         telefono_negocio: formData.telefono_negocio || '',
-        // ✅ Meta Pixel (por tenant)
         meta_pixel_id: metaPixelId.trim(),
         meta_pixel_enabled: metaPixelEnabled,
+        ...(metaCapiToken.trim() ? { meta_capi_token: metaCapiToken.trim() } : {}),
       }),
     });
+
+    if (!resS.ok) {
+      const data = await resS.json().catch(() => ({}));
+      throw new Error(data?.error || "Error guardando settings");
+    }
 
     // 2) Booking / Availability
     const safeTrim = (s: string) => (s || '').trim();
@@ -251,25 +254,6 @@ const handleSave = async () => {
     }
   };
 
-  const handleClaimTrial = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/billing/claim-trial`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        alert(`❌ ${data?.error || 'No se pudo activar la prueba'}`);
-        return;
-      }
-      alert('✅ ¡Prueba gratis activada!');
-      await fetchSettings();
-    } catch (e) {
-      console.error(e);
-      alert('❌ Error activando la prueba');
-    }
-  };
-
   if (loading) return <p className="text-center text-white">Cargando información del negocio...</p>;
 
   return (
@@ -312,9 +296,9 @@ const handleSave = async () => {
         ✅ Meta Pixel (por tenant)
         ======================= */}
         <div className="mt-8 p-5 rounded-xl border border-white/20 bg-white/5 text-white">
-          <h2 className="text-lg font-bold text-purple-300 mb-1">Meta Pixel</h2>
+          <h2 className="text-lg font-bold text-purple-300 mb-1">Meta Conversions API (CAPI)</h2>
           <p className="text-sm text-white/70 mb-4">
-            Conecta tu Pixel para medir conversiones desde anuncios (ej: leads, reservas, compras).
+            Activa tracking server-side para medir conversiones desde anuncios (no requiere instalar Pixel en tu web).
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
@@ -346,6 +330,21 @@ const handleSave = async () => {
                 Activar Pixel
               </label>
             </div>
+          </div>
+
+          <div>
+            <label className="text-sm text-indigo-200 font-semibold">CAPI Token</label>
+            <input
+              type="password"
+              value={metaCapiToken}
+              onChange={(e) => setMetaCapiToken(e.target.value)}
+              placeholder="Pegue aquí su token de Conversions API"
+              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              disabled={!formData?.can_edit}
+            />
+            <p className="text-xs text-white/60 mt-1">
+              Se usa para enviar eventos server-side (no se instala nada en tu web).
+            </p>
           </div>
 
           {!formData?.can_edit && (
@@ -573,12 +572,12 @@ const handleSave = async () => {
         <button
           onClick={handleSave}
           className={`px-6 py-2 rounded-md shadow-lg transition text-white ${
-            saving || !formData.membresia_activa
+            saving || !formData.can_edit
               ? 'bg-gray-600 hover:bg-yellow-600 cursor-pointer'
               : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
           }`}
         >
-          {saving ? 'Guardando...' : formData.membresia_activa ? 'Guardar Cambios' : 'Actualizar Membresía'}
+          {saving ? 'Guardando...' : formData.can_edit ? 'Guardar Cambios' : 'Actualizar Membresía'}
         </button>
       </div>
       <Footer />
