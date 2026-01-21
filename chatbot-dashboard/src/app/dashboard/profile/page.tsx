@@ -42,6 +42,10 @@ export default function BusinessProfilePage() {
   const [availabilityApiUrl, setAvailabilityApiUrl] = useState('');
   const [availabilityHeadersText, setAvailabilityHeadersText] = useState<string>('');
 
+  // ✅ Meta Pixel (por tenant)
+  const [metaPixelId, setMetaPixelId] = useState('');
+  const [metaPixelEnabled, setMetaPixelEnabled] = useState(false);
+
   // Helpers para leer anidados de settings (soporta distintos alias)
   const pickBookingUrl = (settings: any): string => {
     const s = settings || {};
@@ -114,6 +118,10 @@ export default function BusinessProfilePage() {
 
     setDireccion(settingsData.direccion || '');
 
+    // ✅ Meta Pixel (viene de /api/settings)
+    setMetaPixelId(settingsData.meta_pixel_id || '');
+    setMetaPixelEnabled(Boolean(settingsData.meta_pixel_enabled));
+
     // 👇 toma los nuevos valores del tenant.settings si existen
     const s = tenantData?.settings || {};
     setBookingUrl(s?.booking?.booking_url || '');
@@ -153,6 +161,9 @@ const handleSave = async () => {
         direccion,
         email_negocio: formData.email_negocio || '',
         telefono_negocio: formData.telefono_negocio || '',
+        // ✅ Meta Pixel (por tenant)
+        meta_pixel_id: metaPixelId.trim(),
+        meta_pixel_enabled: metaPixelEnabled,
       }),
     });
 
@@ -295,6 +306,59 @@ const handleSave = async () => {
             onChange={handleChange}
             className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           />
+        </div>
+
+        {/* =======================
+        ✅ Meta Pixel (por tenant)
+        ======================= */}
+        <div className="mt-8 p-5 rounded-xl border border-white/20 bg-white/5 text-white">
+          <h2 className="text-lg font-bold text-purple-300 mb-1">Meta Pixel</h2>
+          <p className="text-sm text-white/70 mb-4">
+            Conecta tu Pixel para medir conversiones desde anuncios (ej: leads, reservas, compras).
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+            <div>
+              <label className="text-sm text-indigo-200 font-semibold">Pixel ID</label>
+              <input
+                type="text"
+                value={metaPixelId}
+                onChange={(e) => setMetaPixelId(e.target.value)}
+                placeholder="Ej: 123456789012345"
+                className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                disabled={!formData?.can_edit}
+              />
+              <p className="text-xs text-white/60 mt-1">
+                Solo números. Si no lo tienes, búscalo en Events Manager.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input
+                id="metaPixelEnabled"
+                type="checkbox"
+                checked={metaPixelEnabled}
+                onChange={(e) => setMetaPixelEnabled(e.target.checked)}
+                disabled={!formData?.can_edit}
+                className="h-5 w-5"
+              />
+              <label htmlFor="metaPixelEnabled" className="text-sm text-indigo-200 font-semibold">
+                Activar Pixel
+              </label>
+            </div>
+          </div>
+
+          {!formData?.can_edit && (
+            <div className="mt-3 text-sm text-yellow-200 bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
+              Activa un plan o tu prueba gratis para guardar cambios de tracking.
+            </div>
+          )}
+
+          {metaPixelEnabled && !String(metaPixelId || '').trim() && (
+            <div className="mt-3 text-sm text-red-200 bg-red-500/10 border border-red-500/30 rounded p-3">
+              Para activar el Pixel necesitas ingresar el Pixel ID.
+            </div>
+          )}
         </div>
 
         <div>
