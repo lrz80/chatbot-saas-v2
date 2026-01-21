@@ -50,6 +50,8 @@ export default function BusinessProfilePage() {
   const [metaCapiToken, setMetaCapiToken] = useState('');
   const [metaCapiTokenEverSet, setMetaCapiTokenEverSet] = useState(false);
 
+  const [metaCapiTokenPreview, setMetaCapiTokenPreview] = useState('');
+
   // 🚀 Mover fetchSettings fuera del useEffect
   const fetchSettings = async () => {
   try {
@@ -105,6 +107,8 @@ export default function BusinessProfilePage() {
     // ✅ CAPI Token (si el backend lo devuelve; si no, déjalo vacío)
     setMetaCapiToken(''); // nunca lo prellenes
     setMetaCapiTokenEverSet(Boolean(settingsData.meta_capi_token_configured));
+
+    setMetaCapiTokenPreview(settingsData.meta_capi_token_preview || '');
 
     // 👇 toma los nuevos valores del tenant.settings si existen
     const s = tenantData?.settings || {};
@@ -297,74 +301,6 @@ const handleSave = async () => {
           />
         </div>
 
-        {/* =======================
-        ✅ Meta Pixel (por tenant)
-        ======================= */}
-        <div className="mt-8 p-5 rounded-xl border border-white/20 bg-white/5 text-white">
-          <h2 className="text-lg font-bold text-purple-300 mb-1">Meta Conversions API (CAPI)</h2>
-          <p className="text-sm text-white/70 mb-4">
-            Activa tracking server-side para medir conversiones desde anuncios (no requiere instalar Pixel en tu web).
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-            <div>
-              <label className="text-sm text-indigo-200 font-semibold">Pixel ID</label>
-              <input
-                type="text"
-                value={metaPixelId}
-                onChange={(e) => setMetaPixelId(e.target.value)}
-                placeholder="Ej: 123456789012345"
-                className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-                disabled={!formData?.can_edit}
-              />
-              <p className="text-xs text-white/60 mt-1">
-                Solo números. Si no lo tienes, búscalo en Events Manager.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input
-                id="metaPixelEnabled"
-                type="checkbox"
-                checked={metaPixelEnabled}
-                onChange={(e) => setMetaPixelEnabled(e.target.checked)}
-                disabled={!formData?.can_edit}
-                className="h-5 w-5"
-              />
-              <label htmlFor="metaPixelEnabled" className="text-sm text-indigo-200 font-semibold">
-                Activar Pixel
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm text-indigo-200 font-semibold">CAPI Token</label>
-            <input
-              type="password"
-              value={metaCapiToken}
-              onChange={(e) => setMetaCapiToken(e.target.value)}
-              placeholder="Pegue aquí su token de Conversions API"
-              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-              disabled={!formData?.can_edit}
-            />
-            <p className="text-xs text-white/60 mt-1">
-              Se usa para enviar eventos server-side (no se instala nada en tu web).
-            </p>
-          </div>
-
-          {!formData?.can_edit && (
-            <div className="mt-3 text-sm text-yellow-200 bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
-              Activa un plan o tu prueba gratis para guardar cambios de tracking.
-            </div>
-          )}
-
-          {metaPixelEnabled && !String(metaPixelId || '').trim() && (
-            <div className="mt-3 text-sm text-red-200 bg-red-500/10 border border-red-500/30 rounded p-3">
-              Para activar el Pixel necesitas ingresar el Pixel ID.
-            </div>
-          )}
-        </div>
-
         <div>
           <label className="text-sm text-indigo-200 font-semibold">Horario de Atención</label>
           <input
@@ -541,6 +477,85 @@ const handleSave = async () => {
             <p className="text-red-400 font-semibold">❌ Sin información</p>
           )}
         </div>
+      </div>
+
+      {/* =======================
+      ✅ Meta Pixel (por tenant) - FULL WIDTH
+      ======================= */}
+      <div className="mt-8 p-6 rounded-2xl border border-white/20 bg-white/5 text-white md:col-span-2">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-purple-300">Meta Conversions API (CAPI)</h2>
+            <p className="text-sm text-white/70">
+              Tracking server-side para medir conversiones desde anuncios (no requiere instalar Pixel en tu web).
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              id="metaPixelEnabled"
+              type="checkbox"
+              checked={metaPixelEnabled}
+              onChange={(e) => setMetaPixelEnabled(e.target.checked)}
+              disabled={!formData?.can_edit}
+              className="h-5 w-5"
+            />
+            <label htmlFor="metaPixelEnabled" className="text-sm text-indigo-200 font-semibold">
+              Activar Pixel
+            </label>
+          </div>
+        </div>
+
+        {/* layout interno responsive */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm text-indigo-200 font-semibold">Pixel ID</label>
+            <input
+              type="text"
+              value={metaPixelId}
+              onChange={(e) => setMetaPixelId(e.target.value)}
+              placeholder="Ej: 123456789012345"
+              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              disabled={!formData?.can_edit}
+            />
+            <p className="text-xs text-white/60 mt-1">
+              Solo números. Si no lo tienes, búscalo en Events Manager.
+            </p>
+          </div>
+
+          <div>
+            <label className="text-sm text-indigo-200 font-semibold">CAPI Token</label>
+            <input
+              type="password"
+              value={metaCapiToken}
+              onChange={(e) => setMetaCapiToken(e.target.value)}
+              placeholder="Pegue aquí su token de Conversions API"
+              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              disabled={!formData?.can_edit}
+            />
+            <p className="text-xs text-white/60 mt-1">
+              Se usa para enviar eventos server-side (no se instala nada en tu web).
+            </p>
+
+            {metaCapiTokenEverSet && (
+              <p className="text-xs text-green-200 mt-2">
+                Token guardado: <span className="font-mono">{metaCapiTokenPreview}</span>
+              </p>
+            )}
+          </div>
+        </div>
+
+        {!formData?.can_edit && (
+          <div className="mt-4 text-sm text-yellow-200 bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
+            Activa un plan o tu prueba gratis para guardar cambios de tracking.
+          </div>
+        )}
+
+        {metaPixelEnabled && !String(metaPixelId || '').trim() && (
+          <div className="mt-4 text-sm text-red-200 bg-red-500/10 border border-red-500/30 rounded p-3">
+            Para activar el Pixel necesitas ingresar el Pixel ID.
+          </div>
+        )}
       </div>
 
       {/* 🎁 Caso 1: Nunca ha usado el trial → invitar a activar prueba */}
