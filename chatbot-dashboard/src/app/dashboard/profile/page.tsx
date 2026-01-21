@@ -103,7 +103,7 @@ export default function BusinessProfilePage() {
     setMetaPixelEnabled(Boolean(settingsData.meta_pixel_enabled));
 
     // ✅ CAPI Token (si el backend lo devuelve; si no, déjalo vacío)
-    setMetaCapiToken(settingsData.meta_capi_token || '');
+    setMetaCapiToken(''); // nunca lo prellenes
     setMetaCapiTokenEverSet(Boolean(settingsData.meta_capi_token_configured));
 
     // 👇 toma los nuevos valores del tenant.settings si existen
@@ -161,7 +161,12 @@ const handleSave = async () => {
         telefono_negocio: formData.telefono_negocio || '',
         meta_pixel_id: metaPixelId.trim(),
         meta_pixel_enabled: metaPixelEnabled,
-        ...(metaCapiToken.trim() ? { meta_capi_token: metaCapiToken.trim() } : {}),
+        // ✅ Siempre manda el token si el pixel está activado.
+        // Si está vacío, significa "no lo cambies" SOLO si ya existe uno guardado.
+        meta_capi_token:
+          metaPixelEnabled
+            ? (metaCapiToken.trim() || (metaCapiTokenEverSet ? '__KEEP__' : ''))
+            : '',
       }),
     });
 
