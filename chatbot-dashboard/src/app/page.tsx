@@ -109,7 +109,7 @@ export default function LandingPage() {
               </p>
 
               <p className="text-xs text-white/60 mt-1">
-                Integración directa con WhatsApp, Instagram y Facebook para mensajería y automatización.
+                Construido sobre la infraestructura de Meta para proveedores tecnológicos.
               </p>
             </div>
 
