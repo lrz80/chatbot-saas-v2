@@ -100,22 +100,20 @@ export default function LandingPage() {
       <HeroSection />
 
       {/* Trust Bar: Meta Tech Provider */}
-      <section className="px-4 sm:px-6 md:px-8 -mt-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl px-6 py-4 shadow-md">
+      <section className="px-4 sm:px-6 md:px-8 mt-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white/5 border border-white/10 backdrop-blur-xl rounded-xl px-6 py-4 shadow-sm">
+            
             <div className="text-center md:text-left">
-              <p className="text-sm text-white/80">
-                Aamy AI se integra directamente con la API oficial de Meta para mensajería (WhatsApp, Instagram y Facebook).
+              <p className="text-sm text-white/80 font-medium">
+                Aamy AI se integra directamente con la API oficial de Meta para automatizar WhatsApp, Instagram y Facebook.
               </p>
-
-              <p className="text-xs text-white/60 mt-1">
+              <p className="text-xs text-white/50 mt-1">
                 Construido sobre la infraestructura de Meta para proveedores tecnológicos.
               </p>
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-xs text-white/60">Canales:</span>
-
               <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-3 py-1">
                 <FaWhatsapp className="text-green-400" />
                 <span className="text-xs text-white/80">WhatsApp</span>
@@ -131,6 +129,7 @@ export default function LandingPage() {
                 <span className="text-xs text-white/80">Facebook</span>
               </div>
             </div>
+
           </div>
         </div>
       </section>
