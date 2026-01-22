@@ -99,7 +99,44 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0f0a1e] text-white overflow-x-hidden">
       <HeroSection />
 
+      {/* Trust Bar: Meta Tech Provider */}
+      <section className="px-4 sm:px-6 md:px-8 -mt-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl px-6 py-4 shadow-md">
+            <div className="text-center md:text-left">
+              <p className="text-sm text-white/80">
+                Aamy AI se integra directamente con la API oficial de Meta para mensajería (WhatsApp, Instagram y Facebook).
+              </p>
+
+              <p className="text-xs text-white/60 mt-1">
+                Integración directa con WhatsApp, Instagram y Facebook para mensajería y automatización.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-white/60">Canales:</span>
+
+              <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-3 py-1">
+                <FaWhatsapp className="text-green-400" />
+                <span className="text-xs text-white/80">WhatsApp</span>
+              </div>
+
+              <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-3 py-1">
+                <span className="text-xs font-semibold text-white/80">IG</span>
+                <span className="text-xs text-white/80">Instagram</span>
+              </div>
+
+              <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-3 py-1">
+                <span className="text-xs font-semibold text-white/80">FB</span>
+                <span className="text-xs text-white/80">Facebook</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#0f0a1e] to-[#1c1236]">
+
         <h2 className="text-3xl font-bold text-center mb-12 text-white">
           Lo que Aamy hace para que no pierdas clientes
         </h2>
