@@ -16,6 +16,7 @@ import {
   FaWhatsapp,
   FaBullhorn,
   FaUserCheck,
+  FaBullseye,
 } from 'react-icons/fa';
 import WhatsAppDemoButton from '@/components/WhatsAppDemoButton';
 
@@ -37,14 +38,19 @@ const features = [
     description: "Captura datos del cliente cuando aplica (nombre y motivo) para que puedas darle seguimiento.",
   },
   {
+    icon: <FaBullseye size={28} className="text-blue-300 drop-shadow" />,
+    title: "Optimización con Meta Pixel + CAPI",
+    description: "Envía eventos avanzados desde WhatsApp, Instagram y Facebook para mejorar segmentación y rendimiento en tus campañas.",
+  },
+  {
     icon: <FaChartBar size={28} className="text-purple-300 drop-shadow" />,
     title: "Respuestas con info real",
     description: "Responde con servicios, horarios, ubicación y preguntas frecuentes del negocio.",
   },
   {
     icon: <FaBullhorn size={28} className="text-orange-400 drop-shadow" />,
-    title: "Seguimiento hasta 23 horas",
-    description: "Si el cliente no responde, el sistema hace seguimiento automático hasta 23h y se detiene si responde.",
+    title: "Seguimiento de leads",
+    description: "Si el cliente no responde, el sistema hace seguimiento automático.",
   },
 ];
 
