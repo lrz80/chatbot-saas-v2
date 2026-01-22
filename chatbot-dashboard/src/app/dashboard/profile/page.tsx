@@ -227,6 +227,14 @@ const handleSave = async () => {
   }
 
   try {
+    const horario_atencion_obj = horarioSemana;
+
+    // fallback legacy (por si algún endpoint viejo aún lo espera como string):
+    const legacyRange =
+      horarioSemana.mon && horarioSemana.mon.start && horarioSemana.mon.end
+        ? `${horarioSemana.mon.start}-${horarioSemana.mon.end}`
+        : "";
+
     // 1) Ajustes "clásicos"
     const resS = await fetch(`${BACKEND_URL}/api/settings`, {
       method: 'PATCH',
@@ -234,7 +242,8 @@ const handleSave = async () => {
       credentials: 'include',
       body: JSON.stringify({
         nombre_negocio: formData.nombre_negocio,
-        horario_atencion: formData.horario_atencion,
+        horario_atencion: horario_atencion_obj,
+        horario_atencion_legacy: legacyRange, // opcional, pero útil en transición
         categoria: formData.categoria,
         idioma: formData.idioma,
         logo_url: formData.logo_url || '',
@@ -280,7 +289,7 @@ const handleSave = async () => {
       name: formData.nombre_negocio,
       categoria: formData.categoria,
       idioma: formData.idioma,
-      horario_atencion: formData.horario_atencion,
+      horario_atencion: horario_atencion_obj,
       // envía solo si hay valor (el backend valida http/https)
       ...(booking_url ? { booking_url } : {}),
       ...(availability_api_url ? { availability_api_url } : {}),
