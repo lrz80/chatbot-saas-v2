@@ -29,6 +29,56 @@ type SettingsPayload = {
   timezone?: string;
 };
 
+type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+type DayHours = { start: string; end: string } | null;
+type HoursByWeekday = Record<DayKey, DayHours>;
+
+const DEFAULT_HOURS: HoursByWeekday = {
+  mon: { start: "09:00", end: "17:00" },
+  tue: { start: "09:00", end: "17:00" },
+  wed: { start: "09:00", end: "17:00" },
+  thu: { start: "09:00", end: "17:00" },
+  fri: { start: "09:00", end: "17:00" },
+  sat: null,
+  sun: null,
+};
+
+function normalizeHorario(raw: any): HoursByWeekday {
+  try {
+    if (!raw) return DEFAULT_HOURS;
+
+    // Si viene como string
+    if (typeof raw === "string") {
+      const s = raw.trim();
+
+      // legacy: "09:00-17:00"
+      const m = s.match(/^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/);
+      if (m) {
+        const start = m[1], end = m[2];
+        return {
+          mon: { start, end }, tue: { start, end }, wed: { start, end },
+          thu: { start, end }, fri: { start, end }, sat: null, sun: null,
+        };
+      }
+
+      // JSON en string
+      raw = JSON.parse(s);
+    }
+
+    const out: HoursByWeekday = { ...DEFAULT_HOURS };
+    (["mon","tue","wed","thu","fri","sat","sun"] as DayKey[]).forEach((k) => {
+      const v = raw?.[k];
+      if (!v) out[k] = null;
+      else if (typeof v === "object" && v.start && v.end) out[k] = { start: String(v.start), end: String(v.end) };
+      else out[k] = null;
+    });
+
+    return out;
+  } catch {
+    return DEFAULT_HOURS;
+  }
+}
+
 export default function BusinessProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -51,6 +101,27 @@ export default function BusinessProfilePage() {
   const [metaCapiTokenEverSet, setMetaCapiTokenEverSet] = useState(false);
 
   const [metaCapiTokenPreview, setMetaCapiTokenPreview] = useState('');
+
+  const [horarioSemana, setHorarioSemana] = useState<HoursByWeekday>(DEFAULT_HOURS);
+
+  const dayLabels: Record<DayKey, string> = {
+    mon: "Lunes",
+    tue: "Martes",
+    wed: "Miércoles",
+    thu: "Jueves",
+    fri: "Viernes",
+    sat: "Sábado",
+    sun: "Domingo",
+  };
+
+  function setDay(k: DayKey, patch: Partial<{ start: string; end: string }> | null) {
+    setHorarioSemana((prev) => {
+      const next = { ...prev };
+      if (patch === null) next[k] = null;
+      else next[k] = { start: patch.start ?? (prev[k]?.start || "09:00"), end: patch.end ?? (prev[k]?.end || "17:00") };
+      return next;
+    });
+  }
 
   // 🚀 Mover fetchSettings fuera del useEffect
   const fetchSettings = async () => {
@@ -97,6 +168,13 @@ export default function BusinessProfilePage() {
         (settingsData.trial_vigente || settingsData.trial_activo)
       ),
     });
+
+    const rawHorario =
+      settingsData.horario_atencion ??
+      tenantData?.horario_atencion ??
+      '';
+
+    setHorarioSemana(normalizeHorario(rawHorario));
 
     setDireccion(settingsData.direccion || '');
 
@@ -301,15 +379,57 @@ const handleSave = async () => {
           />
         </div>
 
-        <div>
+        <div className="md:col-span-2">
           <label className="text-sm text-indigo-200 font-semibold">Horario de Atención</label>
-          <input
-            name="horario_atencion"
-            type="text"
-            value={formData.horario_atencion || ''}
-            onChange={handleChange}
-            className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-          />
+
+          <div className="mt-2 space-y-2">
+            {(["mon","tue","wed","thu","fri","sat","sun"] as DayKey[]).map((k) => {
+              const v = horarioSemana[k];
+              const abierto = v !== null;
+
+              return (
+                <div key={k} className="flex flex-wrap items-center gap-3 bg-white/5 border border-white/10 rounded-md px-3 py-2">
+                  <div className="w-24 text-white/90 font-medium">{dayLabels[k]}</div>
+
+                  <label className="flex items-center gap-2 text-sm text-white/80">
+                    <input
+                      type="checkbox"
+                      checked={abierto}
+                      onChange={(e) => {
+                        if (!e.target.checked) setDay(k, null);
+                        else setDay(k, { start: "09:00", end: "17:00" });
+                      }}
+                      disabled={!formData?.can_edit}
+                      className="h-4 w-4"
+                    />
+                    Abierto
+                  </label>
+
+                  <input
+                    type="time"
+                    value={v?.start || "09:00"}
+                    disabled={!abierto || !formData?.can_edit}
+                    onChange={(e) => setDay(k, { start: e.target.value })}
+                    className="bg-white/10 border border-white/20 px-2 py-1 rounded-md"
+                  />
+
+                  <span className="text-white/60">-</span>
+
+                  <input
+                    type="time"
+                    value={v?.end || "17:00"}
+                    disabled={!abierto || !formData?.can_edit}
+                    onChange={(e) => setDay(k, { end: e.target.value })}
+                    className="bg-white/10 border border-white/20 px-2 py-1 rounded-md"
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="text-xs text-white/60 mt-2">
+            Define qué días atiendes y en qué horario. Esto se usará para proponer horarios disponibles.
+          </p>
         </div>
 
         <div className="flex flex-col md:flex-row gap-4">
