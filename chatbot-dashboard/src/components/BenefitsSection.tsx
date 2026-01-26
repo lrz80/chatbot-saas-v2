@@ -2,33 +2,52 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Sparkles, BotMessageSquare, BarChart3, Share2 } from 'lucide-react';
+import { 
+  Sparkles, 
+  BotMessageSquare, 
+  BarChart3, 
+  Share2, 
+  CalendarCheck, 
+  Languages 
+} from 'lucide-react';
 
 export default function BenefitsSection() {
   const benefits = [
     {
       icon: <Sparkles className="w-8 h-8 text-purple-400" />,
-      title: "IA que entiende contexto (no respuestas genéricas)",
+      title: "IA que entiende contexto e intención",
       description:
-        "Aamy mantiene el hilo de la conversación, detecta intención de compra y responde con precisión usando el contexto del chat y la información de tu negocio.",
+        "Aamy no da respuestas genéricas. Interpreta la intención del cliente, mantiene el hilo de la conversación y responde con precisión usando tu información.",
     },
     {
       icon: <BotMessageSquare className="w-8 h-8 text-purple-400" />,
-      title: "Omnicanal: WhatsApp, Instagram y Facebook",
+      title: "WhatsApp, Instagram y Facebook en un solo lugar",
       description:
-        "Centraliza tus mensajes en un solo sistema. Menos caos, más control y una experiencia consistente para tus clientes.",
+        "Una sola bandeja para todos tus mensajes. Atiende más rápido y evita perder clientes por tener canales dispersos.",
     },
     {
       icon: <BarChart3 className="w-8 h-8 text-purple-400" />,
-      title: "Más conversiones: seguimiento + datos + métricas",
+      title: "Ventas automáticas con seguimiento inteligente",
       description:
-        "Si el cliente se enfría, Aamy hace seguimiento automático. Además registra conversaciones e intención para que puedas medir qué está convirtiendo.",
+        "Si el cliente se enfría, Aamy envía recordatorios estratégicos según la intención detectada. Más cierres sin esfuerzo.",
     },
     {
       icon: <Share2 className="w-8 h-8 text-purple-400" />,
-      title: "Optimización de Ads con Meta Pixel + CAPI",
+      title: "Optimización de Ads con Pixel + CAPI",
       description:
-        "Envía eventos desde conversaciones para que Meta aprenda quién realmente convierte. Esto ayuda a mejorar segmentación y bajar el costo por lead.",
+        "Envía eventos avanzados desde WhatsApp, Instagram y Facebook para mejorar segmentación y bajar tu costo por lead.",
+    },
+    {
+      icon: <CalendarCheck className="w-8 h-8 text-purple-400" />,
+      title: "Agendamiento automático con Google Calendar",
+      description:
+        "Aamy ofrece horarios, valida disponibilidad en tiempo real y confirma citas reales directamente en tu calendario.",
+    },
+    {
+      icon: <Languages className="w-8 h-8 text-purple-400" />,
+      title: "Multilenguaje automático",
+      description:
+        "Tus clientes hablan en su idioma. Aamy también. Detecta español o inglés y responde automáticamente para maximizar conversiones.",
     },
   ];
 
@@ -49,16 +68,16 @@ export default function BenefitsSection() {
         transition={{ duration: 0.7, delay: 0.1 }}
         className="text-center text-white/75 max-w-3xl mx-auto mb-12"
       >
-        Aamy no solo responde rápido: entiende el contexto, detecta intención y automatiza el seguimiento para convertir más conversaciones en ventas.
+        Aamy no solo responde rápido. Usa IA avanzada para entender contexto, detectar intención, agendar citas y optimizar tus campañas de Meta.
       </motion.p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {benefits.map((benefit, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: index * 0.2 }}
+            transition={{ duration: 0.6, delay: index * 0.15 }}
             className="p-6 rounded-2xl backdrop-blur-md bg-white/5 border border-white/10 shadow-lg hover:shadow-purple-500/20 transition-all duration-300"
           >
             <div className="mb-4">{benefit.icon}</div>
@@ -68,7 +87,7 @@ export default function BenefitsSection() {
         ))}
       </div>
 
-      {/* FRASE DE CIERRE (más “venta” y menos genérica) */}
+      {/* FRASE DE CIERRE */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -77,10 +96,8 @@ export default function BenefitsSection() {
       >
         <p className="text-base md:text-lg text-white/80">
           No se trata solo de responder.{" "}
-          <span className="font-semibold text-white">
-            Se trata de convertir.
-          </span>{" "}
-          Aamy trabaja 24/7 para que no pierdas oportunidades.
+          <span className="font-semibold text-white">Se trata de convertir.</span>{" "}
+          Aamy te ayuda a cerrar más ventas sin trabajar más.
         </p>
       </motion.div>
     </section>
