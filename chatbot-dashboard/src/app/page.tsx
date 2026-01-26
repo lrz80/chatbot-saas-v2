@@ -140,7 +140,8 @@ export default function LandingPage() {
                 IA conversacional avanzada para automatizar ventas, soporte y seguimiento.
               </p>
               <p className="text-xs text-white/60 mt-1">
-                Integración oficial con canales Meta y automatización enfocada en conversión (no solo respuestas).
+                Integración oficial con Meta API (WhatsApp, Instagram y Facebook).
+                Aamy envía eventos avanzados de intención y conversión a Meta Ads (CAPI) para optimizar campañas en tiempo real.
               </p>
             </div>
 
