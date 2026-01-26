@@ -55,9 +55,9 @@ export default function HeroSection() {
         </h1>
 
         <p className="text-lg md:text-xl text-white/90 mb-7 leading-relaxed drop-shadow">
-          Aamy responde en WhatsApp, Instagram y Facebook con{" "}
-          <strong>contexto</strong>, detecta <strong>intención de compra</strong>, y si el cliente se enfría,{" "}
-          <strong>hace seguimiento automático</strong> para recuperarlo.
+          Aamy automatiza conversaciones en WhatsApp, Instagram y Facebook con IA avanzada: 
+          entiende el contexto, identifica intención de compra y ejecuta seguimiento estratégico 
+          para maximizar conversiones.
         </p>
 
         {/* Bullet grid (4 puntos premium, compactos) */}
