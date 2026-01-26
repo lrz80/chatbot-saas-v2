@@ -19,7 +19,7 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section className="relative bg-black h-[100svh] md:h-screen text-white overflow-hidden flex items-center justify-center px-6 font-sans">
+    <section className="relative bg-black min-h-[100dvh] md:min-h-screen text-white overflow-hidden flex items-start md:items-center justify-center px-6 font-sans pt-24 md:pt-0 pb-28 md:pb-0">
       {/* 🎥 Video de fondo */}
       <video
         ref={videoRef}
@@ -36,7 +36,7 @@ export default function HeroSection() {
 
       {/* 🌟 Hero Content */}
       <motion.div
-        className="z-10 text-center max-w-3xl w-full"
+        className="z-10 text-center max-w-3xl w-full px-1"
         initial={{ opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
