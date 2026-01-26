@@ -72,12 +72,6 @@ const capabilities = [
     description:
       "Envía eventos avanzados desde conversaciones (WA/IG/FB) para optimizar campañas y bajar el costo por lead.",
   },
-  {
-    icon: <FaPhoneAlt size={26} className="text-indigo-300 drop-shadow" />,
-    title: "Voz IA (opcional)",
-    description:
-      "Atiende llamadas con IA: conversación continua, detección de emoción y registro en el dashboard.",
-  },
 ];
 
 /** =========================
@@ -183,10 +177,10 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#0f0a1e] to-[#1c1236]">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-4 text-white">
-            Lo que Aamy hace (de verdad) para que no pierdas clientes
+            Lo que Aamy hace para que no pierdas clientes
           </h2>
           <p className="text-center text-white/70 max-w-3xl mx-auto mb-12">
-            No es un “bot de respuestas”. Es un sistema de IA que entiende contexto, detecta intención, hace seguimiento y convierte conversaciones en ventas.
+            Conoce el sistema de IA que entiende contexto, detecta intención, hace seguimiento y convierte conversaciones en ventas.
           </p>
 
           <div
@@ -311,10 +305,6 @@ export default function LandingPage() {
           </p>
         </div>
       </section>
-
-      {/* Demo anchor */}
-      <div id="demo" />
-      <DemoWhatsApp />
 
       {/* Testimonials (upgrade copy) */}
       <section className="py-20 px-4 sm:px-6 md:px-8 bg-[#151032] text-white text-center">
