@@ -46,7 +46,7 @@ const capabilities = [
     icon: <FaGlobe size={26} className="text-blue-300 drop-shadow" />,
     title: "Multilenguaje automático",
     description:
-      "Detecta el idioma del cliente y responde en ese idioma (sin depender del idioma configurado por el negocio).",
+      "Detección automática de idioma: Aamy reconoce si el cliente escribe en español o inglés y adapta toda la conversación de forma instantánea.",
   },
   {
     icon: <FaUserCheck size={26} className="text-yellow-300 drop-shadow" />,
