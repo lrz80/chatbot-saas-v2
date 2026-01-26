@@ -247,11 +247,7 @@ export default function LandingPage() {
                   Activar Aamy en mi negocio
                 </button>
               </a>
-              <a href="#demo" className="w-full">
-                <button className="w-full bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold px-6 py-3 rounded-xl transition">
-                  Ver demo
-                </button>
-              </a>
+              
             </div>
             <p className="mt-3 text-white/60 text-xs">
               $399 instalación + primer mes • $199/mes desde el mes 2

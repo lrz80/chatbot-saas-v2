@@ -8,27 +8,27 @@ export default function BenefitsSection() {
   const benefits = [
     {
       icon: <Sparkles className="w-8 h-8 text-purple-400" />,
-      title: "Responde en segundos, 24/7",
+      title: "IA que entiende contexto (no respuestas genéricas)",
       description:
-        "Aamy contesta al instante para que no pierdas ventas cuando estás ocupado o fuera de horario.",
+        "Aamy mantiene el hilo de la conversación, detecta intención de compra y responde con precisión usando el contexto del chat y la información de tu negocio.",
     },
     {
       icon: <BotMessageSquare className="w-8 h-8 text-purple-400" />,
-      title: "Todos tus mensajes en un solo lugar",
+      title: "Omnicanal: WhatsApp, Instagram y Facebook",
       description:
-        "WhatsApp, Instagram y Facebook centralizados para que no se te escape ningún cliente.",
+        "Centraliza tus mensajes en un solo sistema. Menos caos, más control y una experiencia consistente para tus clientes.",
     },
     {
       icon: <BarChart3 className="w-8 h-8 text-purple-400" />,
-      title: "Respuestas con la información real de tu negocio",
+      title: "Más conversiones: seguimiento + datos + métricas",
       description:
-        "Aamy responde solo con la información de tu negocio. No improvisa ni da datos falsos.",
+        "Si el cliente se enfría, Aamy hace seguimiento automático. Además registra conversaciones e intención para que puedas medir qué está convirtiendo.",
     },
     {
       icon: <Share2 className="w-8 h-8 text-purple-400" />,
-      title: "Seguimiento que recupera clientes",
+      title: "Optimización de Ads con Meta Pixel + CAPI",
       description:
-        "Si el cliente no responde, Aamy hace seguimiento automático para recuperarlo.",
+        "Envía eventos desde conversaciones para que Meta aprenda quién realmente convierte. Esto ayuda a mejorar segmentación y bajar el costo por lead.",
     },
   ];
 
@@ -38,10 +38,19 @@ export default function BenefitsSection() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="text-3xl md:text-5xl font-bold text-center mb-12 text-white"
+        className="text-3xl md:text-5xl font-bold text-center mb-6 text-white"
       >
         ¿Qué gana tu negocio con <span className="text-purple-400">Aamy</span>?
       </motion.h2>
+
+      <motion.p
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.1 }}
+        className="text-center text-white/75 max-w-3xl mx-auto mb-12"
+      >
+        Aamy no solo responde rápido: entiende el contexto, detecta intención y automatiza el seguimiento para convertir más conversaciones en ventas.
+      </motion.p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
         {benefits.map((benefit, index) => (
@@ -58,7 +67,8 @@ export default function BenefitsSection() {
           </motion.div>
         ))}
       </div>
-      {/* FRASE DE CIERRE */}
+
+      {/* FRASE DE CIERRE (más “venta” y menos genérica) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -66,10 +76,11 @@ export default function BenefitsSection() {
         className="mt-12 text-center"
       >
         <p className="text-base md:text-lg text-white/80">
-          Cada minuto sin responder cuesta dinero.{" "}
+          No se trata solo de responder.{" "}
           <span className="font-semibold text-white">
-            Aamy trabaja por ti 24/7.
-          </span>
+            Se trata de convertir.
+          </span>{" "}
+          Aamy trabaja 24/7 para que no pierdas oportunidades.
         </p>
       </motion.div>
     </section>
