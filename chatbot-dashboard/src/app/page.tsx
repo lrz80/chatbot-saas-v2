@@ -75,16 +75,6 @@ const capabilities = [
 ];
 
 /** =========================
- *  TRUST bullets (microcopy)
- *  ========================= */
-const trustBullets = [
-  "Omnicanal: WhatsApp, Instagram y Facebook (y más).",
-  "IA con contexto + intención + seguimiento.",
-  "Dashboard con historial, KPIs y conversaciones.",
-  "Implementación guiada para tu negocio.",
-];
-
-/** =========================
  *  Comparison table
  *  ========================= */
 const comparisonRows = [
@@ -94,7 +84,6 @@ const comparisonRows = [
   { feature: "Follow-up automático", aamy: true, manychat: true, respond: "Depende", tidio: false },
   { feature: "Agendamiento con Google Calendar", aamy: true, manychat: false, respond: false, tidio: false },
   { feature: "Meta Pixel + CAPI desde chat", aamy: true, manychat: "Depende", respond: "Depende", tidio: false },
-  { feature: "Voz IA + emociones (opcional)", aamy: true, manychat: false, respond: false, tidio: false },
 ];
 
 export default function LandingPage() {
@@ -144,6 +133,8 @@ export default function LandingPage() {
       <section className="px-4 sm:px-6 md:px-8 mt-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-5 bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl px-6 py-5 shadow-sm">
+
+            {/* Texto principal */}
             <div className="text-center lg:text-left">
               <p className="text-sm text-white/90 font-semibold">
                 IA conversacional avanzada para automatizar ventas, soporte y seguimiento.
@@ -151,19 +142,9 @@ export default function LandingPage() {
               <p className="text-xs text-white/60 mt-1">
                 Integración oficial con canales Meta y automatización enfocada en conversión (no solo respuestas).
               </p>
-
-              <div className="mt-3 flex flex-wrap gap-2 justify-center lg:justify-start">
-                {trustBullets.map((t, idx) => (
-                  <span
-                    key={idx}
-                    className="text-xs text-white/75 bg-black/20 border border-white/10 rounded-full px-3 py-1"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
             </div>
 
+            {/* Pills de canales */}
             <div className="flex items-center gap-3">
               <ChannelPill label="WhatsApp" variant="wa" />
               <ChannelPill label="Instagram" variant="ig" />
@@ -242,7 +223,7 @@ export default function LandingPage() {
             </div>
 
             <div className="mt-6 flex gap-3 flex-col sm:flex-row">
-              <a href="/login" className="w-full">
+              <a href="/register" className="w-full">
                 <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition">
                   Activar Aamy en mi negocio
                 </button>
@@ -338,14 +319,9 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="/login">
+            <a href="/register">
               <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg transition">
                 Activar Aamy ahora
-              </button>
-            </a>
-            <a href="#demo">
-              <button className="bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold px-8 py-4 rounded-full text-lg transition">
-                Ver demo
               </button>
             </a>
           </div>
