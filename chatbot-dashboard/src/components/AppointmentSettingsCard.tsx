@@ -6,6 +6,7 @@ import { BACKEND_URL } from "@/utils/api";
 type Settings = {
   default_duration_min: number;
   buffer_min: number;
+  min_lead_minutes: number;
   timezone: string;
   enabled: boolean;
 };
@@ -19,6 +20,7 @@ export default function AppointmentSettingsCard() {
   const [form, setForm] = useState<Settings>({
     default_duration_min: 30,
     buffer_min: 10,
+    min_lead_minutes: 60,
     timezone: "America/New_York",
     enabled: true,
   });
@@ -65,6 +67,7 @@ export default function AppointmentSettingsCard() {
         body: JSON.stringify({
           default_duration_min: Number(form.default_duration_min),
           buffer_min: Number(form.buffer_min),
+          min_lead_minutes: Number(form.min_lead_minutes),
           timezone: form.timezone,
           enabled: Boolean(form.enabled),
         }),
@@ -138,6 +141,25 @@ export default function AppointmentSettingsCard() {
                 onChange={(e) => setForm((p) => ({ ...p, buffer_min: Number(e.target.value) }))}
                 className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm text-white/80 mb-1">
+                Anticipación mínima (min) — min_lead_minutes
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={1440}
+                value={form.min_lead_minutes}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, min_lead_minutes: Number(e.target.value) }))
+                }
+                className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              <p className="text-xs text-white/50 mt-1">
+                Tiempo de anticipacion que se puede agendar
+              </p>
             </div>
 
             <div>
