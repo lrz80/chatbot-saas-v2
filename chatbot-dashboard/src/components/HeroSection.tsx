@@ -48,10 +48,10 @@ export default function HeroSection() {
         </div>
 
         <h1 className="text-4xl md:text-6xl font-extrabold mb-5 tracking-tight leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.65)]">
-          Convierte mensajes en ventas con{" "}
-          <span className="text-violet-400">IA que entiende contexto</span>
+          Automatiza y escala tus ventas con{" "}
+          <span className="text-violet-400">IA conversacional con contexto</span>
           <br className="hidden md:block" />
-          y responde <span className="text-violet-400">24/7</span>
+          disponible <span className="text-violet-400">24/7</span>
         </h1>
 
         <p className="text-lg md:text-xl text-white/90 mb-7 leading-relaxed drop-shadow">
@@ -86,9 +86,8 @@ export default function HeroSection() {
 
         {/* Micro-clarificación (evitar objeción sin sonar limitado) */}
         <div className="mx-auto mb-4 max-w-3xl text-sm text-white/80">
-          <span className="font-semibold text-white">No es un bot de respuestas.</span>{" "}
-          Aamy usa la información de tu negocio y el contexto del chat para responder con precisión, y{" "}
-          <span className="font-semibold text-white">puedes intervenir cuando quieras</span>.
+          Impulsado por IA conversacional, Aamy responde con información verificada de
+          tu negocio y el contexto del chat. Tú mantienes el control en todo momento.
         </div>
 
         {/* Precio visible */}
