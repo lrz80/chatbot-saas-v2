@@ -190,7 +190,7 @@ export default function LandingPage() {
               Lo dejamos listo con tu negocio para que empieces a responder, capturar leads y hacer seguimiento desde el primer día.
             </p>
 
-            <div className="space-y-4">
+            <div className="grid gap-4">
               <StepItem
                 n="1"
                 title="Configuración del negocio"
@@ -209,7 +209,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+          <div className="lg:sticky lg:top-24 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
             <h4 className="text-xl font-bold text-white mb-2">Resultados típicos</h4>
             <p className="text-white/70 text-sm mb-6">
               Cuando automatizas respuesta + seguimiento, recuperas leads que antes se perdían por tiempo de respuesta.
