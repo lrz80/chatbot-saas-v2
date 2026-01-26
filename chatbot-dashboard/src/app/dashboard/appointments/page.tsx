@@ -127,6 +127,21 @@ export default function AppointmentsPage() {
   const [gcStatus, setGcStatus] = useState<{connected: boolean; calendar_id?: string}>({connected:false});
   const [gcLoading, setGcLoading] = useState(false);
   const [gcConnecting, setGcConnecting] = useState(false);
+  const [filters, setFilters] = useState<{
+    desde: string;
+    hasta: string;
+    canal: string;
+    estado: string;
+    cliente: string;
+    telefono: string;
+  }>({
+    desde: "",
+    hasta: "",
+    canal: "",
+    estado: "",
+    cliente: "",
+    telefono: "",
+  });
 
   // 👇 socket ref (igual patrón que history)
   const socketRef = useRef<Socket | null>(null);
@@ -175,40 +190,56 @@ export default function AppointmentsPage() {
     loadGc();
   }, []);
 
-  // Cargar citas (fetch inicial)
-  useEffect(() => {
     const fetchAppointments = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        const res = await fetch(`${BACKEND_URL}/api/appointments`, {
-          credentials: 'include',
-        });
+      const qs = new URLSearchParams();
 
-        if (!res.ok) {
-          throw new Error(`Error al cargar citas (${res.status})`);
-        }
+      if (filters.canal) qs.set("canal", filters.canal);
+      if (filters.estado) qs.set("estado", filters.estado);
+      if (filters.cliente) qs.set("cliente", filters.cliente);
+      if (filters.telefono) qs.set("telefono", filters.telefono);
 
-        const data = await res.json();
+      // datetime-local -> "YYYY-MM-DDTHH:mm"
+      // el backend puede recibir esto tal cual si tu columna es timestamptz/timestamp
+      if (filters.desde) qs.set("desde", filters.desde);
+      if (filters.hasta) qs.set("hasta", filters.hasta);
 
-        if (!data.ok) {
-          throw new Error(data.error || 'Error al cargar citas');
-        }
+      const url = `${BACKEND_URL}/api/appointments${qs.toString() ? `?${qs.toString()}` : ""}`;
 
-        setAppointments(data.appointments || []);
-      } catch (err: any) {
-        console.error('❌ Error al cargar citas:', err);
-        setError(
-          err?.message || 'Hubo un problema al cargar las citas. Intenta de nuevo.'
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+      const res = await fetch(url, { credentials: "include" });
 
+      if (!res.ok) throw new Error(`Error al cargar citas (${res.status})`);
+
+      const data = await res.json();
+      if (!data?.ok) throw new Error(data?.error || "Error al cargar citas");
+
+      setAppointments(data.appointments || []);
+    } catch (err: any) {
+      console.error("❌ Error al cargar citas:", err);
+      setError(err?.message || "Hubo un problema al cargar las citas. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carga inicial
+  useEffect(() => {
     fetchAppointments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Recargar cuando cambien filtros (con debounce simple)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      fetchAppointments();
+    }, 350);
+
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -248,7 +279,9 @@ export default function AppointmentsPage() {
 
         if (safePrev.some((a) => a.id === appt.id)) return safePrev;
 
-        return [appt as Appointment, ...safePrev];
+        return [appt as Appointment, ...safePrev].sort(
+          (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+        );
         });
     });
 
@@ -421,6 +454,110 @@ export default function AppointmentsPage() {
             {error}
           </div>
         )}
+
+        {/* Filtros */}
+        <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+            <div>
+              <label className="block text-xs text-white/60 mb-1">Desde</label>
+              <input
+                type="datetime-local"
+                value={filters.desde}
+                onChange={(e) => setFilters((p) => ({ ...p, desde: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-white/60 mb-1">Hasta</label>
+              <input
+                type="datetime-local"
+                value={filters.hasta}
+                onChange={(e) => setFilters((p) => ({ ...p, hasta: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-white/60 mb-1">Canal</label>
+              <select
+                value={filters.canal}
+                onChange={(e) => setFilters((p) => ({ ...p, canal: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white"
+              >
+                <option value="">Todos</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="instagram">Instagram</option>
+                <option value="facebook">Facebook</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs text-white/60 mb-1">Estado</label>
+              <select
+                value={filters.estado}
+                onChange={(e) => setFilters((p) => ({ ...p, estado: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white"
+              >
+                <option value="">Todos</option>
+                <option value="pending">Pendiente</option>
+                <option value="confirmed">Confirmada</option>
+                <option value="cancelled">Cancelada</option>
+                <option value="attended">Atendida</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs text-white/60 mb-1">Cliente</label>
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={filters.cliente}
+                onChange={(e) => setFilters((p) => ({ ...p, cliente: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-white/60 mb-1">Teléfono</label>
+              <input
+                type="text"
+                placeholder="Ej: +1863..."
+                value={filters.telefono}
+                onChange={(e) => setFilters((p) => ({ ...p, telefono: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                setFilters({
+                  desde: "",
+                  hasta: "",
+                  canal: "",
+                  estado: "",
+                  cliente: "",
+                  telefono: "",
+                })
+              }
+              className="px-4 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
+            >
+              Limpiar
+            </button>
+
+            <button
+              type="button"
+              onClick={fetchAppointments}
+              className="px-4 py-2 rounded-xl text-sm font-semibold bg-purple-600 hover:bg-purple-700"
+            >
+              Aplicar
+            </button>
+          </div>
+        </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl">
           {/* Cabecera (solo desktop) */}
