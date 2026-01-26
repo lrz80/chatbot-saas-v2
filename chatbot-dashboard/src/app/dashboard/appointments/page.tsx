@@ -279,9 +279,14 @@ export default function AppointmentsPage() {
 
         if (safePrev.some((a) => a.id === appt.id)) return safePrev;
 
-        return [appt as Appointment, ...safePrev].sort(
-          (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
-        );
+        return [appt as Appointment, ...safePrev].sort((a, b) => {
+          const an = new Date(a.start_time).getTime();
+          const bn = new Date(b.start_time).getTime();
+          const aPast = an < Date.now();
+          const bPast = bn < Date.now();
+          if (aPast !== bPast) return aPast ? 1 : -1; // futuras primero
+          return an - bn; // más cercana primero
+        });
         });
     });
 
