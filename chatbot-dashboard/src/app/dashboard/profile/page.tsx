@@ -534,13 +534,11 @@ const handleSave = async () => {
           />
         </div>
 
-        {[{
-          label: 'Número del Asistente (SMS)',
-          value: formData.twilio_sms_number
-        }, {
-          label: 'Número del Asistente (Voz)',
-          value: formData.twilio_voice_number
-        }].map(({ label, value }, i) => (
+        {[
+          { label: 'Número del Asistente (WhatsApp)', value: formData.twilio_number },
+          { label: 'Número del Asistente (SMS)', value: formData.twilio_sms_number },
+          { label: 'Número del Asistente (Voz)', value: formData.twilio_voice_number },
+        ].map(({ label, value }, i) => (
           <div key={i}>
             <label className="text-sm text-indigo-200 font-semibold">{label}</label>
             <input
