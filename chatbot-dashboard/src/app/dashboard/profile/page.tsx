@@ -146,7 +146,7 @@ export default function BusinessProfilePage() {
       categoria: settingsData.categoria,
       idioma: settingsData.idioma,
       logo_url: settingsData.logo_url,
-      twilio_number: settingsData.twilio_number,
+      twilio_number: (settingsData.twilio_number || '').replace(/^whatsapp:/i, ''),
       twilio_sms_number: settingsData.twilio_sms_number,
       twilio_voice_number: settingsData.twilio_voice_number,
       plan: settingsData.plan_name ?? tenantData?.plan ?? '',
