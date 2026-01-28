@@ -183,5 +183,21 @@
   "cap.6.title": "Agendamiento con Google Calendar",
   "cap.6.desc": "Ofrece horarios, valida disponibilidad y confirma citas reales en tu calendario (ideal para servicios).",
   "cap.7.title": "Meta Pixel + CAPI",
-  "cap.7.desc": "Envía eventos avanzados desde conversaciones (WA/IG/FB) para optimizar campañas y bajar el costo por lead."
+  "cap.7.desc": "Envía eventos avanzados desde conversaciones (WA/IG/FB) para optimizar campañas y bajar el costo por lead.",
+
+  "landing.steps.1.title": "Configuración del negocio",
+  "landing.steps.1.desc": "Servicios, horarios, ubicación, FAQs y estilo de respuesta por canal.",
+  "landing.steps.2.title": "Activación omnicanal",
+  "landing.steps.2.desc": "WhatsApp, Instagram y Facebook conectados para responder desde un mismo sistema.",
+  "landing.steps.3.title": "Optimización y conversión",
+  "landing.steps.3.desc": "Intención de compra, seguimiento automático y eventos Pixel/CAPI para mejorar ads.",
+
+  "landing.stats.1.title": "Respuesta 24/7",
+  "landing.stats.1.desc": "Sin perder leads fuera de horario",
+  "landing.stats.2.title": "Más cierres",
+  "landing.stats.2.desc": "Seguimiento automático con intención",
+  "landing.stats.3.title": "Menos costo por lead",
+  "landing.stats.3.desc": "Pixel/CAPI aprende quién convierte",
+  "landing.stats.4.title": "Más control",
+  "landing.stats.4.desc": "Dashboard con historial y KPIs"
 }

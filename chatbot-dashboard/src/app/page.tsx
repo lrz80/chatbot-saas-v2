@@ -163,21 +163,9 @@ export default function LandingPage() {
             </p>
 
             <div className="grid gap-4">
-              <StepItem
-                n="1"
-                title="Configuración del negocio"
-                desc="Servicios, horarios, ubicación, FAQs y estilo de respuesta por canal."
-              />
-              <StepItem
-                n="2"
-                title="Activación omnicanal"
-                desc="WhatsApp, Instagram y Facebook conectados para responder desde un mismo sistema."
-              />
-              <StepItem
-                n="3"
-                title="Optimización y conversión"
-                desc="Intención de compra, seguimiento automático y eventos Pixel/CAPI para mejorar ads."
-              />
+              <StepItem n="1" title={t("landing.steps.1.title")} desc={t("landing.steps.1.desc")} />
+              <StepItem n="2" title={t("landing.steps.2.title")} desc={t("landing.steps.2.desc")} />
+              <StepItem n="3" title={t("landing.steps.3.title")} desc={t("landing.steps.3.desc")} />
             </div>
           </div>
 
@@ -188,10 +176,10 @@ export default function LandingPage() {
             </p>
 
             <div className="grid sm:grid-cols-2 gap-4">
-              <MiniStat title="Respuesta 24/7" desc="Sin perder leads fuera de horario" />
-              <MiniStat title="Más cierres" desc="Seguimiento automático con intención" />
-              <MiniStat title="Menos costo por lead" desc="Pixel/CAPI aprende quién convierte" />
-              <MiniStat title="Más control" desc="Dashboard con historial y KPIs" />
+              <MiniStat title={t("landing.stats.1.title")} desc={t("landing.stats.1.desc")} />
+              <MiniStat title={t("landing.stats.2.title")} desc={t("landing.stats.2.desc")} />
+              <MiniStat title={t("landing.stats.3.title")} desc={t("landing.stats.3.desc")} />
+              <MiniStat title={t("landing.stats.4.title")} desc={t("landing.stats.4.desc")} />
             </div>
 
             <div className="mt-6 flex gap-3 flex-col sm:flex-row">
