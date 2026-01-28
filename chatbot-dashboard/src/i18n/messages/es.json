@@ -115,7 +115,40 @@
   "dashprev.bullets.5.desc": "Registra eventos desde el chat para mejorar segmentación y bajar tu costo por lead en campañas.",
 
   "dashprev.mock.alt": "Vista previa del dashboard de Aamy: conversaciones, intención, seguimiento y KPIs",
-  "dashprev.closing": "Configuración guiada con tu información. Tú controlas todo; Aamy ejecuta."
+  "dashprev.closing": "Configuración guiada con tu información. Tú controlas todo; Aamy ejecuta.",
+
+  "whofor.title": "¿Para quién es",
+
+  "whofor.subtitle.before": "Para negocios que reciben mensajes todos los días y quieren",
+  "whofor.subtitle.highlight": "convertir conversaciones en ventas",
+  "whofor.subtitle.after": "sin depender de estar pegados al teléfono. Aamy responde 24/7 en WhatsApp, Instagram y Facebook, y automatiza seguimiento cuando el cliente se enfría.",
+
+  "whofor.advanced.1.title": "Contexto + intención",
+  "whofor.advanced.1.desc": "Aamy interpreta lo que el cliente realmente quiere y responde orientado a conversión.",
+  "whofor.advanced.2.title": "Bilingüe automático",
+  "whofor.advanced.2.desc": "Detecta el idioma del cliente y responde en español o inglés, sin configuración extra.",
+  "whofor.advanced.3.title": "Agendamiento",
+  "whofor.advanced.3.desc": "Conecta Google Calendar para ofrecer horarios y confirmar citas reales.",
+  "whofor.advanced.4.title": "Ads más rentables",
+  "whofor.advanced.4.desc": "Pixel + CAPI desde conversaciones para optimizar campañas con datos reales.",
+
+  "whofor.fit.good.title": "Ideal si…",
+  "whofor.fit.good.1": "Te preguntan precios, horarios, ubicación, disponibilidad y promociones.",
+  "whofor.fit.good.2": "Pierdes clientes por responder tarde o fuera de horario.",
+  "whofor.fit.good.3": "Quieres seguimiento automático.",
+  "whofor.fit.good.4": "Quieres medir intención y resultados (no solo responder).",
+
+  "whofor.fit.bad.title": "No es el mejor fit si…",
+  "whofor.fit.bad.1": "Tu proceso requiere cotizaciones técnicas extensas y aprobaciones internas en cada caso.",
+  "whofor.fit.bad.2": "No quieres cargar información mínima del negocio (servicios, FAQs, horarios, políticas).",
+  "whofor.fit.bad.3": "Buscas un sistema sin control: Aamy automatiza, pero tú siempre puedes intervenir.",
+
+  "whofor.targets.1.title": "Negocios locales",
+  "whofor.targets.1.desc": "Salones de belleza, clínicas, barberías, estudios de tatuajes, consultorios y más.",
+  "whofor.targets.2.title": "E-commerce y ventas por DM",
+  "whofor.targets.2.desc": "Tiendas online y negocios que venden por WhatsApp, Instagram y Facebook.",
+  "whofor.targets.3.title": "Fitness y educación",
+  "whofor.targets.3.desc": "Gimnasios, indoor cycling, yoga, cursos, talleres y escuelas."
 }
 
 
