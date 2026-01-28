@@ -20,8 +20,21 @@ export function setLangCookieClient(lang: Lang) {
   document.cookie = `lang=${lang}; Path=/; Max-Age=31536000; SameSite=Lax`;
 }
 
-export function t(key: string, lang: Lang): string {
-  const v = DICTS[lang]?.[key] ?? DICTS.es?.[key];
-  return typeof v === "string" ? v : key;
-}
+export function t(
+  key: string,
+  lang: Lang,
+  vars?: Record<string, string | number>
+): string {
+  const value = DICTS[lang]?.[key] ?? DICTS.es?.[key] ?? key;
 
+  let out = typeof value === "string" ? value : key;
+
+  // Sustituir variables como {{name}} o {{seconds}}
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      out = out.replaceAll(`{{${k}}}`, String(v));
+    }
+  }
+
+  return out;
+}

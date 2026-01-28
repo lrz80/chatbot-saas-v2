@@ -230,6 +230,46 @@
 
   "landing.testimonials.items.2.quote": "Now messages are handled automatically, and the team focuses on selling and delivering the service.",
   "landing.testimonials.items.2.name": "Andrea",
-  "landing.testimonials.items.2.biz": "Beauty Studio"
+  "landing.testimonials.items.2.biz": "Beauty Studio",
+
+  "login": {
+    "title": "Sign in",
+    "nodes": {
+      "attention": { "title": "24/7 Support", "desc": "Always online for your business." },
+      "stats": { "title": "Analytics", "desc": "Real-time performance dashboard." },
+      "whatsapp": { "title": "WhatsApp", "desc": "Auto-reply to messages." },
+      "facebook": { "title": "Facebook", "desc": "Chatbot connected to your fanpage." },
+      "instagram": { "title": "Instagram DM", "desc": "Handle DMs with AI." },
+      "voice": { "title": "AI Voice", "desc": "Answer calls like a human." },
+      "campaigns": { "title": "Campaigns", "desc": "Automated, effective marketing." }
+    },
+    "form": {
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in"
+    },
+    "links": {
+      "privacy": "Privacy Policy",
+      "forgot": "Forgot your password?",
+      "noAccount": "Don’t have an account?",
+      "register": "Sign up"
+    },
+    "resend": {
+      "cta": "Didn’t get the email? Resend activation link",
+      "cooldown": "Wait {{seconds}}s to resend",
+      "success": "✅ Verification link resent to your email."
+    },
+    "errors": {
+      "parseServer": "Failed to parse server response",
+      "notVerifiedNoEmail": "Your account isn’t verified. Enter your email to resend the link.",
+      "notVerified": "Your account isn’t verified yet. Check your inbox or resend the link.",
+      "http": "HTTP error: {{status}}",
+      "noUid": "UID was not returned by the server",
+      "unknownLogin": "Unknown error while signing in",
+      "emailRequiredResend": "Please enter your email to resend the link.",
+      "resendFailed": "Could not resend the link",
+      "resendUnknown": "Error while resending verification email"
+    }
+  }
 }
 

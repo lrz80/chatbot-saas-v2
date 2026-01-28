@@ -12,18 +12,20 @@ import {
   FaMicrophoneAlt,
   FaBullhorn,
 } from 'react-icons/fa';
+import { useI18n } from '../../i18n/LanguageProvider';
 
 const nodos = [
-  { icon: <FaRobot size={36} style={{ color: '#a855f7' }} />, title: 'Atención 24/7', desc: 'Siempre online para tu negocio.', posClass: 'top-[5%] left-[10%]', x: 10, y: 5 },
-  { icon: <FaChartBar size={36} style={{ color: '#6366f1' }} />, title: 'Estadísticas', desc: 'Panel con rendimiento en tiempo real.', posClass: 'top-[5%] right-[10%]', x: 90, y: 5 },
-  { icon: <FaWhatsapp size={36} style={{ color: '#25D366' }} />, title: 'WhatsApp', desc: 'Responde mensajes automáticamente.', posClass: 'top-[50%] left-[2%]', x: 2, y: 50 },
-  { icon: <FaFacebookMessenger size={36} style={{ color: '#0084FF' }} />, title: 'Facebook', desc: 'Chatbot conectado a tu fanpage.', posClass: 'top-[50%] right-[2%]', x: 98, y: 50 },
-  { icon: <FaInstagram size={36} style={{ color: '#E1306C' }} />, title: 'Instagram DM', desc: 'Atiende tus DMs con IA.', posClass: 'bottom-[20%] left-[15%]', x: 15, y: 80 },
-  { icon: <FaMicrophoneAlt size={36} style={{ color: '#6366f1' }} />, title: 'Voz AI', desc: 'Responde llamadas como un humano.', posClass: 'bottom-[20%] right-[15%]', x: 85, y: 80 },
-  { icon: <FaBullhorn size={36} style={{ color: '#facc15' }} />, title: 'Campañas', desc: 'Marketing automatizado y efectivo.', posClass: 'bottom-[5%] left-[40%]', x: 40, y: 95 },
+  { Icon: FaRobot, color: '#a855f7', titleKey: 'login.nodes.attention.title', descKey: 'login.nodes.attention.desc', posClass: 'top-[5%] left-[10%]', x: 10, y: 5 },
+  { Icon: FaChartBar, color: '#6366f1', titleKey: 'login.nodes.stats.title', descKey: 'login.nodes.stats.desc', posClass: 'top-[5%] right-[10%]', x: 90, y: 5 },
+  { Icon: FaWhatsapp, color: '#25D366', titleKey: 'login.nodes.whatsapp.title', descKey: 'login.nodes.whatsapp.desc', posClass: 'top-[50%] left-[2%]', x: 2, y: 50 },
+  { Icon: FaFacebookMessenger, color: '#0084FF', titleKey: 'login.nodes.facebook.title', descKey: 'login.nodes.facebook.desc', posClass: 'top-[50%] right-[2%]', x: 98, y: 50 },
+  { Icon: FaInstagram, color: '#E1306C', titleKey: 'login.nodes.instagram.title', descKey: 'login.nodes.instagram.desc', posClass: 'bottom-[20%] left-[15%]', x: 15, y: 80 },
+  { Icon: FaMicrophoneAlt, color: '#6366f1', titleKey: 'login.nodes.voice.title', descKey: 'login.nodes.voice.desc', posClass: 'bottom-[20%] right-[15%]', x: 85, y: 80 },
+  { Icon: FaBullhorn, color: '#facc15', titleKey: 'login.nodes.campaigns.title', descKey: 'login.nodes.campaigns.desc', posClass: 'bottom-[5%] left-[40%]', x: 40, y: 95 },
 ];
 
 export default function LoginPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState('');
@@ -64,41 +66,36 @@ export default function LoginPage() {
       try {
         data = JSON.parse(text);
       } catch (err) {
-        setError('Error al interpretar la respuesta del servidor');
+        setError(t('login.errors.parseServer'));
         return;
       }
 
       if (res.status === 403) {
         if (!email) {
-          setError("Tu cuenta no está verificada. Ingresa tu correo para reenviar el enlace.");
+          setError(t('login.errors.notVerifiedNoEmail'));
           setShowResend(false);
         } else {
-          setError("Tu cuenta aún no está verificada. Revisa tu correo o reenvía el enlace.");
+          setError(t('login.errors.notVerified'));
           setShowResend(true);
         }
         return;
-      }      
+      }
 
       if (!res.ok) {
-        setError(`Error HTTP: ${res.status}`);
+        setError(t('login.errors.http', { status: res.status }));
         return;
       }
 
       if (!data.uid) {
-        setError('UID no recibido del servidor');
+        setError(t('login.errors.noUid'));
         return;
       }
 
       await new Promise((r) => setTimeout(r, 100));
       router.push('/dashboard');
 
-      // 👇 Solo para debug, puedes quitarlo después
-      setTimeout(() => {
-        console.log('📦 Cookies actuales (no incluye httpOnly):', document.cookie);
-      }, 1000);
-
     } catch (err: any) {
-      setError(err.message || 'Error desconocido al iniciar sesión');
+      setError(err?.message || t('login.errors.unknownLogin'));
     }
   };
 
@@ -107,7 +104,7 @@ export default function LoginPage() {
     setError('');
 
     if (!email) {
-      setError("Por favor, ingresa tu correo para reenviar el enlace.");
+      setError(t('login.errors.emailRequiredResend'));
       return;
     }
     
@@ -121,7 +118,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'No se pudo reenviar el enlace');
+        setError(data.error || t('login.errors.resendFailed'));
         return;
       }
 
@@ -129,7 +126,7 @@ export default function LoginPage() {
       setShowResend(false);
       setCooldown(60);
     } catch (err) {
-      setError('Error al reenviar el correo de verificación');
+      setError(t('login.errors.resendUnknown'));
     }
   };
 
@@ -155,26 +152,28 @@ export default function LoginPage() {
       </svg>
 
       <div className="absolute inset-0 z-10">
-      {nodos.map((nodo, index) => (
-        <div
-          key={index}
-          className={`absolute ${nodo.posClass} ${
-            index > 3 ? 'hidden sm:block' : ''
-          } bg-white/5 border border-white/10 p-3 rounded-xl w-48 md:w-60 max-w-[90vw] backdrop-blur-md shadow-lg hover:scale-105 transition-transform text-sm`}
-        >
-
+      {nodos.map((nodo, index) => {
+        const Icon = nodo.Icon;
+        return (
+          <div
+            key={index}
+            className={`absolute ${nodo.posClass} ${
+              index > 3 ? 'hidden sm:block' : ''
+            } bg-white/5 border border-white/10 p-3 rounded-xl w-48 md:w-60 max-w-[90vw] backdrop-blur-md shadow-lg hover:scale-105 transition-transform text-sm`}
+          >
             <div className="flex items-center gap-3 mb-2">
-              {nodo.icon}
-              <span className="text-white text-base font-semibold">{nodo.title}</span>
+              <Icon size={36} style={{ color: nodo.color }} />
+              <span className="text-white text-base font-semibold">{t(nodo.titleKey)}</span>
             </div>
-            <p className="text-sm text-white/60">{nodo.desc}</p>
+            <p className="text-sm text-white/60">{t(nodo.descKey)}</p>
           </div>
-        ))}
+        );
+      })}
       </div>
 
       <div className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl">
         <h1 className="text-2xl font-bold mb-6 text-center text-purple-300 drop-shadow">
-          Iniciar sesión
+          {t('login.title')}
         </h1>
 
         {error && <p className="bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center">{error}</p>}
@@ -187,21 +186,23 @@ export default function LoginPage() {
               className="text-purple-300 hover:underline text-sm disabled:opacity-50"
             >
               {cooldown > 0
-                ? `Espera ${cooldown}s para reenviar`
-                : '¿No recibiste el correo? Reenviar link de activación'}
+                ? t('login.resend.cooldown', { seconds: cooldown })
+                : t('login.resend.cta')}
             </button>
           </div>
         )}
 
         {resendSuccess && (
           <p className="text-green-400 text-sm mt-2 text-center">
-            ✅ Enlace de verificación reenviado a tu correo.
+            {t('login.resend.success')}
           </p>
         )}
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-1 text-white/80">Correo electrónico</label>
+            <label className="block text-sm font-medium mb-1 text-white/80">
+              {t('login.form.email')}
+            </label>
             <input
               type="email"
               value={email}
@@ -212,7 +213,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1 text-white/80">Contraseña</label>
+            <label className="block text-sm font-medium mb-1 text-white/80">
+              {t('login.form.password')}
+            </label>
             <input
               type="password"
               value={password}
@@ -229,7 +232,7 @@ export default function LoginPage() {
               rel="noopener noreferrer"
               className="text-sm text-gray-400 hover:text-indigo-400 transition underline-offset-4 hover:underline"
             >
-              Política de Privacidad
+              {t('login.links.privacy')}
             </a>
           </div>
           
@@ -237,7 +240,7 @@ export default function LoginPage() {
             type="submit"
             className="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-700 transition text-white font-semibold shadow-lg"
           >
-            Ingresar
+            {t('login.form.submit')}
           </button>
         </form>
 
@@ -246,14 +249,14 @@ export default function LoginPage() {
             href="/forgot-password"
             className="text-white/70 hover:underline hover:text-white transition"
           >
-            ¿Olvidaste tu contraseña?
+            {t('login.links.forgot')}
           </a>
         </p>
 
         <p className="mt-6 text-sm text-center text-white/60">
-          ¿Aún no tienes cuenta?{' '}
+          {t('login.links.noAccount')}{' '}
           <a href="/register" className="text-purple-400 underline hover:text-purple-300 transition">
-            Regístrate
+            {t('login.links.register')}
           </a>
         </p>
       </div>

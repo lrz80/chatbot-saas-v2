@@ -7,7 +7,7 @@ import { getLangFromCookieClient, setLangCookieClient, t as translate } from "./
 type I18nCtx = {
   lang: Lang;
   setLang: (l: Lang) => void;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 };
 
 const Ctx = createContext<I18nCtx | null>(null);
@@ -24,7 +24,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     () => ({
       lang,
       setLang,
-      t: (key: string) => translate(key, lang),
+      t: (key: string, vars?: Record<string, string | number>) => translate(key, lang, vars),
     }),
     [lang]
   );
