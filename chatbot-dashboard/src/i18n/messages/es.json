@@ -305,6 +305,25 @@
 "register.errors.failed": "Registro fallido",
 "register.errors.unknown": "Error desconocido al registrar",
 
-"register.debug.timezone": "Zona horaria detectada"
+"register.debug.timezone": "Zona horaria detectada",
+
+"sidebar.logoAlt": "Logo",
+"sidebar.fallbackUserLetter": "U",
+"sidebar.welcome": "Bienvenido",
+"sidebar.fallbackBusiness": "Negocio",
+"sidebar.title": "Panel AI",
+"sidebar.closeMenuAria": "Cerrar menú",
+"sidebar.logout": "Cerrar sesión",
+
+"sidebar.nav.home": "Inicio",
+"sidebar.nav.businessProfile": "Perfil del Negocio",
+"sidebar.nav.whatsappAssistant": "Asistente de WhatsApp",
+"sidebar.nav.metaAssistant": "Asistente de Meta",
+"sidebar.nav.voiceAssistant": "Asistente de Voz",
+"sidebar.nav.messageHistory": "Historial de Mensajes",
+"sidebar.nav.calendar": "Agenda",
+"sidebar.nav.leadFollowUp": "Seguimiento de Leads",
+"sidebar.nav.smsCampaigns": "Campañas SMS",
+"sidebar.nav.emailCampaigns": "Campañas Email"
 }
 

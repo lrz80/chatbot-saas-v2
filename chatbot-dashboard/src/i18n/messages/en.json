@@ -305,6 +305,25 @@
 "register.errors.failed": "Registration failed",
 "register.errors.unknown": "Unknown error while registering",
 
-"register.debug.timezone": "Detected time zone"
+"register.debug.timezone": "Detected time zone",
+
+"sidebar.logoAlt": "Logo",
+"sidebar.fallbackUserLetter": "U",
+"sidebar.welcome": "Welcome",
+"sidebar.fallbackBusiness": "Business",
+"sidebar.title": "AI Panel",
+"sidebar.closeMenuAria": "Close menu",
+"sidebar.logout": "Sign out",
+
+"sidebar.nav.home": "Home",
+"sidebar.nav.businessProfile": "Business Profile",
+"sidebar.nav.whatsappAssistant": "WhatsApp Assistant",
+"sidebar.nav.metaAssistant": "Meta Assistant",
+"sidebar.nav.voiceAssistant": "Voice Assistant",
+"sidebar.nav.messageHistory": "Message History",
+"sidebar.nav.calendar": "Calendar",
+"sidebar.nav.leadFollowUp": "Lead Follow-up",
+"sidebar.nav.smsCampaigns": "SMS Campaigns",
+"sidebar.nav.emailCampaigns": "Email Campaigns"
 }
 

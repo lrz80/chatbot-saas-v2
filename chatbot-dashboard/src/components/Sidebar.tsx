@@ -8,12 +8,15 @@ import ClientOnly from './ClientOnly';
 import { useEffect, useState } from 'react';
 import { BACKEND_URL } from '@/utils/api';
 import { useRouter } from "next/navigation";
+import { useI18n } from "../i18n/LanguageProvider";
 
 
 export default function Sidebar({ onLogout, isOpen, onClose }: any) {
   const [tenant, setTenant] = useState<any>(null);
 
   const router = useRouter();
+
+  const { t } = useI18n();
 
   const handleLogout = async () => {
     try {
@@ -57,7 +60,7 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
         <div
           onClick={onClose}
           className="fixed inset-0 bg-black/60 z-40 lg:hidden"
-          aria-label="Cerrar menú"
+          aria-label={t("sidebar.closeMenuAria")}
         />
       )}
 
@@ -87,35 +90,37 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
           <div className="flex items-center gap-4 mb-10">
             {tenant?.logo_url ? (
               <div className="w-12 h-12 rounded-full bg-white p-[2px] shadow-inner">
-                <img src={tenant.logo_url} alt="Logo" className="w-full h-full rounded-full object-cover" />
+                <img src={tenant.logo_url} alt={t("sidebar.logoAlt")} className="w-full h-full rounded-full object-cover" />
               </div>
             ) : (
               <div className="w-12 h-12 bg-white/20 text-white font-bold flex items-center justify-center rounded-full text-xl shadow-inner">
-                {(tenant?.owner_name || tenant?.email || 'U').charAt(0).toUpperCase()}
+                {(tenant?.owner_name || tenant?.email || t("sidebar.fallbackUserLetter")).charAt(0).toUpperCase()}
               </div>
             )}
             <div>
-              <p className="text-sm text-white/70">Bienvenido</p>
+              <p className="text-sm text-white/70">{t("sidebar.welcome")}</p>
               <p className="font-semibold text-lg leading-tight truncate max-w-[160px]">
-                {tenant?.name || 'Negocio'}
+                {tenant?.name || t("sidebar.fallbackBusiness")}
               </p>
             </div>
           </div>
 
-          <h2 className="text-xl font-bold mb-6 text-purple-300 hidden lg:block">Panel AI</h2>
+          <h2 className="text-xl font-bold mb-6 text-purple-300 hidden lg:block">
+            {t("sidebar.title")}
+          </h2>
 
           <nav className="space-y-2 text-sm font-medium">
             {[
-              { href: '/dashboard', icon: <FiHome />, label: 'Inicio' },
-              { href: '/dashboard/profile', icon: <FiUser />, label: 'Perfil del Negocio' },
-              { href: '/dashboard/training', icon: <FaWhatsapp className="text-white" />, label: 'Asistente de WhatsApp' },
-              { href: '/dashboard/meta-config', icon: <FaFacebookMessenger className="text-white" />, label: 'Asistente de Meta' },
-              { href: '/dashboard/voice-config', icon: <FiMic />, label: 'Asistente de Voz' },
-              { href: '/dashboard/history', icon: <FiClock />, label: 'Historial de Mensajes' },
-              { href: '/dashboard/appointments', icon: <FiCalendar />, label: 'Agenda' },
-              { href: '/dashboard/follow-up', icon: <FiUsers />, label: 'Seguimiento de Leads' },
-              { href: '/dashboard/campaigns/sms', icon: <FiMessageSquare />, label: 'Campañas SMS' },
-              { href: '/dashboard/campaigns/email', icon: <FiMail />, label: 'Campañas Email' },
+              { href: "/dashboard", icon: <FiHome />, labelKey: "sidebar.nav.home" },
+              { href: "/dashboard/profile", icon: <FiUser />, labelKey: "sidebar.nav.businessProfile" },
+              { href: "/dashboard/training", icon: <FaWhatsapp className="text-white" />, labelKey: "sidebar.nav.whatsappAssistant" },
+              { href: "/dashboard/meta-config", icon: <FaFacebookMessenger className="text-white" />, labelKey: "sidebar.nav.metaAssistant" },
+              { href: "/dashboard/voice-config", icon: <FiMic />, labelKey: "sidebar.nav.voiceAssistant" },
+              { href: "/dashboard/history", icon: <FiClock />, labelKey: "sidebar.nav.messageHistory" },
+              { href: "/dashboard/appointments", icon: <FiCalendar />, labelKey: "sidebar.nav.calendar" },
+              { href: "/dashboard/follow-up", icon: <FiUsers />, labelKey: "sidebar.nav.leadFollowUp" },
+              { href: "/dashboard/campaigns/sms", icon: <FiMessageSquare />, labelKey: "sidebar.nav.smsCampaigns" },
+              { href: "/dashboard/campaigns/email", icon: <FiMail />, labelKey: "sidebar.nav.emailCampaigns" },
             ].map((item, index) => (
               <a
                 key={index}
@@ -123,7 +128,7 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
                 className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 hover:pl-5 transition-all rounded-lg group"
               >
                 <span className="group-hover:scale-110 transition-transform">{item.icon}</span>
-                {item.label}
+                {t(item.labelKey)}
               </a>
             ))}
           </nav>
@@ -139,7 +144,7 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
               onClick={handleLogout}
               className="w-full rounded-2xl py-3 font-medium shadow bg-red-600 hover:bg-red-700 text-white"
             >
-              Cerrar sesión
+              {t("sidebar.logout")}
             </button>
           </ClientOnly>
         </div>
