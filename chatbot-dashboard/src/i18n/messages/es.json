@@ -451,6 +451,12 @@
 "profile.days.thu": "Jueves",
 "profile.days.fri": "Viernes",
 "profile.days.sat": "Sábado",
-"profile.days.sun": "Domingo"
+"profile.days.sun": "Domingo",
+
+"profile.membership.active": "Membresia Activa",
+"profile.membership.activeUntil": "Membresia Activa Hasta {{date}}",
+"profile.membership.trial": "Periodo de prueba Activo",
+"profile.membership.trialUntil": "Periodo de prueba Activo Hasta {{date}}",
+"profile.membership.inactiveShort": "Membresia Inactiva"
 }
 

@@ -295,7 +295,7 @@ const handleSave = async () => {
           availability_headers = obj;
         }
       } catch (e) {
-        alert('{t("profile.availability.headersInvalid")}');
+        alert(t("profile.availability.headersInvalid"));
       }
     }
 
@@ -324,7 +324,7 @@ const handleSave = async () => {
       throw new Error(data?.error || 'Error guardando booking/availability');
     }
 
-    alert('{t("profile.save.success")}');
+    alert(t("profile.save.success"));
     await fetchSettings();
   } catch (err: any) {
     console.error(err);
@@ -353,7 +353,7 @@ const handleSave = async () => {
       });
       const data = await res.json();
       if (res.ok) {
-        alert('{t("profile.plan.cancelSuccess")}');
+        alert(t("profile.plan.cancelSuccess"));
         await fetchSettings();
       } else {
         alert(`${t("profile.alert.errorPrefix")} ${data.error}`);
@@ -361,7 +361,7 @@ const handleSave = async () => {
       }
     } catch (err) {
       console.error("❌ Error:", err);
-      alert('{t("profile.plan.cancelError")}');
+      alert(t("profile.plan.cancelError"));
     }
   };
 
@@ -507,13 +507,13 @@ const handleSave = async () => {
                 const data = await res.json();
                 if (data.logo_url) {
                   setFormData((prev: any) => ({ ...prev, logo_url: data.logo_url }));
-                  alert('{t("profile.logo.uploadSuccess")}');
+                  alert(t("profile.logo.uploadSuccess"));
                 } else {
-                  alert('{t("profile.logo.uploadFail")}');
+                  alert(t("profile.logo.uploadFail"));
                 }
               } catch (err) {
                 console.error("❌ Error al subir logo:", err);
-                alert('{t("profile.logo.uploadFailGeneric")}');
+                alert(t("profile.logo.uploadFailGeneric"));
               }
             }}
             className="w-full text-white/70 bg-white/10 border border-white/20 px-3 py-2 rounded-md file:mr-3 file:py-1 file:px-2 file:border-0 file:rounded file:bg-indigo-600 file:text-white"
@@ -550,14 +550,14 @@ const handleSave = async () => {
         </div>
 
         {[
-          { label: 't("profile.fields.waNumber")', value: formData.twilio_number },
-          { label: 't("profile.fields.smsNumber")', value: formData.twilio_sms_number },
-          { label: 't("profile.fields.voiceNumber")', value: formData.twilio_voice_number },
+          { label: t("profile.fields.waNumber"), value: formData.twilio_number },
+          { label: t("profile.fields.smsNumber"), value: formData.twilio_sms_number },
+          { label: t("profile.fields.voiceNumber"), value: formData.twilio_voice_number },
         ].map(({ label, value }, i) => (
           <div key={i}>
             <label className="text-sm text-indigo-200 font-semibold">{label}</label>
             <input
-              value={value || '{t("profile.values.notAssigned")}'}
+              value={value || t("profile.values.notAssigned")}
               readOnly
               className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md text-gray-400"
             />
@@ -597,27 +597,44 @@ const handleSave = async () => {
               ? new Date(formData.fecha_registro).toLocaleDateString(locale, {
               year: 'numeric', month: 'long', day: '2-digit'
             })
-          : '{t("profile.values.dateUnavailable")}'}
+          : t("profile.values.dateUnavailable")}
           </p>
         </div>
 
         <div className="md:col-span-2">
-          <p className="text-sm text-indigo-2 00 font-semibold">{t("profile.membership.statusTitle")}</p>
-          {formData.estado_membresia_texto ? (
-            <p
-              className={
-                formData.estado_membresia_texto.includes('🟡')
-                  ? 'text-yellow-400 font-semibold'
-                  : formData.estado_membresia_texto.includes('✅')
-                  ? 'text-green-400 font-semibold'
-                  : 'text-red-400 font-semibold'
-              }
-            >
-              {formData.estado_membresia_texto}
-            </p>
-          ) : (
-            <p className="text-red-400 font-semibold">❌ {t("profile.membership.noInfo")}</p>
-          )}
+          <p className="text-sm text-indigo-200 font-semibold">
+            {t("profile.membership.statusTitle")}
+          </p>
+
+          {(() => {
+            const untilRaw = formData.membresia_vigencia;
+            const until = untilRaw ? new Date(untilRaw) : null;
+            const dateStr = until
+              ? new Intl.DateTimeFormat(locale, { year: "numeric", month: "short", day: "2-digit" }).format(until)
+              : null;
+
+            if (formData.membresia_activa) {
+              return (
+                <p className="text-green-400 font-semibold">
+                  ✅ {dateStr ? t("profile.membership.activeUntil", { date: dateStr }) : t("profile.membership.active")}
+                </p>
+              );
+            }
+
+            if (formData.trial_activo) {
+              return (
+                <p className="text-yellow-400 font-semibold">
+                  🟡 {dateStr ? t("profile.membership.trialUntil", { date: dateStr }) : t("profile.membership.trial")}
+                </p>
+              );
+            }
+
+            return (
+              <p className="text-red-400 font-semibold">
+                🚫 {t("profile.membership.inactiveShort")}
+              </p>
+            );
+          })()}
         </div>
       </div>
 
@@ -739,7 +756,11 @@ const handleSave = async () => {
               : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
           }`}
         >
-          {saving ? '{t("profile.save.saving")}': formData.can_edit ? '{t("profile.save.cta")}' : '{t("profile.save.upgrade")}'}
+          {saving
+            ? t("profile.save.saving")
+            : formData.can_edit
+            ? t("profile.save.cta")
+            : t("profile.save.upgrade")}
         </button>
       </div>
       <Footer />
