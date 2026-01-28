@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { LanguageProvider, useI18n } from "../i18n/LanguageProvider";
+import { useI18n } from "../i18n/LanguageProvider";
 
 
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
@@ -63,29 +63,27 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
   };
 
   return (
-    <LanguageProvider>
-      <>
-        {showInstallBanner && (
-          <div className="fixed bottom-4 left-4 right-4 bg-purple-800 text-white px-6 py-4 rounded-xl shadow-lg flex justify-between items-center z-50">
-            <span>{t("pwa.banner")}</span>
-            <div className="flex gap-2">
-              <button
-                onClick={handleInstall}
-                className="bg-white text-purple-800 font-bold py-2 px-4 rounded-lg"
-              >
-                {t("pwa.install")}
-              </button>
-              <button
-                onClick={handleDismiss}
-                className="bg-transparent border border-white text-white font-bold py-2 px-4 rounded-lg"
-              >
-                {t("pwa.close")}
-              </button>
-            </div>
+    <>
+      {showInstallBanner && (
+        <div className="fixed bottom-4 left-4 right-4 bg-purple-800 text-white px-6 py-4 rounded-xl shadow-lg flex justify-between items-center z-50">
+          <span>{t("pwa.banner")}</span>
+          <div className="flex gap-2">
+            <button
+              onClick={handleInstall}
+              className="bg-white text-purple-800 font-bold py-2 px-4 rounded-lg"
+            >
+              {t("pwa.install")}
+            </button>
+            <button
+              onClick={handleDismiss}
+              className="bg-transparent border border-white text-white font-bold py-2 px-4 rounded-lg"
+            >
+              {t("pwa.close")}
+            </button>
           </div>
-        )}
-        {children}
-      </>
-    </LanguageProvider>
+        </div>
+      )}
+      {children}
+    </>
   );
 }
