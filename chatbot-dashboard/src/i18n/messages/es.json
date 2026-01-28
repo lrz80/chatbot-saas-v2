@@ -1,0 +1,15 @@
+{
+  "nav.features": "Funciones",
+  "nav.pricing": "Precios",
+  "nav.login": "Ingresar",
+  "nav.benefits": "Beneficios",
+  "nav.dashboard": "Dashboard",
+
+  "hero.title": "Automatiza tu negocio con Aamy",
+  "hero.subtitle": "WhatsApp, Instagram y Facebook con seguimiento y agenda",
+  "hero.cta": "Ver demo",
+
+  "pwa.banner": "📱 Instala Aamy.AI como App",
+  "pwa.install": "Instalar",
+  "pwa.close": "Cerrar"
+}

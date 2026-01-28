@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { track } from '@/lib/metaPixel';
+import LangToggle from "@/components/LangToggle";
+import { useI18n } from "../i18n/LanguageProvider";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -12,6 +14,7 @@ export default function Navbar() {
   const toggleMenu = () => setOpen(!open);
 
   const isLanding = pathname === '/';
+  const { t } = useI18n();
 
   return (
     <nav className="w-full fixed top-0 z-50 bg-black/60 backdrop-blur-md text-white px-6 py-4 flex items-center justify-between">
@@ -40,7 +43,7 @@ export default function Navbar() {
               setOpen(false);
             }}
           >
-            Beneficios
+            {t("nav.benefits")}
           </a>
         </li>
 
@@ -52,10 +55,14 @@ export default function Navbar() {
               className="hover:text-purple-400 transition"
               onClick={() => setOpen(false)}
             >
-              Dashboard
+              {t("nav.dashboard")}
             </Link>
           </li>
         )}
+
+        <li className="mt-4 md:mt-0">
+          <LangToggle />
+        </li>
 
         <li>
           <Link
@@ -66,7 +73,7 @@ export default function Navbar() {
               setOpen(false);
             }}
           >
-            Ingresar
+            {t("nav.login")}
           </Link>
         </li>
       </ul>

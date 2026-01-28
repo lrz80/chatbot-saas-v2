@@ -1,0 +1,15 @@
+{
+  "nav.features": "Features",
+  "nav.pricing": "Pricing",
+  "nav.login": "Sign in",
+  "nav.benefits": "Benefits",
+  "nav.dashboard": "Dashboard",
+
+  "hero.title": "Automate your business with Aamy",
+  "hero.subtitle": "WhatsApp, Instagram and Facebook with follow-up and booking",
+  "hero.cta": "See demo",
+
+  "pwa.banner": "📱 Install Aamy.AI as an App",
+  "pwa.install": "Install",
+  "pwa.close": "Close"
+}
