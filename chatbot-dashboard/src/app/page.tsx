@@ -32,48 +32,13 @@ import {
  *  CAPABILITIES (IA avanzada)
  *  ========================= */
 const capabilities = [
-  {
-    icon: <FaBrain size={26} className="text-purple-300 drop-shadow" />,
-    title: "IA conversacional con contexto",
-    description:
-      "Aamy entiende intención y mantiene el hilo de la conversación para responder como un humano (no solo FAQs).",
-  },
-  {
-    icon: <FaRobot size={26} className="text-purple-400 drop-shadow" />,
-    title: "Respuestas instantáneas 24/7",
-    description:
-      "Responde en segundos y reduce pérdida de leads fuera de horario sin contratar personal adicional.",
-  },
-  {
-    icon: <FaGlobe size={26} className="text-blue-300 drop-shadow" />,
-    title: "Multilenguaje automático",
-    description:
-      "Detección automática de idioma: Aamy reconoce si el cliente escribe en español o inglés y adapta toda la conversación de forma instantánea.",
-  },
-  {
-    icon: <FaUserCheck size={26} className="text-yellow-300 drop-shadow" />,
-    title: "Intención de compra + ventas",
-    description:
-      "Identifica interés (bajo/medio/alto) y responde con enfoque de cierre, recolectando datos del lead.",
-  },
-  {
-    icon: <FaBullhorn size={26} className="text-orange-300 drop-shadow" />,
-    title: "Follow-up automático",
-    description:
-      "Si el cliente deja de responder, Aamy hace seguimiento inteligente para recuperar la venta.",
-  },
-  {
-    icon: <FaCalendarAlt size={26} className="text-green-300 drop-shadow" />,
-    title: "Agendamiento con Google Calendar",
-    description:
-      "Ofrece horarios, valida disponibilidad y confirma citas reales en tu calendario (ideal para servicios).",
-  },
-  {
-    icon: <FaBullseye size={26} className="text-pink-300 drop-shadow" />,
-    title: "Meta Pixel + CAPI",
-    description:
-      "Envía eventos avanzados desde conversaciones (WA/IG/FB) para optimizar campañas y bajar el costo por lead.",
-  },
+  { icon: <FaBrain size={26} className="text-purple-300 drop-shadow" />, titleKey: "cap.1.title", descKey: "cap.1.desc" },
+  { icon: <FaRobot size={26} className="text-purple-400 drop-shadow" />, titleKey: "cap.2.title", descKey: "cap.2.desc" },
+  { icon: <FaGlobe size={26} className="text-blue-300 drop-shadow" />, titleKey: "cap.3.title", descKey: "cap.3.desc" },
+  { icon: <FaUserCheck size={26} className="text-yellow-300 drop-shadow" />, titleKey: "cap.4.title", descKey: "cap.4.desc" },
+  { icon: <FaBullhorn size={26} className="text-orange-300 drop-shadow" />, titleKey: "cap.5.title", descKey: "cap.5.desc" },
+  { icon: <FaCalendarAlt size={26} className="text-green-300 drop-shadow" />, titleKey: "cap.6.title", descKey: "cap.6.desc" },
+  { icon: <FaBullseye size={26} className="text-pink-300 drop-shadow" />, titleKey: "cap.7.title", descKey: "cap.7.desc" },
 ];
 
 /** =========================
@@ -175,7 +140,11 @@ export default function LandingPage() {
           >
             {capabilities.map((cap, index) => (
               <div key={index} className="keen-slider__slide w-full flex justify-center">
-                <FeatureCard {...cap} />
+                <FeatureCard
+                  icon={cap.icon}
+                  title={t(cap.titleKey)}
+                  description={t(cap.descKey)}
+                />
               </div>
             ))}
           </div>

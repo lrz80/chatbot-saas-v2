@@ -168,5 +168,20 @@
   "demoWa.msg.5": "If you tell me what you’re looking for, I’ll give you the right information.",
 
   "waDemo.initialText": "Hi, I want to see how it works",
-  "waDemo.tooltip": "See how it works"
+  "waDemo.tooltip": "See how it works",
+
+  "cap.1.title": "Conversational AI with context",
+  "cap.1.desc": "Aamy understands intent and keeps the conversation thread to reply like a human (not just FAQs).",
+  "cap.2.title": "Instant replies 24/7",
+  "cap.2.desc": "Replies in seconds and reduces lead loss after hours without hiring extra staff.",
+  "cap.3.title": "Automatic multilingual",
+  "cap.3.desc": "Automatic language detection: Aamy recognizes whether the customer writes in Spanish or English and adapts instantly.",
+  "cap.4.title": "Buying intent + sales",
+  "cap.4.desc": "Identifies interest (low/medium/high) and replies with a closing-focused approach, collecting lead details.",
+  "cap.5.title": "Automatic follow-up",
+  "cap.5.desc": "If the customer stops replying, Aamy follows up intelligently to recover the sale.",
+  "cap.6.title": "Google Calendar booking",
+  "cap.6.desc": "Offers time slots, checks availability, and confirms real appointments on your calendar (ideal for services).",
+  "cap.7.title": "Meta Pixel + CAPI",
+  "cap.7.desc": "Sends advanced events from conversations (WA/IG/FB) to optimize campaigns and lower cost per lead."
 }
