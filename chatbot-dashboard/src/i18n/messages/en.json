@@ -148,5 +148,12 @@
   "whofor.targets.2.title": "E-commerce & DM sales",
   "whofor.targets.2.desc": "Online stores and businesses that sell via WhatsApp, Instagram, and Facebook.",
   "whofor.targets.3.title": "Fitness & education",
-  "whofor.targets.3.desc": "Gyms, indoor cycling, yoga, courses, workshops, and schools."
+  "whofor.targets.3.desc": "Gyms, indoor cycling, yoga, courses, workshops, and schools.",
+
+  "footer.tagline": "Aamy.ai — Omnichannel conversational AI for sales, booking and follow-up.",
+  "footer.terms": "Terms of Service",
+  "footer.privacy": "Privacy Policy",
+  "footer.delete": "Delete Account",
+  "footer.disclaimer": "Aamy processes messages using the information configured by each business and the rules of its industry. Results may vary depending on configuration, business type and message volume.",
+  "footer.rights": "All rights reserved."
 }

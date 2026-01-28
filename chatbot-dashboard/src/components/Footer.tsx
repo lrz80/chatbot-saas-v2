@@ -3,8 +3,10 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useI18n } from "../i18n/LanguageProvider";
 
 export default function Footer() {
+  const { t } = useI18n();
   const pathname = usePathname();
   const showDeleteLink = pathname !== '/';
 
@@ -12,7 +14,7 @@ export default function Footer() {
     <footer className="text-center text-gray-400 text-xs mt-16 py-10 border-t border-white/10 bg-white/5 backdrop-blur-md">
       {/* Tagline compacto (posicionamiento premium) */}
       <p className="text-sm text-white/80 font-semibold mb-3">
-        Aamy.ai — IA conversacional omnicanal para ventas, agenda y seguimiento.
+        {t("footer.tagline")}
       </p>
 
       {/* Links legales */}
@@ -21,7 +23,7 @@ export default function Footer() {
           href="/terms-of-service"
           className="underline hover:text-purple-300 transition"
         >
-          Términos de Servicio
+          {t("footer.terms")}
         </Link>
 
         <span>|</span>
@@ -30,7 +32,7 @@ export default function Footer() {
           href="/privacy-policy"
           className="underline hover:text-purple-300 transition"
         >
-          Política de Privacidad
+          {t("footer.privacy")}
         </Link>
 
         {showDeleteLink && (
@@ -40,7 +42,7 @@ export default function Footer() {
               href="/delete-account"
               className="underline hover:text-red-400 transition"
             >
-              Eliminar Cuenta
+              {t("footer.delete")}
             </Link>
           </>
         )}
@@ -48,13 +50,12 @@ export default function Footer() {
 
       {/* Nota legal (más clara y profesional) */}
       <p className="text-[10px] text-gray-400 max-w-xl mx-auto mb-3 px-4 leading-relaxed">
-        Aamy procesa mensajes usando la información configurada por cada negocio y las reglas de su sector.
-        Los resultados pueden variar según la configuración, el tipo de negocio y el volumen de mensajes.
+        {t("footer.disclaimer")}
       </p>
 
       {/* Derechos reservados */}
       <p className="text-[10px] text-gray-500">
-        © {new Date().getFullYear()} Aamy.ai — Todos los derechos reservados.
+        © {new Date().getFullYear()} Aamy.ai — {t("footer.rights")}
       </p>
     </footer>
   );
