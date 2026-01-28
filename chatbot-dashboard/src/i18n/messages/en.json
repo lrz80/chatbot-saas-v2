@@ -533,6 +533,18 @@
 "delete.back": "⬅️ Back to dashboard",
 "delete.success": "✅ Your account has been deleted. You will be redirected to registration...",
 "delete.errors.failed": "❌ Unable to delete account.",
-"delete.errors.server": "❌ Error connecting to the server."
+"delete.errors.server": "❌ Error connecting to the server.",
+
+"verifyEmail.fallback": "Loading...",
+"verifyEmail.loading": "Verifying your account...",
+
+"verifyEmail.success.title": "✅ Account verified!",
+"verifyEmail.success.subtitle": "Your account has been successfully activated.",
+"verifyEmail.success.redirect": "Redirecting to login in {{seconds}} seconds...",
+
+"verifyEmail.error.title": "❌ Verification failed",
+"verifyEmail.error.subtitle": "The link is invalid or has expired.",
+
+"verifyEmail.errors.invalidToken": "Invalid token"
 }
 

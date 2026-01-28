@@ -533,6 +533,18 @@
 "delete.back": "⬅️ Volver al panel",
 "delete.success": "✅ Tu cuenta fue eliminada. Serás redirigido al registro...",
 "delete.errors.failed": "❌ No se pudo eliminar la cuenta.",
-"delete.errors.server": "❌ Error al conectar con el servidor."
+"delete.errors.server": "❌ Error al conectar con el servidor.",
+
+"verifyEmail.fallback": "Cargando...",
+"verifyEmail.loading": "Verificando tu cuenta...",
+
+"verifyEmail.success.title": "✅ ¡Cuenta verificada!",
+"verifyEmail.success.subtitle": "Tu cuenta ha sido activada exitosamente.",
+"verifyEmail.success.redirect": "Redirigiendo al login en {{seconds}} segundos...",
+
+"verifyEmail.error.title": "❌ Verificación fallida",
+"verifyEmail.error.subtitle": "El enlace no es válido o ha expirado.",
+
+"verifyEmail.errors.invalidToken": "Token inválido"
 }
 
