@@ -270,6 +270,41 @@
   "login.errors.unknownLogin": "Unknown error while signing in",
   "login.errors.emailRequiredResend": "Please enter your email to resend the link.",
   "login.errors.resendFailed": "Could not resend the link",
-  "login.errors.resendUnknown": "Error while resending verification email"
+  "login.errors.resendUnknown": "Error while resending verification email",
+
+  "register.title": "Create account",
+
+"register.nodes.attention.title": "24/7 Support",
+"register.nodes.attention.desc": "Always online for your business.",
+"register.nodes.stats.title": "Analytics",
+"register.nodes.stats.desc": "Real-time performance dashboard.",
+"register.nodes.whatsapp.title": "WhatsApp",
+"register.nodes.whatsapp.desc": "Auto-reply to messages.",
+"register.nodes.facebook.title": "Facebook",
+"register.nodes.facebook.desc": "Chatbot connected to your fanpage.",
+"register.nodes.instagram.title": "Instagram DM",
+"register.nodes.instagram.desc": "Handle DMs with AI.",
+"register.nodes.voice.title": "AI Voice",
+"register.nodes.voice.desc": "Answer calls like a human.",
+"register.nodes.campaigns.title": "Campaigns",
+"register.nodes.campaigns.desc": "Automated, effective marketing.",
+
+"register.form.firstName": "First name",
+"register.form.lastName": "Last name",
+"register.form.email": "Email",
+"register.form.phone": "Phone (e.g., +14120000000)",
+"register.form.password": "Secure password",
+"register.form.submit": "Sign up",
+
+"register.links.haveAccount": "Already have an account?",
+"register.links.login": "Sign in",
+
+"register.success.title": "✅ Registration successful",
+"register.success.subtitle": "We’ve sent a verification link to your email. Please check it to activate your account.",
+
+"register.errors.failed": "Registration failed",
+"register.errors.unknown": "Unknown error while registering",
+
+"register.debug.timezone": "Detected time zone"
 }
 

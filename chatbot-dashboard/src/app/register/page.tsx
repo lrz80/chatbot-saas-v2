@@ -14,18 +14,20 @@ import {
 } from "react-icons/fa";
 import { BACKEND_URL } from "@/utils/api";
 import { track } from '@/lib/metaPixel';
+import { useI18n } from "../../i18n/LanguageProvider";
 
 const nodos = [
-  { icon: <FaRobot size={36} style={{ color: '#a855f7' }} />, title: 'Atención 24/7', desc: 'Siempre online para tu negocio.', posClass: 'top-[5%] left-[10%]', x: 10, y: 5 },
-  { icon: <FaChartBar size={36} style={{ color: '#6366f1' }} />, title: 'Estadísticas', desc: 'Panel con rendimiento en tiempo real.', posClass: 'top-[5%] right-[10%]', x: 90, y: 5 },
-  { icon: <FaWhatsapp size={36} style={{ color: '#25D366' }} />, title: 'WhatsApp', desc: 'Responde mensajes automáticamente.', posClass: 'top-[50%] left-[2%]', x: 2, y: 50 },
-  { icon: <FaFacebookMessenger size={36} style={{ color: '#0084FF' }} />, title: 'Facebook', desc: 'Chatbot conectado a tu fanpage.', posClass: 'top-[50%] right-[2%]', x: 98, y: 50 },
-  { icon: <FaInstagram size={36} style={{ color: '#E1306C' }} />, title: 'Instagram DM', desc: 'Atiende tus DMs con IA.', posClass: 'bottom-[20%] left-[15%]', x: 15, y: 80 },
-  { icon: <FaMicrophoneAlt size={36} style={{ color: '#6366f1' }} />, title: 'Voz AI', desc: 'Responde llamadas como un humano.', posClass: 'bottom-[20%] right-[15%]', x: 85, y: 80 },
-  { icon: <FaBullhorn size={36} style={{ color: '#facc15' }} />, title: 'Campañas', desc: 'Marketing automatizado y efectivo.', posClass: 'bottom-[5%] left-[40%]', x: 40, y: 95 },
+  { Icon: FaRobot, color: "#a855f7", titleKey: "register.nodes.attention.title", descKey: "register.nodes.attention.desc", posClass: "top-[5%] left-[10%]", x: 10, y: 5 },
+  { Icon: FaChartBar, color: "#6366f1", titleKey: "register.nodes.stats.title", descKey: "register.nodes.stats.desc", posClass: "top-[5%] right-[10%]", x: 90, y: 5 },
+  { Icon: FaWhatsapp, color: "#25D366", titleKey: "register.nodes.whatsapp.title", descKey: "register.nodes.whatsapp.desc", posClass: "top-[50%] left-[2%]", x: 2, y: 50 },
+  { Icon: FaFacebookMessenger, color: "#0084FF", titleKey: "register.nodes.facebook.title", descKey: "register.nodes.facebook.desc", posClass: "top-[50%] right-[2%]", x: 98, y: 50 },
+  { Icon: FaInstagram, color: "#E1306C", titleKey: "register.nodes.instagram.title", descKey: "register.nodes.instagram.desc", posClass: "bottom-[20%] left-[15%]", x: 15, y: 80 },
+  { Icon: FaMicrophoneAlt, color: "#6366f1", titleKey: "register.nodes.voice.title", descKey: "register.nodes.voice.desc", posClass: "bottom-[20%] right-[15%]", x: 85, y: 80 },
+  { Icon: FaBullhorn, color: "#facc15", titleKey: "register.nodes.campaigns.title", descKey: "register.nodes.campaigns.desc", posClass: "bottom-[5%] left-[40%]", x: 40, y: 95 },
 ];
 
 export default function RegisterPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [formData, setFormData] = useState({
     nombre: "",
@@ -73,7 +75,7 @@ export default function RegisterPage() {
         data = await res.json();
       }
       if (!res.ok) {
-        const msg = data?.error || "Registro fallido";
+        const msg = data?.error || t("register.errors.failed");
         throw new Error(msg);
       }
 
@@ -101,7 +103,7 @@ export default function RegisterPage() {
       // router.push("/onboarding");
     } catch (error: any) {
       console.error("❌ Error al registrar:", error);
-      setError(error.message || "Error desconocido al registrar");
+      setError(error?.message || t("register.errors.unknown"));
     }
   };
 
@@ -124,9 +126,27 @@ export default function RegisterPage() {
         ))}
       </svg>
 
+      <div className="absolute inset-0 z-10">
+        {nodos.map((nodo, index) => {
+          const Icon = nodo.Icon;
+          return (
+            <div
+              key={index}
+              className={`absolute ${nodo.posClass} ${index > 3 ? "hidden sm:block" : ""} bg-white/5 border border-white/10 p-3 rounded-xl w-48 md:w-60 max-w-[90vw] backdrop-blur-md shadow-lg hover:scale-105 transition-transform text-sm`}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Icon size={36} style={{ color: nodo.color }} />
+                <span className="text-white text-base font-semibold">{t(nodo.titleKey)}</span>
+              </div>
+              <p className="text-sm text-white/60">{t(nodo.descKey)}</p>
+            </div>
+          );
+        })}
+      </div>
+
       {!success ? (
         <form onSubmit={handleRegister} className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl space-y-4">
-          <h2 className="text-2xl font-bold text-center text-purple-300">Crear cuenta</h2>
+          <h2 className="text-2xl font-bold text-center text-purple-300">{t("register.title")}</h2>
 
           {error && <p className="bg-red-100 text-red-700 p-2 rounded text-sm text-center">{error}</p>}
 
@@ -134,7 +154,7 @@ export default function RegisterPage() {
             <input
               name="nombre"
               type="text"
-              placeholder="Nombre"
+              placeholder={t("register.form.firstName")}
               value={formData.nombre}
               onChange={handleChange}
               required
@@ -143,7 +163,7 @@ export default function RegisterPage() {
             <input
               name="apellido"
               type="text"
-              placeholder="Apellido"
+              placeholder={t("register.form.lastName")}
               value={formData.apellido}
               onChange={handleChange}
               required
@@ -154,7 +174,7 @@ export default function RegisterPage() {
           <input
             name="email"
             type="email"
-            placeholder="Correo electrónico"
+            placeholder={t("register.form.email")}
             value={formData.email}
             onChange={handleChange}
             required
@@ -164,7 +184,7 @@ export default function RegisterPage() {
           <input
             name="telefono"
             type="tel"
-            placeholder="Teléfono (ej: +14120000000)"
+            placeholder={t("register.form.phone")}
             value={formData.telefono}
             onChange={handleChange}
             required
@@ -174,7 +194,7 @@ export default function RegisterPage() {
           <input
             name="password"
             type="password"
-            placeholder="Contraseña segura"
+            placeholder={t("register.form.password")}
             value={formData.password}
             onChange={handleChange}
             required
@@ -183,25 +203,25 @@ export default function RegisterPage() {
 
           {/* 👇 Solo informativo; si prefieres, ocúltalo */}
           <div className="hidden">
-            Zona horaria detectada: <span className="text-white/80 font-mono">{timezoneGuess}</span>
+            {t("register.debug.timezone")}: <span className="text-white/80 font-mono">{timezoneGuess}</span>
           </div>
 
           <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold transition duration-200">
-            Registrarse
+            {t("register.form.submit")}
           </button>
 
           <p className="text-center text-sm text-white/60 mt-2">
-            ¿Ya tienes cuenta?{' '}
+            {t("register.links.haveAccount")}{" "}
             <a href="/login" className="text-purple-400 hover:text-purple-300 underline">
-              Inicia sesión
+              {t("register.links.login")}
             </a>
           </p>
           <Footer />
         </form>
       ) : (
         <div className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl text-center">
-          <h2 className="text-2xl font-bold text-purple-300 mb-4">✅ Registro exitoso</h2>
-          <p className="text-white/80 text-sm">Hemos enviado un enlace de verificación a tu correo. Por favor revísalo para activar tu cuenta.</p>
+          <h2 className="text-2xl font-bold text-purple-300 mb-4">{t("register.success.title")}</h2>
+          <p className="text-white/80 text-sm">{t("register.success.subtitle")}</p>
         </div>
       )}
     </div>

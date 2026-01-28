@@ -270,6 +270,41 @@
   "login.errors.unknownLogin": "Error desconocido al iniciar sesión",
   "login.errors.emailRequiredResend": "Por favor, ingresa tu correo para reenviar el enlace.",
   "login.errors.resendFailed": "No se pudo reenviar el enlace",
-  "login.errors.resendUnknown": "Error al reenviar el correo de verificación"
+  "login.errors.resendUnknown": "Error al reenviar el correo de verificación",
+
+  "register.title": "Crear cuenta",
+
+"register.nodes.attention.title": "Atención 24/7",
+"register.nodes.attention.desc": "Siempre online para tu negocio.",
+"register.nodes.stats.title": "Estadísticas",
+"register.nodes.stats.desc": "Panel con rendimiento en tiempo real.",
+"register.nodes.whatsapp.title": "WhatsApp",
+"register.nodes.whatsapp.desc": "Responde mensajes automáticamente.",
+"register.nodes.facebook.title": "Facebook",
+"register.nodes.facebook.desc": "Chatbot conectado a tu fanpage.",
+"register.nodes.instagram.title": "Instagram DM",
+"register.nodes.instagram.desc": "Atiende tus DMs con IA.",
+"register.nodes.voice.title": "Voz AI",
+"register.nodes.voice.desc": "Responde llamadas como un humano.",
+"register.nodes.campaigns.title": "Campañas",
+"register.nodes.campaigns.desc": "Marketing automatizado y efectivo.",
+
+"register.form.firstName": "Nombre",
+"register.form.lastName": "Apellido",
+"register.form.email": "Correo electrónico",
+"register.form.phone": "Teléfono (ej: +14120000000)",
+"register.form.password": "Contraseña segura",
+"register.form.submit": "Registrarse",
+
+"register.links.haveAccount": "¿Ya tienes cuenta?",
+"register.links.login": "Inicia sesión",
+
+"register.success.title": "✅ Registro exitoso",
+"register.success.subtitle": "Hemos enviado un enlace de verificación a tu correo. Por favor revísalo para activar tu cuenta.",
+
+"register.errors.failed": "Registro fallido",
+"register.errors.unknown": "Error desconocido al registrar",
+
+"register.debug.timezone": "Zona horaria detectada"
 }
 
