@@ -550,8 +550,8 @@ const handleSave = async () => {
         </div>
 
         {[
-          { label: '{t("profile.fields.waNumber")}', value: formData.twilio_number },
-          { label: '{t("profile.fields.smsNumber")}', value: formData.twilio_sms_number },
+          { label: 't("profile.fields.waNumber")', value: formData.twilio_number },
+          { label: 't("profile.fields.smsNumber")', value: formData.twilio_sms_number },
           { label: 't("profile.fields.voiceNumber")', value: formData.twilio_voice_number },
         ].map(({ label, value }, i) => (
           <div key={i}>
