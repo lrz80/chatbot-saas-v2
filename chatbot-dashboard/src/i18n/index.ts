@@ -3,7 +3,11 @@ import en from "./messages/en.json";
 
 export type Lang = "es" | "en";
 
-const DICTS: Record<Lang, Record<string, string>> = { es, en };
+interface Dict {
+  [key: string]: string | Dict;
+}
+
+const DICTS: Record<Lang, Dict> = { es, en };
 
 export function getLangFromCookieClient(): Lang {
   if (typeof document === "undefined") return "es";
@@ -17,7 +21,7 @@ export function setLangCookieClient(lang: Lang) {
 }
 
 export function t(key: string, lang: Lang): string {
-  // ✅ Si falta en EN, cae a ES; si falta en ES, devuelve key (nunca rompe UI)
-  return DICTS[lang]?.[key] ?? DICTS.es?.[key] ?? key;
+  const v = DICTS[lang]?.[key] ?? DICTS.es?.[key];
+  return typeof v === "string" ? v : key;
 }
 

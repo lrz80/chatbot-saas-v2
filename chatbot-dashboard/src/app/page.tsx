@@ -45,12 +45,12 @@ const capabilities = [
  *  Comparison table
  *  ========================= */
 const comparisonRows = [
-  { feature: "IA contextual (no solo flujos)", aamy: true, manychat: "Parcial", respond: "Parcial", tidio: false },
-  { feature: "Detección de intención de compra", aamy: true, manychat: false, respond: false, tidio: false },
-  { feature: "Multilenguaje automático", aamy: true, manychat: "Parcial", respond: "Parcial", tidio: false },
-  { feature: "Follow-up automático", aamy: true, manychat: true, respond: "Depende", tidio: false },
-  { feature: "Agendamiento con Google Calendar", aamy: true, manychat: false, respond: false, tidio: false },
-  { feature: "Meta Pixel + CAPI desde chat", aamy: true, manychat: "Depende", respond: "Depende", tidio: false },
+  { featureKey: "landing.compare.rows.0", aamy: true, manychat: "landing.compare.partial", respond: "landing.compare.partial", tidio: false },
+  { featureKey: "landing.compare.rows.1", aamy: true, manychat: false, respond: false, tidio: false },
+  { featureKey: "landing.compare.rows.2", aamy: true, manychat: "landing.compare.partial", respond: "landing.compare.partial", tidio: false },
+  { featureKey: "landing.compare.rows.3", aamy: true, manychat: true, respond: "landing.compare.depends", tidio: false },
+  { featureKey: "landing.compare.rows.4", aamy: true, manychat: false, respond: false, tidio: false },
+  { featureKey: "landing.compare.rows.5", aamy: true, manychat: "landing.compare.depends", respond: "landing.compare.depends", tidio: false },
 ];
 
 export default function LandingPage() {
@@ -216,21 +216,21 @@ export default function LandingPage() {
             <table className="min-w-[900px] w-full text-sm">
               <thead className="text-white/80">
                 <tr className="border-b border-white/10">
-                  <th className="text-left p-4">Función</th>
-                  <th className="text-left p-4">Aamy</th>
-                  <th className="text-left p-4">ManyChat</th>
-                  <th className="text-left p-4">Respond.io</th>
-                  <th className="text-left p-4">Tidio</th>
+                  <th className="text-left p-4">{t("landing.compare.headers.feature")}</th>
+                  <th className="text-left p-4">{t("landing.compare.headers.aamy")}</th>
+                  <th className="text-left p-4">{t("landing.compare.headers.manychat")}</th>
+                  <th className="text-left p-4">{t("landing.compare.headers.respond")}</th>
+                  <th className="text-left p-4">{t("landing.compare.headers.tidio")}</th>
                 </tr>
               </thead>
               <tbody className="text-white/75">
                 {comparisonRows.map((r, idx) => (
                   <tr key={idx} className="border-b border-white/10">
-                    <td className="p-4 text-white/80">{r.feature}</td>
-                    <td className="p-4">{renderCell(r.aamy)}</td>
-                    <td className="p-4">{renderCell(r.manychat)}</td>
-                    <td className="p-4">{renderCell(r.respond)}</td>
-                    <td className="p-4">{renderCell(r.tidio)}</td>
+                    <td className="p-4 text-white/80">{t(r.featureKey)}</td>
+                    <td className="p-4">{renderCell(r.aamy, t)}</td>
+                    <td className="p-4">{renderCell(r.manychat, t)}</td>
+                    <td className="p-4">{renderCell(r.respond, t)}</td>
+                    <td className="p-4">{renderCell(r.tidio, t)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -250,19 +250,19 @@ export default function LandingPage() {
 
           <div className="flex flex-wrap justify-center gap-6">
             <TestimonialCard
-              quote="Desde que usamos Aamy, respondemos más rápido y recuperamos leads que antes se perdían fuera de horario."
-              name="Laura"
-              biz="Pet Grooming"
+              quote={t("landing.testimonials.items.0.quote")}
+              name={t("landing.testimonials.items.0.name")}
+              biz={t("landing.testimonials.items.0.biz")}
             />
             <TestimonialCard
-              quote="La IA entiende mejor las preguntas y el seguimiento automático nos está ayudando a cerrar más citas."
-              name="Luis"
-              biz="Indoor Cycling Studio"
+              quote={t("landing.testimonials.items.1.quote")}
+              name={t("landing.testimonials.items.1.name")}
+              biz={t("landing.testimonials.items.1.biz")}
             />
             <TestimonialCard
-              quote="Ahora los mensajes se atienden solos y el equipo se enfoca en vender y entregar el servicio."
-              name="Andrea"
-              biz="Beauty Studio"
+              quote={t("landing.testimonials.items.2.quote")}
+              name={t("landing.testimonials.items.2.name")}
+              biz={t("landing.testimonials.items.2.biz")}
             />
           </div>
         </div>
@@ -364,17 +364,22 @@ function TestimonialCard({ quote, name, biz }: { quote: string; name: string; bi
   );
 }
 
-function renderCell(value: boolean | string) {
-  if (typeof value === 'boolean') {
+function renderCell(value: boolean | string, t: (k: string) => string) {
+  // boolean -> Yes/No
+  if (typeof value === "boolean") {
     return value ? (
       <span className="inline-flex items-center gap-2 text-green-200">
-        <FaCheckCircle className="text-green-300" /> Sí
+        <FaCheckCircle className="text-green-300" /> {t("common.yes")}
       </span>
     ) : (
-      <span className="text-white/50">No</span>
+      <span className="text-white/50">{t("common.no")}</span>
     );
   }
-  return <span className="text-white/70">{value}</span>;
+
+  // string -> it can be a key or literal
+  // If you pass "landing.compare.partial" or "landing.compare.depends", translate it
+  const looksLikeKey = value.includes(".");
+  return <span className="text-white/70">{looksLikeKey ? t(value) : value}</span>;
 }
 
 function FeatureCard({

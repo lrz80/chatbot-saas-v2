@@ -199,5 +199,36 @@
   "landing.stats.3.title": "Lower cost per lead",
   "landing.stats.3.desc": "Pixel/CAPI learns who converts",
   "landing.stats.4.title": "More control",
-  "landing.stats.4.desc": "Dashboard with history and KPIs"
+  "landing.stats.4.desc": "Dashboard with history and KPIs",
+
+  "common": { "yes": "Yes", "no": "No" },
+
+  "landing.compare.headers.feature": "Feature",
+  "landing.compare.headers.aamy": "Aamy",
+  "landing.compare.headers.manychat": "ManyChat",
+  "landing.compare.headers.respond": "Respond.io",
+  "landing.compare.headers.tidio": "Tidio",
+
+  "landing.compare.partial": "Partial",
+  "landing.compare.depends": "Depends",
+
+  "landing.compare.rows.0": "Context-aware AI (not just flows)",
+  "landing.compare.rows.1": "Buying intent detection",
+  "landing.compare.rows.2": "Automatic multilingual",
+  "landing.compare.rows.3": "Automatic follow-up",
+  "landing.compare.rows.4": "Google Calendar booking",
+  "landing.compare.rows.5": "Meta Pixel + CAPI from chat",
+
+  "landing.testimonials.items.0.quote": "Since using Aamy, we reply faster and recover leads that used to be lost after hours.",
+  "landing.testimonials.items.0.name": "Laura",
+  "landing.testimonials.items.0.biz": "Pet Grooming",
+
+  "landing.testimonials.items.1.quote": "The AI understands questions better, and the automatic follow-up is helping us close more appointments.",
+  "landing.testimonials.items.1.name": "Luis",
+  "landing.testimonials.items.1.biz": "Indoor Cycling Studio",
+
+  "landing.testimonials.items.2.quote": "Now messages are handled automatically, and the team focuses on selling and delivering the service.",
+  "landing.testimonials.items.2.name": "Andrea",
+  "landing.testimonials.items.2.biz": "Beauty Studio"
 }
+
