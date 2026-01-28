@@ -201,7 +201,8 @@
   "landing.stats.4.title": "Más control",
   "landing.stats.4.desc": "Dashboard con historial y KPIs",
 
-  "common": { "yes": "Sí", "no": "No" },
+  "common.yes": "Sí",
+  "common.no": "No",
   
   "landing.compare.headers.feature": "Función",
   "landing.compare.headers.aamy": "Aamy",
