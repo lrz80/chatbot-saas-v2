@@ -1,6 +1,6 @@
 // src/app/layout.tsx
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
@@ -15,15 +15,65 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Aamy AI",
-  description: "Automatiza tu negocio con Aamy.AI, tu asistente 24/7.",
+  metadataBase: new URL("https://www.aamy.ai"),
+
+  title: {
+    default: "Aamy AI",
+    template: "%s | Aamy AI"
+  },
+
+  description:
+    "Automate your business with Aamy AI — the advanced conversational AI that handles WhatsApp, Instagram, Facebook, and voice interactions 24/7.",
+
+  applicationName: "Aamy AI",
+
+  alternates: {
+    canonical: "/",
+  },
+
+  openGraph: {
+    type: "website",
+    url: "https://www.aamy.ai",
+    title: "Aamy AI — Advanced Conversational AI for Sales & Automation",
+    description:
+      "Automate WhatsApp, Instagram, Facebook, and voice channels with real conversational intelligence, intent detection, follow-ups, and real-time tracking.",
+    siteName: "Aamy AI",
+    locale: "en_US",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Aamy AI — Conversational AI Automation",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Aamy AI — Conversational AI Automation",
+    description:
+      "Automate customer messages 24/7, detect buying intent, run follow-ups, and optimize ads with Pixel/CAPI.",
+    images: ["/og-image.png"],
+    creator: "@aamyai", // Optional — add only if you create a real Twitter/X handle
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+
   icons: {
     icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
+
   manifest: "/manifest.json",
 };
 
-export const viewport = {
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#0f0a1e",
 };
 
@@ -31,10 +81,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es">
+    <html lang="en">
       <head>
-        <meta httpEquiv="content-language" content="es" />
-
         {/* Facebook domain verification */}
         <meta
           name="facebook-domain-verification"
