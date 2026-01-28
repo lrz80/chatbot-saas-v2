@@ -11,5 +11,31 @@
 
   "pwa.banner": "📱 Instala Aamy.AI como App",
   "pwa.install": "Instalar",
-  "pwa.close": "Cerrar"
+  "pwa.close": "Cerrar",
+
+  "landing.trust.title": "IA conversacional avanzada para automatizar ventas, soporte y seguimiento.",
+  "landing.trust.subtitle": "Integración oficial con Meta API (WhatsApp, Instagram y Facebook). Aamy envía eventos avanzados de intención y conversión a Meta Ads (CAPI) para optimizar campañas en tiempo real.",
+
+  "landing.capabilities.title": "Lo que Aamy hace para que no pierdas clientes",
+  "landing.capabilities.subtitle": "Conoce el sistema de IA que entiende contexto, detecta intención, hace seguimiento y convierte conversaciones en ventas.",
+
+  "landing.how.title": "Implementación rápida en 3 pasos",
+  "landing.how.subtitle": "Lo dejamos listo con tu negocio para que empieces a responder, capturar leads y hacer seguimiento desde el primer día.",
+
+  "landing.results.title": "Resultados típicos",
+  "landing.results.subtitle": "Cuando automatizas respuesta + seguimiento, recuperas leads que antes se perdían por tiempo de respuesta.",
+  "landing.results.cta": "Activar Aamy en mi negocio",
+
+  "landing.pricing.line": "$399 instalación + primer mes • $199/mes desde el mes 2",
+
+  "landing.compare.title": "Comparación con otras soluciones del mercado",
+  "landing.compare.subtitle": "Aamy está diseñado para ventas reales: contexto, intención, seguimiento, agenda y optimización de ads desde conversaciones.",
+  "landing.compare.note": "* “Parcial/Depende” significa que requiere integraciones, flujos manuales o herramientas externas.",
+
+  "landing.testimonials.title": "Lo que dicen nuestros clientes",
+
+  "landing.final.title": "¿Listo para automatizar ventas con IA avanzada?",
+  "landing.final.subtitle": "Te lo dejamos configurado con tu negocio para que respondas 24/7, captes leads y hagas seguimiento desde WhatsApp, Instagram y Facebook.",
+  "landing.final.cta": "Activar Aamy ahora",
+  "landing.final.tip": "Tip: un solo cliente recuperado al mes suele pagar el servicio."
 }

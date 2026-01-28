@@ -11,6 +11,8 @@ import HeroSection from '@/components/HeroSection';
 import BenefitsSection from "@/components/BenefitsSection";
 import DashboardPreviewSection from "@/components/DashboardPreviewSection";
 import WhatsAppDemoButton from '@/components/WhatsAppDemoButton';
+import { useI18n } from "../i18n/LanguageProvider";
+
 
 import {
   FaRobot,
@@ -87,6 +89,7 @@ const comparisonRows = [
 ];
 
 export default function LandingPage() {
+  const { t } = useI18n();
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     loop: true,
     renderMode: 'performance',
@@ -137,11 +140,10 @@ export default function LandingPage() {
             {/* Texto principal */}
             <div className="text-center lg:text-left">
               <p className="text-sm text-white/90 font-semibold">
-                IA conversacional avanzada para automatizar ventas, soporte y seguimiento.
+                {t("landing.trust.title")}
               </p>
               <p className="text-xs text-white/60 mt-1">
-                Integración oficial con Meta API (WhatsApp, Instagram y Facebook).
-                Aamy envía eventos avanzados de intención y conversión a Meta Ads (CAPI) para optimizar campañas en tiempo real.
+                {t("landing.trust.subtitle")}
               </p>
             </div>
 
@@ -159,10 +161,10 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#0f0a1e] to-[#1c1236]">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-4 text-white">
-            Lo que Aamy hace para que no pierdas clientes
+            {t("landing.capabilities.title")}
           </h2>
           <p className="text-center text-white/70 max-w-3xl mx-auto mb-12">
-            Conoce el sistema de IA que entiende contexto, detecta intención, hace seguimiento y convierte conversaciones en ventas.
+            {t("landing.capabilities.subtitle")}
           </p>
 
           <div
@@ -185,10 +187,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 items-start">
           <div>
             <h3 className="text-3xl font-extrabold text-white mb-4">
-              Implementación rápida en 3 pasos
+              {t("landing.how.title")}
             </h3>
             <p className="text-white/70 mb-8">
-              Lo dejamos listo con tu negocio para que empieces a responder, capturar leads y hacer seguimiento desde el primer día.
+              {t("landing.how.subtitle")}
             </p>
 
             <div className="grid gap-4">
@@ -211,9 +213,9 @@ export default function LandingPage() {
           </div>
 
           <div className="lg:sticky lg:top-24 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
-            <h4 className="text-xl font-bold text-white mb-2">Resultados típicos</h4>
+            <h4 className="text-xl font-bold text-white mb-2">{t("landing.results.title")}</h4>
             <p className="text-white/70 text-sm mb-6">
-              Cuando automatizas respuesta + seguimiento, recuperas leads que antes se perdían por tiempo de respuesta.
+              {t("landing.results.subtitle")}
             </p>
 
             <div className="grid sm:grid-cols-2 gap-4">
@@ -226,13 +228,13 @@ export default function LandingPage() {
             <div className="mt-6 flex gap-3 flex-col sm:flex-row">
               <a href="/register" className="w-full">
                 <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition">
-                  Activar Aamy en mi negocio
+                  {t("landing.results.cta")}
                 </button>
               </a>
               
             </div>
             <p className="mt-3 text-white/60 text-xs">
-              $399 instalación + primer mes • $199/mes desde el mes 2
+              {t("landing.pricing.line")}
             </p>
           </div>
         </div>
@@ -247,10 +249,10 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#0f0a1e] to-[#151032]">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-extrabold text-center mb-4 text-white">
-            Comparación con otras soluciones del mercado
+            {t("landing.compare.title")}
           </h2>
           <p className="text-center text-white/70 max-w-3xl mx-auto mb-10">
-            Aamy está diseñado para ventas reales: contexto, intención, seguimiento, agenda y optimización de ads desde conversaciones.
+            {t("landing.compare.subtitle")}
           </p>
 
           <div className="overflow-x-auto bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl">
@@ -279,7 +281,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-center text-white/55 text-xs mt-3">
-            * “Parcial/Depende” significa que requiere integraciones, flujos manuales o herramientas externas.
+            {t("landing.compare.note")}
           </p>
         </div>
       </section>
@@ -287,7 +289,7 @@ export default function LandingPage() {
       {/* Testimonials (upgrade copy) */}
       <section className="py-20 px-4 sm:px-6 md:px-8 bg-[#151032] text-white text-center">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-extrabold mb-10 text-purple-200">Lo que dicen nuestros clientes</h2>
+          <h2 className="text-3xl font-extrabold mb-10 text-purple-200">{t("landing.testimonials.title")}</h2>
 
           <div className="flex flex-wrap justify-center gap-6">
             <TestimonialCard
@@ -313,25 +315,25 @@ export default function LandingPage() {
       <section className="py-16 px-4 sm:px-6 md:px-8 bg-indigo-950/40 text-center backdrop-blur-md">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-extrabold mb-4 text-white">
-            ¿Listo para automatizar ventas con IA avanzada?
+            {t("landing.final.title")}
           </h2>
           <p className="mb-6 text-white/80 max-w-2xl mx-auto">
-            Te lo dejamos configurado con tu negocio para que respondas 24/7, captes leads y hagas seguimiento desde WhatsApp, Instagram y Facebook.
+            {t("landing.final.subtitle")}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="/register">
               <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg transition">
-                Activar Aamy ahora
+                {t("landing.final.cta")}
               </button>
             </a>
           </div>
 
           <p className="mt-3 text-white/70 text-sm">
-            $399 instalación + primer mes • $199/mes desde el mes 2
+            {t("landing.pricing.line")}
           </p>
           <p className="mt-2 text-white/55 text-xs">
-            Tip: un solo cliente recuperado al mes suele pagar el servicio.
+            {t("landing.final.tip")}
           </p>
         </div>
       </section>

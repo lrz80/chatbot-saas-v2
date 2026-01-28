@@ -11,5 +11,31 @@
 
   "pwa.banner": "📱 Install Aamy.AI as an App",
   "pwa.install": "Install",
-  "pwa.close": "Close"
+  "pwa.close": "Close",
+
+  "landing.trust.title": "Advanced conversational AI to automate sales, support, and follow-up.",
+  "landing.trust.subtitle": "Official integration with the Meta API (WhatsApp, Instagram and Facebook). Aamy sends advanced intent and conversion events to Meta Ads (CAPI) to optimize campaigns in real time.",
+
+  "landing.capabilities.title": "What Aamy does so you don’t lose customers",
+  "landing.capabilities.subtitle": "Meet the AI system that understands context, detects intent, follows up, and turns conversations into sales.",
+
+  "landing.how.title": "Fast setup in 3 steps",
+  "landing.how.subtitle": "We tailor it to your business so you can reply, capture leads, and follow up from day one.",
+
+  "landing.results.title": "Typical results",
+  "landing.results.subtitle": "When you automate replies + follow-up, you recover leads that used to be lost due to slow response times.",
+  "landing.results.cta": "Activate Aamy for my business",
+
+  "landing.pricing.line": "$399 setup + first month • $199/month starting month 2",
+
+  "landing.compare.title": "Comparison vs. other solutions",
+  "landing.compare.subtitle": "Aamy is built for real sales: context, intent, follow-up, booking, and ad optimization directly from conversations.",
+  "landing.compare.note": "* “Partial/Depends” means it requires integrations, manual flows, or external tools.",
+
+  "landing.testimonials.title": "What our customers say",
+
+  "landing.final.title": "Ready to automate sales with advanced AI?",
+  "landing.final.subtitle": "We set it up for your business so you can reply 24/7, capture leads, and follow up from WhatsApp, Instagram, and Facebook.",
+  "landing.final.cta": "Activate Aamy now",
+  "landing.final.tip": "Tip: one recovered customer per month often pays for the service."
 }
