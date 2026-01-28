@@ -232,44 +232,44 @@
   "landing.testimonials.items.2.name": "Andrea",
   "landing.testimonials.items.2.biz": "Beauty Studio",
 
-  "login": {
-    "title": "Sign in",
-    "nodes": {
-      "attention": { "title": "24/7 Support", "desc": "Always online for your business." },
-      "stats": { "title": "Analytics", "desc": "Real-time performance dashboard." },
-      "whatsapp": { "title": "WhatsApp", "desc": "Auto-reply to messages." },
-      "facebook": { "title": "Facebook", "desc": "Chatbot connected to your fanpage." },
-      "instagram": { "title": "Instagram DM", "desc": "Handle DMs with AI." },
-      "voice": { "title": "AI Voice", "desc": "Answer calls like a human." },
-      "campaigns": { "title": "Campaigns", "desc": "Automated, effective marketing." }
-    },
-    "form": {
-      "email": "Email",
-      "password": "Password",
-      "submit": "Sign in"
-    },
-    "links": {
-      "privacy": "Privacy Policy",
-      "forgot": "Forgot your password?",
-      "noAccount": "Don’t have an account?",
-      "register": "Sign up"
-    },
-    "resend": {
-      "cta": "Didn’t get the email? Resend activation link",
-      "cooldown": "Wait {{seconds}}s to resend",
-      "success": "✅ Verification link resent to your email."
-    },
-    "errors": {
-      "parseServer": "Failed to parse server response",
-      "notVerifiedNoEmail": "Your account isn’t verified. Enter your email to resend the link.",
-      "notVerified": "Your account isn’t verified yet. Check your inbox or resend the link.",
-      "http": "HTTP error: {{status}}",
-      "noUid": "UID was not returned by the server",
-      "unknownLogin": "Unknown error while signing in",
-      "emailRequiredResend": "Please enter your email to resend the link.",
-      "resendFailed": "Could not resend the link",
-      "resendUnknown": "Error while resending verification email"
-    }
-  }
+  "login.title": "Sign in",
+
+  "login.nodes.attention.title": "24/7 Support",
+  "login.nodes.attention.desc": "Always online for your business.",
+  "login.nodes.stats.title": "Analytics",
+  "login.nodes.stats.desc": "Real-time performance dashboard.",
+  "login.nodes.whatsapp.title": "WhatsApp",
+  "login.nodes.whatsapp.desc": "Auto-reply to messages.",
+  "login.nodes.facebook.title": "Facebook",
+  "login.nodes.facebook.desc": "Chatbot connected to your fanpage.",
+  "login.nodes.instagram.title": "Instagram DM",
+  "login.nodes.instagram.desc": "Handle DMs with AI.",
+  "login.nodes.voice.title": "AI Voice",
+  "login.nodes.voice.desc": "Answer calls like a human.",
+  "login.nodes.campaigns.title": "Campaigns",
+  "login.nodes.campaigns.desc": "Automated, effective marketing.",
+
+  "login.form.email": "Email",
+  "login.form.password": "Password",
+  "login.form.submit": "Sign in",
+
+  "login.links.privacy": "Privacy Policy",
+  "login.links.forgot": "Forgot your password?",
+  "login.links.noAccount": "Don’t have an account?",
+  "login.links.register": "Sign up",
+
+  "login.resend.cta": "Didn’t get the email? Resend activation link",
+  "login.resend.cooldown": "Wait {{seconds}}s to resend",
+  "login.resend.success": "✅ Verification link resent to your email.",
+
+  "login.errors.parseServer": "Failed to parse server response",
+  "login.errors.notVerifiedNoEmail": "Your account isn’t verified. Enter your email to resend the link.",
+  "login.errors.notVerified": "Your account isn’t verified yet. Check your inbox or resend the link.",
+  "login.errors.http": "HTTP error: {{status}}",
+  "login.errors.noUid": "UID was not returned by the server",
+  "login.errors.unknownLogin": "Unknown error while signing in",
+  "login.errors.emailRequiredResend": "Please enter your email to resend the link.",
+  "login.errors.resendFailed": "Could not resend the link",
+  "login.errors.resendUnknown": "Error while resending verification email"
 }
 

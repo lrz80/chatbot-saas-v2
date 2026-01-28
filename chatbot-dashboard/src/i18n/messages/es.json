@@ -232,44 +232,44 @@
   "landing.testimonials.items.2.name": "Andrea",
   "landing.testimonials.items.2.biz": "Beauty Studio",
 
-  "login": {
-    "title": "Iniciar sesión",
-    "nodes": {
-      "attention": { "title": "Atención 24/7", "desc": "Siempre online para tu negocio." },
-      "stats": { "title": "Estadísticas", "desc": "Panel con rendimiento en tiempo real." },
-      "whatsapp": { "title": "WhatsApp", "desc": "Responde mensajes automáticamente." },
-      "facebook": { "title": "Facebook", "desc": "Chatbot conectado a tu fanpage." },
-      "instagram": { "title": "Instagram DM", "desc": "Atiende tus DMs con IA." },
-      "voice": { "title": "Voz AI", "desc": "Responde llamadas como un humano." },
-      "campaigns": { "title": "Campañas", "desc": "Marketing automatizado y efectivo." }
-    },
-    "form": {
-      "email": "Correo electrónico",
-      "password": "Contraseña",
-      "submit": "Ingresar"
-    },
-    "links": {
-      "privacy": "Política de Privacidad",
-      "forgot": "¿Olvidaste tu contraseña?",
-      "noAccount": "¿Aún no tienes cuenta?",
-      "register": "Regístrate"
-    },
-    "resend": {
-      "cta": "¿No recibiste el correo? Reenviar link de activación",
-      "cooldown": "Espera {{seconds}}s para reenviar",
-      "success": "✅ Enlace de verificación reenviado a tu correo."
-    },
-    "errors": {
-      "parseServer": "Error al interpretar la respuesta del servidor",
-      "notVerifiedNoEmail": "Tu cuenta no está verificada. Ingresa tu correo para reenviar el enlace.",
-      "notVerified": "Tu cuenta aún no está verificada. Revisa tu correo o reenvía el enlace.",
-      "http": "Error HTTP: {{status}}",
-      "noUid": "UID no recibido del servidor",
-      "unknownLogin": "Error desconocido al iniciar sesión",
-      "emailRequiredResend": "Por favor, ingresa tu correo para reenviar el enlace.",
-      "resendFailed": "No se pudo reenviar el enlace",
-      "resendUnknown": "Error al reenviar el correo de verificación"
-    }
-  }
+  "login.title": "Iniciar sesión",
+
+  "login.nodes.attention.title": "Atención 24/7",
+  "login.nodes.attention.desc": "Siempre online para tu negocio.",
+  "login.nodes.stats.title": "Estadísticas",
+  "login.nodes.stats.desc": "Panel con rendimiento en tiempo real.",
+  "login.nodes.whatsapp.title": "WhatsApp",
+  "login.nodes.whatsapp.desc": "Responde mensajes automáticamente.",
+  "login.nodes.facebook.title": "Facebook",
+  "login.nodes.facebook.desc": "Chatbot conectado a tu fanpage.",
+  "login.nodes.instagram.title": "Instagram DM",
+  "login.nodes.instagram.desc": "Atiende tus DMs con IA.",
+  "login.nodes.voice.title": "Voz AI",
+  "login.nodes.voice.desc": "Responde llamadas como un humano.",
+  "login.nodes.campaigns.title": "Campañas",
+  "login.nodes.campaigns.desc": "Marketing automatizado y efectivo.",
+
+  "login.form.email": "Correo electrónico",
+  "login.form.password": "Contraseña",
+  "login.form.submit": "Ingresar",
+
+  "login.links.privacy": "Política de Privacidad",
+  "login.links.forgot": "¿Olvidaste tu contraseña?",
+  "login.links.noAccount": "¿Aún no tienes cuenta?",
+  "login.links.register": "Regístrate",
+
+  "login.resend.cta": "¿No recibiste el correo? Reenviar link de activación",
+  "login.resend.cooldown": "Espera {{seconds}}s para reenviar",
+  "login.resend.success": "✅ Enlace de verificación reenviado a tu correo.",
+
+  "login.errors.parseServer": "Error al interpretar la respuesta del servidor",
+  "login.errors.notVerifiedNoEmail": "Tu cuenta no está verificada. Ingresa tu correo para reenviar el enlace.",
+  "login.errors.notVerified": "Tu cuenta aún no está verificada. Revisa tu correo o reenvía el enlace.",
+  "login.errors.http": "Error HTTP: {{status}}",
+  "login.errors.noUid": "UID no recibido del servidor",
+  "login.errors.unknownLogin": "Error desconocido al iniciar sesión",
+  "login.errors.emailRequiredResend": "Por favor, ingresa tu correo para reenviar el enlace.",
+  "login.errors.resendFailed": "No se pudo reenviar el enlace",
+  "login.errors.resendUnknown": "Error al reenviar el correo de verificación"
 }
 
