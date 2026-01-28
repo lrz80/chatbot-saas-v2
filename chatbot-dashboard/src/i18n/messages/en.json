@@ -498,6 +498,23 @@
 "verify.alerts.resent": "✅ Code resent to your email",
 
 "verify.errors.failed": "Verification failed",
-"verify.errors.resendFailed": "Could not resend the code"
+"verify.errors.resendFailed": "Could not resend the code",
+
+"reset.title": "Reset password",
+
+"reset.form.newPassword": "New password",
+"reset.form.confirmPassword": "Confirm password",
+"reset.form.submit": "Update password",
+"reset.form.loading": "Updating...",
+
+"reset.success.messageLine1": "✅ Password updated successfully.",
+"reset.success.messageLine2": "You can sign in again.",
+
+"reset.links.backToLogin": "Back to sign in",
+
+"reset.errors.invalidToken": "Invalid or missing token",
+"reset.errors.mismatch": "Passwords do not match",
+"reset.errors.expiredRedirect": "This link has expired. You’ll be redirected to sign in.",
+"reset.errors.generic": "Error resetting password"
 }
 

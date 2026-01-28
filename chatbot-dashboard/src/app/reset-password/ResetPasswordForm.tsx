@@ -3,8 +3,12 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { BACKEND_URL } from "@/utils/api";
+import { useI18n } from "../../i18n/LanguageProvider";
+
 
 export default function ResetPasswordForm() {
+  const { t } = useI18n();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -17,7 +21,7 @@ export default function ResetPasswordForm() {
 
   useEffect(() => {
     if (!token) {
-      setError("Token inválido o ausente");
+      setError(t("reset.errors.invalidToken"));
       setTimeout(() => router.push("/login"), 3000);
     }
   }, [token, router]);
@@ -25,7 +29,7 @@ export default function ResetPasswordForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) {
-      setError("Las contraseñas no coinciden");
+      setError(t("reset.errors.mismatch"));
       return;
     }
 
@@ -42,11 +46,11 @@ export default function ResetPasswordForm() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 401) {
-          setError("El enlace ha expirado. Serás redirigido al inicio de sesión.");
+          setError(t("reset.errors.expiredRedirect"));
           setTimeout(() => router.push("/login"), 3000);
           return;
         }
-        throw new Error(data.error || "Error al restablecer contraseña");
+        throw new Error(data.error || t("reset.errors.generic"));
       }
 
       setSuccess(true);
@@ -60,17 +64,19 @@ export default function ResetPasswordForm() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="bg-white/10 backdrop-blur-md p-8 rounded-xl border border-white/20 max-w-md w-full">
-        <h2 className="text-2xl font-bold text-white mb-4 text-center">Restablecer contraseña</h2>
+        <h2 className="text-2xl font-bold text-white mb-4 text-center">{t("reset.title")}</h2>
 
         {success ? (
           <p className="text-green-400 text-center">
-            ✅ Contraseña actualizada correctamente. <br /> Puedes iniciar sesión nuevamente.
+            {t("reset.success.messageLine1")}
+            <br />
+            {t("reset.success.messageLine2")}
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="password"
-              placeholder="Nueva contraseña"
+              placeholder={t("reset.form.newPassword")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -78,7 +84,7 @@ export default function ResetPasswordForm() {
             />
             <input
               type="password"
-              placeholder="Confirmar contraseña"
+              placeholder={t("reset.form.confirmPassword")}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               required
@@ -90,14 +96,14 @@ export default function ResetPasswordForm() {
               disabled={loading || !token}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition"
             >
-              {loading ? "Actualizando..." : "Actualizar contraseña"}
+              {loading ? t("reset.form.loading") : t("reset.form.submit")}
             </button>
           </form>
         )}
 
         <p className="text-center text-sm mt-4 text-white/70">
           <a href="/login" className="hover:underline hover:text-white">
-            Volver al inicio de sesión
+            {t("reset.links.backToLogin")}
           </a>
         </p>
       </div>

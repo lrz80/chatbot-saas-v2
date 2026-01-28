@@ -498,6 +498,23 @@
 "verify.alerts.resent": "✅ Código reenviado a tu correo",
 
 "verify.errors.failed": "Verificación fallida",
-"verify.errors.resendFailed": "No se pudo reenviar el código"
+"verify.errors.resendFailed": "No se pudo reenviar el código",
+
+"reset.title": "Restablecer contraseña",
+
+"reset.form.newPassword": "Nueva contraseña",
+"reset.form.confirmPassword": "Confirmar contraseña",
+"reset.form.submit": "Actualizar contraseña",
+"reset.form.loading": "Actualizando...",
+
+"reset.success.messageLine1": "✅ Contraseña actualizada correctamente.",
+"reset.success.messageLine2": "Puedes iniciar sesión nuevamente.",
+
+"reset.links.backToLogin": "Volver al inicio de sesión",
+
+"reset.errors.invalidToken": "Token inválido o ausente",
+"reset.errors.mismatch": "Las contraseñas no coinciden",
+"reset.errors.expiredRedirect": "El enlace ha expirado. Serás redirigido al inicio de sesión.",
+"reset.errors.generic": "Error al restablecer contraseña"
 }
 
