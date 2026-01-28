@@ -364,6 +364,93 @@
 "dashboard.messagesByChannel.intentLevel": "(Level {{level}})",
 
 "dashboard.keywords.title": "Most frequent keywords",
-"dashboard.keywords.noData": "No data yet."
+"dashboard.keywords.noData": "No data yet.",
+
+"profile.loading": "Loading business information...",
+"profile.title": "Business Profile",
+"profile.logoAlt": "Business logo",
+
+"profile.fields.businessName": "Business Name",
+"profile.fields.hours": "Business Hours",
+"profile.hours.open": "Open",
+"profile.hours.help": "Set which days you’re open and the time range. This will be used to suggest available times.",
+
+"profile.fields.address": "Business Address",
+"profile.placeholders.address": "123 Main St, City, State",
+
+"profile.fields.category": "Business Category",
+"profile.category.placeholder": "Select a category",
+
+"profile.fields.logo": "Business Logo",
+
+"profile.fields.adminEmail": "Admin Email",
+"profile.fields.businessEmail": "Business Email",
+"profile.placeholders.businessEmail": "business@example.com",
+"profile.fields.businessPhone": "Business Phone",
+"profile.placeholders.businessPhone": "1234567890",
+
+"profile.fields.waNumber": "Assistant Number (WhatsApp)",
+"profile.fields.smsNumber": "Assistant Number (SMS)",
+"profile.fields.voiceNumber": "Assistant Number (Voice)",
+"profile.values.notAssigned": "Not assigned",
+
+"profile.fields.assistantLanguage": "Assistant Language",
+"common.spanish": "Spanish",
+"common.english": "English",
+
+"profile.plan.active": "Active Plan",
+"profile.plan.cancel": "Cancel Plan",
+"profile.plan.cancelConfirm": "Are you sure you want to cancel your plan?",
+"profile.plan.cancelSuccess": "✅ Plan canceled successfully.",
+"profile.plan.cancelError": "❌ There was a problem canceling your plan.",
+
+"profile.registeredAt": "Registration Date",
+"profile.values.dateUnavailable": "Date not available",
+
+"profile.membership.statusTitle": "Membership Status",
+"profile.membership.noInfo": "❌ No information",
+"profile.membership.inactive": "🚫 Your membership is inactive. You can’t save changes or train the assistant.",
+"profile.membership.upgradeCta": "Activate a plan to continue.",
+
+"profile.capi.title": "Meta Conversions API (CAPI)",
+"profile.capi.subtitle": "Server-side tracking to measure conversions from ads (no need to install Pixel on your website).",
+"profile.capi.enablePixel": "Enable Pixel",
+"profile.capi.pixelId": "Pixel ID",
+"profile.capi.pixelPlaceholder": "Ex: 123456789012345",
+"profile.capi.pixelHelp": "Numbers only. If you don’t have it, find it in Events Manager.",
+"profile.capi.token": "CAPI Token",
+"profile.capi.tokenPlaceholder": "Paste your Conversions API token here",
+"profile.capi.tokenHelp": "Used to send server-side events (nothing to install on your website).",
+"profile.capi.tokenSaved": "Saved token:",
+"profile.capi.locked": "Activate a plan or your free trial to save tracking changes.",
+"profile.capi.pixelRequired": "To enable Pixel you must enter the Pixel ID.",
+"profile.capi.needPixelId": "⚠️ To enable CAPI you must enter the Pixel/Dataset ID.",
+"profile.capi.needToken": "⚠️ To enable CAPI you must enter the CAPI Token.",
+
+"profile.availability.headersInvalid": "⚠️ Headers are not valid JSON. Please check the format.",
+
+"profile.logo.uploadSuccess": "✅ Logo updated successfully",
+"profile.logo.uploadFail": "❌ Error uploading logo",
+"profile.logo.uploadFailGeneric": "Error uploading the logo",
+
+"profile.trial.invite": "🎁 Activate your free trial and start training your assistant now.",
+"profile.trial.activate": "Activate free trial",
+"profile.trial.activeInfo": "🟡 You’re using the free trial. Take advantage and configure your assistant!",
+
+"profile.save.saving": "Saving...",
+"profile.save.cta": "Save Changes",
+"profile.save.upgrade": "Update Membership",
+"profile.save.success": "✅ Changes saved successfully",
+
+"profile.alert.errorPrefix": "❌",
+"profile.alert.connectionError": "Connection error",
+
+"profile.days.mon": "Monday",
+"profile.days.tue": "Tuesday",
+"profile.days.wed": "Wednesday",
+"profile.days.thu": "Thursday",
+"profile.days.fri": "Friday",
+"profile.days.sat": "Saturday",
+"profile.days.sun": "Sunday"
 }
 

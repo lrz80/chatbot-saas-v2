@@ -364,6 +364,93 @@
 "dashboard.messagesByChannel.intentLevel": "(Nivel {{level}})",
 
 "dashboard.keywords.title": "Palabras clave más frecuentes",
-"dashboard.keywords.noData": "No hay datos aún."
+"dashboard.keywords.noData": "No hay datos aún.",
+
+"profile.loading": "Cargando información del negocio...",
+"profile.title": "Perfil del Negocio",
+"profile.logoAlt": "Logo del negocio",
+
+"profile.fields.businessName": "Nombre del Negocio",
+"profile.fields.hours": "Horario de Atención",
+"profile.hours.open": "Abierto",
+"profile.hours.help": "Define qué días atiendes y en qué horario. Esto se usará para proponer horarios disponibles.",
+
+"profile.fields.address": "Dirección del Negocio",
+"profile.placeholders.address": "123 Calle Principal, Ciudad, Estado",
+
+"profile.fields.category": "Categoría del Negocio",
+"profile.category.placeholder": "Selecciona una categoría",
+
+"profile.fields.logo": "Logo del Negocio",
+
+"profile.fields.adminEmail": "Correo del Administrador",
+"profile.fields.businessEmail": "Email del Negocio",
+"profile.placeholders.businessEmail": "negocio@ejemplo.com",
+"profile.fields.businessPhone": "Teléfono del Negocio",
+"profile.placeholders.businessPhone": "1234567890",
+
+"profile.fields.waNumber": "Número del Asistente (WhatsApp)",
+"profile.fields.smsNumber": "Número del Asistente (SMS)",
+"profile.fields.voiceNumber": "Número del Asistente (Voz)",
+"profile.values.notAssigned": "No asignado",
+
+"profile.fields.assistantLanguage": "Idioma del Asistente",
+"common.spanish": "Español",
+"common.english": "Inglés",
+
+"profile.plan.active": "Plan Activo",
+"profile.plan.cancel": "Cancelar Plan",
+"profile.plan.cancelConfirm": "¿Estás seguro de que deseas cancelar tu plan?",
+"profile.plan.cancelSuccess": "✅ Plan cancelado correctamente.",
+"profile.plan.cancelError": "❌ Hubo un problema al cancelar el plan.",
+
+"profile.registeredAt": "Fecha de Registro",
+"profile.values.dateUnavailable": "Fecha no disponible",
+
+"profile.membership.statusTitle": "Estado de la Membresía",
+"profile.membership.noInfo": "❌ Sin información",
+"profile.membership.inactive": "🚫 Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.",
+"profile.membership.upgradeCta": "Activa un plan para continuar.",
+
+"profile.capi.title": "Meta Conversions API (CAPI)",
+"profile.capi.subtitle": "Tracking server-side para medir conversiones desde anuncios (no requiere instalar Pixel en tu web).",
+"profile.capi.enablePixel": "Activar Pixel",
+"profile.capi.pixelId": "Pixel ID",
+"profile.capi.pixelPlaceholder": "Ej: 123456789012345",
+"profile.capi.pixelHelp": "Solo números. Si no lo tienes, búscalo en Events Manager.",
+"profile.capi.token": "CAPI Token",
+"profile.capi.tokenPlaceholder": "Pegue aquí su token de Conversions API",
+"profile.capi.tokenHelp": "Se usa para enviar eventos server-side (no se instala nada en tu web).",
+"profile.capi.tokenSaved": "Token guardado:",
+"profile.capi.locked": "Activa un plan o tu prueba gratis para guardar cambios de tracking.",
+"profile.capi.pixelRequired": "Para activar el Pixel necesitas ingresar el Pixel ID.",
+"profile.capi.needPixelId": "⚠️ Para activar CAPI necesitas ingresar el Pixel/Dataset ID.",
+"profile.capi.needToken": "⚠️ Para activar CAPI necesitas ingresar el CAPI Token.",
+
+"profile.availability.headersInvalid": "⚠️ Los headers no son JSON válido. Revisa el formato.",
+
+"profile.logo.uploadSuccess": "✅ Logo actualizado con éxito",
+"profile.logo.uploadFail": "❌ Error al subir el logo",
+"profile.logo.uploadFailGeneric": "Error al cargar el logo",
+
+"profile.trial.invite": "🎁 Activa tu prueba gratis y comienza a entrenar tu asistente ahora.",
+"profile.trial.activate": "Activar prueba gratis",
+"profile.trial.activeInfo": "🟡 Estás usando la prueba gratis. ¡Aprovecha para configurar tu asistente!",
+
+"profile.save.saving": "Guardando...",
+"profile.save.cta": "Guardar Cambios",
+"profile.save.upgrade": "Actualizar Membresía",
+"profile.save.success": "✅ Cambios guardados correctamente",
+
+"profile.alert.errorPrefix": "❌",
+"profile.alert.connectionError": "Error en la conexión",
+
+"profile.days.mon": "Lunes",
+"profile.days.tue": "Martes",
+"profile.days.wed": "Miércoles",
+"profile.days.thu": "Jueves",
+"profile.days.fri": "Viernes",
+"profile.days.sat": "Sábado",
+"profile.days.sun": "Domingo"
 }
 
