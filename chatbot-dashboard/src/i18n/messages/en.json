@@ -165,5 +165,8 @@
   "demoWa.msg.2": "Hi 👋 I’m Amy, the business assistant. Happy to help. What information would you like to know?",
   "demoWa.msg.3": "I wanted to know the price",
   "demoWa.msg.4": "Sure 😊 The price depends on the service you’re interested in. I can explain the available options.",
-  "demoWa.msg.5": "If you tell me what you’re looking for, I’ll give you the right information."
+  "demoWa.msg.5": "If you tell me what you’re looking for, I’ll give you the right information.",
+
+  "waDemo.initialText": "Hi, I want to see how it works",
+  "waDemo.tooltip": "See how it works"
 }

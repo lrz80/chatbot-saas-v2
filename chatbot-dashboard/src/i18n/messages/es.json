@@ -165,8 +165,8 @@
   "demoWa.msg.2": "Hola 👋 Soy Amy, asistente del negocio. Con gusto te ayudo. ¿Qué información te gustaría conocer?",
   "demoWa.msg.3": "Quería saber el precio",
   "demoWa.msg.4": "Claro 😊 El precio depende del servicio que te interese. Puedo explicarte las opciones disponibles.",
-  "demoWa.msg.5": "Si quieres, dime qué estás buscando y te doy la información correcta."
+  "demoWa.msg.5": "Si quieres, dime qué estás buscando y te doy la información correcta.",
+
+  "waDemo.initialText": "Hola, quiero saber cómo funciona",
+  "waDemo.tooltip": "Ver cómo funciona"
 }
-
-
-

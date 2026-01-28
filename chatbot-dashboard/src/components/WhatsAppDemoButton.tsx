@@ -3,15 +3,18 @@
 import { FaWhatsapp } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
 import { track } from '@/lib/metaPixel';
+import { useI18n } from "../i18n/LanguageProvider";
+
 
 export default function WhatsAppDemoButton() {
+  const { t } = useI18n();
   const pathname = usePathname();
 
   // 🔒 Solo mostrar en la home
   if (pathname !== '/') return null;
 
   const phone = '17752786976';
-  const text = 'Hola, quiero saber como funciona';
+  const text = t("waDemo.initialText");
 
   return (
     <a
@@ -55,7 +58,7 @@ export default function WhatsAppDemoButton() {
           md:right-20 md:translate-x-0
         "
       >
-        Ver como funciona
+        {t("waDemo.tooltip")}
 
         {/* Flechita */}
         <span
