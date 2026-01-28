@@ -324,6 +324,46 @@
 "sidebar.nav.calendar": "Agenda",
 "sidebar.nav.leadFollowUp": "Seguimiento de Leads",
 "sidebar.nav.smsCampaigns": "Campañas SMS",
-"sidebar.nav.emailCampaigns": "Campañas Email"
+"sidebar.nav.emailCampaigns": "Campañas Email",
+
+"dashboard.loading": "Cargando...",
+"dashboard.membershipActivated": "✅ ¡Tu membresía fue activada correctamente!",
+"dashboard.avatarAlt": "Avatar de Amy",
+"dashboard.title": "Amy AI Dashboard",
+
+"dashboard.onboarding.missing": "Aún no has configurado tu negocio.",
+"dashboard.onboarding.cta": "Hazlo aquí",
+
+"dashboard.kpis.totalInteractions": "Interacciones Totales",
+"dashboard.kpis.uniqueUsers": "Usuarios Únicos",
+"dashboard.kpis.peakHour": "Hora Pico",
+"dashboard.kpis.salesIntentions": "Intenciones de Venta",
+
+"dashboard.monthlyInteractions.title": "Interacciones Mensuales",
+"dashboard.monthlyInteractions.year": "Año",
+"dashboard.monthlyInteractions.month": "Mes",
+
+"dashboard.chart.datasetLabel": "Interacciones del Chatbot",
+"dashboard.chart.title": "Interacciones por período",
+"dashboard.chart.noData": "No hay datos suficientes para mostrar.",
+
+"dashboard.channels.all": "Todos",
+"dashboard.channels.whatsapp": "WhatsApp",
+"dashboard.channels.voice": "Voz",
+"dashboard.channels.instagram": "Instagram",
+"dashboard.channels.facebook": "Facebook",
+"dashboard.channels.other": "Canal",
+
+"dashboard.messagesByChannel.title": "Historial de Mensajes por Canal",
+"dashboard.messagesByChannel.loading": "Cargando mensajes...",
+"dashboard.messagesByChannel.anonymous": "anónimo",
+"dashboard.messagesByChannel.clientLabel": "👤 Cliente:",
+"dashboard.messagesByChannel.assistantLabel": "🤖 Assistant:",
+"dashboard.messagesByChannel.emotionDetected": "Emoción detectada:",
+"dashboard.messagesByChannel.intentDetected": "🧠 Intención detectada:",
+"dashboard.messagesByChannel.intentLevel": "(Nivel {{level}})",
+
+"dashboard.keywords.title": "Palabras clave más frecuentes",
+"dashboard.keywords.noData": "No hay datos aún."
 }
 

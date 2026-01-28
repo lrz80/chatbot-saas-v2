@@ -18,6 +18,7 @@ import {
 import { PhoneCall, MessageCircle } from "lucide-react";
 import { FaWhatsapp, FaFacebook, FaInstagram } from 'react-icons/fa';
 import KpiCardWithChart from '@/components/KpiCardWithChart';
+import { useI18n } from "../../i18n/LanguageProvider";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -43,6 +44,10 @@ export default function DashboardHome() {
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const { t, lang } = useI18n();
+
+  const locale = lang === "en" ? "en-US" : "es-ES";
+
   const canalIcono = {
     whatsapp: <FaWhatsapp className="inline-block text-green-500" size={16} />,
     voice: <PhoneCall className="inline-block text-purple-400" size={16} />,
@@ -51,6 +56,14 @@ export default function DashboardHome() {
     default: <MessageCircle className="inline-block text-white/60" size={16} />,
   };  
   
+  const canalLabelKey: Record<string, string> = {
+    todos: "dashboard.channels.all",
+    whatsapp: "dashboard.channels.whatsapp",
+    voice: "dashboard.channels.voice",
+    instagram: "dashboard.channels.instagram",
+    facebook: "dashboard.channels.facebook",
+  };
+
   const mensajesUnicos = Array.from(
     new Map(allMessages.map((m) => [m.id, m])).values()
   );
@@ -112,12 +125,12 @@ export default function DashboardHome() {
             setChartData({
               labels: data.map((d: any) =>
                 monthlyView === 'current'
-                  ? new Date(d.dia).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-                  : new Date(d.mes).toLocaleDateString('es-ES', { month: 'long' })
+                  ? new Date(d.dia).toLocaleDateString(locale, { day: 'numeric', month: 'short' })
+                  : new Date(d.mes).toLocaleDateString(locale, { month: 'long' })
               ),
               datasets: [
                 {
-                  label: 'Interacciones del Chatbot',
+                  label: t("dashboard.chart.datasetLabel"),
                   data: data.map((d: any) => parseInt(d.count)),
                   backgroundColor: 'rgba(168, 85, 247, 0.5)',
                   borderRadius: 8,
@@ -171,7 +184,7 @@ export default function DashboardHome() {
     }
 
     fetchData();
-  }, [monthlyView, canal]);
+  }, [monthlyView, canal, lang]);
 
   useEffect(() => {
     const fetchAllMessages = async () => {
@@ -239,50 +252,53 @@ export default function DashboardHome() {
   }, []);
   
 
-  if (loading) return <div className="text-white p-10">Cargando...</div>;
+  if (loading) return <div className="text-white p-10">{t("dashboard.loading")}</div>;
 
   return (
     <div className="w-full px-4 md:px-6 py-4 text-white overflow-x-hidden">
       {showSuccess && (
         <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded mb-6 text-center font-medium">
-          ✅ ¡Tu membresía fue activada correctamente!
+          {t("dashboard.membershipActivated")}
         </div>
       )}
 
       <div className="flex items-center gap-4 mb-6 p-4 rounded-xl bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30">
         <div className="relative w-12 h-12 md:w-16 md:h-16">
-          <img src="/avatar-amy.png" alt="Avatar de Amy" className="w-full h-full rounded-full border-2 border-purple-500" />
+          <img src="/avatar-amy.png" alt={t("dashboard.avatarAlt")} className="w-full h-full rounded-full border-2 border-purple-500" />
         </div>
-        <h1 className="text-2xl md:text-4xl font-extrabold text-purple-300">Amy AI Dashboard</h1>
+        <h1 className="text-2xl md:text-4xl font-extrabold text-purple-300">{t("dashboard.title")}</h1>
       </div>
 
       {!onboardingCompletado && (
         <div className="bg-yellow-300/10 p-3 rounded text-yellow-300 text-center mb-4 text-sm">
-          Aún no has configurado tu negocio. <a href="/dashboard/profile" className="underline hover:text-yellow-200">Hazlo aquí</a>
+          {t("dashboard.onboarding.missing")}{" "}
+          <a href="/dashboard/profile" className="underline hover:text-yellow-200">
+            {t("dashboard.onboarding.cta")}
+          </a>
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6 px-4">
         <KpiCardWithChart
-          title="Interacciones Totales"
+          title={t("dashboard.kpis.totalInteractions")}
           value={kpis.total}
           data={graficoInteracciones}
           color="rgba(168, 85, 247, 1)"
         />
         <KpiCardWithChart
-          title="Usuarios Únicos"
+          title={t("dashboard.kpis.uniqueUsers")}
           value={kpis.unicos}
           data={graficoUsuarios}
           color="rgba(255, 255, 255, 0.9)"
         />
         <KpiCardWithChart
-          title="Hora Pico"
+          title={t("dashboard.kpis.peakHour")}
           value={kpis.hora_pico ? `${kpis.hora_pico}:00` : '—'}
           data={graficoHoraPico}
           color="rgba(255, 180, 100, 1)"
         />
         <KpiCardWithChart
-          title="Intenciones de Venta"
+          title={t("dashboard.kpis.salesIntentions")}
           value={ventasStats.total_intenciones}
           data={graficoIntenciones}
           color="rgba(255, 99, 132, 1)"
@@ -291,10 +307,10 @@ export default function DashboardHome() {
 
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
-          <h2 className="text-lg md:text-xl font-semibold">Interacciones Mensuales</h2>
+          <h2 className="text-lg md:text-xl font-semibold">{t("dashboard.monthlyInteractions.title")}</h2>
           <div className="flex gap-2">
-            <button onClick={() => setMonthlyView('year')} className="px-2 py-1 text-xs md:text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-full">Año</button>
-            <button onClick={() => setMonthlyView('current')} className="px-2 py-1 text-xs md:text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-full">Mes</button>
+            <button onClick={() => setMonthlyView('year')} className="px-2 py-1 text-xs md:text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-full">{t("dashboard.monthlyInteractions.year")}</button>
+            <button onClick={() => setMonthlyView('current')} className="px-2 py-1 text-xs md:text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-full">{t("dashboard.monthlyInteractions.month")}</button>
           </div>
         </div>
         {chartData ? (
@@ -307,7 +323,7 @@ export default function DashboardHome() {
                   legend: { display: true, labels: { color: '#fff' } },
                   title: {
                     display: true,
-                    text: 'Interacciones por período',
+                    text: t("dashboard.chart.title"),
                     color: '#fff',
                     font: { size: 18 },
                   },
@@ -316,7 +332,7 @@ export default function DashboardHome() {
             />
           </div>
         ) : (
-          <p className="text-white/50">No hay datos suficientes para mostrar.</p>
+          <p className="text-white/50">{t("dashboard.chart.noData")}</p>
         )}
       </div>
 
@@ -331,15 +347,15 @@ export default function DashboardHome() {
             }`}
           >
             {canalIcono[c as keyof typeof canalIcono] || canalIcono.default}
-            {c === 'todos' ? 'Todos' : c.charAt(0).toUpperCase() + c.slice(1)}
+            {t(canalLabelKey[c] || "dashboard.channels.other")}
           </button>
         ))}
       </div>
 
-        <h2 className="text-lg md:text-xl mb-4">Historial de Mensajes por Canal</h2>
+        <h2 className="text-lg md:text-xl mb-4">{t("dashboard.messagesByChannel.title")}</h2>
 
         {loadingAllMessages ? (
-          <p className="text-white/50">Cargando mensajes...</p>
+          <p className="text-white/50">{t("dashboard.messagesByChannel.loading")}</p>
         ) : (
           <div className="space-y-6 max-h-[350px] overflow-y-auto pr-1">
             {canal === 'todos' ? (
@@ -358,20 +374,26 @@ export default function DashboardHome() {
                         className="bg-white/5 p-3 rounded border border-white/10 text-sm"
                       >
                         <div className="flex justify-between text-white/60 text-xs mb-1">
-                          <span>{new Date(msg.timestamp).toLocaleString()}</span>
-                          <span>{msg.from_number || "anónimo"}</span>
+                          <span>{new Date(msg.timestamp).toLocaleString(locale)}</span>
+                          <span>{msg.from_number || t("dashboard.messagesByChannel.anonymous")}</span>
                         </div>
                         <div className="font-medium text-white break-words">
-                          {msg.role === "user" ? "👤 Cliente:" : "🤖 Assistant:"} {msg.content}
+                          {msg.role === "user"
+                            ? t("dashboard.messagesByChannel.clientLabel")
+                            : t("dashboard.messagesByChannel.assistantLabel")}{" "}
+                          {msg.content}
                         </div>
                         {msg.emotion && (
                           <div className="text-purple-300 text-xs mt-1">
-                            Emoción detectada: <span className="font-semibold">{msg.emotion}</span>
+                            {t("dashboard.messagesByChannel.emotionDetected")}{" "}
+                            <span className="font-semibold">{msg.emotion}</span>
                           </div>
                         )}
                         {msg.intencion && (
                           <div className="text-green-400 text-xs mt-1">
-                            🧠 Intención detectada: <span className="font-semibold">{msg.intencion}</span> (Nivel {msg.nivel_interes})
+                            {t("dashboard.messagesByChannel.intentDetected")}{" "}
+                            <span className="font-semibold">{msg.intencion}</span>{" "}
+                            {t("dashboard.messagesByChannel.intentLevel", { level: msg.nivel_interes })}
                           </div>
                         )}
                       </div>
@@ -392,20 +414,26 @@ export default function DashboardHome() {
                       className="bg-white/5 p-3 rounded border border-white/10 text-sm"
                     >
                       <div className="flex justify-between text-white/60 text-xs mb-1">
-                        <span>{new Date(msg.timestamp).toLocaleString()}</span>
-                        <span>{msg.from_number || "anónimo"}</span>
+                        <span>{new Date(msg.timestamp).toLocaleString(locale)}</span>
+                        <span>{msg.from_number || t("dashboard.messagesByChannel.anonymous")}</span>
                       </div>
                       <div className="font-medium text-white break-words">
-                        {msg.role === "user" ? "👤 Cliente:" : "🤖 Asistant:"} {msg.content}
+                      {msg.role === "user"
+                        ? t("dashboard.messagesByChannel.clientLabel")
+                        : t("dashboard.messagesByChannel.assistantLabel")}{" "}
+                      {msg.content}
                       </div>
                       {msg.emotion && (
                         <div className="text-purple-300 text-xs mt-1">
-                          Emoción detectada: <span className="font-semibold">{msg.emotion}</span>
+                          {t("dashboard.messagesByChannel.emotionDetected")}{" "}
+                          <span className="font-semibold">{msg.emotion}</span>
                         </div>
                       )}
                       {msg.intencion && (
                         <div className="text-green-400 text-xs mt-1">
-                          🧠 Intención detectada: <span className="font-semibold">{msg.intencion}</span> (Nivel {msg.nivel_interes})
+                          {t("dashboard.messagesByChannel.intentDetected")}{" "}
+                          <span className="font-semibold">{msg.intencion}</span>{" "}
+                          {t("dashboard.messagesByChannel.intentLevel", { level: msg.nivel_interes })}
                         </div>
                       )}
                     </div>
@@ -418,7 +446,7 @@ export default function DashboardHome() {
       </div>
 
       <div className="bg-white/10 p-4 rounded mb-6">
-        <h2 className="text-lg md:text-xl mb-2">Palabras clave más frecuentes</h2>
+        <h2 className="text-lg md:text-xl mb-2">{t("dashboard.keywords.title")}</h2>
         {keywords.length > 0 ? (
           <ul className="flex flex-wrap gap-3 overflow-x-auto max-w-full">
             {keywords.map(([word, count]) => (
@@ -428,7 +456,7 @@ export default function DashboardHome() {
             ))}
           </ul>
         ) : (
-          <p className="text-white/50 text-sm">No hay datos aún.</p>
+          <p className="text-white/50 text-sm">{t("dashboard.keywords.noData")}</p>
         )}
       </div>
       <Footer />

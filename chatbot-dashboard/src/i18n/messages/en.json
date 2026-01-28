@@ -324,6 +324,46 @@
 "sidebar.nav.calendar": "Calendar",
 "sidebar.nav.leadFollowUp": "Lead Follow-up",
 "sidebar.nav.smsCampaigns": "SMS Campaigns",
-"sidebar.nav.emailCampaigns": "Email Campaigns"
+"sidebar.nav.emailCampaigns": "Email Campaigns",
+
+"dashboard.loading": "Loading...",
+"dashboard.membershipActivated": "✅ Your membership was activated successfully!",
+"dashboard.avatarAlt": "Amy avatar",
+"dashboard.title": "Amy AI Dashboard",
+
+"dashboard.onboarding.missing": "You haven’t configured your business yet.",
+"dashboard.onboarding.cta": "Do it here",
+
+"dashboard.kpis.totalInteractions": "Total Interactions",
+"dashboard.kpis.uniqueUsers": "Unique Users",
+"dashboard.kpis.peakHour": "Peak Hour",
+"dashboard.kpis.salesIntentions": "Sales Intentions",
+
+"dashboard.monthlyInteractions.title": "Monthly Interactions",
+"dashboard.monthlyInteractions.year": "Year",
+"dashboard.monthlyInteractions.month": "Month",
+
+"dashboard.chart.datasetLabel": "Chatbot Interactions",
+"dashboard.chart.title": "Interactions by period",
+"dashboard.chart.noData": "Not enough data to display.",
+
+"dashboard.channels.all": "All",
+"dashboard.channels.whatsapp": "WhatsApp",
+"dashboard.channels.voice": "Voice",
+"dashboard.channels.instagram": "Instagram",
+"dashboard.channels.facebook": "Facebook",
+"dashboard.channels.other": "Channel",
+
+"dashboard.messagesByChannel.title": "Message History by Channel",
+"dashboard.messagesByChannel.loading": "Loading messages...",
+"dashboard.messagesByChannel.anonymous": "anonymous",
+"dashboard.messagesByChannel.clientLabel": "👤 Customer:",
+"dashboard.messagesByChannel.assistantLabel": "🤖 Assistant:",
+"dashboard.messagesByChannel.emotionDetected": "Detected emotion:",
+"dashboard.messagesByChannel.intentDetected": "🧠 Detected intent:",
+"dashboard.messagesByChannel.intentLevel": "(Level {{level}})",
+
+"dashboard.keywords.title": "Most frequent keywords",
+"dashboard.keywords.noData": "No data yet."
 }
 
