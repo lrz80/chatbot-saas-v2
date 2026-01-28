@@ -3,33 +3,36 @@
 
 import { motion } from 'framer-motion';
 import { CheckCircle2, Sparkles, BarChart3, MessageSquare, Target } from 'lucide-react';
+import { useI18n } from "../i18n/LanguageProvider";
+
 
 export default function DashboardPreviewSection() {
-  const bullets = [
+  const { t } = useI18n();
+    const bullets = [
     {
       icon: <MessageSquare className="w-5 h-5 text-purple-300" />,
-      title: "Historial omnicanal",
-      desc: "WhatsApp, Instagram y Facebook en una sola vista, con conversaciones organizadas por cliente.",
+      title: t("dashprev.bullets.1.title"),
+      desc: t("dashprev.bullets.1.desc"),
     },
     {
       icon: <Target className="w-5 h-5 text-purple-300" />,
-      title: "Intención de compra detectada",
-      desc: "Identifica leads fríos, tibios y calientes para priorizar el cierre (sin adivinar).",
+      title: t("dashprev.bullets.2.title"),
+      desc: t("dashprev.bullets.2.desc"),
     },
     {
       icon: <Sparkles className="w-5 h-5 text-purple-300" />,
-      title: "Follow-up automático",
-      desc: "Seguimientos programados según el contexto e intención: recupera ventas que se iban a perder.",
+      title: t("dashprev.bullets.3.title"),
+      desc: t("dashprev.bullets.3.desc"),
     },
     {
       icon: <BarChart3 className="w-5 h-5 text-purple-300" />,
-      title: "KPIs y rendimiento",
-      desc: "Mide conversaciones, intención, horarios pico y resultados. Optimiza con datos, no con suposiciones.",
+      title: t("dashprev.bullets.4.title"),
+      desc: t("dashprev.bullets.4.desc"),
     },
     {
       icon: <CheckCircle2 className="w-5 h-5 text-purple-300" />,
-      title: "Eventos Meta Pixel + CAPI",
-      desc: "Registra eventos desde el chat para mejorar segmentación y bajar tu costo por lead en campañas.",
+      title: t("dashprev.bullets.5.title"),
+      desc: t("dashprev.bullets.5.desc"),
     },
   ];
 
@@ -41,8 +44,8 @@ export default function DashboardPreviewSection() {
         transition={{ duration: 0.8 }}
         className="text-3xl md:text-5xl font-bold text-white mb-6"
       >
-        Un dashboard para controlar{" "}
-        <span className="text-purple-400">conversaciones, ventas y seguimiento</span>
+        {t("dashprev.title.before")}{" "}
+        <span className="text-purple-400">{t("dashprev.title.highlight")}</span>
       </motion.h2>
 
       <motion.p
@@ -51,8 +54,7 @@ export default function DashboardPreviewSection() {
         transition={{ duration: 0.7, delay: 0.1 }}
         className="text-white/80 max-w-3xl mx-auto mb-10"
       >
-        Aamy no es solo “atención 24/7”. Es un sistema de IA que centraliza canales, detecta intención de compra,
-        automatiza seguimientos, envia eventos a META PIXEL/CAPI para mejorar tus ads y te muestra métricas para mejorar conversiones y campañas.
+        {t("dashprev.subtitle")}
       </motion.p>
 
       {/* Bullets (valor real del dashboard) */}
@@ -88,7 +90,7 @@ export default function DashboardPreviewSection() {
         {/* 🖼 Imagen del dashboard */}
         <img
           src="/mockup-dashboard.png"
-          alt="Vista previa del dashboard de Aamy: conversaciones, intención, seguimiento y KPIs"
+          alt={t("dashprev.mock.alt")}
           className="relative z-10 rounded-2xl border border-white/10 shadow-2xl"
         />
       </motion.div>
@@ -100,7 +102,7 @@ export default function DashboardPreviewSection() {
         transition={{ duration: 0.6, delay: 0.25 }}
         className="text-white/60 text-sm mt-8"
       >
-        Configuración guiada con tu información. Tú controlas todo; Aamy ejecuta.
+        {t("dashprev.closing")}
       </motion.p>
     </section>
   );

@@ -92,7 +92,30 @@
 
   "benefits.closing.before": "No se trata solo de responder.",
   "benefits.closing.highlight": "Se trata de convertir.",
-  "benefits.closing.after": "Aamy te ayuda a cerrar más ventas sin trabajar más."
+  "benefits.closing.after": "Aamy te ayuda a cerrar más ventas sin trabajar más.",
+
+  "dashprev.title.before": "Un dashboard para controlar",
+  "dashprev.title.highlight": "conversaciones, ventas y seguimiento",
+
+  "dashprev.subtitle": "Aamy no es solo “atención 24/7”. Es un sistema de IA que centraliza canales, detecta intención de compra, automatiza seguimientos, envía eventos a Meta Pixel/CAPI para mejorar tus ads y te muestra métricas para mejorar conversiones y campañas.",
+
+  "dashprev.bullets.1.title": "Historial omnicanal",
+  "dashprev.bullets.1.desc": "WhatsApp, Instagram y Facebook en una sola vista, con conversaciones organizadas por cliente.",
+
+  "dashprev.bullets.2.title": "Intención de compra detectada",
+  "dashprev.bullets.2.desc": "Identifica leads fríos, tibios y calientes para priorizar el cierre (sin adivinar).",
+
+  "dashprev.bullets.3.title": "Follow-up automático",
+  "dashprev.bullets.3.desc": "Seguimientos programados según el contexto e intención: recupera ventas que se iban a perder.",
+
+  "dashprev.bullets.4.title": "KPIs y rendimiento",
+  "dashprev.bullets.4.desc": "Mide conversaciones, intención, horarios pico y resultados. Optimiza con datos, no con suposiciones.",
+
+  "dashprev.bullets.5.title": "Eventos Meta Pixel + CAPI",
+  "dashprev.bullets.5.desc": "Registra eventos desde el chat para mejorar segmentación y bajar tu costo por lead en campañas.",
+
+  "dashprev.mock.alt": "Vista previa del dashboard de Aamy: conversaciones, intención, seguimiento y KPIs",
+  "dashprev.closing": "Configuración guiada con tu información. Tú controlas todo; Aamy ejecuta."
 }
 
 
