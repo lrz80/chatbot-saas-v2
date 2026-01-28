@@ -523,6 +523,16 @@
 "forgot.form.sending": "Enviando...",
 "forgot.form.submit": "Enviar enlace de recuperación",
 "forgot.links.backToLogin": "Volver al inicio de sesión",
-"forgot.errors.requestFailed": "Error al solicitar recuperación"
+"forgot.errors.requestFailed": "Error al solicitar recuperación",
+
+"delete.title": "Eliminar Cuenta",
+"delete.description": "Esta acción eliminará permanentemente tu cuenta y todos tus datos relacionados.",
+"delete.confirm": "⚠️ Esta acción eliminará tu cuenta permanentemente. ¿Deseas continuar?",
+"delete.loading": "Eliminando...",
+"delete.submit": "Sí, eliminar mi cuenta",
+"delete.back": "⬅️ Volver al panel",
+"delete.success": "✅ Tu cuenta fue eliminada. Serás redirigido al registro...",
+"delete.errors.failed": "❌ No se pudo eliminar la cuenta.",
+"delete.errors.server": "❌ Error al conectar con el servidor."
 }
 

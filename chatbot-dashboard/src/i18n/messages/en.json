@@ -523,6 +523,16 @@
 "forgot.form.sending": "Sending...",
 "forgot.form.submit": "Send recovery link",
 "forgot.links.backToLogin": "Back to sign in",
-"forgot.errors.requestFailed": "Failed to request password reset"
+"forgot.errors.requestFailed": "Failed to request password reset",
+
+"delete.title": "Delete Account",
+"delete.description": "This action will permanently delete your account and all related data.",
+"delete.confirm": "⚠️ This action will permanently delete your account. Do you want to continue?",
+"delete.loading": "Deleting...",
+"delete.submit": "Yes, delete my account",
+"delete.back": "⬅️ Back to dashboard",
+"delete.success": "✅ Your account has been deleted. You will be redirected to registration...",
+"delete.errors.failed": "❌ Unable to delete account.",
+"delete.errors.server": "❌ Error connecting to the server."
 }
 
