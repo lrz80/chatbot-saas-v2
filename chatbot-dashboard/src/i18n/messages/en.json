@@ -484,6 +484,20 @@
 "upgrade.cta.redirecting": "Redirecting to Stripe…",
 "upgrade.cta.pay": "Activate with Stripe",
 
-"upgrade.footer.note": "Cancel anytime. Monthly billing starts automatically in month 2."
+"upgrade.footer.note": "Cancel anytime. Monthly billing starts automatically in month 2.",
+
+"verify.title": "Verify your email",
+"verify.subtitle": "Enter the 6-digit code we sent to your email.",
+"verify.codePlaceholder": "e.g., 123456",
+"verify.verifying": "Verifying...",
+"verify.verifyButton": "Verify",
+
+"verify.resend.cta": "Didn't get the code? Resend",
+
+"verify.alerts.verified": "✅ Email successfully verified",
+"verify.alerts.resent": "✅ Code resent to your email",
+
+"verify.errors.failed": "Verification failed",
+"verify.errors.resendFailed": "Could not resend the code"
 }
 

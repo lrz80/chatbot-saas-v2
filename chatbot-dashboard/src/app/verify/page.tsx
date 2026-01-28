@@ -5,8 +5,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BACKEND_URL } from "@/utils/api";
+import { useI18n } from "../../i18n/LanguageProvider";
+
 
 export default function VerifyEmailPage() {
+  const { t } = useI18n();
   const [code, setCode] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -44,9 +47,9 @@ export default function VerifyEmailPage() {
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || "Verificación fallida");
+      if (!res.ok) throw new Error(data.error || t("verify.errors.failed"));
 
-      alert("✅ Correo verificado correctamente");
+      alert(t("verify.alerts.verified"));
       try {
         localStorage.removeItem("pending_email");
       } catch (err) {
@@ -64,11 +67,11 @@ export default function VerifyEmailPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4">
       <div className="bg-white/10 border border-white/20 p-8 rounded-xl shadow-lg max-w-md w-full">
         <h2 className="text-2xl font-bold text-center mb-4 text-purple-300">
-          Verifica tu Correo
+          {t("verify.title")}
         </h2>
 
         <p className="mb-4 text-white/70 text-sm text-center">
-          Ingresa el código de 6 dígitos que enviamos a tu correo.
+          {t("verify.subtitle")}
         </p>
 
         {error && (
@@ -81,7 +84,7 @@ export default function VerifyEmailPage() {
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          placeholder="Ej: 123456"
+          placeholder={t("verify.codePlaceholder")}
           maxLength={6}
           className="w-full p-3 mb-4 rounded bg-white/10 border border-white/20 text-white placeholder-white/60 text-center text-xl tracking-widest"
         />
@@ -91,7 +94,7 @@ export default function VerifyEmailPage() {
           disabled={loading || code.length !== 6}
           className="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded font-semibold disabled:opacity-50"
         >
-          {loading ? "Verificando..." : "Verificar"}
+          {loading ? t("verify.verifying") : t("verify.verifyButton")}
         </button>
 
         <button
@@ -104,14 +107,14 @@ export default function VerifyEmailPage() {
 
             const data = await res.json();
             if (res.ok) {
-              alert("✅ Código reenviado a tu correo");
+              alert(t("verify.alerts.resent"));
             } else {
-              alert(data.error || "No se pudo reenviar el código");
+              alert(data.error || t("verify.errors.resendFailed"));
             }
           }}
           className="w-full mt-4 text-sm text-purple-300 hover:underline text-center"
         >
-          ¿No recibiste el código? Reenviar
+          {t("verify.resend.cta")}
         </button>
       </div>
     </div>

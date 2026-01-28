@@ -484,6 +484,20 @@
   "upgrade.cta.redirecting": "Redirigiendo a Stripe…",
   "upgrade.cta.pay": "Activar con Stripe",
 
-  "upgrade.footer.note": "Cancelas cuando quieras. La facturación mensual comienza automáticamente en el mes 2."
+  "upgrade.footer.note": "Cancelas cuando quieras. La facturación mensual comienza automáticamente en el mes 2.",
+
+  "verify.title": "Verifica tu correo",
+"verify.subtitle": "Ingresa el código de 6 dígitos que enviamos a tu correo.",
+"verify.codePlaceholder": "Ej: 123456",
+"verify.verifying": "Verificando...",
+"verify.verifyButton": "Verificar",
+
+"verify.resend.cta": "¿No recibiste el código? Reenviar",
+
+"verify.alerts.verified": "✅ Correo verificado correctamente",
+"verify.alerts.resent": "✅ Código reenviado a tu correo",
+
+"verify.errors.failed": "Verificación fallida",
+"verify.errors.resendFailed": "No se pudo reenviar el código"
 }
 
