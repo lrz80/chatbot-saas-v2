@@ -5,10 +5,6 @@
   "nav.benefits": "Benefits",
   "nav.dashboard": "Dashboard",
 
-  "hero.title": "Automate your business with Aamy",
-  "hero.subtitle": "WhatsApp, Instagram and Facebook with follow-up and booking",
-  "hero.cta": "See demo",
-
   "pwa.banner": "📱 Install Aamy.AI as an App",
   "pwa.install": "Install",
   "pwa.close": "Close",
@@ -37,5 +33,40 @@
   "landing.final.title": "Ready to automate sales with advanced AI?",
   "landing.final.subtitle": "We set it up for your business so you can reply 24/7, capture leads, and follow up from WhatsApp, Instagram, and Facebook.",
   "landing.final.cta": "Activate Aamy now",
-  "landing.final.tip": "Tip: one recovered customer per month often pays for the service."
+  "landing.final.tip": "Tip: one recovered customer per month often pays for the service.",
+
+  "hero.tag": "Advanced conversational AI • Omnichannel • Conversion-focused",
+
+  "hero.h1.before": "Automate and scale your sales with",
+  "hero.h1.highlight1": "context-aware conversational AI",
+  "hero.h1.after": "available",
+  "hero.h1.highlight2": "24/7",
+
+  "hero.subtitle": "Aamy automates conversations across WhatsApp, Instagram, and Facebook using advanced AI: it understands context, identifies buying intent, and runs strategic follow-up to maximize conversions.",
+
+  "hero.bullets.omni.title": "Real omnichannel",
+  "hero.bullets.omni.desc": "WhatsApp, Instagram, and Facebook in one system.",
+
+  "hero.bullets.pixel.title": "Pixel + CAPI",
+  "hero.bullets.pixel.desc": "Events from chats to optimize campaigns.",
+
+  "hero.bullets.booking.title": "Booking",
+  "hero.bullets.booking.desc": "Connect Google Calendar to confirm real appointments.",
+
+  "hero.bullets.intent.title": "Intent-driven AI",
+  "hero.bullets.intent.desc": "Precise, closing-oriented replies (not generic).",
+
+  "hero.micro": "Powered by conversational AI, Aamy replies using verified business info and chat context. You stay in control at all times.",
+
+  "hero.pricing.setup": "setup (includes the first month)",
+  "hero.pricing.monthly": "/month starting month 2",
+
+  "hero.tip.before": "Tip: if you recover",
+  "hero.tip.highlight1": "just one customer per month",
+  "hero.tip.middle": "Aamy typically",
+  "hero.tip.highlight2": "pays for itself",
+
+  "hero.cta": "Activate Aamy now",
+  "hero.note": "Guided setup with your info. Cancel anytime."
 }
+

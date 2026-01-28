@@ -5,9 +5,11 @@ import { useEffect, useRef, JSX } from 'react';
 import { motion } from 'framer-motion';
 import { track } from "@/lib/metaPixel";
 import { FaWhatsapp, FaCalendarAlt, FaBullseye, FaBrain } from "react-icons/fa";
+import { useI18n } from "../i18n/LanguageProvider";
 
 
 export default function HeroSection() {
+  const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -44,61 +46,59 @@ export default function HeroSection() {
         {/* Tag superior (posicionamiento) */}
         <div className="mx-auto mb-5 inline-flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md px-4 py-2 rounded-full text-xs text-white/85">
           <FaBrain className="text-purple-300" />
-          IA conversacional avanzada • Omnicanal • Enfocada en conversión
+          {t("hero.tag")}
         </div>
 
         <h1 className="text-4xl md:text-6xl font-extrabold mb-5 tracking-tight leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.65)]">
-          Automatiza y escala tus ventas con{" "}
-          <span className="text-violet-400">IA conversacional con contexto</span>
+          {t("hero.h1.before")}{" "}
+          <span className="text-violet-400">{t("hero.h1.highlight1")}</span>
           <br className="hidden md:block" />
-          disponible <span className="text-violet-400">24/7</span>
+          {t("hero.h1.after")} <span className="text-violet-400">{t("hero.h1.highlight2")}</span>
         </h1>
 
         <p className="text-lg md:text-xl text-white/90 mb-7 leading-relaxed drop-shadow">
-          Aamy automatiza conversaciones en WhatsApp, Instagram y Facebook con IA avanzada: 
-          entiende el contexto, identifica intención de compra y ejecuta seguimiento estratégico 
-          para maximizar conversiones.
+          {t("hero.subtitle")}
         </p>
 
         {/* Bullet grid (4 puntos premium, compactos) */}
         <div className="mx-auto mb-7 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl">
           <HeroBullet
             icon={<FaWhatsapp className="text-green-300" />}
-            title="Omnicanal real"
-            desc="WhatsApp, Instagram y Facebook en un solo sistema."
+            title={t("hero.bullets.omni.title")}
+            desc={t("hero.bullets.omni.desc")}
           />
           <HeroBullet
             icon={<FaBullseye className="text-pink-300" />}
-            title="Pixel + CAPI"
-            desc="Eventos desde conversaciones para optimizar campañas."
+            title={t("hero.bullets.pixel.title")}
+            desc={t("hero.bullets.pixel.desc")}
           />
           <HeroBullet
             icon={<FaCalendarAlt className="text-blue-300" />}
-            title="Agendamiento"
-            desc="Conecta Google Calendar para confirmar citas reales."
+            title={t("hero.bullets.booking.title")}
+            desc={t("hero.bullets.booking.desc")}
           />
           <HeroBullet
             icon={<FaBrain className="text-purple-300" />}
-            title="IA con intención"
-            desc="Respuestas precisas orientadas a cierre (no genéricas)."
+            title={t("hero.bullets.intent.title")}
+            desc={t("hero.bullets.intent.desc")}
           />
         </div>
 
         {/* Micro-clarificación (evitar objeción sin sonar limitado) */}
         <div className="mx-auto mb-4 max-w-3xl text-sm text-white/80">
-          Impulsado por IA conversacional, Aamy responde con información verificada de
-          tu negocio y el contexto del chat. Tú mantienes el control en todo momento.
+          {t("hero.micro")}
         </div>
 
         {/* Precio visible */}
         <div className="mb-2 text-white/85 text-sm">
-          <span className="font-semibold text-white">$399 USD</span> instalación (incluye el primer mes) ·{" "}
-          <span className="font-semibold text-white">$199 USD</span>/mes desde el mes 2
+          <span className="font-semibold text-white">$399 USD</span> {t("hero.pricing.setup")} ·{" "}
+          <span className="font-semibold text-white">$199 USD</span>{t("hero.pricing.monthly")}
         </div>
 
         <div className="mb-6 text-white/70 text-xs">
-          Tip: Con recuperar <span className="font-semibold text-white">un solo cliente al mes</span>, Aamy normalmente{" "}
-          <span className="font-semibold text-white">se paga sola</span>.
+          {t("hero.tip.before")}{" "}
+          <span className="font-semibold text-white">{t("hero.tip.highlight1")}</span>, {t("hero.tip.middle")}{" "}
+          <span className="font-semibold text-white">{t("hero.tip.highlight2")}</span>.
         </div>
 
         {/* CTA */}
@@ -108,13 +108,13 @@ export default function HeroSection() {
             onClick={() => track("Lead", { content_name: "CTA Activar Aamy (Hero)" })}
             className="bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-[1.03]"
           >
-            Activar Aamy ahora
+            {t("hero.cta")}
           </a>
 
         </div>
 
         <p className="mt-4 text-white/60 text-xs md:text-sm">
-          Configuración guiada con tu información. Cancelas cuando quieras.
+          {t("hero.note")}
         </p>
       </motion.div>
     </section>

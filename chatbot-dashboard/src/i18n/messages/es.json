@@ -5,10 +5,6 @@
   "nav.benefits": "Beneficios",
   "nav.dashboard": "Dashboard",
 
-  "hero.title": "Automatiza tu negocio con Aamy",
-  "hero.subtitle": "WhatsApp, Instagram y Facebook con seguimiento y agenda",
-  "hero.cta": "Ver demo",
-
   "pwa.banner": "📱 Instala Aamy.AI como App",
   "pwa.install": "Instalar",
   "pwa.close": "Cerrar",
@@ -37,5 +33,40 @@
   "landing.final.title": "¿Listo para automatizar ventas con IA avanzada?",
   "landing.final.subtitle": "Te lo dejamos configurado con tu negocio para que respondas 24/7, captes leads y hagas seguimiento desde WhatsApp, Instagram y Facebook.",
   "landing.final.cta": "Activar Aamy ahora",
-  "landing.final.tip": "Tip: un solo cliente recuperado al mes suele pagar el servicio."
+  "landing.final.tip": "Tip: un solo cliente recuperado al mes suele pagar el servicio.",
+
+  "hero.tag": "IA conversacional avanzada • Omnicanal • Enfocada en conversión",
+
+  "hero.h1.before": "Automatiza y escala tus ventas con",
+  "hero.h1.highlight1": "IA conversacional con contexto",
+  "hero.h1.after": "disponible",
+  "hero.h1.highlight2": "24/7",
+
+  "hero.subtitle": "Aamy automatiza conversaciones en WhatsApp, Instagram y Facebook con IA avanzada: entiende el contexto, identifica intención de compra y ejecuta seguimiento estratégico para maximizar conversiones.",
+
+  "hero.bullets.omni.title": "Omnicanal real",
+  "hero.bullets.omni.desc": "WhatsApp, Instagram y Facebook en un solo sistema.",
+
+  "hero.bullets.pixel.title": "Pixel + CAPI",
+  "hero.bullets.pixel.desc": "Eventos desde conversaciones para optimizar campañas.",
+
+  "hero.bullets.booking.title": "Agendamiento",
+  "hero.bullets.booking.desc": "Conecta Google Calendar para confirmar citas reales.",
+
+  "hero.bullets.intent.title": "IA con intención",
+  "hero.bullets.intent.desc": "Respuestas precisas orientadas a cierre (no genéricas).",
+
+  "hero.micro": "Impulsado por IA conversacional, Aamy responde con información verificada de tu negocio y el contexto del chat. Tú mantienes el control en todo momento.",
+
+  "hero.pricing.setup": "instalación (incluye el primer mes)",
+  "hero.pricing.monthly": "/mes desde el mes 2",
+
+  "hero.tip.before": "Tip: Con recuperar",
+  "hero.tip.highlight1": "un solo cliente al mes",
+  "hero.tip.middle": "Aamy normalmente",
+  "hero.tip.highlight2": "se paga sola",
+
+  "hero.cta": "Activar Aamy ahora",
+  "hero.note": "Configuración guiada con tu información. Cancelas cuando quieras."
 }
+
