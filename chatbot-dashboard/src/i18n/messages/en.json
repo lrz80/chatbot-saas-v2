@@ -67,6 +67,31 @@
   "hero.tip.highlight2": "pays for itself",
 
   "hero.cta": "Activate Aamy now",
-  "hero.note": "Guided setup with your info. Cancel anytime."
+  "hero.note": "Guided setup with your info. Cancel anytime.",
+
+  "benefits.title": "What does your business gain with",
+  "benefits.subtitle": "Aamy doesn’t just reply fast. It uses advanced AI to understand context, detect intent, book appointments, and optimize your Meta campaigns.",
+
+  "benefits.cards.1.title": "AI that understands context and intent",
+  "benefits.cards.1.desc": "Aamy doesn’t give generic replies. It interprets customer intent, keeps the conversation thread, and answers accurately using your business info.",
+
+  "benefits.cards.2.title": "WhatsApp, Instagram, and Facebook in one place",
+  "benefits.cards.2.desc": "One inbox for all your messages. Reply faster and avoid losing customers across scattered channels.",
+
+  "benefits.cards.3.title": "Automated sales with smart follow-up",
+  "benefits.cards.3.desc": "If the customer cools off, Aamy sends strategic reminders based on detected intent. More closes with less effort.",
+
+  "benefits.cards.4.title": "Ad optimization with Pixel + CAPI",
+  "benefits.cards.4.desc": "Send advanced events from WhatsApp, Instagram, and Facebook to improve targeting and lower your cost per lead.",
+
+  "benefits.cards.5.title": "Automatic booking with Google Calendar",
+  "benefits.cards.5.desc": "Aamy offers time slots, checks availability in real time, and confirms real appointments directly on your calendar.",
+
+  "benefits.cards.6.title": "Automatic multilingual",
+  "benefits.cards.6.desc": "Your customers speak their language. So does Aamy. It detects Spanish or English and replies automatically to maximize conversions.",
+
+  "benefits.closing.before": "It’s not just about replying.",
+  "benefits.closing.highlight": "It’s about converting.",
+  "benefits.closing.after": "Aamy helps you close more sales without working more."
 }
 

@@ -67,6 +67,32 @@
   "hero.tip.highlight2": "se paga sola",
 
   "hero.cta": "Activar Aamy ahora",
-  "hero.note": "Configuración guiada con tu información. Cancelas cuando quieras."
+  "hero.note": "Configuración guiada con tu información. Cancelas cuando quieras.",
+
+  "benefits.title": "¿Qué gana tu negocio con",
+  "benefits.subtitle": "Aamy no solo responde rápido. Usa IA avanzada para entender contexto, detectar intención, agendar citas y optimizar tus campañas de Meta.",
+
+  "benefits.cards.1.title": "IA que entiende contexto e intención",
+  "benefits.cards.1.desc": "Aamy no da respuestas genéricas. Interpreta la intención del cliente, mantiene el hilo de la conversación y responde con precisión usando tu información.",
+
+  "benefits.cards.2.title": "WhatsApp, Instagram y Facebook en un solo lugar",
+  "benefits.cards.2.desc": "Una sola bandeja para todos tus mensajes. Atiende más rápido y evita perder clientes por tener canales dispersos.",
+
+  "benefits.cards.3.title": "Ventas automáticas con seguimiento inteligente",
+  "benefits.cards.3.desc": "Si el cliente se enfría, Aamy envía recordatorios estratégicos según la intención detectada. Más cierres sin esfuerzo.",
+
+  "benefits.cards.4.title": "Optimización de Ads con Pixel + CAPI",
+  "benefits.cards.4.desc": "Envía eventos avanzados desde WhatsApp, Instagram y Facebook para mejorar segmentación y bajar tu costo por lead.",
+
+  "benefits.cards.5.title": "Agendamiento automático con Google Calendar",
+  "benefits.cards.5.desc": "Aamy ofrece horarios, valida disponibilidad en tiempo real y confirma citas reales directamente en tu calendario.",
+
+  "benefits.cards.6.title": "Multilenguaje automático",
+  "benefits.cards.6.desc": "Tus clientes hablan en su idioma. Aamy también. Detecta español o inglés y responde automáticamente para maximizar conversiones.",
+
+  "benefits.closing.before": "No se trata solo de responder.",
+  "benefits.closing.highlight": "Se trata de convertir.",
+  "benefits.closing.after": "Aamy te ayuda a cerrar más ventas sin trabajar más."
 }
+
 

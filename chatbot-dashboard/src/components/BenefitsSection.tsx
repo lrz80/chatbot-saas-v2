@@ -10,44 +10,40 @@ import {
   CalendarCheck, 
   Languages 
 } from 'lucide-react';
+import { useI18n } from "../i18n/LanguageProvider";
 
 export default function BenefitsSection() {
-  const benefits = [
+  const { t } = useI18n();
+    const benefits = [
     {
       icon: <Sparkles className="w-8 h-8 text-purple-400" />,
-      title: "IA que entiende contexto e intención",
-      description:
-        "Aamy no da respuestas genéricas. Interpreta la intención del cliente, mantiene el hilo de la conversación y responde con precisión usando tu información.",
+      title: t("benefits.cards.1.title"),
+      description: t("benefits.cards.1.desc"),
     },
     {
       icon: <BotMessageSquare className="w-8 h-8 text-purple-400" />,
-      title: "WhatsApp, Instagram y Facebook en un solo lugar",
-      description:
-        "Una sola bandeja para todos tus mensajes. Atiende más rápido y evita perder clientes por tener canales dispersos.",
+      title: t("benefits.cards.2.title"),
+      description: t("benefits.cards.2.desc"),
     },
     {
       icon: <BarChart3 className="w-8 h-8 text-purple-400" />,
-      title: "Ventas automáticas con seguimiento inteligente",
-      description:
-        "Si el cliente se enfría, Aamy envía recordatorios estratégicos según la intención detectada. Más cierres sin esfuerzo.",
+      title: t("benefits.cards.3.title"),
+      description: t("benefits.cards.3.desc"),
     },
     {
       icon: <Share2 className="w-8 h-8 text-purple-400" />,
-      title: "Optimización de Ads con Pixel + CAPI",
-      description:
-        "Envía eventos avanzados desde WhatsApp, Instagram y Facebook para mejorar segmentación y bajar tu costo por lead.",
+      title: t("benefits.cards.4.title"),
+      description: t("benefits.cards.4.desc"),
     },
     {
       icon: <CalendarCheck className="w-8 h-8 text-purple-400" />,
-      title: "Agendamiento automático con Google Calendar",
-      description:
-        "Aamy ofrece horarios, valida disponibilidad en tiempo real y confirma citas reales directamente en tu calendario.",
+      title: t("benefits.cards.5.title"),
+      description: t("benefits.cards.5.desc"),
     },
     {
       icon: <Languages className="w-8 h-8 text-purple-400" />,
-      title: "Multilenguaje automático",
-      description:
-        "Tus clientes hablan en su idioma. Aamy también. Detecta español o inglés y responde automáticamente para maximizar conversiones.",
+      title: t("benefits.cards.6.title"),
+      description: t("benefits.cards.6.desc"),
     },
   ];
 
@@ -59,7 +55,7 @@ export default function BenefitsSection() {
         transition={{ duration: 0.8 }}
         className="text-3xl md:text-5xl font-bold text-center mb-6 text-white"
       >
-        ¿Qué gana tu negocio con <span className="text-purple-400">Aamy</span>?
+        {t("benefits.title")} <span className="text-purple-400">Aamy</span>?
       </motion.h2>
 
       <motion.p
@@ -68,7 +64,7 @@ export default function BenefitsSection() {
         transition={{ duration: 0.7, delay: 0.1 }}
         className="text-center text-white/75 max-w-3xl mx-auto mb-12"
       >
-        Aamy no solo responde rápido. Usa IA avanzada para entender contexto, detectar intención, agendar citas y optimizar tus campañas de Meta.
+        {t("benefits.subtitle")}
       </motion.p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -95,9 +91,9 @@ export default function BenefitsSection() {
         className="mt-12 text-center"
       >
         <p className="text-base md:text-lg text-white/80">
-          No se trata solo de responder.{" "}
-          <span className="font-semibold text-white">Se trata de convertir.</span>{" "}
-          Aamy te ayuda a cerrar más ventas sin trabajar más.
+          {t("benefits.closing.before")}{" "}
+          <span className="font-semibold text-white">{t("benefits.closing.highlight")}</span>{" "}
+          {t("benefits.closing.after")}
         </p>
       </motion.div>
     </section>
