@@ -2,42 +2,33 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useI18n } from "../i18n/LanguageProvider";
+
 
 export default function DemoWhatsApp() {
-  const mensajes = [
-    { de: 'cliente', texto: 'Hola, ¿me puedes dar información?' },
-    {
-      de: 'amy',
-      texto:
-        'Hola 👋 Soy Amy, asistente del negocio. Con gusto te ayudo. ¿Qué información te gustaría conocer?',
-    },
-    { de: 'cliente', texto: 'Quería saber el precio' },
-    {
-      de: 'amy',
-      texto:
-        'Claro 😊 El precio depende del servicio que te interese. Puedo explicarte las opciones disponibles.',
-    },
-    {
-      de: 'amy',
-      texto:
-        'Si quieres, dime qué estás buscando y te doy la información correcta.',
-    },
+  const { t } = useI18n();
+    const mensajes = [
+    { de: 'cliente', texto: t("demoWa.msg.1") },
+    { de: 'amy', texto: t("demoWa.msg.2") },
+    { de: 'cliente', texto: t("demoWa.msg.3") },
+    { de: 'amy', texto: t("demoWa.msg.4") },
+    { de: 'amy', texto: t("demoWa.msg.5") },
   ];
 
   return (
     <section className="mt-20 px-6 py-12 max-w-[1000px] mx-auto text-center">
       <h2 className="text-3xl md:text-4xl font-extrabold text-purple-300 mb-6">
-        Así responde Aamy cuando un cliente escribe
+        {t("demoWa.title")}
       </h2>
       <p className="text-gray-300 text-base md:text-lg mb-10">
-        Respuestas inmediatas y seguimiento automático sin que tengas que estar pendiente
+        {t("demoWa.subtitle")}
       </p>
 
       {/* Contenedor del mockup y mensajes */}
       <div className="relative w-[480px] h-[480px] mx-auto">
         <Image
           src="/mockups/iphone-frame.png"
-          alt="iPhone"
+          alt={t("demoWa.iphoneAlt")}
           fill
           className="object-contain pointer-events-none select-none z-10"
         />

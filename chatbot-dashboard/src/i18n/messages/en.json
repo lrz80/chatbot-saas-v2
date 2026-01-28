@@ -155,5 +155,15 @@
   "footer.privacy": "Privacy Policy",
   "footer.delete": "Delete Account",
   "footer.disclaimer": "Aamy processes messages using the information configured by each business and the rules of its industry. Results may vary depending on configuration, business type and message volume.",
-  "footer.rights": "All rights reserved."
+  "footer.rights": "All rights reserved.",
+
+  "demoWa.title": "How Aamy replies when a customer messages you",
+  "demoWa.subtitle": "Instant replies and automatic follow-up without you being on your phone",
+  "demoWa.iphoneAlt": "iPhone",
+
+  "demoWa.msg.1": "Hi, can you give me some information?",
+  "demoWa.msg.2": "Hi 👋 I’m Amy, the business assistant. Happy to help. What information would you like to know?",
+  "demoWa.msg.3": "I wanted to know the price",
+  "demoWa.msg.4": "Sure 😊 The price depends on the service you’re interested in. I can explain the available options.",
+  "demoWa.msg.5": "If you tell me what you’re looking for, I’ll give you the right information."
 }

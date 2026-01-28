@@ -155,7 +155,17 @@
   "footer.privacy": "Política de Privacidad",
   "footer.delete": "Eliminar Cuenta",
   "footer.disclaimer": "Aamy procesa mensajes usando la información configurada por cada negocio y las reglas de su sector. Los resultados pueden variar según la configuración, el tipo de negocio y el volumen de mensajes.",
-  "footer.rights": "Todos los derechos reservados."
+  "footer.rights": "Todos los derechos reservados.",
+
+  "demoWa.title": "Así responde Aamy cuando un cliente escribe",
+  "demoWa.subtitle": "Respuestas inmediatas y seguimiento automático sin que tengas que estar pendiente",
+  "demoWa.iphoneAlt": "iPhone",
+
+  "demoWa.msg.1": "Hola, ¿me puedes dar información?",
+  "demoWa.msg.2": "Hola 👋 Soy Amy, asistente del negocio. Con gusto te ayudo. ¿Qué información te gustaría conocer?",
+  "demoWa.msg.3": "Quería saber el precio",
+  "demoWa.msg.4": "Claro 😊 El precio depende del servicio que te interese. Puedo explicarte las opciones disponibles.",
+  "demoWa.msg.5": "Si quieres, dime qué estás buscando y te doy la información correcta."
 }
 
 
