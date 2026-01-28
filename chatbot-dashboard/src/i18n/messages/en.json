@@ -515,6 +515,14 @@
 "reset.errors.invalidToken": "Invalid or missing token",
 "reset.errors.mismatch": "Passwords do not match",
 "reset.errors.expiredRedirect": "This link has expired. You’ll be redirected to sign in.",
-"reset.errors.generic": "Error resetting password"
+"reset.errors.generic": "Error resetting password",
+
+"forgot.title": "Reset password",
+"forgot.success": "✅ We’ve sent a recovery link if the email is registered.",
+"forgot.form.emailPlaceholder": "Your email address",
+"forgot.form.sending": "Sending...",
+"forgot.form.submit": "Send recovery link",
+"forgot.links.backToLogin": "Back to sign in",
+"forgot.errors.requestFailed": "Failed to request password reset"
 }
 

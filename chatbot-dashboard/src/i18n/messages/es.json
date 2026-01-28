@@ -515,6 +515,14 @@
 "reset.errors.invalidToken": "Token inválido o ausente",
 "reset.errors.mismatch": "Las contraseñas no coinciden",
 "reset.errors.expiredRedirect": "El enlace ha expirado. Serás redirigido al inicio de sesión.",
-"reset.errors.generic": "Error al restablecer contraseña"
+"reset.errors.generic": "Error al restablecer contraseña",
+
+"forgot.title": "Recuperar contraseña",
+"forgot.success": "✅ Te hemos enviado un enlace de recuperación si el correo está registrado.",
+"forgot.form.emailPlaceholder": "Tu correo electrónico",
+"forgot.form.sending": "Enviando...",
+"forgot.form.submit": "Enviar enlace de recuperación",
+"forgot.links.backToLogin": "Volver al inicio de sesión",
+"forgot.errors.requestFailed": "Error al solicitar recuperación"
 }
 
