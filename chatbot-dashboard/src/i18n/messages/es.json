@@ -457,6 +457,33 @@
 "profile.membership.activeUntil": "Membresia Activa Hasta {{date}}",
 "profile.membership.trial": "Periodo de prueba Activo",
 "profile.membership.trialUntil": "Periodo de prueba Activo Hasta {{date}}",
-"profile.membership.inactiveShort": "Membresia Inactiva"
+"profile.membership.inactiveShort": "Membresia Inactiva",
+
+  "common.loading": "Cargando…",
+
+  "upgrade.errors.sessionReadFail": "No fue posible leer tu sesión.",
+  "upgrade.errors.checkoutStartFail": "No se pudo iniciar el checkout.",
+  "upgrade.errors.checkoutGeneric": "Error iniciando el checkout.",
+
+  "upgrade.membership.inactiveBanner": "Tu membresía está inactiva. Actívala para continuar.",
+  "upgrade.membership.activeBanner": "Tu membresía está activa.",
+
+  "upgrade.hero.title": "Activar Atención Automática 24/7",
+  "upgrade.hero.subtitle": "Responde automáticamente por WhatsApp, Instagram y Facebook, con seguimiento automático hasta 23 horas.",
+
+  "upgrade.plan.name": "Plan 24/7 (3 canales)",
+  "upgrade.plan.features.f1": "Respuesta inmediata 24/7",
+  "upgrade.plan.features.f2": "WhatsApp + Instagram + Facebook",
+  "upgrade.plan.features.f3": "Seguimiento automático hasta 23 horas",
+  "upgrade.plan.features.f4": "Se activa igual para todos (sin personalizaciones)",
+
+  "upgrade.plan.today": "hoy",
+  "upgrade.plan.pricingLine": "Incluye instalación + primer mes. Luego $199/mes desde el mes 2.",
+
+  "upgrade.cta.active": "Membresía activa",
+  "upgrade.cta.redirecting": "Redirigiendo a Stripe…",
+  "upgrade.cta.pay": "Activar con Stripe",
+
+  "upgrade.footer.note": "Cancelas cuando quieras. La facturación mensual comienza automáticamente en el mes 2."
 }
 

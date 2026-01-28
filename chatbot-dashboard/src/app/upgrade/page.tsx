@@ -3,13 +3,17 @@
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 import { track } from "@/lib/metaPixel";
+import { useI18n } from "../../i18n/LanguageProvider"; // ✅ ajusta si el path cambia
 
 type SettingsResp = {
   membresia_activa: boolean;
+  // lo puedes mantener pero NO lo uses para UI (puede venir en español)
   estado_membresia_texto?: string;
 };
 
 export default function UpgradePage() {
+  const { t } = useI18n();
+
   const [settings, setSettings] = useState<SettingsResp | null>(null);
   const [loading, setLoading] = useState(true);
   const [startingCheckout, setStartingCheckout] = useState(false);
@@ -25,7 +29,7 @@ export default function UpgradePage() {
 
         // ✅ Si no hay sesión, saca al usuario
         if (r.status === 401) {
-          window.location.href = "/register";
+          window.location.href = "/login"; // ✅ mejor que /register (a menos que quieras registro)
           return;
         }
 
@@ -36,12 +40,12 @@ export default function UpgradePage() {
           estado_membresia_texto: s.estado_membresia_texto,
         });
       } catch (e) {
-        setError("No fue posible leer tu sesión.");
+        setError(t("upgrade.errors.sessionReadFail"));
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [t]);
 
   const startCheckout = async () => {
     try {
@@ -50,7 +54,7 @@ export default function UpgradePage() {
 
       // ✅ Meta Pixel: inició checkout
       track("InitiateCheckout", {
-        content_name: "Plan 24/7 (3 canales)",
+        content_name: t("upgrade.plan.name"),
         value: 399,
         currency: "USD",
       });
@@ -63,18 +67,25 @@ export default function UpgradePage() {
 
       const data = await r.json();
       if (!r.ok || !data?.url) {
-        throw new Error(data?.error || "No se pudo iniciar el checkout.");
+        throw new Error(data?.error || t("upgrade.errors.checkoutStartFail"));
       }
 
       window.location.href = data.url;
     } catch (e: any) {
-      setError(e?.message || "Error iniciando el checkout.");
+      setError(e?.message || t("upgrade.errors.checkoutGeneric"));
       setStartingCheckout(false);
     }
   };
 
-  if (loading) return <div className="text-white text-center mt-10">Cargando…</div>;
-  if (!settings) return <div className="text-red-300 text-center mt-10">{error || "No fue posible leer tu sesión."}</div>;
+  if (loading) return <div className="text-white text-center mt-10">{t("common.loading")}</div>;
+
+  if (!settings) {
+    return (
+      <div className="text-red-300 text-center mt-10">
+        {error || t("upgrade.errors.sessionReadFail")}
+      </div>
+    );
+  }
 
   const isActive = settings.membresia_activa;
 
@@ -82,53 +93,51 @@ export default function UpgradePage() {
     <div className="max-w-4xl mx-auto p-6 text-white">
       {!isActive ? (
         <div className="mb-6 p-4 rounded-lg border border-yellow-400 bg-yellow-500/10 text-yellow-200 text-center">
-          Tu membresía está inactiva. Actívala para continuar.
+          {t("upgrade.membership.inactiveBanner")}
         </div>
       ) : (
         <div className="mb-6 p-4 rounded-lg border border-emerald-400 bg-emerald-500/10 text-emerald-200 text-center">
-          Tu membresía está activa.
+          {t("upgrade.membership.activeBanner")}
         </div>
       )}
 
-      <h1 className="text-3xl font-bold mb-2">Activar Atención Automática 24/7</h1>
-      <p className="text-white/80 mb-8">
-        Responde automáticamente por WhatsApp, Instagram y Facebook, con seguimiento automático hasta 23 horas.
-      </p>
+      <h1 className="text-3xl font-bold mb-2">{t("upgrade.hero.title")}</h1>
+      <p className="text-white/80 mb-8">{t("upgrade.hero.subtitle")}</p>
 
       <div className="rounded-2xl border border-white/15 bg-white/5 p-6">
-        <h2 className="text-xl font-semibold">Plan 24/7 (3 canales)</h2>
+        <h2 className="text-xl font-semibold">{t("upgrade.plan.name")}</h2>
 
         <ul className="mt-4 space-y-2 text-white/80 text-sm">
-          <li>• Respuesta inmediata 24/7</li>
-          <li>• WhatsApp + Instagram + Facebook</li>
-          <li>• Seguimiento automático hasta 23 horas</li>
-          <li>• Se activa igual para todos (sin personalizaciones)</li>
+          <li>• {t("upgrade.plan.features.f1")}</li>
+          <li>• {t("upgrade.plan.features.f2")}</li>
+          <li>• {t("upgrade.plan.features.f3")}</li>
+          <li>• {t("upgrade.plan.features.f4")}</li>
         </ul>
 
         <div className="mt-6">
           <div className="text-3xl font-extrabold">
-            $399 <span className="text-sm font-normal text-white/70">hoy</span>
+            $399 <span className="text-sm font-normal text-white/70">{t("upgrade.plan.today")}</span>
           </div>
           <div className="text-white/70 text-sm mt-1">
-            Incluye instalación + primer mes. Luego <span className="text-white font-semibold">$199/mes</span> desde el mes 2.
+            {t("upgrade.plan.pricingLine")}
           </div>
         </div>
 
-        {error ? (
-          <div className="mt-4 text-red-300 text-sm">{error}</div>
-        ) : null}
+        {error ? <div className="mt-4 text-red-300 text-sm">{error}</div> : null}
 
         <button
           className="mt-6 w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 py-3 font-semibold disabled:opacity-60"
           onClick={startCheckout}
           disabled={startingCheckout || isActive}
         >
-          {isActive ? "Membresía activa" : startingCheckout ? "Redirigiendo a Stripe…" : "Activar con Stripe"}
+          {isActive
+            ? t("upgrade.cta.active")
+            : startingCheckout
+            ? t("upgrade.cta.redirecting")
+            : t("upgrade.cta.pay")}
         </button>
 
-        <p className="mt-4 text-xs text-white/60">
-          Cancelas cuando quieras. La facturación mensual comienza automáticamente en el mes 2.
-        </p>
+        <p className="mt-4 text-xs text-white/60">{t("upgrade.footer.note")}</p>
       </div>
     </div>
   );
