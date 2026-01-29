@@ -3,12 +3,16 @@
 import { useEffect, useState } from "react";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { BACKEND_URL } from "@/utils/api";
+import { useI18n } from "../i18n/LanguageProvider";
+
 
 interface Props {
   campaignId: number;
 }
 
 export default function EmailLogViewer({ campaignId }: Props) {
+  const { t } = useI18n();
+
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +34,7 @@ export default function EmailLogViewer({ campaignId }: Props) {
         });        
 
         if (res.status === 401) {
-          setError("⚠️ No estás autorizado para ver esta información.");
+          setError(t("emailLogs.unauthorized"));
           return;
         }
 
@@ -42,7 +46,7 @@ export default function EmailLogViewer({ campaignId }: Props) {
       } catch (err) {
         if (!abort.signal.aborted) {
           console.error("❌ Error al obtener logs:", err);
-          setError("Error al cargar los registros.");
+          setError(t("emailLogs.error"));
           setLogs([]);
         }
       } finally {
@@ -57,7 +61,7 @@ export default function EmailLogViewer({ campaignId }: Props) {
     return () => abort.abort();
   }, [campaignId]);
 
-  if (loading) return <p className="text-white/50 text-sm">Cargando envíos...</p>;
+  if (loading) return <p className="text-white/50 text-sm">{t("emailLogs.loading")}</p>;
 
   if (error)
     return (
@@ -67,7 +71,7 @@ export default function EmailLogViewer({ campaignId }: Props) {
     );
 
   if (logs.length === 0)
-    return <p className="text-white/50 text-sm">No hay registros aún.</p>;
+  return <p className="text-white/50 text-sm">{t("emailLogs.noRecords")}</p>;
 
   return (
     <ul className="mt-4 border-t border-white/10 pt-3 text-xs space-y-2">
@@ -75,7 +79,7 @@ export default function EmailLogViewer({ campaignId }: Props) {
         <li key={idx} className="border-b border-white/10 pb-2">
           <p className="text-white font-mono">{log.email}</p>
           <p>
-            Estado:{" "}
+            {t("emailLogs.status")}:{" "}
             <span
               className={`font-bold ${
                 log.status === "sent" ? "text-green-400" : "text-red-400"

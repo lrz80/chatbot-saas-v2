@@ -824,6 +824,12 @@
 "apptSettings.timezoneHelp": "Pick the business' real time zone to prevent shifted bookings.",
 
 "apptSettings.saving": "Saving...",
-"apptSettings.save": "Save changes"
+"apptSettings.save": "Save changes",
+
+"emailLogs.loading": "Loading sends...",
+"emailLogs.unauthorized": "⚠️ You are not authorized to view this information.",
+"emailLogs.error": "Error loading logs.",
+"emailLogs.noRecords": "No records yet.",
+"emailLogs.status": "Status"
 }
 

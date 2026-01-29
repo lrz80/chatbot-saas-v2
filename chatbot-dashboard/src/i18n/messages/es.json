@@ -824,6 +824,12 @@
 "apptSettings.timezoneHelp": "Elige la zona horaria real del negocio para evitar citas corridas.",
 
 "apptSettings.saving": "Guardando...",
-"apptSettings.save": "Guardar cambios"
+"apptSettings.save": "Guardar cambios",
+
+"emailLogs.loading": "Cargando envíos...",
+"emailLogs.unauthorized": "⚠️ No estás autorizado para ver esta información.",
+"emailLogs.error": "Error al cargar los registros.",
+"emailLogs.noRecords": "No hay registros aún.",
+"emailLogs.status": "Estado"
 }
 
