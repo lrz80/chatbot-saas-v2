@@ -1073,5 +1073,62 @@
 
 "followup.errors.loadConfig": "Error al cargar configuración",
 "followup.errors.loadSent": "Error al cargar mensajes enviados",
-"followup.errors.save": "Error al guardar configuración"
+"followup.errors.save": "Error al guardar configuración",
+
+"appointments.channel.whatsapp": "WhatsApp",
+"appointments.channel.facebook": "Facebook",
+"appointments.channel.instagram": "Instagram",
+"appointments.channel.other": "Otro",
+
+"appointments.table.id": "ID",
+"appointments.created": "Creado",
+"appointments.customer.unnamed": "Sin nombre",
+
+"appointments.errors.load": "Hubo un problema al cargar las citas. Intenta de nuevo.",
+"appointments.errors.statusUpdate": "No se pudo actualizar el estado de la cita. Intenta de nuevo.",
+"appointments.errors.gcDisconnect": "No se pudo desconectar Google Calendar.",
+"appointments.errors.bookingToggle": "No se pudo cambiar el estado de booking.",
+
+"appointments.title": "Citas",
+"appointments.subtitle": "Administra las reservas recibidas por WhatsApp, Instagram, Facebook y Google Calendar.",
+
+"appointments.booking.title": "Agenda automática",
+"appointments.booking.onHint": "La agenda automática está activada.",
+"appointments.booking.offHint": "La agenda automática está desactivada.",
+"appointments.booking.saving": "Guardando…",
+
+"appointments.gc.title": "Google Calendar",
+"appointments.gc.status": "Estado:",
+"appointments.gc.connected": "Conectado",
+"appointments.gc.disconnected": "Desconectado",
+"appointments.gc.connect": "Conectar",
+"appointments.gc.disconnect": "Desconectar",
+"appointments.gc.connecting": "Conectando…",
+
+"appointments.filters.from": "Desde",
+"appointments.filters.to": "Hasta",
+"appointments.filters.channel": "Canal",
+"appointments.filters.status": "Estado",
+"appointments.filters.customer": "Cliente",
+"appointments.filters.phone": "Teléfono",
+"appointments.filters.manual": "Manual",
+"appointments.filters.all": "Todos",
+"appointments.filters.clear": "Limpiar filtros",
+"appointments.filters.apply": "Aplicar filtros",
+"appointments.filters.searchPlaceholder": "Buscar por nombre",
+"appointments.filters.phonePlaceholder": "Buscar por teléfono",
+
+"appointments.table.datetime": "Fecha y hora",
+"appointments.table.channel": "Canal",
+"appointments.table.customer": "Cliente",
+"appointments.table.phone": "Teléfono",
+"appointments.table.status": "Estado",
+
+"appointments.status.pending": "Pendiente",
+"appointments.status.confirmed": "Confirmada",
+"appointments.status.cancelled": "Cancelada",
+"appointments.status.attended": "Asistió",
+
+"appointments.loading": "Cargando citas...",
+"appointments.empty": "No hay citas registradas."
 }

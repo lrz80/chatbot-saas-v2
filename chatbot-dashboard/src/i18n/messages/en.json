@@ -1073,5 +1073,62 @@
 
 "followup.errors.loadConfig": "Failed to load settings",
 "followup.errors.loadSent": "Failed to load sent messages",
-"followup.errors.save": "Failed to save settings"
+"followup.errors.save": "Failed to save settings",
+
+"appointments.channel.whatsapp": "WhatsApp",
+"appointments.channel.facebook": "Facebook",
+"appointments.channel.instagram": "Instagram",
+"appointments.channel.other": "Other",
+
+"appointments.table.id": "ID",
+"appointments.created": "Created",
+"appointments.customer.unnamed": "Unnamed",
+
+"appointments.errors.load": "There was a problem loading the appointments. Please try again.",
+"appointments.errors.statusUpdate": "The appointment status could not be updated. Please try again.",
+"appointments.errors.gcDisconnect": "Google Calendar could not be disconnected.",
+"appointments.errors.bookingToggle": "The booking status could not be changed.",
+
+"appointments.title": "Appointments",
+"appointments.subtitle": "Manage bookings received from WhatsApp, Instagram, Facebook, and Google Calendar.",
+
+"appointments.booking.title": "Automatic Scheduling",
+"appointments.booking.onHint": "Automatic scheduling is enabled.",
+"appointments.booking.offHint": "Automatic scheduling is disabled.",
+"appointments.booking.saving": "Saving…",
+
+"appointments.gc.title": "Google Calendar",
+"appointments.gc.status": "Status:",
+"appointments.gc.connected": "Connected",
+"appointments.gc.disconnected": "Disconnected",
+"appointments.gc.connect": "Connect",
+"appointments.gc.disconnect": "Disconnect",
+"appointments.gc.connecting": "Connecting…",
+
+"appointments.filters.from": "From",
+"appointments.filters.to": "To",
+"appointments.filters.channel": "Channel",
+"appointments.filters.status": "Status",
+"appointments.filters.customer": "Customer",
+"appointments.filters.phone": "Phone",
+"appointments.filters.manual": "Manual",
+"appointments.filters.all": "All",
+"appointments.filters.clear": "Clear filters",
+"appointments.filters.apply": "Apply filters",
+"appointments.filters.searchPlaceholder": "Search by name",
+"appointments.filters.phonePlaceholder": "Search by phone",
+
+"appointments.table.datetime": "Date & Time",
+"appointments.table.channel": "Channel",
+"appointments.table.customer": "Customer",
+"appointments.table.phone": "Phone",
+"appointments.table.status": "Status",
+
+"appointments.status.pending": "Pending",
+"appointments.status.confirmed": "Confirmed",
+"appointments.status.cancelled": "Cancelled",
+"appointments.status.attended": "Attended",
+
+"appointments.loading": "Loading appointments...",
+"appointments.empty": "No appointments found."
 }

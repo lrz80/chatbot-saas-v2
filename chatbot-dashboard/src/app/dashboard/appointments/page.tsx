@@ -1,12 +1,14 @@
 // src/app/dashboard/appointments/page.tsx
 'use client';
 
-import { useEffect, useState, useRef } from 'react'; // 👈 añadimos useRef
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { BACKEND_URL } from '@/utils/api';
 import { FiChevronDown } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookMessenger, FaInstagram } from 'react-icons/fa';
 import { io, Socket } from "socket.io-client"; // 👈 ya lo tenías
 import AppointmentSettingsCard from "@/components/AppointmentSettingsCard";
+import { useI18n } from "@/i18n/LanguageProvider";
+
 
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended';
 
@@ -26,38 +28,6 @@ type Appointment = {
   updated_at: string;
 };
 
-// 👇 opcional, para tipar el payload del socket
-type AppointmentSocketPayload = {
-  tenantId: string;
-  appointment: Appointment;
-};
-
-const STATUS_META: Record<
-  AppointmentStatus,
-  { label: string; badgeClass: string }
-> = {
-  pending: {
-    label: 'Pendiente',
-    badgeClass:
-      'bg-amber-600/80 text-white hover:bg-amber-500 border border-amber-400/60',
-  },
-  confirmed: {
-    label: 'Confirmada',
-    badgeClass:
-      'bg-emerald-600/80 text-white hover:bg-emerald-500 border border-emerald-400/60',
-  },
-  cancelled: {
-    label: 'Cancelada',
-    badgeClass:
-      'bg-red-600/80 text-white hover:bg-red-500 border border-red-400/60',
-  },
-  attended: {
-    label: 'Atendida',
-    badgeClass:
-      'bg-sky-600/80 text-white hover:bg-sky-500 border border-sky-400/60',
-  },
-};
-
 const STATUS_OPTIONS: AppointmentStatus[] = [
   'pending',
   'confirmed',
@@ -65,57 +35,88 @@ const STATUS_OPTIONS: AppointmentStatus[] = [
   'attended',
 ];
 
-function formatDateTime(dateStr: string) {
-  if (!dateStr) return '-';
-  const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return '-';
-  return d.toLocaleString('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function getChannelBadge(channel: string) {
-  const ch = (channel || '').toLowerCase();
-
-  if (ch === 'whatsapp') {
-    return (
-      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-600/90 text-xs font-medium text-white shadow-sm">
-        <FaWhatsapp className="text-sm" />
-        WhatsApp
-      </span>
-    );
-  }
-
-  if (ch === 'facebook') {
-    return (
-      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-600/90 text-xs font-medium text-white shadow-sm">
-        <FaFacebookMessenger className="text-sm" />
-        Facebook
-      </span>
-    );
-  }
-
-  if (ch === 'instagram') {
-    return (
-      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-600/90 text-xs font-medium text-white shadow-sm">
-        <FaInstagram className="text-sm" />
-        Instagram
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex items-center px-3 py-1 rounded-full bg-slate-600/80 text-xs font-medium text-white shadow-sm">
-      {channel || 'Otro'}
-    </span>
-  );
-}
-
 export default function AppointmentsPage() {
+  const { t, lang } = useI18n();
+
+  function getChannelBadge(channel: string) {
+    const ch = (channel || '').toLowerCase();
+
+    if (ch === 'whatsapp') {
+      return (
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-600/90 text-xs font-medium text-white shadow-sm">
+          <FaWhatsapp className="text-sm" />
+          {t("appointments.channel.whatsapp")}
+        </span>
+      );
+    }
+
+    if (ch === 'facebook') {
+      return (
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-600/90 text-xs font-medium text-white shadow-sm">
+          <FaFacebookMessenger className="text-sm" />
+          {t("appointments.channel.facebook")}
+        </span>
+      );
+    }
+
+    if (ch === 'instagram') {
+      return (
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-600/90 text-xs font-medium text-white shadow-sm">
+          <FaInstagram className="text-sm" />
+          {t("appointments.channel.instagram")}
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center px-3 py-1 rounded-full bg-slate-600/80 text-xs font-medium text-white shadow-sm">
+        {channel || t("appointments.channel.other")}
+      </span>
+    );
+  }
+
+  const STATUS_META: Record<AppointmentStatus, { label: string; badgeClass: string }> =
+    useMemo(() => {
+      return {
+        pending: {
+          label: t("appointments.status.pending"),
+          badgeClass:
+            "bg-amber-600/80 text-white hover:bg-amber-500 border border-amber-400/60",
+        },
+        confirmed: {
+          label: t("appointments.status.confirmed"),
+          badgeClass:
+            "bg-emerald-600/80 text-white hover:bg-emerald-500 border border-emerald-400/60",
+        },
+        cancelled: {
+          label: t("appointments.status.cancelled"),
+          badgeClass:
+            "bg-red-600/80 text-white hover:bg-red-500 border border-red-400/60",
+        },
+        attended: {
+          label: t("appointments.status.attended"),
+          badgeClass:
+            "bg-sky-600/80 text-white hover:bg-sky-500 border border-sky-400/60",
+        },
+      };
+    }, [t]);
+
+  const locale = (lang === "en" ? "en-US" : "es-ES");
+
+  const formatDateTime = (dateStr: string) => {
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return "-";
+
+    return d.toLocaleString(locale, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -219,7 +220,7 @@ export default function AppointmentsPage() {
       setAppointments(data.appointments || []);
     } catch (err: any) {
       console.error("❌ Error al cargar citas:", err);
-      setError(err?.message || "Hubo un problema al cargar las citas. Intenta de nuevo.");
+      setError(err?.message || t("appointments.errors.load"));
     } finally {
       setLoading(false);
     }
@@ -315,7 +316,7 @@ export default function AppointmentsPage() {
       const data = await res.json();
       setGcStatus({ connected: !!data.connected, calendar_id: data.calendar_id });
     } catch {
-      setError("No se pudo desconectar Google Calendar.");
+      setError(t("appointments.errors.gcDisconnect"));
     } finally {
       setGcLoading(false);
     }
@@ -354,9 +355,7 @@ export default function AppointmentsPage() {
       setOpenStatusId(null);
     } catch (err: any) {
       console.error('❌ Error al actualizar estado de cita:', err);
-      setError(
-        err?.message || 'No se pudo actualizar el estado de la cita. Intenta de nuevo.'
-      );
+      setError(err?.message || t("appointments.errors.statusUpdate"));
     } finally {
       setSavingId(null);
     }
@@ -385,7 +384,7 @@ export default function AppointmentsPage() {
 
       setBookingEnabled(!!data.google_calendar_enabled);
     } catch (err: any) {
-      setError(err?.message || "No se pudo cambiar el estado de booking.");
+      setError(err?.message || t("appointments.errors.bookingToggle"));
     } finally {
       setBookingSaving(false);
     }
@@ -396,18 +395,20 @@ export default function AppointmentsPage() {
       <div className="max-w-6xl mx-auto">
         <header className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            Citas agendadas
+            {t("appointments.title")}
           </h1>
           <p className="mt-2 text-sm text-white/60 max-w-2xl">
-            Aquí verás las citas que Aamy genera automáticamente desde WhatsApp, Facebook e Instagram. (Fase 1 – sin Google Calendar aún).
+            {t("appointments.subtitle")}
           </p>
           <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
             <div className="flex flex-col">
-              <div className="text-sm font-semibold text-white">Agendamiento</div>
+              <div className="text-sm font-semibold text-white">
+                {t("appointments.booking.title")}
+              </div>
               <div className="text-xs text-white/60">
                 {bookingEnabled
-                  ? "Activo: Aamy puede iniciar el flujo de agendar."
-                  : "Desactivado: Aamy no iniciará agendamiento aunque el prompt tenga link."}
+                  ? t("appointments.booking.onHint")
+                  : t("appointments.booking.offHint")}
               </div>
             </div>
 
@@ -420,15 +421,15 @@ export default function AppointmentsPage() {
                   : "bg-red-600/70 border-red-400/40 hover:bg-red-600"}
                 ${bookingSaving ? "opacity-60 cursor-not-allowed" : ""}`}
             >
-              {bookingSaving ? "Guardando..." : bookingEnabled ? "ON" : "OFF"}
+              {bookingSaving ? t("appointments.booking.saving") : bookingEnabled ? t("common.on") : t("common.off")}
             </button>
           </div>
 
           <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 flex items-center justify-between">
             <div>
-              <div className="text-sm font-semibold">Google Calendar</div>
+              <div className="text-sm font-semibold">{t("appointments.gc.title")}</div>
               <div className="text-xs text-white/60 mt-1">
-                Estado: {gcStatus.connected ? "Conectado" : "No conectado"}
+                {t("appointments.gc.status")} {gcStatus.connected ? t("appointments.gc.connected") : t("appointments.gc.disconnected")}
               </div>
             </div>
 
@@ -438,7 +439,7 @@ export default function AppointmentsPage() {
                 disabled={gcLoading}
                 className="px-4 py-2 rounded-xl bg-red-600/80 hover:bg-red-500 text-sm font-semibold"
               >
-                Desconectar
+                {t("appointments.gc.disconnect")}
               </button>
             ) : (
               <button
@@ -447,7 +448,7 @@ export default function AppointmentsPage() {
                 disabled={gcLoading || gcConnecting}
                 className="px-4 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-sm font-semibold"
               >
-                {gcConnecting ? "Conectando..." : "Conectar"}
+                {gcConnecting ? t("appointments.gc.connecting") : t("appointments.gc.connect")}
               </button>
             )}
           </div>
@@ -464,7 +465,7 @@ export default function AppointmentsPage() {
         <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
             <div>
-              <label className="block text-xs text-white/60 mb-1">Desde</label>
+              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.from")}</label>
               <input
                 type="datetime-local"
                 value={filters.desde}
@@ -474,7 +475,7 @@ export default function AppointmentsPage() {
             </div>
 
             <div>
-              <label className="block text-xs text-white/60 mb-1">Hasta</label>
+              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.to")}</label>
               <input
                 type="datetime-local"
                 value={filters.hasta}
@@ -484,40 +485,40 @@ export default function AppointmentsPage() {
             </div>
 
             <div>
-              <label className="block text-xs text-white/60 mb-1">Canal</label>
+              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.channel")}</label>
               <select
                 value={filters.canal}
                 onChange={(e) => setFilters((p) => ({ ...p, canal: e.target.value }))}
                 className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white"
               >
-                <option value="">Todos</option>
-                <option value="whatsapp">WhatsApp</option>
-                <option value="instagram">Instagram</option>
-                <option value="facebook">Facebook</option>
-                <option value="manual">Manual</option>
+                <option value="">{t("appointments.filters.all")}</option>
+                <option value="whatsapp">{t("appointments.channel.whatsapp")}</option>
+                <option value="instagram">{t("appointments.channel.instagram")}</option>
+                <option value="facebook">{t("appointments.channel.facebook")}</option>
+                <option value="manual">{t("appointments.filters.manual")}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs text-white/60 mb-1">Estado</label>
+              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.status")}</label>
               <select
                 value={filters.estado}
                 onChange={(e) => setFilters((p) => ({ ...p, estado: e.target.value }))}
                 className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white"
               >
-                <option value="">Todos</option>
-                <option value="pending">Pendiente</option>
-                <option value="confirmed">Confirmada</option>
-                <option value="cancelled">Cancelada</option>
-                <option value="attended">Atendida</option>
+                <option value="">{t("appointments.filters.all")}</option>
+                <option value="pending">{t("appointments.status.pending")}</option>
+                <option value="confirmed">{t("appointments.status.confirmed")}</option>
+                <option value="cancelled">{t("appointments.status.cancelled")}</option>
+                <option value="attended">{t("appointments.status.attended")}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs text-white/60 mb-1">Cliente</label>
+              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.customer")}</label>
               <input
                 type="text"
-                placeholder="Buscar..."
+                placeholder={t("appointments.filters.searchPlaceholder")}
                 value={filters.cliente}
                 onChange={(e) => setFilters((p) => ({ ...p, cliente: e.target.value }))}
                 className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
@@ -525,10 +526,10 @@ export default function AppointmentsPage() {
             </div>
 
             <div>
-              <label className="block text-xs text-white/60 mb-1">Teléfono</label>
+              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.phone")}</label>
               <input
                 type="text"
-                placeholder="Ej: +1863..."
+                placeholder={t("appointments.filters.phonePlaceholder")}
                 value={filters.telefono}
                 onChange={(e) => setFilters((p) => ({ ...p, telefono: e.target.value }))}
                 className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
@@ -551,7 +552,7 @@ export default function AppointmentsPage() {
               }
               className="px-4 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
             >
-              Limpiar
+              {t("appointments.filters.clear")}
             </button>
 
             <button
@@ -559,7 +560,7 @@ export default function AppointmentsPage() {
               onClick={fetchAppointments}
               className="px-4 py-2 rounded-xl text-sm font-semibold bg-purple-600 hover:bg-purple-700"
             >
-              Aplicar
+              {t("appointments.filters.apply")}
             </button>
           </div>
         </div>
@@ -571,26 +572,26 @@ export default function AppointmentsPage() {
               <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/15 text-[10px]">
                 ⏱
               </span>
-              FECHA / HORA CITA
+              {t("appointments.table.datetime")}
             </div>
-            <div className="col-span-2 sm:col-span-2 flex items-center">CANAL</div>
-            <div className="col-span-3 sm:col-span-3 flex items-center">CLIENTE</div>
-            <div className="col-span-2 sm:col-span-2 flex items-center">TELÉFONO</div>
+            <div className="col-span-2 sm:col-span-2 flex items-center">{t("appointments.table.channel")}</div>
+            <div className="col-span-3 sm:col-span-3 flex items-center">{t("appointments.table.customer")}</div>
+            <div className="col-span-2 sm:col-span-2 flex items-center">{t("appointments.table.phone")}</div>
             <div className="col-span-2 sm:col-span-2 flex items-center justify-end">
-              ESTADO
+              {t("appointments.table.status")}
             </div>
           </div>
 
           {/* Estado de carga */}
           {loading && (
             <div className="px-6 py-10 text-center text-sm text-white/60">
-              Cargando citas...
+              {t("appointments.loading")}
             </div>
           )}
 
           {!loading && appointments.length === 0 && (
             <div className="px-6 py-10 text-center text-sm text-white/60">
-              Aún no hay citas registradas para este negocio.
+              {t("appointments.empty")}
             </div>
           )}
 
@@ -614,7 +615,7 @@ export default function AppointmentsPage() {
                           {formatDateTime(appt.start_time)}
                         </div>
                         <div className="mt-1 text-[11px] text-white/45">
-                          Creada: {formatDateTime(appt.created_at)}
+                          {t("appointments.created")} {formatDateTime(appt.created_at)}
                         </div>
                       </div>
 
@@ -671,24 +672,24 @@ export default function AppointmentsPage() {
 
                     {/* Middle: Canal */}
                     <div className="mt-3">
-                      <div className="text-[11px] text-white/50 mb-1">CANAL</div>
+                      <div className="text-[11px] text-white/50 mb-1">{t("appointments.table.channel")}</div>
                       <div>{getChannelBadge(appt.channel)}</div>
                     </div>
 
                     {/* Bottom: Cliente + Tel */}
                     <div className="mt-3 grid grid-cols-1 gap-3">
                       <div className="min-w-0">
-                        <div className="text-[11px] text-white/50 mb-1">CLIENTE</div>
+                        <div className="text-[11px] text-white/50 mb-1">{t("appointments.table.customer")}</div>
                         <div className="text-sm text-white truncate">
-                          {appt.customer_name || appt.customer_phone || "Cliente sin nombre"}
+                          {appt.customer_name || appt.customer_phone || t("appointments.customer.unnamed")}
                         </div>
                         <div className="text-[11px] text-white/40 truncate">
-                          ID: {appt.id}
+                          {t("appointments.table.id")}: {appt.id}
                         </div>
                       </div>
 
                       <div>
-                        <div className="text-[11px] text-white/50 mb-1">TELÉFONO</div>
+                        <div className="text-[11px] text-white/50 mb-1">{t("appointments.table.phone")}</div>
                         <div className="text-sm text-white">
                           {appt.customer_phone || "-"}
                         </div>
@@ -715,7 +716,7 @@ export default function AppointmentsPage() {
                         {formatDateTime(appt.start_time)}
                       </div>
                       <div className="mt-1 text-[11px] text-white/45">
-                        Creada: {formatDateTime(appt.created_at)}
+                        {t("appointments.created")} {formatDateTime(appt.created_at)}
                       </div>
                     </div>
 
@@ -727,10 +728,10 @@ export default function AppointmentsPage() {
                     {/* Cliente */}
                     <div className="col-span-3 sm:col-span-3 flex flex-col justify-center">
                       <div className="text-sm text-white">
-                        {appt.customer_name || appt.customer_phone || "Cliente sin nombre"}
+                        {appt.customer_name || appt.customer_phone || t("appointments.customer.unnamed")}
                       </div>
                       <div className="text-[11px] text-white/40 truncate max-w-[220px]">
-                        ID: {appt.id}
+                        {t("appointments.table.id")}: {appt.id}
                       </div>
                     </div>
 
