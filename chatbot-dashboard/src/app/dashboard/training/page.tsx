@@ -227,7 +227,7 @@ export default function TrainingPage() {
           setMessages([
             {
               role: "assistant",
-              content: data.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?",
+              content: data.bienvenida ?? t("training.defaults.welcome"),
             },
           ]);
         }
@@ -293,7 +293,7 @@ export default function TrainingPage() {
   const disconnectWhatsApp = async () => {
     if (!verificarPermiso()) return;
 
-    const ok = window.confirm('{t("training.twilio.confirmDisconnect")}');
+    const ok = window.confirm(t("training.twilio.confirmDisconnect"));
 
     if (!ok) return;
 
@@ -715,7 +715,7 @@ export default function TrainingPage() {
         {/* 🎁 Caso 1: Nunca ha usado el trial → invitar a activar prueba (vía Stripe) */}
         {settings?.trial_disponible && !settings?.can_edit && (
           <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded-lg text-center font-medium">
-            t("training.trial.banner")
+            {t("training.trial.banner")}
             <button
               onClick={() => router.push('/upgrade?trial=1')}
               className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
@@ -829,7 +829,7 @@ export default function TrainingPage() {
                 <div className="mt-1 text-white/80">
                   {t("training.twilio.numberLabel")}{" "}
                   <span className="ml-2 font-mono font-semibold">
-                    {settings.twilio_number || "(no disponible)"}
+                    {settings.twilio_number || t("common.notAvailable")}
                   </span>
                 </div>
               </div>
