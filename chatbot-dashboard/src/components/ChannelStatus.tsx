@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
+import { useI18n } from "../i18n/LanguageProvider";
+
 
 type Canal = "sms" | "email" | "whatsapp" | "meta" | "voice";
 
@@ -49,6 +51,8 @@ export default function ChannelStatus({
   hideTitle?: boolean;
   membershipInactive?: boolean;           // ✅ en el tipo también
 }) {
+  const { t } = useI18n();
+
   const [status, setStatus] = useState<Status | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -63,21 +67,21 @@ export default function ChannelStatus({
     return () => { alive = false; };
   }, [canal]);
 
-  const label = CANAL_LABEL[canal];
+  const label = t(`channel.label.${canal}`) || CANAL_LABEL[canal];
 
   // PILL
   const pill = (() => {
     if (loading) {
       return (
         <span className="rounded-full px-2 py-1 text-xs font-semibold bg-zinc-700/40 text-zinc-300 animate-pulse">
-          Cargando…
+          {t("channel.loading")}
         </span>
       );
     }
     if (!status) {
       return (
         <span className="rounded-full px-2 py-1 text-xs font-semibold bg-zinc-700/40 text-zinc-300">
-          Sin datos
+          {t("channel.noData")}
         </span>
       );
     }
@@ -90,13 +94,14 @@ export default function ChannelStatus({
     const blocked =
       membershipInactive || status.blocked || isPlanBlocked || isMaint || isPaused;
 
-    let text = "Activo";
+    let text = t("channel.active");
+
     if (blocked) {
-      if (membershipInactive) text = "Restringido por membresía";
-      else if (isPlanBlocked) text = "Bloqueado por tu plan";
-      else if (isMaint) text = "En mantenimiento";
-      else if (isPaused) text = "En pausa";
-      else text = "Bloqueado";
+      if (membershipInactive) text = t("channel.blocked.membership");
+      else if (isPlanBlocked) text = t("channel.blocked.plan");
+      else if (isMaint) text = t("channel.blocked.maintenance");
+      else if (isPaused) text = t("channel.blocked.paused");
+      else text = t("channel.blocked.generic");
     }
 
     const color = blocked
@@ -122,25 +127,27 @@ export default function ChannelStatus({
       membershipInactive || status.blocked || isPlanBlocked || isMaint || isPaused;
     if (!shouldShow) return null;
 
-    let title = `${label} está bloqueado`;
-    let body = "Tu plan actual no incluye este canal.";
-    let action = "Actualizar plan";
+    let title = t("channel.banner.blockedTitle", { channel: label });
+    let body = t("channel.banner.blockedBody");
+    let action = t("channel.banner.upgrade");
     let isPlan = true;
 
     if (membershipInactive) {
       // ✅ Caso membresía inactiva (más claro que “plan”)
-      body = "Tu membresía está inactiva. Activa un plan para continuar.";
+      body = t("channel.banner.membershipInactive");
     } else if (isMaint) {
-      title = `${label} en mantenimiento`;
-      body = status.maintenance_message || "Este canal está temporalmente en mantenimiento.";
-      action = "Volver más tarde";
+      title = t("channel.banner.maintenanceTitle", { channel: label });
+      body = status.maintenance_message || t("channel.banner.maintenanceBody");
+      action = t("channel.banner.comeBackLater");
       isPlan = false;
     } else if (isPaused) {
       title = `${label} en pausa`;
       body = status.paused_until
-        ? `Este canal se reanudará aprox. el ${new Date(status.paused_until).toLocaleString()}.`
-        : "Este canal está en pausa temporal.";
-      action = "Volver más tarde";
+        ? t("channel.banner.pausedUntil", {
+            datetime: new Date(status.paused_until).toLocaleString(),
+          })
+        : t("channel.banner.pausedBody");
+      action = t("channel.banner.comeBackLater");
       isPlan = false;
     }
 
@@ -171,12 +178,12 @@ export default function ChannelStatus({
     <div className={className}>
       {hideTitle ? (
         <div className="mb-3 flex items-center gap-2">
-          <span className="text-sm opacity-75">Estado del canal:</span>
+          <span className="text-sm opacity-75">{t("channel.statusLabel")}</span>
           {pill}
         </div>
       ) : (
         <div className="mb-3 flex items-center gap-2">
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">{`Campañas por ${label}`}</h2>
+          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">{t("channel.campaignsTitle", { channel: label })}</h2>
           {pill}
         </div>
       )}

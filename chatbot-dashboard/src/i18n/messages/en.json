@@ -887,6 +887,37 @@
 "usage.channel": "Channel",
 "usage.of": "{{used}} of {{limit}}",
 "usage.addedSuccess": "Credits added successfully",
-"usage.addedError": "Error adding credits"
+"usage.addedError": "Error adding credits",
+
+"channel.label.sms": "SMS",
+"channel.label.email": "Email",
+"channel.label.whatsapp": "WhatsApp",
+"channel.label.meta": "Facebook / Instagram",
+"channel.label.voice": "Voice",
+
+"channel.loading": "Loading…",
+"channel.noData": "No data",
+"channel.active": "Active",
+
+"channel.blocked.membership": "Restricted by membership",
+"channel.blocked.plan": "Blocked by your plan",
+"channel.blocked.maintenance": "Under maintenance",
+"channel.blocked.paused": "Paused",
+"channel.blocked.generic": "Blocked",
+
+"channel.statusLabel": "Channel status:",
+"channel.campaignsTitle": "Campaigns for {{channel}}",
+
+"channel.banner.blockedTitle": "{{channel}} is blocked",
+"channel.banner.blockedBody": "Your current plan does not include this channel.",
+"channel.banner.upgrade": "Upgrade plan",
+"channel.banner.membershipInactive": "Your membership is inactive. Activate a plan to continue.",
+
+"channel.banner.maintenanceTitle": "{{channel}} under maintenance",
+"channel.banner.maintenanceBody": "This channel is temporarily under maintenance.",
+"channel.banner.pausedTitle": "{{channel}} paused",
+"channel.banner.pausedBody": "This channel is temporarily paused.",
+"channel.banner.pausedUntil": "This channel will resume around {{datetime}}.",
+"channel.banner.comeBackLater": "Come back later"
 }
 
