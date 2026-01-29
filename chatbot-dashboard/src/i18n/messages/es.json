@@ -918,6 +918,26 @@
 "channel.banner.pausedTitle": "{{channel}} en pausa",
 "channel.banner.pausedBody": "Este canal está en pausa temporal.",
 "channel.banner.pausedUntil": "Este canal se reanudará aprox. el {{datetime}}.",
-"channel.banner.comeBackLater": "Volver más tarde"
+"channel.banner.comeBackLater": "Volver más tarde",
+
+"onboarding.loading": "Cargando...",
+"onboarding.title": "🚀 Configura tu asistente AI",
+
+"onboarding.finished.title": "🎉 ¡Tu asistente ya está listo!",
+"onboarding.finished.redirect": "Te estamos redirigiendo a tu panel...",
+
+"onboarding.field.name": "Nombre del negocio",
+"onboarding.field.category": "Categoría",
+"onboarding.field.language": "Idioma",
+"onboarding.field.prompt": "🧠 Prompt del Asistente",
+
+"onboarding.lang.es": "Español",
+"onboarding.lang.en": "Inglés",
+
+"onboarding.button.next": "Siguiente",
+"onboarding.button.back": "⬅ Volver",
+"onboarding.button.finish": "Finalizar",
+"onboarding.button.saving": "Guardando...",
+"onboarding.error.saving": "Hubo un error guardando los datos."
 }
 

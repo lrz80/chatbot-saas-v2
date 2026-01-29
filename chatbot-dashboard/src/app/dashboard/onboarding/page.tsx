@@ -3,8 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BACKEND_URL } from '@/utils/api';
+import { useI18n } from "../../../i18n/LanguageProvider";
+
 
 export default function OnboardingPage() {
+  const { t } = useI18n();
+
   const [user, setUser] = useState<any>(null);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -81,20 +85,22 @@ export default function OnboardingPage() {
     }
   };
 
-  if (loading) return <p className="text-center p-6">Cargando...</p>;
+  if (loading) return <p className="text-center p-6">{t("onboarding.loading")}</p>;
 
   return (
     <div className="max-w-xl mx-auto bg-white p-8 shadow rounded-xl">
-      <h2 className="text-2xl font-bold mb-6 text-indigo-600">🚀 Configura tu asistente AI</h2>
+      <h2 className="text-2xl font-bold mb-6 text-indigo-600">
+        {t("onboarding.title")}
+      </h2>
 
       {finished ? (
         <div className="text-center">
-          <p className="text-xl mb-2">🎉 ¡Tu Asistente ya está listo!</p>
-          <p className="text-gray-600">Te estamos redirigiendo a tu panel...</p>
+          <p className="text-xl mb-2">{t("onboarding.finished.title")}</p>
+          <p className="text-gray-600">{t("onboarding.finished.redirect")}</p>
         </div>
       ) : step === 1 ? (
         <div>
-          <label className="block font-medium mb-1">Nombre del negocio</label>
+          <label className="block font-medium mb-1">{t("onboarding.field.name")}</label>
           <input
             type="text"
             name="name"
@@ -103,7 +109,7 @@ export default function OnboardingPage() {
             className="w-full p-2 border rounded mb-4"
           />
 
-          <label className="block font-medium mb-1">Categoría</label>
+          <label className="block font-medium mb-1">{t("onboarding.field.category")}</label>
           <input
             type="text"
             name="categoria"
@@ -112,27 +118,27 @@ export default function OnboardingPage() {
             className="w-full p-2 border rounded mb-4"
           />
 
-          <label className="block font-medium mb-1">Idioma</label>
+          <label className="block font-medium mb-1">{t("onboarding.field.language")}</label>
           <select
             name="idioma"
             value={form.idioma}
             onChange={handleChange}
             className="w-full p-2 border rounded mb-6"
           >
-            <option value="es">Español</option>
-            <option value="en">Inglés</option>
+            <option value="es">{t("onboarding.lang.es")}</option>
+            <option value="en">{t("onboarding.lang.en")}</option>
           </select>
 
           <button
             onClick={() => setStep(2)}
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
           >
-            Siguiente
+            {t("onboarding.button.next")}
           </button>
         </div>
       ) : (
         <div>
-          <label className="block font-medium mb-1">🧠 Prompt del Asistente</label>
+          {t("onboarding.field.prompt")}
           <textarea
             name="prompt"
             value={form.prompt}
@@ -146,7 +152,7 @@ export default function OnboardingPage() {
               onClick={() => setStep(1)}
               className="text-sm text-indigo-600 hover:underline"
             >
-              ⬅ Volver
+              {t("onboarding.button.back")}
             </button>
 
             <button
@@ -154,7 +160,7 @@ export default function OnboardingPage() {
               disabled={saving}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
-              {saving ? 'Guardando...' : 'Finalizar'}
+              {saving ? t("onboarding.button.saving") : t("onboarding.button.finish")}
             </button>
           </div>
         </div>

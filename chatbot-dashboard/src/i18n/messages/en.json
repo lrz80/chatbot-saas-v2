@@ -918,6 +918,26 @@
 "channel.banner.pausedTitle": "{{channel}} paused",
 "channel.banner.pausedBody": "This channel is temporarily paused.",
 "channel.banner.pausedUntil": "This channel will resume around {{datetime}}.",
-"channel.banner.comeBackLater": "Come back later"
+"channel.banner.comeBackLater": "Come back later",
+
+"onboarding.loading": "Loading...",
+"onboarding.title": "🚀 Set Up Your AI Assistant",
+
+"onboarding.finished.title": "🎉 Your assistant is ready!",
+"onboarding.finished.redirect": "Redirecting you to your dashboard...",
+
+"onboarding.field.name": "Business name",
+"onboarding.field.category": "Category",
+"onboarding.field.language": "Language",
+"onboarding.field.prompt": "🧠 Assistant Prompt",
+
+"onboarding.lang.es": "Spanish",
+"onboarding.lang.en": "English",
+
+"onboarding.button.next": "Next",
+"onboarding.button.back": "⬅ Back",
+"onboarding.button.finish": "Finish",
+"onboarding.button.saving": "Saving...",
+"onboarding.error.saving": "There was an error saving your data."
 }
 
