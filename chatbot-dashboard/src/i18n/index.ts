@@ -29,12 +29,14 @@ export function t(
 
   let out = typeof value === "string" ? value : key;
 
-  // Sustituir variables como {{name}} o {{seconds}}
-  if (vars) {
-    for (const [k, v] of Object.entries(vars)) {
-      out = out.replaceAll(`{{${k}}}`, String(v));
-    }
+// Sustituye variables: {name} y también {{name}}
+if (vars) {
+  for (const [k, v] of Object.entries(vars)) {
+    const val = String(v);
+    out = out.replaceAll(`{${k}}`, val);
+    out = out.replaceAll(`{{${k}}}`, val);
   }
+}
 
   return out;
 }

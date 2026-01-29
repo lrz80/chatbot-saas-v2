@@ -1287,6 +1287,6 @@
   "voiceMinutes.errors.load": "Error al cargar los minutos de voz: {error}",
   "voiceMinutes.errors.hint": "Verifica tu configuración en",
   "voiceMinutes.errors.example": "Ejemplo:",
-  "voiceMinutes.errors.cookieHint": "Asegúrate de que la cookie use Domain=.aamy.ai"
-
+  "voiceMinutes.errors.cookieHint": "Asegúrate de que la cookie use Domain=.aamy.ai",
+  "voiceMinutes.errors.default": "Error cargando minutos de voz"
 }
