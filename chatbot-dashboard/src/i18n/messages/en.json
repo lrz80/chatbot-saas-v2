@@ -1260,5 +1260,15 @@
 "sms.csv.uploadTitle": "Upload contacts CSV file",
 "sms.block.title": "The SMS channel is disabled.",
 "sms.block.description": "To upload contacts and run campaigns, you must enable SMS first.",
-"sms.block.enable": "Enable SMS"
+"sms.block.enable": "Enable SMS",
+"sms.usage.count": "{{usados}} of {{limite}} messages sent",
+"sms.credits.extraIncluded": "includes extra credits",
+"sms.credits.extraAmount": "Includes {{amount}} extra purchased messages.",
+
+"sms.contacts.count": "{{usados}} of {{limite}} contacts used",
+"sms.contacts.extraAmount": "Includes {{amount}} extra purchased contacts.",
+
+"segments.leads": "leads",
+"segments.client": "client",
+"segments.other": "other"
 }

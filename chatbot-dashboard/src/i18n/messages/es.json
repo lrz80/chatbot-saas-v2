@@ -1260,5 +1260,15 @@
 "sms.csv.uploadTitle": "Subir archivo CSV de contactos",
 "sms.block.title": "El canal SMS está deshabilitado.",
 "sms.block.description": "Para cargar contactos y usar campañas, primero debes habilitar SMS.",
-"sms.block.enable": "Habilitar SMS"
+"sms.block.enable": "Habilitar SMS",
+"sms.usage.count": "{{usados}} de {{limite}} mensajes enviados",
+"sms.credits.extraIncluded": "incluye créditos extra",
+"sms.credits.extraAmount": "Incluye {{amount}} mensajes extra comprados.",
+
+"sms.contacts.count": "{{usados}} de {{limite}} contactos usados",
+"sms.contacts.extraAmount": "Incluye {{amount}} contactos extra comprados.",
+
+"segments.leads": "leads",
+"segments.client": "cliente",
+"segments.other": "otros"
 }
