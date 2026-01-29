@@ -881,6 +881,12 @@
 "meta.selector.connect": "Conectar página seleccionada",
 "meta.selector.igPrefix": "IG:",
 "meta.selector.errors.loadPages": "Error al cargar páginas",
-"meta.selector.errors.connectPage": "Error al conectar la página"
+"meta.selector.errors.connectPage": "Error al conectar la página",
+
+"usage.title": "Uso mensual por canal",
+"usage.channel": "Canal",
+"usage.of": "{{used}} de {{limit}}",
+"usage.addedSuccess": "Créditos agregados correctamente",
+"usage.addedError": "Error al agregar créditos"
 }
 

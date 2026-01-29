@@ -4,6 +4,8 @@
 
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
+import { useI18n } from "../i18n/LanguageProvider";
+
 
 interface UsoMensual {
   canal: string;
@@ -12,6 +14,8 @@ interface UsoMensual {
 }
 
 export default function UsageSummary() {
+  const { t } = useI18n();
+
   const [usos, setUsos] = useState<UsoMensual[]>([]);
 
   useEffect(() => {
@@ -32,23 +36,29 @@ export default function UsageSummary() {
     });
 
     if (res.ok) {
-      alert("✅ Créditos agregados correctamente");
+      alert(t("usage.addedSuccess"));
       location.reload(); // O actualiza los datos con setUsos
     } else {
-      alert("❌ Error al agregar créditos");
+      alert(t("usage.addedError"));
     }
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Uso mensual por canal</h2>
+      <h2 className="text-2xl font-bold text-white">
+        {t("usage.title")}
+      </h2>
       {usos.map((uso) => (
         <div
           key={uso.canal}
           className="bg-white/10 p-4 rounded-xl shadow border border-white/20"
         >
-          <h3 className="text-white capitalize">{uso.canal}</h3>
-          <p className="text-white text-sm mb-1">{`${uso.usados} de ${uso.limite}`}</p>
+          <h3 className="text-white capitalize">
+            {t("usage.channel")}: {uso.canal}
+          </h3>
+          <p className="text-white text-sm mb-1">
+            {t("usage.of", { used: uso.usados, limit: uso.limite })}
+          </p>
           <Progress value={(uso.usados / uso.limite) * 100} />
           <div className="flex gap-2 mt-3">
             {[500, 1000, 2000].map((extra) => (
