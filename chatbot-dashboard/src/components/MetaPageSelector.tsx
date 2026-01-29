@@ -3,6 +3,8 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useI18n } from "../i18n/LanguageProvider";
+
 
 type MetaPage = {
   id: string;
@@ -17,6 +19,8 @@ type MetaPageSelectorProps = {
 };
 
 export function MetaPageSelector({ onConnected }: MetaPageSelectorProps) {
+  const { t } = useI18n();
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const fbSession = searchParams.get('fb_session');
@@ -44,13 +48,13 @@ export function MetaPageSelector({ onConnected }: MetaPageSelectorProps) {
 
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || 'Error al cargar páginas');
+          throw new Error(data.error || t("meta.selector.errors.loadPages"));
         }
 
         const data = await res.json();
         setPages(data.pages || []);
       } catch (e: any) {
-        setError(e.message || 'Error al cargar páginas');
+        setError(e.message || t("meta.selector.errors.loadPages"));
       } finally {
         setLoading(false);
       }
@@ -80,7 +84,7 @@ export function MetaPageSelector({ onConnected }: MetaPageSelectorProps) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Error al conectar la página');
+        throw new Error(data.error || t("meta.selector.errors.connectPage"));
       }
 
       // ✅ ESTE ES EL PUTO LUGAR
@@ -90,7 +94,7 @@ export function MetaPageSelector({ onConnected }: MetaPageSelectorProps) {
       router.replace('/dashboard/meta-config?connected=success');
 
     } catch (e: any) {
-      setError(e.message || 'Error al conectar la página');
+      setError(e.message || t("meta.selector.errors.connectPage"));
     } finally {
       setSaving(false);
     }
@@ -98,13 +102,13 @@ export function MetaPageSelector({ onConnected }: MetaPageSelectorProps) {
 
   if (!fbSession) return null; // No estamos en flujo de OAuth
 
-  if (loading) return <div>Cargando páginas de Facebook...</div>;
+  if (loading) return <div>{t("meta.selector.loading")}</div>;
   if (error) return <div className="text-red-500 text-sm">{error}</div>;
 
   if (!pages.length) {
     return (
       <div className="text-sm">
-        No se encontraron páginas disponibles para conectar.
+        {t("meta.selector.empty")}
       </div>
     );
   }
@@ -155,7 +159,7 @@ export function MetaPageSelector({ onConnected }: MetaPageSelectorProps) {
         <span className="text-white font-medium truncate">{page.name}</span>
         {page.instagramUsername && (
           <span className="text-sm text-white/60 truncate">
-            IG: @{page.instagramUsername}
+            {t("meta.selector.igPrefix")} @{page.instagramUsername}
           </span>
         )}
       </div>
@@ -178,11 +182,11 @@ const getPicUrl = (p: any): string => {
     <div className="mt-6">
       <div className="bg-white/10 backdrop-blur rounded-xl border border-white/20 p-4 sm:p-6">
         <h3 className="text-lg font-semibold text-white mb-3">
-          Selecciona la página a conectar
+          {t("meta.selector.title")}
         </h3>
 
         <p className="text-sm text-white/70 mb-4">
-          Elige la página de Facebook o Instagram que deseas conectar con tu asistente.
+          {t("meta.selector.subtitle")}
         </p>
 
         {/* 👇 AQUÍ VA LA LISTA */}
@@ -201,7 +205,7 @@ const getPicUrl = (p: any): string => {
                 : "bg-gray-600 cursor-not-allowed"
             }`}
           >
-            {saving ? "Conectando..." : "Conectar página seleccionada"}
+            {saving ? t("meta.selector.connecting") : t("meta.selector.connect")}
           </button>
         </div>
       </div>

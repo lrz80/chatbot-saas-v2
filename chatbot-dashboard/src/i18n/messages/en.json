@@ -871,6 +871,16 @@
 "membership.banner.trialText": "First time? Try it free for 14 days.",
 "membership.banner.inactiveText": "Your membership is inactive.",
 "membership.banner.tryNow": "Start free trial",
-"membership.banner.activate": "Activate membership"
+"membership.banner.activate": "Activate membership",
+
+"meta.selector.loading": "Loading Facebook pages...",
+"meta.selector.empty": "No pages available to connect.",
+"meta.selector.title": "Select a page to connect",
+"meta.selector.subtitle": "Choose the Facebook or Instagram page you want to connect to your assistant.",
+"meta.selector.connecting": "Connecting...",
+"meta.selector.connect": "Connect selected page",
+"meta.selector.igPrefix": "IG:",
+"meta.selector.errors.loadPages": "Failed to load pages",
+"meta.selector.errors.connectPage": "Failed to connect the page"
 }
 

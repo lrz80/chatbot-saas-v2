@@ -871,6 +871,16 @@
 "membership.banner.trialText": "¿Primera vez? Prueba gratis por 14 días.",
 "membership.banner.inactiveText": "Tu membresía está inactiva.",
 "membership.banner.tryNow": "Probar ahora",
-"membership.banner.activate": "Activar membresía"
+"membership.banner.activate": "Activar membresía",
+
+"meta.selector.loading": "Cargando páginas de Facebook...",
+"meta.selector.empty": "No se encontraron páginas disponibles para conectar.",
+"meta.selector.title": "Selecciona la página a conectar",
+"meta.selector.subtitle": "Elige la página de Facebook o Instagram que deseas conectar con tu asistente.",
+"meta.selector.connecting": "Conectando...",
+"meta.selector.connect": "Conectar página seleccionada",
+"meta.selector.igPrefix": "IG:",
+"meta.selector.errors.loadPages": "Error al cargar páginas",
+"meta.selector.errors.connectPage": "Error al conectar la página"
 }
 
