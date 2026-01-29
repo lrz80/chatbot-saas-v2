@@ -1300,5 +1300,103 @@
   "voicePromptGen.button.idle": "Generar Instrucciones de voz",
   "voicePromptGen.toast.success": "✅ Prompt generado automáticamente",
   "voicePromptGen.toast.error.generate": "❌ No se pudo generar el prompt.",
-  "voicePromptGen.toast.error.server": "❌ Error al conectar con el servidor."
+  "voicePromptGen.toast.error.server": "❌ Error al conectar con el servidor.",
+
+  "emailCampaigns.title": "Campañas por Email",
+
+  "emailCampaigns.trial.banner.title": "Activa tu prueba gratis",
+  "emailCampaigns.trial.banner.text": "y lanza tu primera campaña por Email.",
+  "emailCampaigns.trial.banner.cta": "Activar prueba gratis",
+
+  "emailCampaigns.trial.activeBanner": "🟡 Estás usando la prueba gratis. ¡Aprovecha para enviar tus primeras campañas!",
+  "emailCampaigns.membershipBlocked": "🚫 Tu membresía está inactiva. No puedes crear campañas.",
+  "emailCampaigns.membershipBlocked.cta": "Activa un plan para continuar.",
+
+  "emailCampaigns.upgrade.required": "❌ Activa tu membresía para ampliar contactos o campañas.",
+  "emailCampaigns.upgrade.blockedByPlan": "Bloqueado por tu plan",
+
+  "emailCampaigns.usage.title": "Campañas por Email",
+  "emailCampaigns.usage.usedThisMonth": "{used} de {limit} campañas usadas este mes",
+  "emailCampaigns.usage.includesExtra": " (incluye créditos extra)",
+  "emailCampaigns.usage.includesExtraCount": "Incluye {extra} campañas extra compradas.",
+
+  "emailCampaigns.contacts.optin.declare": "Declaro que estos contactos me dieron consentimiento explícito para recibir mensajes promocionales (opt-in).",
+  "emailCampaigns.contacts.optin.hint": "Si no marcas esto, los contactos se importarán como sin opt-in y no podrás enviarles campañas.",
+
+  "emailCampaigns.contacts.csv.segmentLabel": "Segmento para este CSV",
+  "emailCampaigns.contacts.csv.selectCsv": "❌ Selecciona un archivo CSV.",
+  "emailCampaigns.contacts.csv.mustBeCsv": "❌ El archivo debe ser .csv",
+  "emailCampaigns.contacts.csv.maxSize": "❌ El CSV no puede pesar más de 5MB",
+  "emailCampaigns.contacts.csv.added": "✅ {count} contactos agregados",
+  "emailCampaigns.contacts.csv.uploadButton": "Subir contactos",
+  "emailCampaigns.contacts.csv.removeFile": "Eliminar archivo",
+  "emailCampaigns.contacts.csv.removeBlocked": "❌ No puedes eliminar…",
+
+  "emailCampaigns.contacts.deleteAll.confirm": "¿Estás seguro? Esta acción eliminará todos tus contactos.",
+  "emailCampaigns.contacts.deleteAll.success": "✅ Contactos eliminados correctamente",
+  "emailCampaigns.contacts.deleteAll.fail": "❌ No se pudo eliminar",
+  "emailCampaigns.contacts.deleteAll.failConnection": "❌ Error al conectar con el servidor",
+
+  "emailCampaigns.form.campaignName.label": "Nombre de la campaña",
+  "emailCampaigns.form.campaignName.placeholder": "Nombre de la campaña",
+
+  "emailCampaigns.form.subject.label": "Asunto del email",
+  "emailCampaigns.form.subject.placeholder": "Ej: ¡Bienvenido!",
+
+  "emailCampaigns.form.visualTitle.label": "Título visual del Email",
+  "emailCampaigns.form.visualTitle.placeholder": "Ej: ¡Te tenemos una sorpresa exclusiva!",
+
+  "emailCampaigns.form.content.label": "Contenido del Email",
+  "emailCampaigns.form.content.placeholder": "Contenido del Email",
+
+  "emailCampaigns.form.link.label": "Link del Email (opcional)",
+  "emailCampaigns.form.link.placeholder": "https://tusitio.com/oferta",
+
+  "emailCampaigns.form.image.label": "Imagen del Email",
+  "emailCampaigns.form.image.pick": "Seleccionar imagen",
+  "emailCampaigns.form.image.remove": "❌ Eliminar imagen",
+  "emailCampaigns.form.preview.title": "Vista previa del Email",
+
+  "emailCampaigns.form.schedule.label": "Fecha y hora de envío",
+
+  "emailCampaigns.form.segments.title": "Segmentos",
+
+  "emailCampaigns.form.submit.sending": "Enviando...",
+  "emailCampaigns.form.submit.idle": "Programar campaña Email",
+  "emailCampaigns.form.sentOk": "✅ Campaña enviada",
+
+  "emailCampaigns.form.noValidContacts": "❌ No hay contactos válidos en los segmentos seleccionados.",
+  "emailCampaigns.form.noOptInRecipients": "❌ No puedes enviar campañas a contactos sin consentimiento (opt-in). Importa con opt-in o marca opt-in en tus contactos.",
+
+  "emailCampaigns.history.title": "Campañas programadas/enviadas",
+  "emailCampaigns.history.empty": "No hay campañas Email registradas aún.",
+  "emailCampaigns.history.campaignDefaultName": "Sin nombre",
+  "emailCampaigns.history.link.view": "🔗 Ver enlace",
+  "emailCampaigns.history.emailContentPrefix": "📧 {content}",
+
+  "emailCampaigns.history.stats.sent": "📤 Enviados:",
+  "emailCampaigns.history.stats.delivered": "✅ Entregados:",
+  "emailCampaigns.history.stats.failed": "❌ Fallidos:",
+
+  "emailCampaigns.history.expand.loading": "Cargando...",
+  "emailCampaigns.history.expand.hide": "Ocultar",
+  "emailCampaigns.history.expand.show": "Ver más",
+
+  "emailCampaigns.history.delete.blocked": "❌ No puedes eliminar campañas: el canal de Email está bloqueado o la membresía inactiva.",
+  "emailCampaigns.history.details": "Esta campaña fue enviada por el canal Email y está programada para:",
+  "emailCampaigns.history.unauthorized": "⚠️ No estás autorizado para ver esta información.",
+
+  "emailCampaigns.placeholders.intent": "Tipo: reservar, pagar, etc.",
+  "emailCampaigns.placeholders.linkName": "Nombre del link",
+  "emailCampaigns.placeholders.linkUrl": "URL destino",
+
+  "emailCampaigns.errors.maintenance": "🛠️ Canal Email en mantenimiento. {msg}",
+  "emailCampaigns.errors.planNoEmail": "❌ Tu plan no incluye Email. Actualiza para habilitar campañas por Email.",
+  "emailCampaigns.errors.disabledInSettings": "📴 Canal de Email deshabilitado en tu configuración.",
+  "common.tryLater": "Inténtalo más tarde.",
+  "common.errors.paymentInit": "❌ No se pudo iniciar el pago",
+  "common.errors.request": "❌ Falló la solicitud",
+  "common.trial.activated": "✅ ¡Prueba gratis activada!",
+  "common.trial.activateError": "❌ Error activando la prueba",
+  "common.trial.askActivate": "Puedes activar tu prueba gratis ahora. ¿Deseas activarla?"
 }

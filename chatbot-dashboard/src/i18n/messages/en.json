@@ -1300,5 +1300,103 @@
   "voicePromptGen.button.idle": "Generate Voice Instructions",
   "voicePromptGen.toast.success": "✅ Prompt generated successfully",
   "voicePromptGen.toast.error.generate": "❌ Couldn't generate the prompt.",
-  "voicePromptGen.toast.error.server": "❌ Error connecting to the server."
+  "voicePromptGen.toast.error.server": "❌ Error connecting to the server.",
+
+  "emailCampaigns.title": "Email Campaigns",
+
+  "emailCampaigns.trial.banner.title": "Activate your free trial",
+  "emailCampaigns.trial.banner.text": "and launch your first Email campaign.",
+  "emailCampaigns.trial.banner.cta": "Activate free trial",
+
+  "emailCampaigns.trial.activeBanner": "🟡 You're using the free trial. Take advantage and send your first campaigns!",
+  "emailCampaigns.membershipBlocked": "🚫 Your membership is inactive. You can't create campaigns.",
+  "emailCampaigns.membershipBlocked.cta": "Activate a plan to continue.",
+
+  "emailCampaigns.upgrade.required": "❌ Activate your membership to increase contacts or campaigns.",
+  "emailCampaigns.upgrade.blockedByPlan": "Blocked by your plan",
+
+  "emailCampaigns.usage.title": "Email Campaigns",
+  "emailCampaigns.usage.usedThisMonth": "{used} of {limit} campaigns used this month",
+  "emailCampaigns.usage.includesExtra": " (includes extra credits)",
+  "emailCampaigns.usage.includesExtraCount": "Includes {extra} extra campaigns purchased.",
+
+  "emailCampaigns.contacts.optin.declare": "I confirm these contacts explicitly consented to receive promotional messages (opt-in).",
+  "emailCampaigns.contacts.optin.hint": "If you don't check this, contacts will be imported as no opt-in and you won't be able to send them campaigns.",
+
+  "emailCampaigns.contacts.csv.segmentLabel": "Segment for this CSV",
+  "emailCampaigns.contacts.csv.selectCsv": "❌ Please select a CSV file.",
+  "emailCampaigns.contacts.csv.mustBeCsv": "❌ The file must be .csv",
+  "emailCampaigns.contacts.csv.maxSize": "❌ The CSV can't be larger than 5MB",
+  "emailCampaigns.contacts.csv.added": "✅ {count} contacts added",
+  "emailCampaigns.contacts.csv.uploadButton": "Upload contacts",
+  "emailCampaigns.contacts.csv.removeFile": "Remove file",
+  "emailCampaigns.contacts.csv.removeBlocked": "❌ You can't remove…",
+
+  "emailCampaigns.contacts.deleteAll.confirm": "Are you sure? This will delete all your contacts.",
+  "emailCampaigns.contacts.deleteAll.success": "✅ Contacts deleted successfully",
+  "emailCampaigns.contacts.deleteAll.fail": "❌ Couldn't delete",
+  "emailCampaigns.contacts.deleteAll.failConnection": "❌ Error connecting to the server",
+
+  "emailCampaigns.form.campaignName.label": "Campaign name",
+  "emailCampaigns.form.campaignName.placeholder": "Campaign name",
+
+  "emailCampaigns.form.subject.label": "Email subject",
+  "emailCampaigns.form.subject.placeholder": "Ex: Welcome!",
+
+  "emailCampaigns.form.visualTitle.label": "Email visual title",
+  "emailCampaigns.form.visualTitle.placeholder": "Ex: We've got an exclusive surprise for you!",
+
+  "emailCampaigns.form.content.label": "Email content",
+  "emailCampaigns.form.content.placeholder": "Email content",
+
+  "emailCampaigns.form.link.label": "Email link (optional)",
+  "emailCampaigns.form.link.placeholder": "https://yoursite.com/offer",
+
+  "emailCampaigns.form.image.label": "Email image",
+  "emailCampaigns.form.image.pick": "Select image",
+  "emailCampaigns.form.image.remove": "❌ Remove image",
+  "emailCampaigns.form.preview.title": "Email preview",
+
+  "emailCampaigns.form.schedule.label": "Send date & time",
+
+  "emailCampaigns.form.segments.title": "Segments",
+
+  "emailCampaigns.form.submit.sending": "Sending...",
+  "emailCampaigns.form.submit.idle": "Schedule Email campaign",
+  "emailCampaigns.form.sentOk": "✅ Campaign sent",
+
+  "emailCampaigns.form.noValidContacts": "❌ There are no valid contacts in the selected segments.",
+  "emailCampaigns.form.noOptInRecipients": "❌ You can't send campaigns to contacts without consent (opt-in). Import with opt-in or mark opt-in in your contacts.",
+
+  "emailCampaigns.history.title": "Scheduled/Sent campaigns",
+  "emailCampaigns.history.empty": "No Email campaigns yet.",
+  "emailCampaigns.history.campaignDefaultName": "Untitled",
+  "emailCampaigns.history.link.view": "🔗 View link",
+  "emailCampaigns.history.emailContentPrefix": "📧 {content}",
+
+  "emailCampaigns.history.stats.sent": "📤 Sent:",
+  "emailCampaigns.history.stats.delivered": "✅ Delivered:",
+  "emailCampaigns.history.stats.failed": "❌ Failed:",
+
+  "emailCampaigns.history.expand.loading": "Loading...",
+  "emailCampaigns.history.expand.hide": "Hide",
+  "emailCampaigns.history.expand.show": "Show more",
+
+  "emailCampaigns.history.delete.blocked": "❌ You can't delete campaigns: Email is blocked or membership is inactive.",
+  "emailCampaigns.history.details": "This campaign was sent via Email and is scheduled for:",
+  "emailCampaigns.history.unauthorized": "⚠️ You're not authorized to view this information.",
+
+  "emailCampaigns.placeholders.intent": "Type: book, pay, etc.",
+  "emailCampaigns.placeholders.linkName": "Link name",
+  "emailCampaigns.placeholders.linkUrl": "Destination URL",
+
+  "emailCampaigns.errors.maintenance": "🛠️ Email channel under maintenance. {msg}",
+  "emailCampaigns.errors.planNoEmail": "❌ Your plan doesn't include Email. Upgrade to enable Email campaigns.",
+  "emailCampaigns.errors.disabledInSettings": "📴 Email channel is disabled in your settings.",
+  "common.tryLater": "Please try again later.",
+  "common.errors.paymentInit": "❌ Couldn't start the payment",
+  "common.errors.request": "❌ Request failed",
+  "common.trial.activated": "✅ Free trial activated!",
+  "common.trial.activateError": "❌ Error activating trial",
+  "common.trial.askActivate": "You can activate your free trial now. Do you want to activate it?"
 }
