@@ -1270,5 +1270,6 @@
 
 "segments.leads": "leads",
 "segments.client": "cliente",
-"segments.other": "otros"
+"segments.other": "otros",
+"campaigns.placeholder.name": "Nombre de la campaña"
 }
