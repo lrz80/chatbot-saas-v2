@@ -786,6 +786,28 @@
 "promptGen.alert.couldNotGenerate": "No se pudo generar el prompt.",
 "promptGen.alert.genericError": "Hubo un error al generar el prompt.",
 
-"promptGen.membershipRequiredMessage": "Activa tu membresía para generar instrucciones."
+"promptGen.membershipRequiredMessage": "Activa tu membresía para generar instrucciones.",
+
+"cta.loading": "Cargando CTAs…",
+"cta.title": "CTA por intención",
+"cta.add": "+ Agregar CTA",
+
+"cta.intent": "Intención",
+"cta.noRepeat": "No repitas la misma intención.",
+
+"cta.text": "Texto del CTA",
+"cta.textPlaceholder": "Ej: Reserva tu clase aquí",
+
+"cta.url": "Link del CTA",
+"cta.urlPlaceholder": "https://...",
+
+"cta.deleteIfEmpty": "Si dejas texto y link vacíos, se eliminará ese CTA en el backend.",
+
+"cta.delete": "Eliminar",
+
+"cta.save": "Guardar CTAs",
+"cta.saving": "Guardando…",
+
+"cta.hint": "Tu Asistente detecta la intención por similitud con intents y, si hay coincidencia, muestra el CTA del canal."
 }
 

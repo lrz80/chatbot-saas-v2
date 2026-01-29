@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
+import { useI18n } from "../i18n/LanguageProvider";
+
 
 type CTA = { id?: number; intent: string; cta_text: string; cta_url: string; canal?: string };
 
@@ -34,6 +36,8 @@ export default function CTASection({
   canal?: string;
   membresiaActiva?: boolean;
 }) {
+  const { t } = useI18n();
+
   const [loading, setLoading] = useState(true);
   const [ctas, setCtas] = useState<CTA[]>([]);
   const [saving, setSaving] = useState(false);
@@ -184,12 +188,12 @@ const reload = async () => {
     }
   };
 
-  if (loading) return <div className="text-sm opacity-75">Cargando CTAs…</div>;
+  if (loading) return <div className="text-sm opacity-75">{t("cta.loading")}</div>;
 
   return (
     <div className="mb-8 p-4 bg-white/5 border border-white/10 rounded">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-white font-semibold">CTA por intención</h3>
+        <h3 className="text-white font-semibold">{t("cta.title")}</h3>
         <button
           onClick={addRow}
           disabled={!membresiaActiva}
@@ -197,7 +201,7 @@ const reload = async () => {
             membresiaActiva ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "bg-gray-600 text-white/50"
           }`}
         >
-          + Agregar CTA
+          {t("cta.add")}
         </button>
       </div>
 
@@ -214,7 +218,7 @@ const reload = async () => {
           return (
             <div key={row.id ?? `row-${idx}`} className="grid grid-cols-12 gap-2 items-start bg-white/10 border border-white/10 p-3 rounded">
               <div className="col-span-12 md:col-span-3">
-                <label className="text-xs block mb-1">Intención</label>
+                <label className="text-xs block mb-1">{t("cta.intent")}</label>
                 <select
                   className="w-full border rounded-md px-2 py-2 bg-white text-black"
                   value={row.intent}
@@ -231,14 +235,14 @@ const reload = async () => {
                     </option>
                   ))}
                 </select>
-                <p className="text-[11px] opacity-70 mt-1">No repitas la misma intención.</p>
+                <p className="text-[11px] opacity-70 mt-1">{t("cta.noRepeat")}</p>
               </div>
 
               <div className="col-span-12 md:col-span-4">
-                <label className="text-xs block mb-1">Texto del CTA</label>
+                <label className="text-xs block mb-1">{t("cta.text")}</label>
                 <input
                   className="w-full border rounded-md px-3 py-2 bg-white/5 border-white/20 text-white"
-                  placeholder="Ej: Reserva tu clase aquí"
+                  placeholder={t("cta.textPlaceholder")}
                   value={row.cta_text}
                   onChange={(e) => updateRow(idx, { cta_text: e.target.value })}
                   disabled={!membresiaActiva}
@@ -246,16 +250,16 @@ const reload = async () => {
               </div>
 
               <div className="col-span-12 md:col-span-4">
-                <label className="text-xs block mb-1">Link del CTA</label>
+                <label className="text-xs block mb-1">{t("cta.url")}</label>
                 <input
                   className="w-full border rounded-md px-3 py-2 bg-white/5 border-white/20 text-white"
-                  placeholder="https://..."
+                  placeholder={t("cta.urlPlaceholder")}
                   value={row.cta_url}
                   onChange={(e) => updateRow(idx, { cta_url: e.target.value })}
                   disabled={!membresiaActiva}
                 />
                 <p className="text-[11px] opacity-70 mt-1">
-                  Si dejas <b>texto</b> y <b>link</b> vacíos, se eliminará ese CTA en el backend.
+                  {t("cta.deleteIfEmpty")}
                 </p>
               </div>
 
@@ -265,7 +269,7 @@ const reload = async () => {
                   onClick={() => removeRow(idx)}
                   disabled={!membresiaActiva}
                 >
-                  Eliminar
+                  {t("cta.delete")}
                 </button>
               </div>
             </div>
@@ -281,12 +285,12 @@ const reload = async () => {
             membresiaActiva ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "bg-gray-600 text-white/50"
           } disabled:opacity-50`}
         >
-          {saving ? "Guardando…" : "Guardar CTAs"}
+          {saving ? t("cta.saving") : t("cta.save")}
         </button>
       </div>
 
       <p className="text-xs text-gray-300 mt-2">
-        Tu Asistente detecta la intención por similitud con <b>intents</b> y, si hay coincidencia, muestra el CTA del canal.
+        {t("cta.hint")}
       </p>
     </div>
   );

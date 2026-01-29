@@ -786,6 +786,28 @@
 "promptGen.alert.couldNotGenerate": "Could not generate the prompt.",
 "promptGen.alert.genericError": "There was an error generating the prompt.",
 
-"promptGen.membershipRequiredMessage": "Activate your membership to generate instructions."
+"promptGen.membershipRequiredMessage": "Activate your membership to generate instructions.",
+
+"cta.loading": "Loading CTAs…",
+"cta.title": "CTA by intent",
+"cta.add": "+ Add CTA",
+
+"cta.intent": "Intent",
+"cta.noRepeat": "Do not repeat the same intent.",
+
+"cta.text": "CTA text",
+"cta.textPlaceholder": "Ex: Book your class here",
+
+"cta.url": "CTA link",
+"cta.urlPlaceholder": "https://...",
+
+"cta.deleteIfEmpty": "If both the text and link are empty, this CTA will be deleted on save.",
+
+"cta.delete": "Delete",
+
+"cta.save": "Save CTAs",
+"cta.saving": "Saving…",
+
+"cta.hint": "Your Assistant detects the intent via similarity and, if there's a match, shows the CTA for the channel."
 }
 
