@@ -1,36 +1,16 @@
-// src/components/PromptGenerator.tsx
-
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { BACKEND_URL } from "@/utils/api";
-import { SiOpenai, SiDatabricks } from 'react-icons/si';
-
-const INFO_TEMPLATE = `Nombre del negocio:
-Tipo de negocio:
-Ubicación:
-Teléfono:
-
-Servicios principales:
-- 
-
-Horarios:
-
-Precios o cómo consultar precios:
-
-Reservas / contacto:
-- 
-
-Políticas importantes (si aplica):
-- 
-`;
+import { SiOpenai, SiDatabricks } from "react-icons/si";
+import { useI18n } from "../i18n/LanguageProvider";
 
 interface PromptGeneratorProps {
   infoClave: string;
   funcionesAsistente: string;
   setInfoClave: (value: string) => void;
   setFuncionesAsistente: (value: string) => void;
-  idioma: string;
+  idioma: string; // tu idioma actual del tenant (si lo usas en backend)
   membresiaActiva: boolean;
   onPromptGenerated: (prompt: string) => void;
 }
@@ -44,21 +24,30 @@ export default function PromptGenerator({
   membresiaActiva,
   onPromptGenerated,
 }: PromptGeneratorProps) {
+  const { t } = useI18n();
   const [loading, setLoading] = useState(false);
+
+  // Template y placeholder traducibles (flat keys)
+  const infoTemplate = useMemo(() => t("promptGen.infoTemplate"), [t]);
+
+  const funcionesPlaceholder = useMemo(
+    () => t("promptGen.funciones.placeholder"),
+    [t]
+  );
 
   const handleGenerate = async () => {
     if (!membresiaActiva) {
-      alert("Debes activar tu membresía para generar prompts.");
+      alert(t("promptGen.alert.membershipRequired"));
       return;
     }
 
     if (!funcionesAsistente.trim()) {
-      alert("Por favor describe qué debe hacer el asistente.");
+      alert(t("promptGen.alert.missingFunciones"));
       return;
     }
 
     if (!infoClave.trim()) {
-      alert("Por favor completa la información básica del negocio.");
+      alert(t("promptGen.alert.missingInfo"));
       return;
     }
 
@@ -68,25 +57,24 @@ export default function PromptGenerator({
       const res = await fetch(`${BACKEND_URL}/api/generar-prompt`, {
         method: "POST",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           descripcion: funcionesAsistente,
           informacion: infoClave,
-          idioma,
+          idioma, // se mantiene igual
         }),
       });
 
-      const data = await res.json();
-      if (data.prompt) {
+      const data = await res.json().catch(() => ({} as any));
+
+      if (data?.prompt) {
         onPromptGenerated(data.prompt);
       } else {
-        alert("No se pudo generar el prompt.");
+        alert(t("promptGen.alert.couldNotGenerate"));
       }
     } catch (err) {
       console.error("❌ Error generando prompt:", err);
-      alert("Hubo un error al generar el prompt.");
+      alert(t("promptGen.alert.genericError"));
     } finally {
       setLoading(false);
     }
@@ -96,32 +84,28 @@ export default function PromptGenerator({
     <div className="mb-6">
       <label className="block font-medium mb-1 flex items-center gap-2 text-pink-300">
         <SiOpenai size={18} />
-        ¿Qué debe hacer tu asistente?
+        {t("promptGen.funciones.label")}
       </label>
+
       <textarea
-        placeholder={`Ej:
-      - Responder preguntas frecuentes
-      - Dar información sobre precios
-      - Ayudar a reservar citas
-      - Ofrecer seguimiento si no hay respuesta`}
+        placeholder={funcionesPlaceholder}
         value={funcionesAsistente}
         onChange={(e) => setFuncionesAsistente(e.target.value)}
         rows={4}
         className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white placeholder-white/50 font-mono"
-        disabled={!membresiaActiva}
       />
 
       <label className="block font-medium mb-1 flex items-center gap-2 text-teal-300">
         <SiDatabricks size={18} />
-        Información que el Asistente debe conocer
+        {t("promptGen.infoClave.label")}
       </label>
+
       <textarea
         value={infoClave}
-        placeholder={INFO_TEMPLATE}
+        placeholder={infoTemplate}
         onChange={(e) => setInfoClave(e.target.value)}
         rows={8}
         className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white font-mono placeholder-white/40"
-        disabled={!membresiaActiva}
         style={{ whiteSpace: "pre-line" }}
       />
 
@@ -134,7 +118,7 @@ export default function PromptGenerator({
             : "bg-gray-600 text-white/50 cursor-not-allowed"
         }`}
       >
-        {loading ? "Generando..." : "Generar Instrucciones"}
+        {loading ? t("promptGen.button.loading") : t("promptGen.button.idle")}
       </button>
     </div>
   );

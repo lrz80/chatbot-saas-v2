@@ -768,6 +768,22 @@
 "trainingHelp.sections.campaignEmail.quickSteps.4": "Monitor opens, clicks, and conversions.",
 "trainingHelp.sections.campaignEmail.tips.title": "Tips",
 "trainingHelp.sections.campaignEmail.tips.1": "Short, direct subject lines.",
-"trainingHelp.sections.campaignEmail.tips.2": "Include a clear CTA."
+"trainingHelp.sections.campaignEmail.tips.2": "Include a clear CTA.",
+
+"promptGen.funciones.label": "What should your assistant do?",
+"promptGen.funciones.placeholder": "Example:\n- Answer frequently asked questions\n- Provide pricing information\n- Help book appointments\n- Follow up if there is no response",
+
+"promptGen.infoClave.label": "Information the assistant must know",
+
+"promptGen.infoTemplate": "Business name:\nBusiness type:\nLocation:\nPhone:\n\nMain services:\n- \n\nHours:\n\nPricing (or how to check pricing):\n\nBookings / contact:\n- \n\nImportant policies (if any):\n- \n",
+
+"promptGen.button.idle": "Generate Instructions",
+"promptGen.button.loading": "Generating...",
+
+"promptGen.alert.membershipRequired": "You must activate your membership to generate prompts.",
+"promptGen.alert.missingFunciones": "Please describe what the assistant should do.",
+"promptGen.alert.missingInfo": "Please complete the basic business information.",
+"promptGen.alert.couldNotGenerate": "Could not generate the prompt.",
+"promptGen.alert.genericError": "There was an error generating the prompt."
 }
 
