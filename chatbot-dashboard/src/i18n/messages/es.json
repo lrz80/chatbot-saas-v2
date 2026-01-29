@@ -1184,5 +1184,78 @@
 "voice.history.empty": "No hay registros de voz aún.",
 "voice.history.customer": "Cliente",
 "voice.history.bot": "Bot",
-"voice.history.emotionDetected": "Emoción detectada"
+"voice.history.emotionDetected": "Emoción detectada",
+
+  "sms.title": "Campañas por SMS",
+  "sms.trial.activateTitle": "Activa tu prueba gratis",
+  "sms.trial.activateBody": "y envía tus primeras campañas SMS.",
+  "sms.trial.activateButton": "Activar prueba gratis",
+  "sms.trial.active": "Estás usando la prueba gratis. ¡Aprovecha para programar tu campaña!",
+  "sms.membership.inactive": "Tu membresía está inactiva. No puedes programar campañas por SMS.",
+  "sms.membership.activate": "Activar plan",
+
+  "sms.form.name": "Nombre de la campaña",
+  "sms.form.content": "Contenido del SMS",
+  "sms.form.datetime": "Fecha y hora de envío",
+  "sms.form.contentPh": "🎉 ¡Hola! Aún tienes tu clase GRATIS disponible. Reserva ahora 👉 [link]. ¡Te esperamos!",
+  "sms.form.segments": "Segmentos",
+  "sms.segment.client": "cliente",
+  "sms.segment.leads": "leads",
+  "sms.segment.others": "otros",
+
+  "sms.sending": "Enviando...",
+  "sms.schedule": "Programar campaña SMS",
+
+  "sms.history.title": "Campañas programadas/enviadas",
+  "sms.history.empty": "No hay campañas SMS registradas aún.",
+  "sms.status.sent": "Enviados",
+  "sms.status.delivered": "Entregados",
+  "sms.status.failed": "Fallidos",
+  "sms.details.show": "Ver detalles",
+  "sms.details.hide": "Ocultar detalles",
+
+"sms.delivery.status": "Estado",
+"sms.delivery.segment": "Segmento",
+"sms.delivery.error": "Error",
+
+"sms.contacts.limitExpanded": "Límite de contactos ampliado exitosamente.",
+"sms.credits.added": "Créditos agregados exitosamente.",
+
+"sms.csv.optIn": "Declaro que estos contactos me dieron consentimiento explícito para recibir mensajes promocionales.",
+"sms.csv.optInHint": "Si no marcas esto, se importarán sin opt-in y no podrás usar estos contactos.",
+"sms.csv.segment": "Segmento para este CSV",
+"sms.csv.invalid": "Por favor selecciona un archivo CSV válido.",
+"sms.csv.fileSelected": "Archivo seleccionado:",
+"sms.csv.noFile": "Ningún archivo seleccionado",
+"sms.csv.upload": "Subir contactos",
+"sms.csv.deleteAll": "Eliminar contactos",
+"sms.csv.confirmDeleteAll": "¿Estás seguro? Esto eliminará todos tus contactos.",
+
+"sms.noValidNumbers": "No hay números válidos en los segmentos seleccionados.",
+"sms.noOptIn": "No puedes enviar campañas a contactos sin opt-in.",
+"sms.blocked": "Canal SMS deshabilitado o membresía inactiva.",
+
+"sms.errors.completeFields": "Completa todos los campos.",
+"sms.errors.invalidPhones": "❌ No hay números válidos en los segmentos seleccionados. Revisa que los números tengan formato +E164.",
+"sms.errors.connection": "❌ Error al conectar con el servidor.",
+"sms.errors.plan": "❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.",
+"sms.errors.disabled": "📴 El canal SMS está deshabilitado en tu configuración. Habilítalo en Ajustes.",
+"sms.errors.maintenance": "🛠️ Canal SMS en mantenimiento. Inténtalo más tarde.",
+
+"sms.usage.title": "Uso mensual de SMS",
+
+"sms.contacts.title": "Contactos",
+"sms.contacts.deleteAll": "Eliminar contactos",
+
+"sms.history.deleteConfirm": "¿Estás seguro de que deseas eliminar esta campaña?",
+"sms.history.showDetails": "Ver detalles",
+"sms.history.hideDetails": "Ocultar detalles",
+
+"sms.csv.invalidFile": "❌ El archivo debe ser .csv y pesar menos de 5MB.",
+"sms.csv.selectedFile": "Archivo seleccionado",
+"sms.csv.none": "Ningún archivo seleccionado",
+
+"sms.contacts.limitReached": "❌ Has alcanzado el límite de contactos. Compra más para subir tu lista.",
+
+"sms.membership.askActivate": "Tu membresía no está activa. ¿Quieres activarla ahora?"
 }

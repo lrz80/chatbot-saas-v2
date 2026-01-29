@@ -21,8 +21,12 @@ import { DateTime } from "luxon";
 import { useSearchParams } from "next/navigation";
 import { useFeatures } from '@/hooks/usePlan';
 import ChannelStatus from "@/components/ChannelStatus";
+import { useI18n } from "@/i18n/LanguageProvider";
+
 
 export default function CampaignsSmsClient() {
+  const { t } = useI18n();
+
   const [form, setForm] = useState({
     nombre: "",
     contenido: "",
@@ -181,7 +185,7 @@ export default function CampaignsSmsClient() {
 
   const handleSubmit = async () => {
     if (!form.nombre || !form.contenido || !form.fecha_envio || form.segmentos.length === 0) {
-      alert("Completa todos los campos.");
+      alert(t("sms.errors.completeFields"));
       return;
     }
 
@@ -194,7 +198,7 @@ export default function CampaignsSmsClient() {
       .filter((t: any) => typeof t === "string" && t.startsWith("+"));
 
     if (destinatarios.length === 0) {
-      alert("❌ No hay números válidos en los segmentos seleccionados. Revisa el formato de teléfonos (deben ser +E164).");
+      alert(t("sms.errors.invalidPhones"));
       return;
     }
 
@@ -248,7 +252,7 @@ export default function CampaignsSmsClient() {
     } catch (err) {
       setLoading(false);
       console.error("❌ Error de red:", err);
-      alert("❌ Error al conectar con el servidor.");
+      alert(t("common.errors.connection"));
     }
   };
 
@@ -257,13 +261,13 @@ export default function CampaignsSmsClient() {
   
     // Validación básica: ejemplo, tamaño 5MB max y .csv
     if (archivoCsv.size > 5 * 1024 * 1024 || !archivoCsv.name.endsWith(".csv")) {
-      alert("❌ El archivo debe ser .csv y pesar menos de 5MB");
+      alert(t("sms.csv.invalidFile"));
       return;
     }
   
     // Validar límite
     if (cantidadContactos >= limiteContactos) {
-      alert("❌ Has alcanzado el límite de contactos. Compra más para subir tu lista.");
+      alert(t("sms.contacts.limitReached"));
       return;
     }
   
@@ -292,12 +296,13 @@ export default function CampaignsSmsClient() {
             maintenance_message: st.maintenance_message || null,
           });
           if (st.maintenance) {
-            alert(`🛠️ Canal SMS en mantenimiento. ${st.maintenance_message || "Inténtalo más tarde."}`);
+            alert(`${t("sms.errors.maintenance")} ${st.maintenance_message || ""}`);
           } else if (!st.plan_enabled) {
-            alert("❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.");
+            alert(t("sms.errors.plan")
+);
             window.location.href = "/upgrade";
           } else {
-            alert("📴 Canal SMS deshabilitado en tu configuración. Habilítalo en Ajustes.");
+            alert(t("sms.errors.disabled"));
           }
           return;
         } else if (res.ok) {
@@ -320,7 +325,7 @@ export default function CampaignsSmsClient() {
   // ⛔️ Bloqueo por plan/membresía
   if (guardSms()) return;
 
-  if (!confirm("¿Estás seguro de que deseas eliminar esta campaña?")) return;
+  if (!confirm(t("sms.history.deleteConfirm"))) return;
 
   try {
     const res = await fetch(`${BACKEND_URL}/api/campaigns/${id}`, {
@@ -346,12 +351,12 @@ export default function CampaignsSmsClient() {
               maintenance_message: st.maintenance_message || null,
             });
             if (st.maintenance) {
-              alert(`🛠️ Canal SMS en mantenimiento. ${st.maintenance_message || "Inténtalo más tarde."}`);
+              alert(`${t("sms.errors.maintenance")} ${st.maintenance_message || ""}`);
             } else if (!st.plan_enabled) {
-              alert("❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.");
+              alert(t("sms.errors.plan"));
               window.location.href = "/upgrade";
             } else {
-              alert("📴 Canal SMS deshabilitado en tu configuración. Habilítalo en Ajustes.");
+              alert(t("sms.errors.disabled"));
             }
             return;
           }
@@ -361,7 +366,7 @@ export default function CampaignsSmsClient() {
     }
   } catch (err) {
     console.error("❌ Error al eliminar:", err);
-    alert("❌ Error al conectar con el servidor.");
+    alert(t("common.errors.connection"));
   }
 };
 
@@ -492,24 +497,24 @@ export default function CampaignsSmsClient() {
   // 🔒 Guard sencillo para bloquear acciones por plan/membresía
   const guardSms = () => {
     if (channelState?.maintenance) {
-      alert(`🛠️ Canal SMS en mantenimiento. ${channelState.maintenance_message || "Inténtalo más tarde."}`);
+      alert(`t("sms.errors.maintenance") ${channelState.maintenance_message || "Inténtalo más tarde."}`);
       return true;
     }
 
     if (!canSms) {
       // bloqueado por plan o por flags de settings
       if (!channelState?.plan_enabled) {
-        alert("❌ Tu plan no incluye SMS. Actualiza para habilitar campañas por SMS.");
+        alert(t("sms.errors.plan"));
         window.location.href = "/upgrade";
       } else {
-        alert("📴 Canal SMS deshabilitado en tu configuración. Habilítalo en Ajustes.");
+        alert(t("sms.errors.disabled"));
       }
       return true;
     }
 
     // 🔹 aquí solo chequeamos membresía/trial
     if (!isMembershipActive) {
-      const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
+      const confirmar = window.confirm(t("sms.membership.askActivate"));
       if (confirmar) window.location.href = "/upgrade";
       return true;
     }
@@ -591,9 +596,8 @@ export default function CampaignsSmsClient() {
           size={28}
           className="text-green-400 animate-pulse sm:size-9"
         />
-        <span>
-          Campañas por SMS
-        </span>
+        <span>{t("sms.title")}</span>
+
       </h1>
       
       <ChannelStatus
@@ -606,12 +610,12 @@ export default function CampaignsSmsClient() {
       {/* 🎁 Caso 1: Nunca usó trial → invitar a activar prueba */}
       {trialDisponible && !canEdit && (
         <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center font-medium">
-          🎁 <strong>Activa tu prueba gratis</strong> y envía tus primeras campañas SMS.
+          🎁 <strong>{t("sms.trial.activateTitle")}</strong> {t("sms.trial.activateBody")}
           <button
             onClick={() => (window.location.href = "/upgrade")}
             className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
           >
-            Activar prueba gratis
+            {t("sms.trial.activateButton")}
           </button>
         </div>
       )}
@@ -619,16 +623,16 @@ export default function CampaignsSmsClient() {
       {/* 🟡 Caso 2: Trial activo (puede editar/enviar) → aviso informativo */}
       {!membresiaActiva && trialActivo && (
         <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center font-medium">
-          🟡 Estás usando la <strong>prueba gratis</strong>. ¡Aprovecha para programar tu campaña SMS!
+          🟡 {t("sms.trial.active")}
         </div>
       )}
 
       {/* 🔴 Caso 3: Sin plan ni trial vigente → bloqueo con CTA a upgrade */}
       {!canEdit && !trialDisponible && !trialActivo && (
         <div className="mb-6 p-4 bg-red-500/20 border border-red-400 text-red-200 rounded text-center font-medium">
-          🚫 Tu membresía está inactiva. No puedes programar campañas por SMS.{` `}
+          🚫 {t("sms.membership.inactive")}{" "}
           <a onClick={() => (window.location.href = "/upgrade")} className="underline cursor-pointer">
-            Activa un plan para continuar.
+            {t("sms.membership.activate")}
           </a>
         </div>
       )}
@@ -637,20 +641,20 @@ export default function CampaignsSmsClient() {
 
       {contactosOk && (
         <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
-          ✅ Límite de contactos ampliado exitosamente. Ya puedes cargar más contactos.
+          {t("sms.contacts.limitExpanded")}
         </div>
       )}
 
       {creditoOk && (
         <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
-          ✅ Créditos agregados exitosamente. Ya puedes usarlos en tus campañas SMS.
+          {t("sms.credits.added")}
         </div>
       )}
 
       {usoSms && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
           <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <MdSms /> Uso mensual de SMS
+            <MdSms /> {t("sms.usage.title")}
           </h3>
 
           <p className="text-white text-sm mb-2">
@@ -687,7 +691,7 @@ export default function CampaignsSmsClient() {
       {usoContactos && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
           <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
-            <FaAddressBook /> Contactos
+            <FaAddressBook /> {t("sms.contacts.title")}
           </h3>
 
           <p className="text-white text-sm mb-2">
@@ -747,15 +751,15 @@ export default function CampaignsSmsClient() {
                   className="mt-1"
                 />
                 <span className="leading-snug">
-                  Declaro que estos contactos me dieron consentimiento explícito para recibir mensajes promocionales (opt-in).
+                  {t("sms.csv.optIn")}
                   <span className="block text-white/60 text-xs mt-1">
-                    Si no marcas esto, los contactos se importarán como <strong>sin opt-in</strong> y no podrás enviarles campañas.
+                    {t("sms.csv.optInHint")}
                   </span>
                 </span>
               </label>
 
               <label className="block text-sm font-semibold text-white">
-                Segmento para este CSV
+                {t("sms.csv.segment")}
               </label>
 
               <select
@@ -779,7 +783,7 @@ export default function CampaignsSmsClient() {
                   if (!file) return;
 
                   if (!file.name.toLowerCase().endsWith(".csv")) {
-                    alert("Por favor selecciona un archivo CSV válido.");
+                    alert(t("sms.csv.invalidFile"));
                     if (inputRef.current) inputRef.current.value = "";
                     setArchivoCsv(null);
                     setDeclaraOptIn(false);
@@ -796,7 +800,7 @@ export default function CampaignsSmsClient() {
               />
 
               <p className="text-white/80 text-xs">
-                {archivoCsv ? `Archivo seleccionado: ${archivoCsv.name}` : "Ningún archivo seleccionado"}
+                {archivoCsv ? `${t("sms.csv.selectedFile")}: ${archivoCsv.name}` : t("sms.csv.none")}
               </p>
 
               {archivoCsv && (
@@ -817,7 +821,7 @@ export default function CampaignsSmsClient() {
                     }`}
                     disabled={disabledAll}
                   >
-                    Eliminar archivo
+                    {t("common.deleteFile")}
                   </button>
                 </div>
               )}
@@ -832,7 +836,7 @@ export default function CampaignsSmsClient() {
                   }`}
                   title={contactos.length === 0 ? "No hay contactos para eliminar" : "Eliminar todos los contactos"}
                 >
-                  Eliminar contactos
+                  {t("sms.contacts.deleteAll")}
                 </button>
 
                 <button
@@ -850,7 +854,7 @@ export default function CampaignsSmsClient() {
                       : "bg-gray-400 text-gray-200 cursor-not-allowed"
                   }`}
                 >
-                  Subir contactos
+                  {t("sms.csv.upload")}
                 </button>
               </div>
             </div>
@@ -858,7 +862,7 @@ export default function CampaignsSmsClient() {
         )}
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
-        <SiCampaignmonitor /> Nombre de la campaña
+        <SiCampaignmonitor /> {t("sms.form.name")}
       </label>
       <input
         name="nombre"
@@ -869,19 +873,19 @@ export default function CampaignsSmsClient() {
       />
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
-        <SiMinutemailer /> Contenido del SMS
+        <SiMinutemailer /> {t("sms.form.content")}
       </label>
       <textarea
         name="contenido"
         value={form.contenido}
         onChange={handleChange}
-        placeholder="🎉 ¡Hola! Aún tienes tu clase GRATIS disponible. Reserva ahora 👉 [link]. ¡Te esperamos!"
+        placeholder={t("sms.form.contentPh")}
         className="w-full p-2 mb-4 bg-white/10 border border-white/20 rounded"
         rows={3}
       />
 
       <label className="block mb-2 font-medium text-white flex items-center gap-2">
-        <SiGooglecalendar /> Fecha y hora de envío
+        <SiGooglecalendar /> {t("sms.form.datetime")}
       </label>
       <input
         type="datetime-local"
@@ -893,7 +897,7 @@ export default function CampaignsSmsClient() {
 
       <div className="mb-6">
         <h3 className="text-white mb-2 flex items-center gap-2">
-          <SiCampaignmonitor /> Segmentos
+          <SiCampaignmonitor /> {t("sms.form.segments")}
         </h3>
         {["cliente", "leads", "otros"].map((seg) => (
           <label key={seg} className="block text-white text-sm mb-1">
@@ -920,17 +924,17 @@ export default function CampaignsSmsClient() {
         disabled={disabledAll || loading}
         className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? 'Enviando...' : 'Programar campaña SMS'}
+        {loading ? t("sms.sending") : t("sms.schedule")}
       </button>
 
       <hr className="my-10 border-white/20" />
 
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
-        <SiGoogleanalytics /> Campañas programadas/enviadas
+        <SiGoogleanalytics /> {t("sms.history.title")}
       </h2>
 
       {campaigns.length === 0 ? (
-        <p className="text-white/70">No hay campañas SMS registradas aún.</p>
+        <p className="text-white/70">{t("sms.history.empty")}</p>
       ) : (
         <ul className="space-y-6 text-white text-sm">
           {campaigns.map((c) => {
@@ -960,13 +964,13 @@ export default function CampaignsSmsClient() {
                         .toLocaleString(DateTime.DATETIME_MED)}
                     </div>
                     <span className="flex items-center gap-1">
-                      <SiMinutemailer /> Enviados: {enviados}
+                      <SiMinutemailer /> {t("sms.status.sent")} {enviados}
                     </span>
                     <span className="flex items-center gap-1">
-                      <SiCheckmarx className="text-green-400" /> Entregados: {entregados}
+                      <SiCheckmarx className="text-green-400" /> {t("sms.status.delivered")} {entregados}
                     </span>
                     <span className="flex items-center gap-1">
-                      <SiProbot className="text-red-400" /> Fallidos: {fallidos}
+                      <SiProbot className="text-red-400" /> {t("sms.status.failed")} {fallidos}
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -984,13 +988,13 @@ export default function CampaignsSmsClient() {
                       aria-disabled={disabledAll}
                       title={disabledAll ? "Bloqueado por plan o membresía" : "Eliminar"}
                     >
-                      <SiProbot className="inline mr-1" /> Eliminar
+                      <SiProbot className="inline mr-1" /> {t("common.delete")}
                     </button>
                     <button
                       className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-white"
                       onClick={() => setExpandedCampaignId(expandedCampaignId === cid ? null : cid)}
                     >
-                      {expandedCampaignId === cid ? "Ocultar detalles" : "Ver detalles"}
+                      {expandedCampaignId === cid ? t("sms.history.hideDetails") : t("sms.history.showDetails")}
                     </button>
                   </div>
                 </div>
@@ -1018,7 +1022,7 @@ export default function CampaignsSmsClient() {
                           </div>
                           <div className="flex items-center gap-1">
                             <SiStatuspal />
-                            Estado:{" "}
+                            {t("sms.delivery.status")}: {" "}
                             <span
                               className={`font-semibold ${
                                 st === "delivered"
@@ -1032,7 +1036,7 @@ export default function CampaignsSmsClient() {
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
-                            🏷️ Segmento: <span className="italic text-white/80">{segmento}</span>
+                            {t("sms.delivery.segment")}: <span className="italic text-white/80">{segmento}</span>
                           </div>
                           {e.error_message && (
                             <div className="flex items-center gap-1 text-red-400">

@@ -1184,5 +1184,78 @@
   "voice.history.empty": "No voice records yet.",
   "voice.history.customer": "Customer",
   "voice.history.bot": "Bot",
-  "voice.history.emotionDetected": "Detected emotion"
+  "voice.history.emotionDetected": "Detected emotion",
+
+  "sms.title": "SMS Campaigns",
+  "sms.trial.activateTitle": "Activate your free trial",
+  "sms.trial.activateBody": "and send your first SMS campaigns.",
+  "sms.trial.activateButton": "Activate free trial",
+  "sms.trial.active": "You are using the free trial. Schedule your SMS campaign!",
+  "sms.membership.inactive": "Your membership is inactive. You can't schedule SMS campaigns.",
+  "sms.membership.activate": "Activate plan",
+
+  "sms.form.name": "Campaign name",
+  "sms.form.content": "SMS content",
+  "sms.form.datetime": "Send date and time",
+  "sms.form.contentPh": "🎉 Hi! You still have your FREE class available. Book now 👉 [link].",
+  "sms.form.segments": "Segments",
+  "sms.segment.client": "client",
+  "sms.segment.leads": "leads",
+  "sms.segment.others": "others",
+
+  "sms.sending": "Sending...",
+  "sms.schedule": "Schedule SMS campaign",
+
+  "sms.history.title": "Scheduled/Sent SMS campaigns",
+  "sms.history.empty": "No SMS campaigns registered yet.",
+  "sms.status.sent": "Sent",
+  "sms.status.delivered": "Delivered",
+  "sms.status.failed": "Failed",
+  "sms.details.show": "Show details",
+  "sms.details.hide": "Hide details",
+
+  "sms.delivery.status": "Status",
+  "sms.delivery.segment": "Segment",
+  "sms.delivery.error": "Error",
+
+  "sms.contacts.limitExpanded": "Contact limit successfully expanded.",
+  "sms.credits.added": "Credits added successfully.",
+
+  "sms.csv.optIn": "I declare these contacts gave explicit consent to receive promotional messages.",
+  "sms.csv.optInHint": "If you don’t tick this, contacts will be imported without opt-in and cannot receive campaigns.",
+  "sms.csv.segment": "Segment for this CSV",
+  "sms.csv.invalid": "Please select a valid CSV file.",
+  "sms.csv.fileSelected": "Selected file:",
+  "sms.csv.noFile": "No file selected",
+  "sms.csv.upload": "Upload contacts",
+  "sms.csv.deleteAll": "Delete contacts",
+  "sms.csv.confirmDeleteAll": "Are you sure? This will delete all your contacts.",
+
+  "sms.noValidNumbers": "No valid numbers in the selected segments.",
+  "sms.noOptIn": "You cannot send campaigns to contacts without opt-in.",
+  "sms.blocked": "SMS channel disabled or membership inactive.",
+
+"sms.errors.completeFields": "Please complete all fields.",
+"sms.errors.invalidPhones": "❌ No valid numbers found in the selected segments. Phone numbers must use +E164 format.",
+"sms.errors.connection": "❌ Error connecting to the server.",
+"sms.errors.plan": "❌ Your plan does not include SMS. Upgrade to enable SMS campaigns.",
+"sms.errors.disabled": "📴 SMS channel is disabled in your settings. Enable it in Settings.",
+"sms.errors.maintenance": "🛠️ SMS channel under maintenance. Try again later.",
+
+"sms.usage.title": "Monthly SMS Usage",
+
+"sms.contacts.title": "Contacts",
+"sms.contacts.deleteAll": "Delete contacts",
+
+"sms.history.deleteConfirm": "Are you sure you want to delete this campaign?",
+"sms.history.showDetails": "Show details",
+"sms.history.hideDetails": "Hide details",
+
+"sms.csv.invalidFile": "❌ The file must be a CSV and smaller than 5MB.",
+"sms.csv.selectedFile": "Selected file",
+"sms.csv.none": "No file selected",
+
+"sms.contacts.limitReached": "❌ You have reached your contact limit. Purchase more to upload your list.",
+
+"sms.membership.askActivate": "Your membership is inactive. Do you want to activate it now?"
 }
