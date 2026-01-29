@@ -658,13 +658,13 @@ export default function CampaignsSmsClient() {
           </h3>
 
           <p className="text-white text-sm mb-2">
-            {usoSms.usados ?? 0} de {usoSms.limite} mensajes enviados
-            {(usoSms.limite ?? 0) > 500 && " (incluye créditos extra)"}
+            {t("sms.usage.count", { usados: usoSms.usados ?? 0, limite: usoSms.limite })}
+            {(usoSms.limite ?? 0) > 500 && ` (${t("sms.credits.extraIncluded")})`}
           </p>
 
           {(usoSms.limite ?? 0) > 500 && (
             <p className="text-green-300 text-sm">
-              Incluye {usoSms.limite - 500} mensajes extra comprados.
+              {t("sms.credits.extraAmount", { amount: usoSms.limite - 500 })}
             </p>
           )}
 
@@ -695,13 +695,13 @@ export default function CampaignsSmsClient() {
           </h3>
 
           <p className="text-white text-sm mb-2">
-            {usoContactos.usados} de {usoContactos.limite} contactos usados
-            {(usoContactos.limite ?? 0) > 500 && " (incluye créditos extra)"}
+            {t("sms.contacts.count", { usados: usoContactos.usados, limite: usoContactos.limite })}
+            {(usoContactos.limite ?? 0) > 500 && ` (${t("sms.credits.extraIncluded")})`}
           </p>
 
           {(usoContactos.limite ?? 0) > 500 && (
             <p className="text-green-300 text-sm">
-              Incluye {usoContactos.limite - 500} contactos extra comprados.
+              {t("sms.contacts.extraAmount", { amount: usoContactos.limite - 500 })}
             </p>
           )}
 
@@ -725,14 +725,15 @@ export default function CampaignsSmsClient() {
 
           {smsBloqueado && (
             <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-sm text-center">
-              📵 El canal SMS está deshabilitado.  
-              Para cargar contactos y usar campañas, primero debes habilitar SMS.
+              📵 {t("sms.block.title")}
+              <br />
+              {t("sms.block.description")}
               <div className="mt-2">
                 <button
                   onClick={() => window.location.href = "/upgrade"}
                   className="bg-yellow-500 hover:bg-yellow-400 text-black px-3 py-1 rounded font-semibold text-sm"
                 >
-                  Habilitar SMS
+                  {t("sms.block.enable")}
                 </button>
               </div>
             </div>
@@ -740,7 +741,7 @@ export default function CampaignsSmsClient() {
 
           <div className="w-full space-y-2">
               <label className="block text-sm font-semibold text-white">
-                Subir archivo CSV de contactos
+                {t("sms.csv.uploadTitle")}
               </label>
               <label className="flex items-start gap-2 text-white text-sm bg-white/5 border border-white/10 rounded p-3">
                 <input
@@ -768,9 +769,9 @@ export default function CampaignsSmsClient() {
                 disabled={disabledAll}
                 className="w-full p-2 rounded bg-white/10 border border-white/20 text-white mb-2"
               >
-                <option value="leads">leads</option>
-                <option value="cliente">cliente</option>
-                <option value="otros">otros</option>
+                <option value="leads">{t("segments.leads")}</option>
+                <option value="cliente">{t("segments.client")}</option>
+                <option value="otros">{t("segments.other")}</option>
               </select>
               <input
                 type="file"

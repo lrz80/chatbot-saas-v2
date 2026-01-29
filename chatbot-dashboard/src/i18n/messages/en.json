@@ -1256,6 +1256,9 @@
 "sms.csv.none": "No file selected",
 
 "sms.contacts.limitReached": "❌ You have reached your contact limit. Purchase more to upload your list.",
-
-"sms.membership.askActivate": "Your membership is inactive. Do you want to activate it now?"
+"sms.membership.askActivate": "Your membership is inactive. Do you want to activate it now?",
+"sms.csv.uploadTitle": "Upload contacts CSV file",
+"sms.block.title": "The SMS channel is disabled.",
+"sms.block.description": "To upload contacts and run campaigns, you must enable SMS first.",
+"sms.block.enable": "Enable SMS"
 }

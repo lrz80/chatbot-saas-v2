@@ -20,10 +20,12 @@ import { useSearchParams } from "next/navigation";
 import EmailLogViewer from "@/components/EmailLogViewer";
 import { useFeatures } from '@/hooks/usePlan';
 import ChannelStatus from "@/components/ChannelStatus";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 const BASE_EMAIL_LIMIT = 2000;
 
 export default function CampaignsEmailClient() {
+  const { t } = useI18n();
   const [form, setForm] = useState({
     nombre: "",
     contenido: "",
@@ -209,7 +211,7 @@ export default function CampaignsEmailClient() {
 
     console.log("🧪 Asunto que se envía:", form.asunto);
     if (!form.nombre || !form.fecha_envio || form.segmentos.length === 0) {
-      alert("Completa todos los campos.");
+      alert(t("email.errors.completeFields"));
       return;
     }
 
@@ -297,7 +299,7 @@ export default function CampaignsEmailClient() {
     } catch (err) {
       setLoading(false);
       console.error("❌ Error de red:", err);
-      alert("❌ Error al conectar con el servidor.");
+      alert(t("common.errors.connection"));
     }
   };
 
@@ -322,7 +324,7 @@ export default function CampaignsEmailClient() {
 
     // Validar límite
     if (cantidadContactos >= limiteContactos) {
-      alert("❌ Has alcanzado el límite de contactos. Compra más para subir tu lista.");
+      alert(t("email.contacts.limitReached"));
       return;
     }
 
@@ -369,7 +371,7 @@ export default function CampaignsEmailClient() {
   };
   
   const eliminarCampana = async (id: number) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar esta campaña?")) return;
+    if (!confirm(t("email.history.deleteConfirm"))) return;
   
     try {
       const res = await fetch(`${BACKEND_URL}/api/campaigns/${id}`, {
@@ -389,7 +391,7 @@ export default function CampaignsEmailClient() {
       }
     } catch (err) {
       console.error("❌ Error al eliminar:", err);
-      alert("❌ Error al conectar con el servidor.");
+      alert(t("common.errors.connection"));
     }
   };  
 
@@ -651,7 +653,7 @@ export default function CampaignsEmailClient() {
       const confirma = window.confirm("Puedes activar tu prueba gratis ahora. ¿Deseas activarla?");
       if (confirma) handleClaimTrial();
     } else {
-      const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
+      const confirmar = window.confirm(t("email.membership.askActivate"));
       if (confirmar) window.location.href = "/upgrade";
     }
   } else {
@@ -679,7 +681,7 @@ export default function CampaignsEmailClient() {
           const confirma = window.confirm("Puedes activar tu prueba gratis ahora. ¿Deseas activarla?");
           if (confirma) handleClaimTrial();
         } else {
-          const confirmar = window.confirm("Tu membresía no está activa. ¿Quieres activarla ahora?");
+          const confirmar = window.confirm(t("email.membership.askActivate"));
           if (confirmar) window.location.href = "/upgrade";
         }
         return true;
@@ -804,7 +806,7 @@ export default function CampaignsEmailClient() {
         {usoContactos && (
           <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
             <h3 className="font-bold text-white text-lg mb-2 flex items-center gap-2">
-              <FaAddressBook /> Contactos
+              <FaAddressBook /> {t("email.contacts.title")}
             </h3>
 
             <p className="text-white text-sm mb-2">
@@ -946,7 +948,7 @@ export default function CampaignsEmailClient() {
                   }`}
                   title={contactos.length === 0 ? "No hay contactos para eliminar" : "Eliminar todos los contactos"}
                 >
-                  Eliminar contactos
+                  {t("email.contacts.deleteAll")}
                 </button>
 
                 <button

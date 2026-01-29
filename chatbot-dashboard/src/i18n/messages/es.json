@@ -1256,6 +1256,9 @@
 "sms.csv.none": "Ningún archivo seleccionado",
 
 "sms.contacts.limitReached": "❌ Has alcanzado el límite de contactos. Compra más para subir tu lista.",
-
-"sms.membership.askActivate": "Tu membresía no está activa. ¿Quieres activarla ahora?"
+"sms.membership.askActivate": "Tu membresía no está activa. ¿Quieres activarla ahora?",
+"sms.csv.uploadTitle": "Subir archivo CSV de contactos",
+"sms.block.title": "El canal SMS está deshabilitado.",
+"sms.block.description": "Para cargar contactos y usar campañas, primero debes habilitar SMS.",
+"sms.block.enable": "Habilitar SMS"
 }
