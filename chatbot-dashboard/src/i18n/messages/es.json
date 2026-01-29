@@ -808,6 +808,22 @@
 "cta.save": "Guardar CTAs",
 "cta.saving": "Guardando…",
 
-"cta.hint": "Tu Asistente detecta la intención por similitud con intents y, si hay coincidencia, muestra el CTA del canal."
+"cta.hint": "Tu Asistente detecta la intención por similitud con intents y, si hay coincidencia, muestra el CTA del canal.",
+
+"apptSettings.title": "Configuración de citas",
+"apptSettings.reload": "Recargar",
+"apptSettings.loading": "Cargando...",
+"apptSettings.savedOk": "Guardado correctamente.",
+
+"apptSettings.defaultDuration": "Duración por defecto (min)",
+"apptSettings.buffer": "Buffer entre citas (min)",
+"apptSettings.minLeadLabel": "Anticipación mínima (min) — min_lead_minutes",
+"apptSettings.minLeadHelp": "Tiempo de anticipación que se puede agendar",
+
+"apptSettings.timezone": "Zona horaria",
+"apptSettings.timezoneHelp": "Elige la zona horaria real del negocio para evitar citas corridas.",
+
+"apptSettings.saving": "Guardando...",
+"apptSettings.save": "Guardar cambios"
 }
 

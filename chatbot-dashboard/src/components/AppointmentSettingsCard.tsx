@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
+import { useI18n } from "../i18n/LanguageProvider";
 
 type Settings = {
   default_duration_min: number;
@@ -12,6 +13,8 @@ type Settings = {
 };
 
 export default function AppointmentSettingsCard() {
+  const { t } = useI18n();
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -80,7 +83,7 @@ export default function AppointmentSettingsCard() {
       }
 
       setForm(data.settings);
-      setOkMsg("Guardado correctamente.");
+      setOkMsg(t("apptSettings.savedOk"));
     } catch (e: any) {
       setError(e?.message || "Error guardando configuración");
     } finally {
@@ -91,18 +94,19 @@ export default function AppointmentSettingsCard() {
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md shadow-xl">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-white">Configuración de citas</h2>
-        <button
-          onClick={load}
-          disabled={loading || saving}
-          className="text-sm text-purple-300 hover:underline disabled:opacity-50"
-        >
-          Recargar
-        </button>
+        <h2 className="text-lg font-semibold text-white">{t("apptSettings.title")}</h2>
+
+          <button
+            onClick={load}
+            disabled={loading || saving}
+            className="text-sm text-purple-300 hover:underline disabled:opacity-50"
+          >
+            {t("apptSettings.reload")}
+          </button>
       </div>
 
       {loading ? (
-        <p className="text-white/60 text-sm">Cargando...</p>
+        <p className="text-white/60 text-sm">{t("apptSettings.loading")}</p>
       ) : (
         <>
           {error && (
@@ -118,7 +122,9 @@ export default function AppointmentSettingsCard() {
 
           <div className="grid gap-4">
             <div>
-              <label className="block text-sm text-white/80 mb-1">Duración por defecto (min)</label>
+              <label className="block text-sm text-white/80 mb-1">
+                {t("apptSettings.defaultDuration")}
+              </label>
               <input
                 type="number"
                 min={5}
@@ -132,7 +138,9 @@ export default function AppointmentSettingsCard() {
             </div>
 
             <div>
-              <label className="block text-sm text-white/80 mb-1">Buffer entre citas (min)</label>
+              <label className="block text-sm text-white/80 mb-1">
+                {t("apptSettings.buffer")}
+              </label>
               <input
                 type="number"
                 min={0}
@@ -145,7 +153,7 @@ export default function AppointmentSettingsCard() {
 
             <div>
               <label className="block text-sm text-white/80 mb-1">
-                Anticipación mínima (min) — min_lead_minutes
+                {t("apptSettings.minLeadLabel")}
               </label>
               <input
                 type="number"
@@ -158,12 +166,14 @@ export default function AppointmentSettingsCard() {
                 className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
               />
               <p className="text-xs text-white/50 mt-1">
-                Tiempo de anticipacion que se puede agendar
+                {t("apptSettings.minLeadHelp")}
               </p>
             </div>
 
             <div>
-              <label className="block text-sm text-white/80 mb-1">Zona horaria</label>
+              <label className="block text-sm text-white/80 mb-1">
+                {t("apptSettings.timezone")}
+              </label>
               <select
                 value={form.timezone}
                 onChange={(e) => setForm((p) => ({ ...p, timezone: e.target.value }))}
@@ -179,7 +189,7 @@ export default function AppointmentSettingsCard() {
                 <option value="America/Mexico_City">America/Mexico_City</option>
               </select>
               <p className="text-xs text-white/50 mt-1">
-                Elige la zona horaria real del negocio para evitar citas corridas.
+                {t("apptSettings.timezoneHelp")}
               </p>
             </div>
 
@@ -188,7 +198,7 @@ export default function AppointmentSettingsCard() {
               disabled={saving || loading}
               className="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-700 transition text-white font-semibold shadow-lg disabled:opacity-60"
             >
-              {saving ? "Guardando..." : "Guardar cambios"}
+              {saving ? t("apptSettings.saving") : t("apptSettings.save")}
             </button>
           </div>
         </>

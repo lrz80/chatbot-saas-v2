@@ -808,6 +808,22 @@
 "cta.save": "Save CTAs",
 "cta.saving": "Saving…",
 
-"cta.hint": "Your Assistant detects the intent via similarity and, if there's a match, shows the CTA for the channel."
+"cta.hint": "Your Assistant detects the intent via similarity and, if there's a match, shows the CTA for the channel.",
+
+"apptSettings.title": "Appointment settings",
+"apptSettings.reload": "Reload",
+"apptSettings.loading": "Loading...",
+"apptSettings.savedOk": "Saved successfully.",
+
+"apptSettings.defaultDuration": "Default duration (min)",
+"apptSettings.buffer": "Buffer between appointments (min)",
+"apptSettings.minLeadLabel": "Minimum lead time (min) — min_lead_minutes",
+"apptSettings.minLeadHelp": "How far in advance customers can book",
+
+"apptSettings.timezone": "Time zone",
+"apptSettings.timezoneHelp": "Pick the business' real time zone to prevent shifted bookings.",
+
+"apptSettings.saving": "Saving...",
+"apptSettings.save": "Save changes"
 }
 
