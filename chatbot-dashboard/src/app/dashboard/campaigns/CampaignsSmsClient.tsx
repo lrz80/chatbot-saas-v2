@@ -361,7 +361,7 @@ export default function CampaignsSmsClient() {
             return;
           }
         } catch {}
-        alert("❌ Error al eliminar campaña");
+        alert(t("smsCampaigns.alerts.deleteError"));
       }
     }
   } catch (err) {

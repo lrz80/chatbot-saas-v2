@@ -1441,5 +1441,9 @@
   
   "cta.form.type.placeholder": "Tipo: reservar, pagar, etc.",
   "cta.form.name.placeholder": "Nombre del link",
-  "cta.form.url.placeholder": "URL destino"
+  "cta.form.url.placeholder": "URL destino",
+
+  "email.contacts.title": "Contactos",
+  "email.csv.uploadTitle": "Subir contactos por CSV",
+  "email.contacts.deleteAll": "Eliminar todos"
 }

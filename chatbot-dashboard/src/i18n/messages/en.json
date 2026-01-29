@@ -1441,5 +1441,9 @@
 
   "cta.form.type.placeholder": "Type: book, pay, etc.",
   "cta.form.name.placeholder": "Link name",
-  "cta.form.url.placeholder": "Destination URL"
+  "cta.form.url.placeholder": "Destination URL",
+
+  "email.contacts.title": "Contacts",
+  "email.csv.uploadTitle": "Upload contacts via CSV",
+  "email.contacts.deleteAll": "Delete all"
 }
