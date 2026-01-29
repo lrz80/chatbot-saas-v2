@@ -1418,5 +1418,28 @@
 
   "common.defaultBusinessName": "Your Business",
   "common.errors.generic": "An error occurred",
-  "common.errors.connection": "Server connection error"
+  "common.errors.connection": "Server connection error",
+
+  "emailCampaigns.contacts.usage.usedOf": "{used} of {limit} contacts used",
+  "emailCampaigns.contacts.usage.includesExtra": " (includes extra credits)",
+  "emailCampaigns.contacts.usage.includesExtraCount": "Includes {extra} additional purchased contacts.",
+
+  "emailCampaigns.contacts.limitExpanded": "Contact limit successfully increased. You can now upload more contacts.",
+
+  "emailCampaigns.segments.leads": "Leads",
+  "emailCampaigns.segments.cliente": "Clients",
+  "emailCampaigns.segments.otros": "Others",
+
+  "emailCampaigns.contacts.csv.pickFile": "Choose file",
+  "emailCampaigns.contacts.csv.noFile": "No file selected",
+
+  "emailCampaigns.history.delete.button": "Delete",
+  "emailCampaigns.history.delete.success": "Email campaign deleted successfully.",
+  "emailCampaigns.history.delete.notFound": "This campaign was already deleted or does not belong to you.",
+
+  "emailCampaigns.schedule.noDate": "Please select a date and time.",
+
+  "cta.form.type.placeholder": "Type: book, pay, etc.",
+  "cta.form.name.placeholder": "Link name",
+  "cta.form.url.placeholder": "Destination URL"
 }

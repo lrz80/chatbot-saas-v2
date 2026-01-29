@@ -1418,5 +1418,28 @@
 
   "common.defaultBusinessName": "Tu Negocio",
   "common.errors.generic": "Ocurrió un error",
-  "common.errors.connection": "Error de conexión con el servidor"
+  "common.errors.connection": "Error de conexión con el servidor",
+
+  "emailCampaigns.contacts.usage.usedOf": "{used} de {limit} contactos usados",
+  "emailCampaigns.contacts.usage.includesExtra": " (incluye créditos extra)",
+  "emailCampaigns.contacts.usage.includesExtraCount": "Incluye {extra} contactos extra comprados.",
+  
+  "emailCampaigns.contacts.limitExpanded": "Límite de contactos ampliado exitosamente. Ya puedes cargar más contactos.",
+
+  "emailCampaigns.segments.leads": "Leads",
+  "emailCampaigns.segments.cliente": "Clientes",
+  "emailCampaigns.segments.otros": "Otros",
+
+  "emailCampaigns.contacts.csv.pickFile": "Seleccionar archivo",
+  "emailCampaigns.contacts.csv.noFile": "Ningún archivo seleccionado",
+
+  "emailCampaigns.history.delete.button": "Eliminar",
+  "emailCampaigns.history.delete.success": "Campaña eliminada correctamente.",
+  "emailCampaigns.history.delete.notFound": "La campaña ya fue eliminada o no te pertenece.",
+
+  "emailCampaigns.schedule.noDate": "Debes seleccionar fecha y hora",
+  
+  "cta.form.type.placeholder": "Tipo: reservar, pagar, etc.",
+  "cta.form.name.placeholder": "Nombre del link",
+  "cta.form.url.placeholder": "URL destino"
 }
