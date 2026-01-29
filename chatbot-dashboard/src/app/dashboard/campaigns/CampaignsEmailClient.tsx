@@ -107,7 +107,7 @@ export default function CampaignsEmailClient() {
   
       setCampaigns(enriched);
     } catch (err) {
-      console.error("❌ Error cargando campañas:", err);
+      console.error(t("emailCampaigns.errors.loadCampaigns"), err);
     }
   };
   
@@ -126,7 +126,7 @@ export default function CampaignsEmailClient() {
 
       setContactos(lista);
     } catch (err) {
-      console.error("❌ Error cargando contactos:", err);
+      console.error(t("emailCampaigns.errors.loadContacts"), err);
       setContactos([]);
     }
   };
@@ -138,7 +138,7 @@ export default function CampaignsEmailClient() {
       setLimiteContactos(data.limite || 500);
       setCantidadContactos(data.total || 0);
     } catch (err) {
-      console.error("❌ Error cargando límite de contactos:", err);
+      console.error(t("emailCampaigns.errors.loadLimit"), err);
     }
   };
   
@@ -153,7 +153,7 @@ export default function CampaignsEmailClient() {
       const usoContactos = data.usos?.find((u: any) => u.canal === "contactos");
       setLimiteContactos(usoContactos?.limite ?? 500);
     } catch (err) {
-      console.error("❌ Error cargando uso de email/contactos:", err);
+      console.error(t("emailCampaigns.errors.loadUsage"), err);
     }
   };  
 
@@ -263,12 +263,12 @@ export default function CampaignsEmailClient() {
             maintenance_message: st.maintenance_message || null,
           });
           if (st.maintenance) {
-            alert(`🛠️ Canal Email en mantenimiento. ${st.maintenance_message || "Inténtalo más tarde."}`);
+            alert(t("emailCampaigns.errors.maintenance", { msg: st.maintenance_message || t("common.tryLater") }));
           } else if (!st.plan_enabled) {
-            alert("❌ Tu plan no incluye Email. Actualiza para habilitarlo.");
+            alert(t("emailCampaigns.errors.planNoEmail"));
             window.location.href = "/upgrade";
           } else {
-            alert("📴 Canal Email deshabilitado en tu configuración.");
+            alert(t("emailCampaigns.errors.disabledInSettings"));
           }
         } catch {
           alert("📴 Canal Email no disponible.");
@@ -612,7 +612,7 @@ export default function CampaignsEmailClient() {
         const settings = await settingsRes.json();
   
         const logoUrl = settings?.logo_url || undefined;
-        const nombreNegocio = settings?.nombre || "Tu Negocio";
+        const nombreNegocio = settings?.nombre || t("common.defaultBusinessName");
   
         const res = await fetch(`${BACKEND_URL}/api/preview-email`, {
           method: "POST",
@@ -866,9 +866,9 @@ export default function CampaignsEmailClient() {
                 disabled={disabledAll}
                 className="w-full p-2 rounded bg-white/10 border border-white/20 text-white mb-2"
               >
-                <option value="leads">leads</option>
-                <option value="cliente">cliente</option>
-                <option value="otros">otros</option>
+                <option value="leads">{t("segments.leads")}</option>
+                <option value="cliente">{t("segments.client")}</option>
+                <option value="otros">{t("segments.other")}</option>
               </select>
 
               <input
@@ -920,7 +920,7 @@ export default function CampaignsEmailClient() {
                         : "text-red-400 hover:text-red-600"
                     }`}
                     aria-disabled={disabledAll}
-                    title={disabledAll ? "Bloqueado" : "Eliminar archivo"}
+                    title={t("emailCampaigns.alerts.fileDelete")}
                   >
                     {t("emailCampaigns.contacts.csv.removeFile")}
                   </button>
@@ -1087,7 +1087,7 @@ export default function CampaignsEmailClient() {
           <div className="bg-white rounded shadow p-4 max-h-[600px] overflow-y-auto">
             <iframe
               srcDoc={previewHtml}
-              title="Email Preview"
+              title={t("emailCampaigns.preview.iframeTitle")}
               className="w-full h-[600px] border"
             />
           </div>
@@ -1200,7 +1200,7 @@ export default function CampaignsEmailClient() {
                       <div className="mt-2">
                         <img
                           src={c.imagen_url}
-                          alt="Imagen campaña"
+                          alt={t("emailCampaigns.history.imageAlt")}
                           className="max-h-32 border border-white/10 rounded"
                           onError={(e) => (e.currentTarget.style.display = "none")}
                         />

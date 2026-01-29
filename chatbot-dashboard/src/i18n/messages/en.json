@@ -1398,5 +1398,25 @@
   "common.errors.request": "❌ Request failed",
   "common.trial.activated": "✅ Free trial activated!",
   "common.trial.activateError": "❌ Error activating trial",
-  "common.trial.askActivate": "You can activate your free trial now. Do you want to activate it?"
+  "common.trial.askActivate": "You can activate your free trial now. Do you want to activate it?",
+
+  "emailCampaigns.errors.loadCampaigns": "Error loading campaigns",
+  "emailCampaigns.errors.loadContacts": "Error loading contacts",
+  "emailCampaigns.errors.loadLimit": "Error loading contact limit",
+  "emailCampaigns.errors.loadUsage": "Error loading email/contact usage",
+  "emailCampaigns.errors.loadLogs": "Error loading logs",
+
+  "emailCampaigns.alerts.noContactsToDelete": "No contacts to delete",
+  "emailCampaigns.alerts.deleteError": "Campaign could not be deleted",
+  "emailCampaigns.alerts.fileDelete": "Remove file",
+  "emailCampaigns.alerts.blocked": "Blocked",
+
+  "emailCampaigns.preview.title": "Email Preview",
+  "emailCampaigns.preview.iframeTitle": "Preview",
+
+  "emailCampaigns.history.imageAlt": "Campaign image",
+
+  "common.defaultBusinessName": "Your Business",
+  "common.errors.generic": "An error occurred",
+  "common.errors.connection": "Server connection error"
 }

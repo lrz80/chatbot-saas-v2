@@ -1398,5 +1398,25 @@
   "common.errors.request": "❌ Falló la solicitud",
   "common.trial.activated": "✅ ¡Prueba gratis activada!",
   "common.trial.activateError": "❌ Error activando la prueba",
-  "common.trial.askActivate": "Puedes activar tu prueba gratis ahora. ¿Deseas activarla?"
+  "common.trial.askActivate": "Puedes activar tu prueba gratis ahora. ¿Deseas activarla?",
+
+  "emailCampaigns.errors.loadCampaigns": "Error cargando campañas",
+  "emailCampaigns.errors.loadContacts": "Error cargando contactos",
+  "emailCampaigns.errors.loadLimit": "Error cargando límite de contactos",
+  "emailCampaigns.errors.loadUsage": "Error cargando uso de email/contactos",
+  "emailCampaigns.errors.loadLogs": "Error cargando historial",
+
+  "emailCampaigns.alerts.noContactsToDelete": "No hay contactos para eliminar",
+  "emailCampaigns.alerts.deleteError": "Error al eliminar campaña",
+  "emailCampaigns.alerts.fileDelete": "Eliminar archivo",
+  "emailCampaigns.alerts.blocked": "Bloqueado",
+
+  "emailCampaigns.preview.title": "Vista previa del email",
+  "emailCampaigns.preview.iframeTitle": "Vista previa",
+
+  "emailCampaigns.history.imageAlt": "Imagen de la campaña",
+
+  "common.defaultBusinessName": "Tu Negocio",
+  "common.errors.generic": "Ocurrió un error",
+  "common.errors.connection": "Error de conexión con el servidor"
 }
