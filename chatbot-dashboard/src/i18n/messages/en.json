@@ -1288,5 +1288,9 @@
   "voiceMinutes.errors.hint": "Check your configuration at",
   "voiceMinutes.errors.example": "Example:",
   "voiceMinutes.errors.cookieHint": "Make sure the cookie uses Domain=.aamy.ai",
-  "voiceMinutes.errors.default": "Error loading voice minutes"
+  "voiceMinutes.errors.default": "Error loading voice minutes",
+  
+  "voiceConfig.placeholder.type": "Type: booking, payment, etc.",
+  "voiceConfig.placeholder.name": "Link name",
+  "voiceConfig.placeholder.url": "Target URL"
 }

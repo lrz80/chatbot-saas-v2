@@ -697,21 +697,21 @@ export default function VoiceConfigPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <input
               type="text"
-              placeholder="Tipo: reservar, pagar, etc."
+              placeholder={t("voiceConfig.placeholder.type")}
               value={nuevoLink.tipo}
               onChange={(e) => setNuevoLink({ ...nuevoLink, tipo: e.target.value })}
               className="border px-3 py-2 rounded"
             />
             <input
               type="text"
-              placeholder="Nombre del link"
+              placeholder={t("voiceConfig.placeholder.name")}
               value={nuevoLink.nombre}
               onChange={(e) => setNuevoLink({ ...nuevoLink, nombre: e.target.value })}
               className="border px-3 py-2 rounded"
             />
             <input
               type="text"
-              placeholder="URL destino"
+              placeholder={t("voiceConfig.placeholder.url")}
               value={nuevoLink.url}
               onChange={(e) => setNuevoLink({ ...nuevoLink, url: e.target.value })}
               className="border px-3 py-2 rounded"
