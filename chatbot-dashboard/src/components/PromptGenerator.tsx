@@ -120,6 +120,11 @@ export default function PromptGenerator({
       >
         {loading ? t("promptGen.button.loading") : t("promptGen.button.idle")}
       </button>
+      {!membresiaActiva && (
+        <p className="text-xs text-red-400 mt-2">
+          {t("promptGen.membershipRequiredMessage")}
+        </p>
+      )}
     </div>
   );
 }

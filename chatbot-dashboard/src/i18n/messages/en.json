@@ -784,6 +784,8 @@
 "promptGen.alert.missingFunciones": "Please describe what the assistant should do.",
 "promptGen.alert.missingInfo": "Please complete the basic business information.",
 "promptGen.alert.couldNotGenerate": "Could not generate the prompt.",
-"promptGen.alert.genericError": "There was an error generating the prompt."
+"promptGen.alert.genericError": "There was an error generating the prompt.",
+
+"promptGen.membershipRequiredMessage": "Activate your membership to generate instructions."
 }
 
