@@ -388,9 +388,9 @@ export default function CampaignsEmailClient() {
   
       if (res.ok) {
         setCampaigns((prev) => prev.filter((c) => c.id !== data.id));
-        alert(data.message || "✅ Campaña eliminada");
+        alert(data.message || t("emailCampaigns.history.delete.success"));
       } else if (res.status === 404) {
-        alert("❌ La campaña ya fue eliminada o no te pertenece.");
+        alert(t("emailCampaigns.history.delete.notFound"));
       } else {
         alert(`❌ ${data.error || "Error al eliminar campaña"}`);
       }
@@ -758,7 +758,7 @@ export default function CampaignsEmailClient() {
 
         {contactosOk && (
           <div className="bg-green-600/20 border border-green-500 text-green-300 p-4 rounded mb-6 text-sm">
-            ✅ Límite de contactos ampliado exitosamente. Ya puedes cargar más contactos.
+            {t("emailCampaigns.contacts.limitExpanded")}
           </div>
         )}
 
@@ -813,13 +813,13 @@ export default function CampaignsEmailClient() {
             </h3>
 
             <p className="text-white text-sm mb-2">
-              {usoContactos.usados} de {usoContactos.limite} contactos usados
-              {(usoContactos.limite ?? 500) > 500 && " (incluye créditos extra)"}
+              {t("emailCampaigns.contacts.usage.usedOf", { used: usoContactos.usados, limit: usoContactos.limite })}
+              {(usoContactos.limite ?? 500) > 500 && t("emailCampaigns.contacts.usage.includesExtra")}
             </p>
 
             {(usoContactos.limite ?? 500) > 500 && (
               <p className="text-green-300 text-sm">
-                Incluye {usoContactos.limite - 500} contactos extra comprados.
+                {t("emailCampaigns.contacts.usage.includesExtraCount", { extra: usoContactos.limite - 500 })}
               </p>
             )}
 
@@ -1043,26 +1043,50 @@ export default function CampaignsEmailClient() {
           <SiGooglephotos /> {t("emailCampaigns.form.image.label")}
         </label>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-          <button onClick={() => imageInputRef.current?.click()}
-            className="bg-white/10 hover:bg-white/20 text-sm px-4 py-2 rounded text-white border border-white/20 w-full sm:w-auto"
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <button
+            onClick={() => csvInputRef.current?.click()}
+            disabled={disabledAll}
+            className="bg-white/10 hover:bg-white/20 text-sm px-4 py-2 rounded text-white border border-white/20 w-full sm:w-auto disabled:opacity-50"
           >
-            {t("emailCampaigns.form.image.pick")}
+            {t("emailCampaigns.contacts.csv.pickFile")}
           </button>
 
-          {form.imagen && (
-            <p className="text-white/60 text-sm truncate">{form.imagen.name}</p>
-          )}
+          <span className="text-white/60 text-sm">
+            {archivoCsv ? archivoCsv.name : t("emailCampaigns.contacts.csv.noFile")}
+          </span>
         </div>
 
         <input
-          name="imagen"
           type="file"
-          accept="image/*"
-          ref={imageInputRef}
-          onChange={handleChange}
+          accept=".csv"
+          multiple={false}
           disabled={disabledAll}
+          ref={csvInputRef}
           className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0] || null;
+            if (!file) {
+              setArchivoCsv(null);
+              setDeclaraOptIn(false);
+              return;
+            }
+            if (!file.name.toLowerCase().endsWith(".csv")) {
+              alert(t("emailCampaigns.contacts.csv.mustBeCsv"));
+              if (csvInputRef.current) csvInputRef.current.value = "";
+              setArchivoCsv(null);
+              setDeclaraOptIn(false);
+              return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+              alert(t("emailCampaigns.contacts.csv.maxSize"));
+              if (csvInputRef.current) csvInputRef.current.value = "";
+              setArchivoCsv(null);
+              setDeclaraOptIn(false);
+              return;
+            }
+            setArchivoCsv(file);
+          }}
         />
 
         {form.imagen && (
@@ -1114,7 +1138,7 @@ export default function CampaignsEmailClient() {
         <h3 className="text-white mb-2 flex items-center gap-2">
           <SiCampaignmonitor /> {t("emailCampaigns.form.segments.title")}
         </h3>
-        {["cliente", "leads", "otros"].map((seg) => (
+        {(["cliente", "leads", "otros"] as const).map((seg) => (
           <label key={seg} className="block text-white text-sm mb-1">
             <input
             type="checkbox"
@@ -1123,7 +1147,7 @@ export default function CampaignsEmailClient() {
             disabled={disabledAll}
             className="mr-2"
           />
-            {seg}
+            {t(`emailCampaigns.segments.${seg}`)}
           </label>
         ))}
       </div>
@@ -1266,7 +1290,7 @@ export default function CampaignsEmailClient() {
                           : "bg-red-500/80 hover:bg-red-600 text-white"
                       }`}
                     >
-                      🗑 Eliminar
+                      🗑 {t("emailCampaigns.history.delete.button")}
                     </button>
                   </div>
                 </div>
