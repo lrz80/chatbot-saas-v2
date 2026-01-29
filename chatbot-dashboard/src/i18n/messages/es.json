@@ -1271,5 +1271,22 @@
 "segments.leads": "leads",
 "segments.client": "cliente",
 "segments.other": "otros",
-"campaigns.placeholder.name": "Nombre de la campaña"
+"campaigns.placeholder.name": "Nombre de la campaña",
+
+  "voiceMinutes.title": "Minutos de Voz",
+  "voiceMinutes.included": "Incluye {included} minutos.",
+  "voiceMinutes.plusBought": " + {bought} comprados.",
+  "voiceMinutes.usedLabel": "Usados:",
+  "voiceMinutes.availableLabel": "Disponibles:",
+  "voiceMinutes.minutes": "minutos",
+
+  "voiceMinutes.buy.add": "Agregar {minutes} minutos",
+  "voiceMinutes.buy.success": "Se agregaron {minutes} minutos.",
+  "voiceMinutes.buy.error": "No se pudo completar la compra: {error}",
+
+  "voiceMinutes.errors.load": "Error al cargar los minutos de voz: {error}",
+  "voiceMinutes.errors.hint": "Verifica tu configuración en",
+  "voiceMinutes.errors.example": "Ejemplo:",
+  "voiceMinutes.errors.cookieHint": "Asegúrate de que la cookie use Domain=.aamy.ai"
+
 }

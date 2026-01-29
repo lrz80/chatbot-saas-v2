@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useI18n } from "@/i18n/LanguageProvider";
+
 
 type Summary = {
   cycle_start: string;
@@ -19,6 +21,8 @@ function joinUrl(base: string, path: string) {
 }
 
 export default function VoiceMinutesCard() {
+  const { t } = useI18n();
+
   const [data, setData] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -54,7 +58,7 @@ export default function VoiceMinutesCard() {
       setData(json);
     } catch (e: any) {
       console.error(e);
-      setErr(e?.message || 'Error cargando minutos de voz');
+      setErr(e?.message || t("voiceMinutes.errors.default"));
       setData(null);
     } finally {
       setLoading(false);
@@ -66,7 +70,9 @@ export default function VoiceMinutesCard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const pct = data ? Math.min(100, Math.round((data.used / data.total) * 100)) : 0;
+  const pct = data && data.total > 0
+    ? Math.min(100, Math.round((data.used / data.total) * 100))
+    : 0;
 
   async function buy(minutes: number) {
     try {
@@ -83,29 +89,40 @@ export default function VoiceMinutesCard() {
       }
 
       await load();
-      alert(`Se agregaron ${minutes} minutos.`);
+      alert(t("voiceMinutes.buy.success", { minutes }));
     } catch (e: any) {
       console.error(e);
-      alert(`No se pudo completar la compra: ${e?.message || 'Error desconocido'}`);
+      alert(t("voiceMinutes.buy.error", { error: e?.message || t("common.unknownError") }));
     }
   }
 
   return (
     <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4 md:p-5">
-      <div className="text-lg font-semibold mb-3">Uso de Voz (minutos)</div>
+      <div className="text-lg font-semibold mb-3">{t("voiceMinutes.title")}</div>
 
-      {loading && <div className="text-sm text-zinc-400">Cargando…</div>}
+      {loading && <div className="text-sm text-zinc-400">{t("common.loading")}</div>}
 
       {!loading && err && (
         <div className="text-sm text-red-400">
-          {err}. Verifica que <code>NEXT_PUBLIC_API_BASE_URL</code> apunte a tu backend (p.ej. <code>https://api.aamy.ai</code>) y que la cookie tenga <code>Domain=.aamy.ai</code>.
+          {t("voiceMinutes.errors.load", { error: err })}{" "}
+          {t("voiceMinutes.errors.hint")}{" "}
+          <code>NEXT_PUBLIC_API_BASE_URL</code>{" "}
+          {t("voiceMinutes.errors.example")}{" "}
+          <code>https://api.aamy.ai</code>{" "}
+          {t("voiceMinutes.errors.cookieHint")}{" "}
+          <code>Domain=.aamy.ai</code>.
         </div>
       )}
 
       {!loading && !err && data && (
         <>
           <div className="text-sm text-zinc-400 mb-2">
-            Incluye <b>{data.included}</b> min/mes {data.bought > 0 && <>+ <b>{data.bought}</b> min comprados</>}
+            {t("voiceMinutes.included", { included: data.included })}{" "}
+            {data.bought > 0 && (
+              <>
+                {t("voiceMinutes.plusBought", { bought: data.bought })}
+              </>
+            )}
           </div>
 
           <div className="w-full h-2 bg-zinc-800 rounded">
@@ -116,7 +133,8 @@ export default function VoiceMinutesCard() {
           </div>
 
           <div className="mt-2 text-sm">
-            Usados: <b>{data.used}</b> min · Disponibles: <b>{data.available}</b> / {data.total} min
+            {t("voiceMinutes.usedLabel")} <b>{data.used}</b> {t("voiceMinutes.minutes")} ·{" "}
+            {t("voiceMinutes.availableLabel")} <b>{data.available}</b> / {data.total} {t("voiceMinutes.minutes")}
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
@@ -124,19 +142,19 @@ export default function VoiceMinutesCard() {
               onClick={() => buy(250)}
               className="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm"
             >
-              +250 min
+              {t("voiceMinutes.buy.add", { minutes: 250 })}
             </button>
             <button
               onClick={() => buy(500)}
               className="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm"
             >
-              +500 min
+              {t("voiceMinutes.buy.add", { minutes: 500 })}
             </button>
             <button
               onClick={() => buy(1000)}
               className="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm"
             >
-              +1000 min
+              {t("voiceMinutes.buy.add", { minutes: 1000 })}
             </button>
           </div>
         </>
