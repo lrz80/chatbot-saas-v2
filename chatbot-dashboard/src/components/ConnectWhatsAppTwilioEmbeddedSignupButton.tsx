@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { BACKEND_URL } from '@/utils/api';
+import { useI18n } from '../i18n/LanguageProvider';
 
 type Props = {
   disabled?: boolean;
@@ -16,16 +17,18 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
   disabled,
   onComplete,
 }: Props) {
+  const { t } = useI18n();
+
   const [loading, setLoading] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
   const finishOnceRef = useRef(false);
 
   const buttonLabel = useMemo(() => {
-    if (loading) return 'Conectando…';
-    return 'Conectar WhatsApp (Twilio)';
-  }, [loading]);
+    if (loading) return t('waConnectTwilio.button.connecting');
+    return t('waConnectTwilio.button.connect');
+  }, [loading, t]);
 
-  // 1) Cargar FB SDK
+  // 1) Load FB SDK
   useEffect(() => {
     if (document.getElementById('facebook-jssdk')) {
       setSdkReady(true);
@@ -49,7 +52,7 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
     document.body.appendChild(js);
   }, []);
 
-  // 2) Capturar postMessage del Embedded Signup
+  // 2) Capture postMessage from Embedded Signup
   useEffect(() => {
     const handler = async (event: MessageEvent) => {
       const allowedOrigins = [
@@ -64,124 +67,128 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
       try {
         if (typeof payload === 'string') payload = JSON.parse(payload);
       } catch {
-        // si no es JSON, igual puede venir como object
+        // can arrive as object, ignore JSON parsing errors
       }
 
-    // ... dentro del handler(event)
+      const root = payload?.payload ?? payload;
+      const metaData = root?.data ?? root;
 
-    const root = payload?.payload ?? payload;
-    const metaData = root?.data ?? root;
+      const rawType = root?.type ?? payload?.type ?? metaData?.type;
+      const rawEvent = root?.event ?? payload?.event ?? metaData?.event;
 
-    // Meta manda mucho en estas 2 claves:
-    const rawType = root?.type ?? payload?.type ?? metaData?.type;
-    const rawEvent = root?.event ?? payload?.event ?? metaData?.event;
+      const eventType = String(rawType || '').toLowerCase();
+      const eventName = String(rawEvent || '').toLowerCase();
 
-    const eventType = String(rawType || '').toLowerCase();     // ej: "wa_embedded_signup"
-    const eventName = String(rawEvent || '').toLowerCase();    // ej: "finish_only_waba"
+      const isFinish =
+        eventType === 'wa_embedded_signup' &&
+        (eventName === 'finish' ||
+          eventName === 'complete' ||
+          eventName === 'finish_only_waba' ||
+          eventName === 'embedded_signup_finish' ||
+          eventName === 'embedded_signup_complete' ||
+          eventName.startsWith('finish'));
 
-    // ✅ Detecta FINISH correctamente
-    const isFinish =
-    eventType === 'wa_embedded_signup' &&
-    (eventName === 'finish' ||
-    eventName === 'complete' ||
-    eventName === 'finish_only_waba' ||           // 👈 CLAVE
-    eventName === 'embedded_signup_finish' ||
-    eventName === 'embedded_signup_complete' ||
-    eventName.startsWith('finish'));              // por si cambian variantes
+      const wabaId =
+        metaData?.waba_id ||
+        metaData?.whatsapp_business_account_id ||
+        metaData?.wabaId;
 
-    const wabaId =
-    metaData?.waba_id ||
-    metaData?.whatsapp_business_account_id ||
-    metaData?.wabaId;
+      const businessId =
+        metaData?.business_id ||
+        metaData?.business_manager_id ||
+        metaData?.businessId;
 
-    const businessId =
-    metaData?.business_id ||
-    metaData?.business_manager_id ||
-    metaData?.businessId;
+      const phoneNumberId =
+        metaData?.phone_number_id ||
+        metaData?.whatsapp_phone_number_id ||
+        metaData?.phoneNumberId;
 
-    const phoneNumberId =
-    metaData?.phone_number_id ||
-    metaData?.whatsapp_phone_number_id ||
-    metaData?.phoneNumberId;
-
-    // Debug
-    console.log('✅ [WA ESU] postMessage:', { eventType, eventName, wabaId, businessId, phoneNumberId, raw: payload });
-
-    // Si no es finish, no hagas nada
-    if (!isFinish) return;
-
-    // ✅ Si llegó FINISH pero no vino waba/business, NO te quedes pegado
-    if (!wabaId || !businessId) {
-    console.warn('⚠️ FINISH recibido pero faltan IDs. Liberando UI.');
-    setLoading(false);
-    finishOnceRef.current = false;
-    return;
-    }
-
-    if (finishOnceRef.current) return;
-    finishOnceRef.current = true;
-
-    try {
-    setLoading(true);
-
-    const r = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/embedded-signup/complete`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-        waba_id: wabaId,
-        business_id: businessId,
-        phone_number_id: phoneNumberId || null,
+      console.log('✅ [WA ESU] postMessage:', {
+        eventType,
+        eventName,
+        wabaId,
+        businessId,
+        phoneNumberId,
         raw: payload,
-        }),
-    });
+      });
 
-    const j = await r.json().catch(() => ({} as any));
-    if (!r.ok) throw new Error(j?.error || 'Error completando Embedded Signup');
+      if (!isFinish) return;
 
-    alert('⏳ Embedded Signup OK. El sender se está registrando. Revisa Sync en 1-3 minutos.');
-    onComplete?.();
-    } catch (e: any) {
-    console.error('❌ ESU complete error:', e);
-    alert(e?.message || 'Error finalizando conexión');
-    } finally {
-    setLoading(false);
-    finishOnceRef.current = false;
-    }
-   };
+      // If finish came but IDs missing, release UI (avoid stuck state)
+      if (!wabaId || !businessId) {
+        console.warn('⚠️ FINISH received but missing IDs. Releasing UI.');
+        setLoading(false);
+        finishOnceRef.current = false;
+        return;
+      }
+
+      if (finishOnceRef.current) return;
+      finishOnceRef.current = true;
+
+      try {
+        setLoading(true);
+
+        const r = await fetch(
+          `${BACKEND_URL}/api/twilio/whatsapp/embedded-signup/complete`,
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              waba_id: wabaId,
+              business_id: businessId,
+              phone_number_id: phoneNumberId || null,
+              raw: payload,
+            }),
+          }
+        );
+
+        const j = await r.json().catch(() => ({} as any));
+        if (!r.ok) throw new Error(j?.error || t('waConnectTwilio.error.complete'));
+
+        alert(t('waConnectTwilio.alert.completeOk'));
+        onComplete?.();
+      } catch (e: any) {
+        console.error('❌ ESU complete error:', e);
+        alert(e?.message || t('waConnectTwilio.error.finalize'));
+      } finally {
+        setLoading(false);
+        finishOnceRef.current = false;
+      }
+    };
 
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [onComplete]);
+  }, [onComplete, t]);
 
   const start = async () => {
     if (disabled || loading) return;
 
     if (!sdkReady || !(window as any).FB) {
-      alert('FB SDK no está listo todavía.');
+      alert(t('waConnectTwilio.alert.sdkNotReady'));
       return;
     }
 
     if (!SOLUTION_ID) {
-      alert('Falta NEXT_PUBLIC_TWILIO_PARTNER_SOLUTION_ID (solutionID).');
+      alert(t('waConnectTwilio.alert.missingSolutionId'));
       return;
     }
 
     try {
-      // 0) Preparar backend: subcuenta + número Twilio (Twilio-only)
+      setLoading(true);
+
+      // 0) Prepare backend: subaccount + Twilio number (Twilio-only)
       const r1 = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/start-embedded-signup`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          whatsapp_number_type: 'twilio',
-        }),
+        body: JSON.stringify({ whatsapp_number_type: 'twilio' }),
       });
 
       const j1 = await r1.json().catch(() => ({} as any));
-      if (!r1.ok) throw new Error(j1?.error || 'Error preparando WhatsApp');
+      if (!r1.ok) throw new Error(j1?.error || t('waConnectTwilio.error.prepare'));
 
-      // 1) Abrir Embedded Signup (ESU)
+      // 1) Open Embedded Signup (ESU)
       const opts: any = {
         config_id: CONFIG_ID,
         response_type: 'code',
@@ -189,29 +196,23 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
         auth_type: 'rerequest',
         scope: 'whatsapp_business_management,whatsapp_business_messaging',
         extras: {
-            sessionInfoVersion: 3,
-            featureType: 'only_waba_sharing',
-            setup: {
+          sessionInfoVersion: 3,
+          featureType: 'only_waba_sharing',
+          setup: {
             solutionID: SOLUTION_ID,
-            },
+          },
         },
       };
 
-      console.log("=== WA ESU PARAMS CHECK ===", {
+      console.log('=== WA ESU PARAMS CHECK ===', {
         featureType: opts?.extras?.featureType,
         solutionID: opts?.extras?.setup?.solutionID,
-      });
-
-      console.log("=== WA ESU PARAMS CHECK ===", {
-        has_only_waba_sharing: opts?.extras?.featureType,
-        setup_keys: Object.keys(opts?.extras?.setup || {}),
-        setup: opts?.extras?.setup,
       });
 
       (window as any).FB.login(
         (response: any) => {
           console.log('[ESU] FB.login response:', response);
-          // ✅ si canceló o no autorizó, libera el botón
+          // if cancelled / not authorized, release button
           if (!response || response.status !== 'connected') {
             setLoading(false);
           }
@@ -220,7 +221,7 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
       );
     } catch (e: any) {
       console.error('❌ WhatsApp connect start error:', e);
-      alert(e?.message || 'Error iniciando Embedded Signup');
+      alert(e?.message || t('waConnectTwilio.error.start'));
       setLoading(false);
     }
   };
@@ -241,6 +242,7 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
       </button>
 
       <p className="text-xs opacity-70 leading-relaxed">
+        {t('waConnectTwilio.helper')}
       </p>
     </div>
   );

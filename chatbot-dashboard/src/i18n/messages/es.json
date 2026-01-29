@@ -627,6 +627,19 @@
 "common.unknownError": "Error desconocido",
 "common.saveErrorGeneric": "Error al guardar la configuración.",
 "common.lang.es": "Español",
-"common.lang.en": "English"
+"common.lang.en": "English",
+
+"waConnectTwilio.button.connecting": "Conectando…",
+"waConnectTwilio.button.connect": "Conectar WhatsApp (Twilio)",
+"waConnectTwilio.helper": "Conecta tu WhatsApp con Twilio usando Embedded Signup.",
+
+"waConnectTwilio.alert.sdkNotReady": "FB SDK no está listo todavía.",
+"waConnectTwilio.alert.missingSolutionId": "Falta NEXT_PUBLIC_TWILIO_PARTNER_SOLUTION_ID (solutionID).",
+"waConnectTwilio.alert.completeOk": "⏳ Embedded Signup OK. El sender se está registrando. Revisa Sync en 1-3 minutos.",
+
+"waConnectTwilio.error.prepare": "Error preparando WhatsApp",
+"waConnectTwilio.error.complete": "Error completando Embedded Signup",
+"waConnectTwilio.error.finalize": "Error finalizando conexión",
+"waConnectTwilio.error.start": "Error iniciando Embedded Signup"
 }
 
