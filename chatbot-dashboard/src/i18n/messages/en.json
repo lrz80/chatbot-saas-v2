@@ -545,6 +545,9 @@
 "verifyEmail.error.title": "❌ Verification failed",
 "verifyEmail.error.subtitle": "The link is invalid or has expired.",
 
-"verifyEmail.errors.invalidToken": "Invalid token"
+"verifyEmail.errors.invalidToken": "Invalid token",
+
+"dashboard.auth.error": "🔴 Authentication error:",
+"dashboard.auth.sessionError": "❌ Error verifying session:"
 }
 

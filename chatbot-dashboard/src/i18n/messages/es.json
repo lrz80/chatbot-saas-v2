@@ -545,6 +545,9 @@
 "verifyEmail.error.title": "❌ Verificación fallida",
 "verifyEmail.error.subtitle": "El enlace no es válido o ha expirado.",
 
-"verifyEmail.errors.invalidToken": "Token inválido"
+"verifyEmail.errors.invalidToken": "Token inválido",
+
+"dashboard.auth.error": "🔴 Error de autenticación:",
+"dashboard.auth.sessionError": "❌ Error al verificar sesión:"
 }
 
