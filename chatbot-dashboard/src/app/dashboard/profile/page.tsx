@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { BACKEND_URL } from '@/utils/api';
 import Footer from '@/components/Footer';
-import { useI18n } from "../../../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 
 type SettingsPayload = {

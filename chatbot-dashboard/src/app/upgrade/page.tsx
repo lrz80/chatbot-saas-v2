@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 import { track } from "@/lib/metaPixel";
-import { useI18n } from "../../i18n/LanguageProvider"; // ✅ ajusta si el path cambia
+import { useI18n } from "@/i18n/LanguageProvider"; // ✅ ajusta si el path cambia
 
 type SettingsResp = {
   membresia_activa: boolean;

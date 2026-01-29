@@ -3,7 +3,7 @@
 import { FaWhatsapp } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
 import { track } from '@/lib/metaPixel';
-import { useI18n } from "../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 
 export default function WhatsAppDemoButton() {

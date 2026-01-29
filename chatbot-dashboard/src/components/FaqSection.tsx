@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { MessageSquare, Bot, Pencil, XCircle, Lightbulb, Brain } from "lucide-react";
 import { BACKEND_URL } from "@/utils/api";
-import { useI18n } from "../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 export type Faq = {
   id?: number;

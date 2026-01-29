@@ -14,7 +14,7 @@ import {
 } from "react-icons/fa";
 import { BACKEND_URL } from "@/utils/api";
 import { track } from '@/lib/metaPixel';
-import { useI18n } from "../../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 const nodos = [
   { Icon: FaRobot, color: "#a855f7", titleKey: "register.nodes.attention.title", descKey: "register.nodes.attention.desc", posClass: "top-[5%] left-[10%]", x: 10, y: 5 },

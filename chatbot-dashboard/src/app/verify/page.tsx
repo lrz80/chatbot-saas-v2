@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BACKEND_URL } from "@/utils/api";
-import { useI18n } from "../../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 
 export default function VerifyEmailPage() {

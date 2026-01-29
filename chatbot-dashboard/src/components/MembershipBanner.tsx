@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useI18n } from "../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 
 type Props = {

@@ -12,7 +12,7 @@ import {
   FaMicrophoneAlt,
   FaBullhorn,
 } from 'react-icons/fa';
-import { useI18n } from '../../i18n/LanguageProvider';
+import { useI18n } from '@/i18n/LanguageProvider';
 
 const nodos = [
   { Icon: FaRobot, color: '#a855f7', titleKey: 'login.nodes.attention.title', descKey: 'login.nodes.attention.desc', posClass: 'top-[5%] left-[10%]', x: 10, y: 5 },

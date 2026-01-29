@@ -9,7 +9,7 @@ import { SiWhatsapp, SiFacebook, SiInstagram } from "react-icons/si";
 import { FiGlobe, FiPhoneCall } from "react-icons/fi";
 import type { ReactNode } from "react";
 import { io, Socket } from 'socket.io-client';
-import { useI18n } from "../../../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 
 const PAGE_SIZE = 10;

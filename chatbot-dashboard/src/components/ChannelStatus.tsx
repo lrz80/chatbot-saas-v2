@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
-import { useI18n } from "../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 
 type Canal = "sms" | "email" | "whatsapp" | "meta" | "voice";

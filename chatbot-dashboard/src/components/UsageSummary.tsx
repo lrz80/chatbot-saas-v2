@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
-import { useI18n } from "../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 
 interface UsoMensual {

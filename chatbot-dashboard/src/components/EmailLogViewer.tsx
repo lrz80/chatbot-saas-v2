@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { BACKEND_URL } from "@/utils/api";
-import { useI18n } from "../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 
 interface Props {

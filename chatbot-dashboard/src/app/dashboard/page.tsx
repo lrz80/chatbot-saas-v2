@@ -18,7 +18,7 @@ import {
 import { PhoneCall, MessageCircle } from "lucide-react";
 import { FaWhatsapp, FaFacebook, FaInstagram } from 'react-icons/fa';
 import KpiCardWithChart from '@/components/KpiCardWithChart';
-import { useI18n } from "../../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 

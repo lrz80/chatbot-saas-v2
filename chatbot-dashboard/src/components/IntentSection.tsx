@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { SiTarget, SiPaperspace, SiChatbot } from "react-icons/si";
 import { BACKEND_URL } from "@/utils/api";
-import { useI18n } from "../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 export type Intent = {
   id?: number | string;
