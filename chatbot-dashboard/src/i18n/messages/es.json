@@ -1130,5 +1130,59 @@
 "appointments.status.attended": "Asistió",
 
 "appointments.loading": "Cargando citas...",
-"appointments.empty": "No hay citas registradas."
+"appointments.empty": "No hay citas registradas.",
+
+"common.save": "Guardar",
+"common.delete": "Eliminar",
+"common.anonymous": "anónimo",
+"common.blockedByPlan": "Bloqueado por tu plan",
+"common.somethingWentWrong": "Algo salió mal.",
+"common.unexpectedError": "Error inesperado.",
+
+"voice.title": "Configuración del Asistente",
+"voice.titleSuffix": "de Voz",
+
+"voice.trial.ctaTitle": "Activa tu prueba gratis",
+"voice.trial.ctaBody": "para configurar tu Asistente de Voz.",
+"voice.trial.activate": "Activar prueba gratis",
+"voice.trial.active": "Estás en prueba gratis. Puedes configurar Voz.",
+
+"voice.membership.inactive": "Tu membresía está inactiva. No puedes guardar cambios.",
+"voice.membership.activate": "Activar plan",
+"voice.membership.viewOnly": "Tu membresía está inactiva. Puedes visualizar la configuración, pero no puedes guardar ni generar cambios hasta activarla.",
+
+"voice.form.funciones.label": "¿Qué debe hacer tu asistente?",
+"voice.form.funciones.placeholder": "Ejemplo: Atender llamadas, agendar citas...",
+"voice.form.infoClave.label": "Información clave sobre tu negocio",
+"voice.form.infoClave.placeholder": "Ejemplo: servicios, precios, ubicación...",
+"voice.form.prompt.label": "Instrucciones de Voz generadas",
+"voice.form.prompt.placeholder": "Este es el comportamiento del asistente...",
+"voice.form.welcome.label": "Mensaje de bienvenida",
+"voice.form.welcome.placeholder": "Hola, soy Amy...",
+"voice.form.hints.label": "Hints de pronunciación (opcional)",
+"voice.form.hints.placeholder": "Nombres o términos difíciles de pronunciar",
+
+"voice.form.rep.label": "Número de representante (para transferir llamadas)",
+"voice.form.rep.e164Error": "El número de representante debe estar en formato E.164, ej: +15551234567",
+"voice.form.rep.e164Hint": "Formato inválido. Usa E.164: + y 10–15 dígitos (ej: +15551234567).",
+"voice.form.rep.optionalHint": "Déjalo vacío si no quieres transferencias.",
+
+"voice.audio.preview": "Vista previa de la voz:",
+
+"voice.links.title": "Links útiles (enviar por SMS)",
+"voice.links.tipoPh": "Tipo: reservar, pagar, etc.",
+"voice.links.nombrePh": "Nombre del link",
+"voice.links.urlPh": "URL destino",
+"voice.links.add": "Agregar link útil",
+"voice.links.added": "✅ Link agregado",
+"voice.links.addError": "❌ Error al agregar link útil",
+"voice.links.deleted": "Link eliminado",
+
+"voice.saved": "✅ ¡Configuración guardada!",
+
+"voice.history.title": "Historial de llamadas y emociones",
+"voice.history.empty": "No hay registros de voz aún.",
+"voice.history.customer": "Cliente",
+"voice.history.bot": "Bot",
+"voice.history.emotionDetected": "Emoción detectada"
 }

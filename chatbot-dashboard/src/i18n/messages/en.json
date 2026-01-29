@@ -1130,5 +1130,59 @@
 "appointments.status.attended": "Attended",
 
 "appointments.loading": "Loading appointments...",
-"appointments.empty": "No appointments found."
+"appointments.empty": "No appointments found.",
+
+  "common.save": "Save",
+  "common.delete": "Delete",
+  "common.anonymous": "anonymous",
+  "common.blockedByPlan": "Blocked by your plan",
+  "common.somethingWentWrong": "Something went wrong.",
+  "common.unexpectedError": "Unexpected error.",
+
+  "voice.title": "Voice Assistant",
+  "voice.titleSuffix": "Configuration",
+
+  "voice.trial.ctaTitle": "Activate your free trial",
+  "voice.trial.ctaBody": "to configure your Voice Assistant.",
+  "voice.trial.activate": "Activate free trial",
+  "voice.trial.active": "You are on a free trial. You can configure Voice.",
+
+  "voice.membership.inactive": "Your membership is inactive. You can’t save changes.",
+  "voice.membership.activate": "Activate plan",
+  "voice.membership.viewOnly": "Your membership is inactive. You can view the configuration, but you can’t save or generate changes until you activate it.",
+
+  "voice.form.funciones.label": "What should your assistant do?",
+  "voice.form.funciones.placeholder": "Example: Answer calls, book appointments...",
+  "voice.form.infoClave.label": "Key information about your business",
+  "voice.form.infoClave.placeholder": "Example: services, pricing, location...",
+  "voice.form.prompt.label": "Generated voice instructions",
+  "voice.form.prompt.placeholder": "This defines the assistant behavior...",
+  "voice.form.welcome.label": "Welcome message",
+  "voice.form.welcome.placeholder": "Hi, I'm Amy...",
+  "voice.form.hints.label": "Pronunciation hints (optional)",
+  "voice.form.hints.placeholder": "Hard-to-pronounce names or terms",
+
+  "voice.form.rep.label": "Representative number (to transfer calls)",
+  "voice.form.rep.e164Error": "Representative number must be in E.164 format, e.g., +15551234567",
+  "voice.form.rep.e164Hint": "Invalid format. Use E.164: + and 10–15 digits (e.g., +15551234567).",
+  "voice.form.rep.optionalHint": "Leave it empty if you don’t want transfers.",
+
+  "voice.audio.preview": "Voice preview:",
+
+  "voice.links.title": "Useful links (send via SMS)",
+  "voice.links.tipoPh": "Type: book, pay, etc.",
+  "voice.links.nombrePh": "Link name",
+  "voice.links.urlPh": "Destination URL",
+  "voice.links.add": "Add useful link",
+  "voice.links.added": "✅ Link added",
+  "voice.links.addError": "❌ Could not add link",
+  "voice.links.deleted": "Link deleted",
+
+  "voice.saved": "✅ Configuration saved!",
+
+  "voice.history.title": "Call history & emotions",
+  "voice.history.empty": "No voice records yet.",
+  "voice.history.customer": "Customer",
+  "voice.history.bot": "Bot",
+  "voice.history.emotionDetected": "Detected emotion"
 }

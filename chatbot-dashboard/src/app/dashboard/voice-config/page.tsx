@@ -14,8 +14,12 @@ import VoicePlayer from "@/components/VoicePlayer";
 import VoiceMinutesCard from '@/components/VoiceMinutesCard';
 import { useFeatures } from '@/hooks/usePlan';
 import ChannelStatus from "@/components/ChannelStatus";
+import { useI18n } from "@/i18n/LanguageProvider";
+
 
 export default function VoiceConfigPage() {
+  const { t, lang } = useI18n();
+
   const [idioma, setIdioma] = useState("es-ES");
   const tenant = useTenant();
   const tenantId = tenant?.id;
@@ -63,8 +67,8 @@ export default function VoiceConfigPage() {
   const [voiceHints, setVoiceHints] = useState("");    // NEW
 
   const idiomasDisponibles = [
-    { label: "Español", value: "es-ES" },
-    { label: "English", value: "en-US" },
+    { label: t("common.lang.es"), value: "es-ES" },
+    { label: t("common.lang.en"), value: "en-US" },
   ];
 
   const [voiceOptions, setVoiceOptions] = useState<{ label: string; value: string }[]>([]);
@@ -286,7 +290,7 @@ export default function VoiceConfigPage() {
       const data = await res.json().catch(() => null);
 
       if (res.ok) {
-        toast.success("✅ Link agregado");
+        toast.success(t("voice.links.added"));
         setNuevoLink({ tipo: "", nombre: "", url: "" });
         if (data && Array.isArray(data)) {
           setLinksUtiles(data);
@@ -297,7 +301,7 @@ export default function VoiceConfigPage() {
         }
       } else {
         console.error("POST /api/voice-links error:", res.status, data);
-        toast.error("❌ Error al agregar link útil");
+        toast.error(t("voice.links.addError"));
       }
     } catch (err) {
       console.error("Error al agregar link:", err);
@@ -311,7 +315,7 @@ export default function VoiceConfigPage() {
         credentials: "include",
       });
       if (res.ok) {
-        toast.info("Link eliminado");
+        toast.info(t("voice.links.deleted"));
         setLinksUtiles((prev) => prev.filter((l) => l.id !== id));
       }
     } catch (err) {
@@ -323,7 +327,7 @@ export default function VoiceConfigPage() {
     e.preventDefault();
     if (!e164Ok) {
       setRepTouched(true); // muestra el error si aún no tocó el input
-      toast.error("El número de representante debe estar en formato E.164, ej: +15551234567");
+      toast.error(t("voice.form.rep.e164Error"));
       return;
     }
 
@@ -364,13 +368,13 @@ export default function VoiceConfigPage() {
       }
 
       if (res.ok) {
-        toast.success("✅ ¡Configuración guardada!");
+        toast.success(t("voice.saved"));
       } else {
-        toast.error("❌ Algo salió mal.");
+        toast.error(t("common.somethingWentWrong"));
       }
     } catch (err) {
       console.error("Error al guardar:", err);
-      alert("⚠️ Error inesperado.");
+      alert(t("common.unexpectedError"));
     }
   };
 
@@ -486,9 +490,9 @@ export default function VoiceConfigPage() {
           className="text-green-400 animate-pulse sm:size-9"
         />
         <span>
-          Configuración del Asistente
+          {t("voice.title")}
           <br className="sm:hidden" />
-          de Voz
+          {t("voice.titleSuffix")}
         </span>
       </h1>
 
@@ -502,12 +506,12 @@ export default function VoiceConfigPage() {
       {/* 🎁 Caso 1: nunca usó trial → invitar a activar */}
       {trialDisponible && !canEdit && (
         <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-sm text-center">
-          🎁 <strong>Activa tu prueba gratis</strong> para configurar tu Asistente de Voz.
+          🎁 <strong>{t("voice.trial.ctaTitle")}</strong> {t("voice.trial.ctaBody")}
           <button
             onClick={() => router.push('/upgrade')}
             className="ml-3 inline-flex items-center px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-700 text-white"
           >
-            Activar prueba gratis
+            {t("voice.trial.activate")}
           </button>
         </div>
       )}
@@ -515,19 +519,19 @@ export default function VoiceConfigPage() {
       {/* 🟡 Caso 2: trial activo sin plan pago → permitir edición */}
       {!tieneMembresia && trialActivo && (
         <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-100 rounded text-sm text-center">
-          🟡 Estás en <strong>prueba gratis</strong>. Puedes configurar Voz.
+          🟡 {t("voice.trial.active")}
         </div>
       )}
 
       {/* 🔴 Caso 3: sin plan ni trial → bloqueado */}
       {!canEdit && !trialDisponible && !trialActivo && (
         <div className="mb-6 p-4 bg-red-500/20 border border-red-400 text-red-100 rounded text-sm text-center">
-          🚫 Tu membresía está inactiva. No puedes guardar cambios.
+          🚫 {t("voice.membership.inactive")}
           <button
             onClick={() => router.push("/upgrade")}
             className="ml-3 inline-flex items-center px-3 py-1.5 rounded bg-red-600 hover:bg-red-700 text-white"
           >
-            Activar plan
+            {t("voice.membership.activate")}
           </button>
         </div>
       )}
@@ -548,7 +552,7 @@ export default function VoiceConfigPage() {
               ? "bg-purple-600 text-white"
               : "bg-gray-200 text-gray-900 hover:bg-gray-300"
           }`}
-          title={disabledAll ? "Bloqueado por tu plan" : ""}
+          title={disabledAll ? t("common.blockedByPlan") : ""}
           aria-pressed={idioma === lang.value}
         >
           {lang.label}
@@ -558,7 +562,7 @@ export default function VoiceConfigPage() {
 
       {!tieneMembresia && !trialActivo && (
         <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-6 text-sm border border-yellow-400">
-          ⚠️ Tu membresía está inactiva. Puedes visualizar la configuración, pero no puedes guardar ni generar cambios hasta activarla.
+          ⚠️ {t("voice.membership.viewOnly")}
         </div>
       )}
 
@@ -576,24 +580,24 @@ export default function VoiceConfigPage() {
 
         <div className="grid grid-cols-1 gap-6 mb-6">
           <div>
-            <label className="block text-white font-semibold mb-1">¿Qué debe hacer tu asistente?</label>
+            <label className="block text-white font-semibold mb-1">{t("voice.form.funciones.label")}</label>
             <textarea
               name="funciones_asistente"
               value={funcionesVoz}
               onChange={(e) => setFuncionesVoz(e.target.value)}
               rows={3}
-              placeholder="Ejemplo: Atender llamadas, agendar citas..."
+              placeholder={t("voice.form.funciones.placeholder")}
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
           </div>
           <div>
-            <label className="block text-white font-semibold mb-1">Información clave sobre tu negocio</label>
+            <label className="block text-white font-semibold mb-1">{t("voice.form.infoClave.label")}</label>
             <textarea
               name="info_clave"
               value={infoClaveVoz}
               onChange={(e) => setInfoClaveVoz(e.target.value)}
               rows={3}
-              placeholder="Ejemplo: servicios, precios, ubicación..."
+              placeholder={t("voice.form.infoClave.placeholder")}
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
           </div>
@@ -613,44 +617,44 @@ export default function VoiceConfigPage() {
 
         <div className="grid grid-cols-1 gap-6 mt-6">
           <div>
-            <label className="block text-white font-semibold mb-1">Instrucciones de Voz generadas</label>
+            <label className="block text-white font-semibold mb-1">{t("voice.form.prompt.label")}</label>
             <textarea
               name="system_prompt"
               value={promptVoz}
               onChange={(e) => setPromptVoz(e.target.value)}
               rows={6}
-              placeholder="Este es el comportamiento del asistente..."
+              placeholder={t("voice.form.prompt.placeholder")}
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
           </div>
 
           <div>
-            <label className="block text-white font-semibold mb-1">Mensaje de bienvenida</label>
+            <label className="block text-white font-semibold mb-1">{t("voice.form.welcome.label")}</label>
             <input
               type="text"
               name="welcome_message"
               value={bienvenidaVoz}
               onChange={(e) => setBienvenidaVoz(e.target.value)}
-              placeholder="Hola, soy Amy..."
+              placeholder={t("voice.form.welcome.placeholder")}
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
 
             <input type="hidden" name="voice_name" value={voiceName || "alice"} 
             />
 
-            <label className="block text-white font-semibold mt-4 mb-1">Hints de pronunciación (opcional)</label>
+            <label className="block text-white font-semibold mt-4 mb-1">{t("voice.form.hints.label")}</label>
             <input
               type="text"
               name="voice_hints"
               value={voiceHints}
               onChange={(e) => setVoiceHints(e.target.value)}
-              placeholder="Nombres o términos difíciles de pronunciar"
+              placeholder={t("voice.form.hints.placeholder")}
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
           </div>
             <div className="mt-6">
               <label className="block text-white font-semibold mb-1">
-                Número de representante (para transferir llamadas)
+                {t("voice.form.rep.label")}
               </label>
               <input
                 type="tel"
@@ -669,25 +673,25 @@ export default function VoiceConfigPage() {
               />
               {!e164Ok && repTouched && (
                 <p className="text-red-400 text-sm mt-1">
-                  Formato inválido. Usa E.164: + y 10–15 dígitos (ej: +15551234567).
+                  {t("voice.form.rep.e164Hint")}
                 </p>
               )}
               <p className="text-xs text-white/70 mt-1">
-                Déjalo vacío si no quieres transferencias.
+                {t("voice.form.rep.optionalHint")}
               </p>
             </div>
         </div>
 
         {audioDemoUrl && (
           <div className="mt-6">
-            <label className="block mb-2 font-semibold text-white">Vista previa de la voz:</label>
+            <label className="block mb-2 font-semibold text-white">{t("voice.audio.preview")}</label>
             <VoicePlayer url={audioDemoUrl} />
           </div>
         )}
 
         <div className="mt-10 mb-8">
           <label className="block mb-2 font-semibold text-white flex items-center gap-2">
-            <Link className="text-blue-400" /> Links útiles (enviar por SMS)
+            <Link className="text-blue-400" /> {t("voice.links.title")}
           </label>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -728,7 +732,7 @@ export default function VoiceConfigPage() {
                 : (!canEdit ? (trialDisponible ? "Activa tu prueba gratis" : "Requiere membresía") : "")
             }
           >
-            Agregar link útil
+            {t("voice.links.add")}
           </button>
 
           <ul className="text-white space-y-2">
@@ -760,7 +764,7 @@ export default function VoiceConfigPage() {
                   title={
                     disabledAll
                       ? "Bloqueado por tu plan"
-                      : (!tieneMembresia ? "Requiere membresía" : "Eliminar")
+                      : (!tieneMembresia ? "Requiere membresía" : t("common.delete"))
                   }
                 >
                   ✖
@@ -785,7 +789,7 @@ export default function VoiceConfigPage() {
                   : (!canEdit ? (trialDisponible ? "Activa tu prueba gratis" : "Requiere membresía") : (!e164Ok ? "Teléfono inválido" : ""))
               }
             >
-              Guardar configuración
+              {t("common.save")}
             </button>
           </div>
         </div>
@@ -794,13 +798,13 @@ export default function VoiceConfigPage() {
       <hr className="my-8 border-white/20" />
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
         <Brain className="text-purple-300" />
-        Historial de llamadas y emociones
+        {t("voice.history.title")}
       </h2>
 
       {loadingHistory ? (
-        <div className="text-gray-400 animate-pulse">Cargando historial...</div>
+        <div className="text-gray-400 animate-pulse">{t("common.loading")}</div>
       ) : !Array.isArray(voiceMessages) || voiceMessages.length === 0 ? (
-        <div className="text-gray-400">No hay registros de voz aún.</div>
+        <div className="text-gray-400">{t("voice.history.empty")}</div>
       ) : (
         <div className="space-y-4 max-h-[300px] overflow-y-auto">
           {voiceMessages
@@ -809,22 +813,22 @@ export default function VoiceConfigPage() {
             .map((msg, idx) => (
               <div key={idx} className="bg-white/10 border border-white/20 p-4 rounded-xl backdrop-blur-sm mb-4">
                 <div className="text-sm text-white/70 mb-1">
-                  {new Date(msg.timestamp).toLocaleString()} — {msg.from_number || "anónimo"}
+                  {new Date(msg.timestamp).toLocaleString()} — {msg.from_number || t("common.anonymous")}
                 </div>
                 <div className="font-semibold text-white">
                   {msg.role === "user" ? (
                     <>
-                      <User className="inline-block w-4 h-4 mr-1 text-white/70" /> Cliente: {msg.content}
+                      <User className="inline-block w-4 h-4 mr-1 text-white/70" /> {t("voice.history.customer")}: {msg.content}
                     </>
                   ) : (
                     <>
-                      <Bot className="inline-block w-4 h-4 mr-1 text-white/70" /> Bot: {msg.content}
+                      <Bot className="inline-block w-4 h-4 mr-1 text-white/70" /> {t("voice.history.bot")}: {msg.content}
                     </>
                   )}
                 </div>
                 {msg.role === "user" && msg.emotion && (
                   <div className="text-sm mt-1 text-purple-300">
-                    Emoción detectada: <span className="font-medium">{msg.emotion}</span>
+                    {t("voice.history.emotionDetected")}: <span className="font-medium">{msg.emotion}</span>
                   </div>
                 )}
               </div>
