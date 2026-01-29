@@ -938,6 +938,64 @@
 "onboarding.button.back": "⬅ Volver",
 "onboarding.button.finish": "Finalizar",
 "onboarding.button.saving": "Guardando...",
-"onboarding.error.saving": "Hubo un error guardando los datos."
+"onboarding.error.saving": "Hubo un error guardando los datos.",
+
+"meta.loading": "Cargando configuración...",
+
+"meta.title.line1": "Configuración del Asistente",
+"meta.title.line2": "de Facebook e Instagram",
+
+"meta.subchannels.title": "Activar subcanales",
+"meta.subchannels.facebook.title": "Facebook",
+"meta.subchannels.facebook.desc": "Permite responder mensajes de Facebook.",
+"meta.subchannels.instagram.title": "Instagram",
+"meta.subchannels.instagram.desc": "Permite responder mensajes de Instagram.",
+"meta.subchannels.note": "Si está OFF, el sistema no debe responder ni registrar actividad en ese subcanal.",
+
+"meta.trial.banner.strong": "Activa tu prueba gratis",
+"meta.trial.banner.text": "y comienza a usar el canal Meta.",
+"meta.trial.banner.cta": "Activar prueba gratis",
+
+"meta.trial.active.prefix": "Estás usando la",
+"meta.trial.active.strong": "prueba gratis",
+"meta.trial.active.suffix": ". ¡Aprovecha para configurar tu asistente en Meta!",
+
+"meta.inactive.banner": "Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente en Meta.",
+"meta.inactive.cta": "Activa un plan para continuar.",
+
+"meta.usage.warning.prefix": "Estás utilizando el",
+"meta.usage.warning.middle": "de tu límite mensual",
+"meta.usage.warning.messages": "mensajes",
+"meta.usage.warning.suffix": "Considera actualizar tu plan para evitar interrupciones.",
+
+"meta.integration.title": "Integración con Facebook / Instagram",
+"meta.integration.statusLabel": "Estado:",
+"meta.integration.connected": "Conectado ✅",
+"meta.integration.needsReconnect": "Requiere conexión ⚠️",
+"meta.integration.notConnected": "No conectado",
+"meta.integration.connectBtn": "Conectar Facebook/Instagram",
+"meta.integration.reconnectBtn": "Reconectar Facebook/Instagram",
+"meta.integration.disconnectBtn": "Desconectar",
+"meta.integration.tip": "Tip: el mismo flujo de conexión concede permisos para Página de Facebook y mensajes de Instagram (si tu IG está vinculado a esa Página). Si cambiaste la contraseña de Facebook o Meta invalidó el token, pulsa “Reconectar”.",
+
+"meta.usage.title": "Uso de Facebook / Instagram",
+"meta.usage.of": "de",
+"meta.usage.sent": "mensajes enviados",
+"meta.usage.includes": "Incluye",
+"meta.usage.extraBought": "mensajes extra comprados.",
+
+"meta.form.businessName": "Nombre del negocio",
+"meta.form.lang.es": "Español",
+"meta.form.lang.en": "Inglés",
+"meta.form.welcome": "Mensaje de bienvenida",
+"meta.form.systemPrompt": "Prompt del sistema",
+
+"meta.save.saving": "Guardando...",
+"meta.save.cta": "Guardar configuración",
+
+"meta.preview.title": "Vista previa del Asistente",
+"meta.preview.typing": "El asistente está escribiendo...",
+"meta.preview.placeholder": "Escribe algo...",
+"meta.preview.send": "Enviar"
 }
 

@@ -938,6 +938,64 @@
 "onboarding.button.back": "⬅ Back",
 "onboarding.button.finish": "Finish",
 "onboarding.button.saving": "Saving...",
-"onboarding.error.saving": "There was an error saving your data."
+"onboarding.error.saving": "There was an error saving your data.",
+
+"meta.loading": "Loading settings...",
+
+"meta.title.line1": "Assistant Configuration",
+"meta.title.line2": "for Facebook & Instagram",
+
+"meta.subchannels.title": "Enable subchannels",
+"meta.subchannels.facebook.title": "Facebook",
+"meta.subchannels.facebook.desc": "Allows replying to Facebook messages.",
+"meta.subchannels.instagram.title": "Instagram",
+"meta.subchannels.instagram.desc": "Allows replying to Instagram messages.",
+"meta.subchannels.note": "If OFF, the system must not reply or log activity for that subchannel.",
+
+"meta.trial.banner.strong": "Activate your free trial",
+"meta.trial.banner.text": "and start using the Meta channel.",
+"meta.trial.banner.cta": "Activate free trial",
+
+"meta.trial.active.prefix": "You are using the",
+"meta.trial.active.strong": "free trial",
+"meta.trial.active.suffix": ". Take advantage and configure your assistant on Meta!",
+
+"meta.inactive.banner": "Your membership is inactive. You can't save changes or train the assistant on Meta.",
+"meta.inactive.cta": "Activate a plan to continue.",
+
+"meta.usage.warning.prefix": "You are using",
+"meta.usage.warning.middle": "of your monthly limit",
+"meta.usage.warning.messages": "messages",
+"meta.usage.warning.suffix": "Consider upgrading your plan to avoid interruptions.",
+
+"meta.integration.title": "Facebook / Instagram Integration",
+"meta.integration.statusLabel": "Status:",
+"meta.integration.connected": "Connected ✅",
+"meta.integration.needsReconnect": "Reconnect required ⚠️",
+"meta.integration.notConnected": "Not connected",
+"meta.integration.connectBtn": "Connect Facebook/Instagram",
+"meta.integration.reconnectBtn": "Reconnect Facebook/Instagram",
+"meta.integration.disconnectBtn": "Disconnect",
+"meta.integration.tip": "Tip: the same connection flow grants permissions for a Facebook Page and Instagram messaging (if your IG is linked to that Page). If you changed your Facebook password or Meta invalidated the token, click “Reconnect”.",
+
+"meta.usage.title": "Facebook / Instagram Usage",
+"meta.usage.of": "of",
+"meta.usage.sent": "messages sent",
+"meta.usage.includes": "Includes",
+"meta.usage.extraBought": "extra messages purchased.",
+
+"meta.form.businessName": "Business name",
+"meta.form.lang.es": "Spanish",
+"meta.form.lang.en": "English",
+"meta.form.welcome": "Welcome message",
+"meta.form.systemPrompt": "System prompt",
+
+"meta.save.saving": "Saving...",
+"meta.save.cta": "Save settings",
+
+"meta.preview.title": "Assistant Preview",
+"meta.preview.typing": "Assistant is typing...",
+"meta.preview.placeholder": "Type something...",
+"meta.preview.send": "Send"
 }
 

@@ -14,6 +14,8 @@ import IntentSection, { Intent } from "@/components/IntentSection";
 import { useFeatures } from '@/hooks/usePlan';
 import ChannelStatus from "@/components/ChannelStatus";
 import { MetaPageSelector } from '@/components/MetaPageSelector';
+import { useI18n } from "../../../i18n/LanguageProvider";
+
 
 const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
 
@@ -27,6 +29,8 @@ type MetaConnState = {
 };
 
 export default function MetaConfigPage() {
+  const { t } = useI18n();
+
   const router = useRouter();
   const { loading: loadingPlan, features, esTrial } = useFeatures();
 
@@ -611,7 +615,7 @@ const refreshMetaConn = async () => {
   return <>{typeof content === "string" ? content : String(content?.text ?? content?.mensaje ?? "")}</>;
   };
 
-  if (loading || loadingPlan) return <p className="text-center">Cargando configuración...</p>;
+  if (loading || loadingPlan) return <p className="text-center">{t("meta.loading")}</p>;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
@@ -636,9 +640,9 @@ const refreshMetaConn = async () => {
             className="text-green-400 animate-pulse sm:size-9"
           />
           <span>
-            Configuración del Asistente
+            {t("meta.title.line1")}
             <br className="sm:hidden" />
-            de Facebook e Instagram
+            {t("meta.title.line2")}
           </span>
         </h1>
 
@@ -652,12 +656,12 @@ const refreshMetaConn = async () => {
         {/* ✅ Subcanales Meta: Facebook / Instagram */}
         <div className="mb-4 sm:mb-6 px-3 py-3 sm:p-4 rounded-xl border bg-white/5 border-white/10 text-white">
           <div className="flex flex-col gap-3">
-            <p className="font-semibold">Activar subcanales</p>
+            <p className="font-semibold">{t("meta.subchannels.title")}</p>
 
             <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
               <div>
-                <p className="text-sm font-medium">Facebook</p>
-                <p className="text-xs text-white/60">Permite responder mensajes de Facebook.</p>
+                <p className="text-sm font-medium">{t("meta.subchannels.facebook.title")}</p>
+                <p className="text-xs text-white/60">{t("meta.subchannels.facebook.desc")}</p>
               </div>
 
               <button
@@ -678,8 +682,8 @@ const refreshMetaConn = async () => {
 
             <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
               <div>
-                <p className="text-sm font-medium">Instagram</p>
-                <p className="text-xs text-white/60">Permite responder mensajes de Instagram.</p>
+                <p className="text-sm font-medium">{t("meta.subchannels.instagram.title")}</p>
+                <p className="text-xs text-white/60">{t("meta.subchannels.instagram.desc")}</p>
               </div>
 
               <button
@@ -699,7 +703,7 @@ const refreshMetaConn = async () => {
             </div>
 
             <p className="text-[12px] text-white/60">
-              Si está OFF, el sistema no debe responder ni registrar actividad en ese subcanal.
+              {t("meta.subchannels.note")}
             </p>
           </div>
         </div>
@@ -707,12 +711,12 @@ const refreshMetaConn = async () => {
         {/* 🎁 Caso 1: Nunca usó trial → invitar a activar prueba */}
         {settings?.trial_disponible && !settings?.can_edit && (
           <div className="mb-4 sm:mb-6 px-3 py-2 sm:p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded text-center text-sm sm:text-base font-medium">
-            🎁 <strong>Activa tu prueba gratis</strong> y comienza a usar el canal Meta.
+            🎁 <strong>{t("meta.trial.banner.strong")}</strong> {t("meta.trial.banner.text")}
             <button
               onClick={() => router.push('/upgrade')}
               className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
             >
-              Activar prueba gratis
+              {t("meta.trial.banner.cta")}
             </button>
           </div>
         )}
@@ -720,23 +724,26 @@ const refreshMetaConn = async () => {
         {/* 🟡 Caso 2: Trial activo (permitido editar) → mensaje informativo */}
         {!settings?.membresia_activa && settings?.trial_activo && (
           <div className="mb-4 sm:mb-6 px-3 py-2 sm:p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded text-center text-sm sm:text-base font-medium">
-            🟡 Estás usando la <strong>prueba gratis</strong>. ¡Aprovecha para configurar tu asistente en Meta!
+            🟡 {t("meta.trial.active.prefix")} <strong>{t("meta.trial.active.strong")}</strong> {t("meta.trial.active.suffix")}
           </div>
         )}
 
         {/* 🔴 Caso 3: Sin plan y sin trial → banner inactiva */}
         {!settings?.can_edit && !settings?.trial_disponible && !settings?.trial_activo && (
           <div className="mb-4 sm:mb-6 px-3 py-2 sm:p-4 bg-red-500/20 border border-red-400 text-red-200 rounded text-center text-sm sm:text-base font-medium">
-            🚫 Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente en Meta.{" "}
+            🚫 {t("meta.inactive.banner")}
             <a onClick={() => router.push('/upgrade')} className="underline cursor-pointer">
-              Activa un plan para continuar.
+              {t("meta.inactive.cta")}
             </a>
           </div>
         )}
 
         {usage.porcentaje >= 80 && (
           <div className="mb-4 sm:mb-6 px-3 py-2 sm:p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center text-sm sm:text-base font-medium">
-            ⚠ Estás utilizando el <strong>{usage.porcentaje}%</strong> de tu límite mensual ({usage.used}/{usage.limit} mensajes).<br />Considera actualizar tu plan para evitar interrupciones.
+            ⚠ {t("meta.usage.warning.prefix")}{" "}
+            <strong>{usage.porcentaje}%</strong>{" "}
+            {t("meta.usage.warning.middle")} ({usage.used}/{usage.limit} {t("meta.usage.warning.messages")}).<br />
+            {t("meta.usage.warning.suffix")}
           </div>
         )}
   
@@ -747,14 +754,14 @@ const refreshMetaConn = async () => {
           <div className="flex flex-col gap-2">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="space-y-1">
-                <p className="font-semibold">Integración con Facebook / Instagram</p>
+                <p className="font-semibold">{t("meta.integration.title")}</p>
                 <p className="text-white/80 text-xs">
-                  Estado:{" "}
+                  {t("meta.integration.statusLabel")}
                   {metaConn.connected
-                    ? "Conectado ✅"
+                    ? t("meta.integration.connected")
                     : metaConn.needsReconnect
-                    ? "Requiere conexión ⚠️"
-                    : "No conectado"}
+                    ? t("meta.integration.needsReconnect")
+                    : t("meta.integration.notConnected")}
                 </p>
                 {(metaConn.fb || metaConn.ig) && (
                   <div className="text-white/70 text-xs space-y-1">
@@ -794,7 +801,7 @@ const refreshMetaConn = async () => {
                               : ""
                   }
                 >
-                  {metaConn.connected ? "Reconectar Facebook/Instagram" : "Conectar Facebook/Instagram"}
+                  {metaConn.connected ? t("meta.integration.reconnectBtn") : t("meta.integration.connectBtn")}
                 </button>
 
                 <button
@@ -821,15 +828,13 @@ const refreshMetaConn = async () => {
                               : ""
                   }
                 >
-                  Desconectar
+                  {t("meta.integration.disconnectBtn")}
                 </button>
               </div>
             </div>
 
             <p className="text-[12px] text-white/60">
-              Tip: el mismo flujo de conexión concede permisos para Página de Facebook y mensajes de Instagram (si tu
-              IG está vinculado a esa Página). Si cambiaste la contraseña de Facebook o Meta invalidó el token, pulsa
-              “Reconectar”.
+              {t("meta.integration.tip")}
             </p>
           </div>
         </div>
@@ -839,17 +844,17 @@ const refreshMetaConn = async () => {
         {usoMeta && (
           <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
             <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-              <SiMeta /> Uso de Facebook / Instagram
+              <SiMeta /> {t("meta.usage.title")}
             </h3>
 
             <p className="text-white text-sm mb-2">
-              {usoMeta.usados ?? 0} de {usoMeta.limite} mensajes enviados
+              {usoMeta.usados ?? 0} {t("meta.usage.of")} {usoMeta.limite} {t("meta.usage.sent")}
               {(usoMeta.creditos_extras ?? 0) > 0 && " (incluye créditos extra)"}
             </p>
 
             {(usoMeta.creditos_extras ?? 0) > 0 && (
               <p className="text-green-300 text-sm">
-                Incluye {usoMeta.creditos_extras} mensajes extra comprados.
+                {t("meta.usage.includes")} {usoMeta.creditos_extras} {t("meta.usage.extraBought")}
               </p>
             )}
 
@@ -885,7 +890,7 @@ const refreshMetaConn = async () => {
           name="name"
           value={settings.name}
           readOnly
-          placeholder="Nombre del negocio"
+          placeholder={t("meta.form.businessName")}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
         />
   
@@ -896,8 +901,8 @@ const refreshMetaConn = async () => {
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           disabled={!canMeta}
         >
-          <option value="es">Español</option>
-          <option value="en">Inglés</option>
+          <option value="es">{t("meta.form.lang.es")}</option>
+          <option value="en">{t("meta.form.lang.en")}</option>
         </select>
   
         <PromptGenerator
@@ -917,7 +922,7 @@ const refreshMetaConn = async () => {
           value={settings.bienvenida}
           onChange={handleChange}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          placeholder="Mensaje de bienvenida"
+          placeholder={t("meta.form.welcome")}
           disabled={!canMeta}
         />
   
@@ -927,7 +932,7 @@ const refreshMetaConn = async () => {
           onChange={handleChange}
           rows={3}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          placeholder="Prompt del sistema"
+          placeholder={t("meta.form.systemPrompt")}
           disabled={!canMeta}
         />
   
@@ -941,7 +946,7 @@ const refreshMetaConn = async () => {
           }`}
 
         >
-          <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
+          <Save size={18} /> {saving ? t("meta.save.saving") : t("meta.save.cta")}
         </button>
   
         <FaqSection
@@ -969,7 +974,7 @@ const refreshMetaConn = async () => {
 
         <h3 className="text-lg sm:text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
           <SiMinutemailer className="animate-pulse" size={20} />
-          Vista previa del Asistente
+          {t("meta.preview.title")}
         </h3>
 
           <div
@@ -994,7 +999,7 @@ const refreshMetaConn = async () => {
             ))}
             {isTyping && (
               <div className="max-w-[85%] sm:max-w-[80%] bg-green-400/20 self-start text-left text-xs sm:text-sm text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg italic animate-pulse">
-                El asistente está escribiendo...
+                {t("meta.preview.typing")}
               </div>
             )}
           </div>
@@ -1010,7 +1015,7 @@ const refreshMetaConn = async () => {
                   handleSend();
                 }
               }}              
-              placeholder="Escribe algo..."
+              placeholder={t("meta.preview.placeholder")}
               disabled={!canMeta}
               className="w-full sm:flex-1 border px-3 py-2.5 sm:p-3 rounded bg-white/10 border-white/20 text-white text-sm placeholder-white/50"
             />
@@ -1023,7 +1028,7 @@ const refreshMetaConn = async () => {
                   : "bg-gray-600 text-white/50 cursor-not-allowed"
               }`}
             >
-              Enviar
+              {t("meta.preview.send")}
             </button>
           </div>
         </div>
