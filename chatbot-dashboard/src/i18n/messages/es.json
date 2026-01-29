@@ -866,6 +866,11 @@
 "intents.actions.add": "Agregar intención",
 "intents.actions.save": "Guardar intenciones",
 "intents.actions.confirmDelete": "¿Eliminar la intención \"{{name}}\"?",
-"intents.noName": "(sin nombre)"
+"intents.noName": "(sin nombre)",
+
+"membership.banner.trialText": "¿Primera vez? Prueba gratis por 14 días.",
+"membership.banner.inactiveText": "Tu membresía está inactiva.",
+"membership.banner.tryNow": "Probar ahora",
+"membership.banner.activate": "Activar membresía"
 }
 

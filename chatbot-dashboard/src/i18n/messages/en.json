@@ -866,6 +866,11 @@
 "intents.actions.add": "Add intent",
 "intents.actions.save": "Save intents",
 "intents.actions.confirmDelete": "Delete intent \"{{name}}\"?",
-"intents.noName": "(no name)"
+"intents.noName": "(no name)",
+
+"membership.banner.trialText": "First time? Try it free for 14 days.",
+"membership.banner.inactiveText": "Your membership is inactive.",
+"membership.banner.tryNow": "Start free trial",
+"membership.banner.activate": "Activate membership"
 }
 

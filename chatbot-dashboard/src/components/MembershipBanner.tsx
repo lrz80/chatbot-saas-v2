@@ -1,5 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { useI18n } from "../i18n/LanguageProvider";
+
 
 type Props = {
   membresia_activa: boolean;
@@ -9,16 +11,19 @@ type Props = {
 };
 
 export default function MembershipBanner({ membresia_activa, trial_activo, trial_disponible, estado_texto }: Props) {
+  const { t } = useI18n();
+
   const router = useRouter();
   if (membresia_activa) return null;
 
   const showTrialCta = !membresia_activa && trial_disponible;
-  const text =
-    showTrialCta
-      ? "¿Primera vez? Prueba gratis por 14 días."
-      : (estado_texto || "Tu membresía está inactiva.");
+  const text = showTrialCta
+    ? t("membership.banner.trialText")
+    : (estado_texto || t("membership.banner.inactiveText"));
 
-  const btn = showTrialCta ? "Probar ahora" : "Activar membresía";
+  const btn = showTrialCta
+    ? t("membership.banner.tryNow")
+    : t("membership.banner.activate");
 
   return (
     <div className="mb-4 p-4 rounded-lg border border-yellow-400 bg-yellow-500/10 text-yellow-200 flex items-center justify-between">
