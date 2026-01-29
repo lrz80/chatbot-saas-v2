@@ -830,6 +830,26 @@
 "emailLogs.unauthorized": "⚠️ You are not authorized to view this information.",
 "emailLogs.error": "Error loading logs.",
 "emailLogs.noRecords": "No records yet.",
-"emailLogs.status": "Status"
+"emailLogs.status": "Status",
+
+"faqSection.title": "Frequently Asked Questions",
+"faqSection.filter.placeholder": "Filter by keyword...",
+"faqSection.delete.title": "Delete FAQ",
+"faqSection.fields.question": "Question",
+"faqSection.fields.answer": "Answer",
+"faqSection.add": "+ Add FAQ",
+"faqSection.save": "Save FAQs",
+"faqSection.membershipDisabledTip": "Activate your membership to edit and save.",
+"faqSection.alert.needOneValidFaq": "❌ Add at least one valid FAQ.",
+"faqSection.alert.saveError": "❌ Error saving FAQs.",
+"faqSection.alert.savedOk": "FAQs saved ✅",
+
+"faqSection.suggested.title": "Suggested FAQs",
+"faqSection.suggested.editApprove": "Edit & approve",
+"faqSection.suggested.reject": "Reject",
+
+"faqSection.modal.title": "Edit suggested answer",
+"faqSection.modal.cancel": "Cancel",
+"faqSection.modal.saveApprove": "✅ Save & approve"
 }
 

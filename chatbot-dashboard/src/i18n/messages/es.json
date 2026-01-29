@@ -830,6 +830,26 @@
 "emailLogs.unauthorized": "⚠️ No estás autorizado para ver esta información.",
 "emailLogs.error": "Error al cargar los registros.",
 "emailLogs.noRecords": "No hay registros aún.",
-"emailLogs.status": "Estado"
+"emailLogs.status": "Estado",
+
+"faqSection.title": "Preguntas Frecuentes",
+"faqSection.filter.placeholder": "Filtrar por palabra clave...",
+"faqSection.delete.title": "Eliminar FAQ",
+"faqSection.fields.question": "Pregunta",
+"faqSection.fields.answer": "Respuesta",
+"faqSection.add": "+ Agregar FAQ",
+"faqSection.save": "Guardar FAQs",
+"faqSection.membershipDisabledTip": "Activa tu membresía para editar y guardar.",
+"faqSection.alert.needOneValidFaq": "❌ Agrega al menos una FAQ válida.",
+"faqSection.alert.saveError": "❌ Error al guardar FAQs.",
+"faqSection.alert.savedOk": "Preguntas frecuentes guardadas ✅",
+
+"faqSection.suggested.title": "FAQs sugeridas",
+"faqSection.suggested.editApprove": "Editar y aprobar",
+"faqSection.suggested.reject": "Rechazar",
+
+"faqSection.modal.title": "Editar respuesta sugerida",
+"faqSection.modal.cancel": "Cancelar",
+"faqSection.modal.saveApprove": "✅ Guardar y aprobar"
 }
 
