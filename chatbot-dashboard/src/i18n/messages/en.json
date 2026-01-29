@@ -996,6 +996,36 @@
 "meta.preview.title": "Assistant Preview",
 "meta.preview.typing": "Assistant is typing...",
 "meta.preview.placeholder": "Type something...",
-"meta.preview.send": "Send"
+"meta.preview.send": "Send",
+
+"history.title": "Interaction History",
+
+"history.channels.whatsapp": "WhatsApp",
+"history.channels.facebook": "Facebook",
+"history.channels.instagram": "Instagram",
+"history.channels.voice": "Voice",
+
+"history.filter.label": "Filter by channel:",
+"history.filter.all": "🌐 All",
+"history.filter.whatsapp": "📲 WhatsApp",
+"history.filter.facebook": "💬 Facebook",
+"history.filter.instagram": "📸 Instagram",
+"history.filter.voice": "📞 Voice",
+
+"history.loading": "Loading messages...",
+"history.empty": "No recent messages.",
+
+"history.sender.client": "Client",
+"history.sender.assistant": "Amy",
+"history.sender.unknown": "Unknown",
+"history.sender.anonymous": "anonymous",
+
+"history.emotion.label": "Detected emotion:",
+
+"history.intent.label": "🧠 Detected intent:",
+"history.intent.levelPrefix": "Level",
+
+"history.more.loading": "Loading...",
+"history.more.cta": "Load more"
 }
 

@@ -9,6 +9,8 @@ import { SiWhatsapp, SiFacebook, SiInstagram } from "react-icons/si";
 import { FiGlobe, FiPhoneCall } from "react-icons/fi";
 import type { ReactNode } from "react";
 import { io, Socket } from 'socket.io-client';
+import { useI18n } from "../../../i18n/LanguageProvider";
+
 
 const PAGE_SIZE = 10;
 
@@ -28,6 +30,8 @@ type Msg = {
 const normalizeCanal = (c?: string) => (c || "").toString().trim().toLowerCase();
 
 export default function MessageHistory() {
+  const { t } = useI18n();
+
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -243,41 +247,41 @@ export default function MessageHistory() {
 
         {/* Título principal */}
         <h2 className="text-2xl md:text-3xl font-extrabold mb-6 text-indigo-300 flex items-center gap-2">
-          {currentIcon} Historial de Interacciones
+          {currentIcon} {t("history.title")}
         </h2>
 
         {/* Resumen por canal */}
         <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-lg text-xs sm:text-sm flex flex-wrap gap-4">
-          <span>{canalIcons.whatsapp} WhatsApp ({conteo.whatsapp})</span>
-          <span>{canalIcons.facebook} Facebook ({conteo.facebook})</span>
-          <span>{canalIcons.instagram} Instagram ({conteo.instagram})</span>
-          <span>{canalIcons.voice} Voz ({conteo.voice})</span>
+          <span>{canalIcons.whatsapp} {t("history.channels.whatsapp")} ({conteo.whatsapp})</span>
+          <span>{canalIcons.facebook} {t("history.channels.facebook")} ({conteo.facebook})</span>
+          <span>{canalIcons.instagram} {t("history.channels.instagram")} ({conteo.instagram})</span>
+          <span>{canalIcons.voice} {t("history.channels.voice")} ({conteo.voice})</span>
         </div>
 
         {/* Filtro por canal */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
           <label className="text-sm font-medium text-white sm:mr-2">
-            Filtrar por canal:
+            {t("history.filter.label")}
           </label>
           <select
             value={canal}
             onChange={(e) => setCanal(e.target.value)}
             className="bg-white/10 border border-white/30 text-white px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
           >
-            <option value="">🌐 Todos</option>
-            <option value="whatsapp">📲 WhatsApp</option>
-            <option value="facebook">💬 Facebook</option>
-            <option value="instagram">📸 Instagram</option>
-            <option value="voice">📞 Voz</option>
+            <option value="">{t("history.filter.all")}</option>
+            <option value="whatsapp">{t("history.filter.whatsapp")}</option>
+            <option value="facebook">{t("history.filter.facebook")}</option>
+            <option value="instagram">{t("history.filter.instagram")}</option>
+            <option value="voice">{t("history.filter.voice")}</option>
           </select>
         </div>
 
         {/* Contenido principal */}
         {loading ? (
-          <p className="text-center text-white/60 text-sm">Cargando mensajes...</p>
+          <p className="text-center text-white/60 text-sm">{t("history.loading")}</p>
         ) : messages.length === 0 ? (
           <p className="text-center text-white/50 text-sm">
-            No hay mensajes recientes.
+            {t("history.empty")}
           </p>
         ) : (
           <>
@@ -288,10 +292,10 @@ export default function MessageHistory() {
                 const isBot = msg.role?.toLowerCase() === "assistant";
                 const icono = isUser ? "👤" : isBot ? "🤖" : "❓";
                 const remitente = isUser
-                  ? msg.nombre_cliente || "Cliente"
+                  ? msg.nombre_cliente || t("history.sender.client")
                   : isBot
-                  ? "Amy"
-                  : "Desconocido";
+                  ? t("history.sender.assistant")
+                  : t("history.sender.unknown");
 
                 return (
                   <div
@@ -322,7 +326,7 @@ export default function MessageHistory() {
                           )}
                         </span>
                         <span className="truncate">
-                          {!msg.nombre_cliente ? msg.from_number || "anónimo" : ""}
+                          {!msg.nombre_cliente ? msg.from_number || t("history.sender.anonymous") : ""}
                         </span>
                       </div>
 
@@ -334,7 +338,7 @@ export default function MessageHistory() {
                       {/* Emoción */}
                       {msg.emotion && (
                         <div className="text-purple-300 text-[11px] mt-1">
-                          Emoción detectada:{" "}
+                          {t("history.emotion.label")}
                           <span className="font-semibold">{msg.emotion}</span>
                         </div>
                       )}
@@ -343,9 +347,9 @@ export default function MessageHistory() {
                       {msg.nivel_interes !== undefined &&
                         msg.nivel_interes !== null && (
                           <div className="text-green-300 text-[11px] mt-1">
-                            🧠 Intención detectada:{" "}
+                            {t("history.intent.label")}{" "}
                             <span className="font-semibold">
-                              Nivel {msg.nivel_interes}
+                              {t("history.intent.levelPrefix")} {msg.nivel_interes}
                             </span>
                           </div>
                         )}
@@ -367,7 +371,7 @@ export default function MessageHistory() {
                       : "bg-indigo-500 hover:bg-indigo-600 text-white"
                   }`}
                 >
-                  {loadingMore ? "Cargando..." : "Ver más"}
+                  {loadingMore ? t("history.more.loading") : t("history.more.cta")}
                 </button>
               </div>
             )}
