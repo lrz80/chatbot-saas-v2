@@ -26,6 +26,11 @@ const BASE_EMAIL_LIMIT = 2000;
 
 export default function CampaignsEmailClient() {
   const { t } = useI18n();
+  const locale =
+  typeof document !== "undefined"
+    ? (document.documentElement.lang || navigator.language || "en-US")
+    : "en-US";
+
   const [form, setForm] = useState({
     nombre: "",
     contenido: "",
@@ -1159,7 +1164,7 @@ export default function CampaignsEmailClient() {
                     </div>
                     <div className="text-white/80 mb-1">
                       <SiGooglecalendar className="inline mr-1" />{" "}
-                      {new Date(c.programada_para).toLocaleString("es-ES", {
+                      {new Date(c.programada_para).toLocaleString(locale, {
                         dateStyle: "medium",
                         timeStyle: "short",
                       })}
@@ -1270,7 +1275,7 @@ export default function CampaignsEmailClient() {
                   <div className="mt-4 border-t border-white/10 pt-3 text-xs text-white/80">
                     {t("emailCampaigns.history.details")}{" "}
                     <span className="text-white font-semibold">
-                      {new Date(c.programada_para).toLocaleString("es-ES", {
+                      {new Date(c.programada_para).toLocaleString(locale, {
                         dateStyle: "long",
                         timeStyle: "short",
                       })}
