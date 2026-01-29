@@ -869,7 +869,7 @@ export default function CampaignsSmsClient() {
         name="nombre"
         value={form.nombre}
         onChange={handleChange}
-        placeholder="Nombre de la campaña"
+        placeholder={t("campaigns.placeholder.name")}
         className="w-full mb-4 p-2 rounded bg-white/10 border border-white/20"
       />
 
