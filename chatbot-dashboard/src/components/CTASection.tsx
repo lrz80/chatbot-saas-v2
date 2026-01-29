@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
-import { useI18n } from "../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 
 type CTA = { id?: number; intent: string; cta_text: string; cta_url: string; canal?: string };

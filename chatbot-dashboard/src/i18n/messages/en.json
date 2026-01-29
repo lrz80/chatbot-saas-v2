@@ -1026,6 +1026,52 @@
 "history.intent.levelPrefix": "Level",
 
 "history.more.loading": "Loading...",
-"history.more.cta": "Load more"
-}
+"history.more.cta": "Load more",
 
+"followup.loadingConfig": "Loading settings...",
+"followup.title": "Lead Follow-up",
+
+"followup.subchannels.title": "Enable follow-up subchannels",
+"followup.subchannels.hint": "If it's OFF, the system must not send automated follow-ups on that channel.",
+"followup.subchannels.whatsapp.title": "WhatsApp",
+"followup.subchannels.whatsapp.desc": "Allows sending automated follow-ups via WhatsApp.",
+"followup.subchannels.facebook.title": "Facebook",
+"followup.subchannels.facebook.desc": "Allows sending automated follow-ups via Facebook.",
+"followup.subchannels.instagram.title": "Instagram",
+"followup.subchannels.instagram.desc": "Allows sending automated follow-ups via Instagram.",
+
+"followup.usage.title": "Lead Follow-up (Follow-up)",
+"followup.usage.of": "of",
+"followup.usage.done": "follow-ups sent",
+"followup.usage.includesExtra": "includes extra credits",
+"followup.usage.includes": "Includes",
+"followup.usage.extraBought": "extra follow-ups purchased.",
+
+"followup.savedOk": "Settings saved successfully!",
+
+"followup.wait.title": "Follow-up Wait Time",
+"followup.wait.hours": "Hours:",
+
+"followup.messages.title": "Custom Follow-up Messages",
+"followup.messages.low": "Low level (1) — Low interest / curious:",
+"followup.messages.mid": "Medium level (2) — Asking for info:",
+"followup.messages.high": "High level (3) — Clear buying intent:",
+
+"followup.saveCta": "Save Settings",
+
+"followup.sent.title": "Sent Follow-ups",
+"followup.sent.reloading": "Reloading...",
+"followup.sent.reload": "Reload",
+"followup.sent.loading": "Loading sent messages...",
+"followup.sent.empty": "No follow-up messages have been sent yet.",
+
+"followup.buy.errorStart": "Error starting purchase.",
+"followup.buy.errorProcess": "Error processing purchase.",
+
+"common.on": "ON",
+"common.off": "OFF",
+
+"followup.errors.loadConfig": "Failed to load settings",
+"followup.errors.loadSent": "Failed to load sent messages",
+"followup.errors.save": "Failed to save settings"
+}

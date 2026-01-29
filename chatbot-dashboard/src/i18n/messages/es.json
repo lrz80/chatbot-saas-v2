@@ -1026,6 +1026,52 @@
 "history.intent.levelPrefix": "Nivel",
 
 "history.more.loading": "Cargando...",
-"history.more.cta": "Ver más"
-}
+"history.more.cta": "Ver más",
 
+"followup.loadingConfig": "Cargando configuración...",
+"followup.title": "Seguimiento de Leads",
+
+"followup.subchannels.title": "Activar subcanales de seguimiento",
+"followup.subchannels.hint": "Si está OFF, el sistema no debe enviar seguimientos automáticos en ese canal.",
+"followup.subchannels.whatsapp.title": "WhatsApp",
+"followup.subchannels.whatsapp.desc": "Permite enviar seguimientos automáticos por WhatsApp.",
+"followup.subchannels.facebook.title": "Facebook",
+"followup.subchannels.facebook.desc": "Permite enviar seguimientos automáticos por Facebook.",
+"followup.subchannels.instagram.title": "Instagram",
+"followup.subchannels.instagram.desc": "Permite enviar seguimientos automáticos por Instagram.",
+
+"followup.usage.title": "Seguimiento de Leads (Follow-up)",
+"followup.usage.of": "de",
+"followup.usage.done": "seguimientos realizados",
+"followup.usage.includesExtra": "incluye créditos extra",
+"followup.usage.includes": "Incluye",
+"followup.usage.extraBought": "seguimientos extra comprados.",
+
+"followup.savedOk": "¡Configuración guardada exitosamente!",
+
+"followup.wait.title": "Tiempo de Espera para Seguimiento",
+"followup.wait.hours": "Horas:",
+
+"followup.messages.title": "Mensajes Personalizados de Seguimiento",
+"followup.messages.low": "Nivel Bajo (1) — Interés bajo / curioso:",
+"followup.messages.mid": "Nivel Medio (2) — Pidiendo información:",
+"followup.messages.high": "Nivel Alto (3) — Intención clara de compra:",
+
+"followup.saveCta": "Guardar Configuración",
+
+"followup.sent.title": "Seguimientos Enviados",
+"followup.sent.reloading": "Recargando...",
+"followup.sent.reload": "Recargar",
+"followup.sent.loading": "Cargando mensajes enviados...",
+"followup.sent.empty": "Aún no se han enviado mensajes de seguimiento.",
+
+"followup.buy.errorStart": "Error al iniciar la compra.",
+"followup.buy.errorProcess": "Error al procesar la compra.",
+
+"common.on": "ON",
+"common.off": "OFF",
+
+"followup.errors.loadConfig": "Error al cargar configuración",
+"followup.errors.loadSent": "Error al cargar mensajes enviados",
+"followup.errors.save": "Error al guardar configuración"
+}

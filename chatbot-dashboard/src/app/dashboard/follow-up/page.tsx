@@ -6,8 +6,12 @@ import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 import { SiSpeedtest } from 'react-icons/si';
 import { Clock3, Mail, SendHorizonal } from 'lucide-react';
+import { useI18n } from "@/i18n/LanguageProvider";
+
 
 export default function FollowUpSettingsPage() {
+  const { t } = useI18n();
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [horasEspera, setHorasEspera] = useState<number>(0);
@@ -38,7 +42,7 @@ export default function FollowUpSettingsPage() {
       const res = await fetch(`${BACKEND_URL}/api/follow-up-settings`, {
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Error al cargar configuración');
+      if (!res.ok) throw new Error(t("followup.errors.loadConfig"));
 
       const data = await res.json();
       if (data) {
@@ -63,7 +67,7 @@ export default function FollowUpSettingsPage() {
         `${BACKEND_URL}/api/follow-up/sent-messages?status=sent&limit=100`,
         { credentials: 'include' }
       );
-      if (!res.ok) throw new Error('Error al cargar mensajes enviados');
+      if (!res.ok) throw new Error(t("followup.errors.loadSent"));
 
       const data = await res.json();
       // ✅ El backend devuelve { items, page, total, ... }
@@ -105,13 +109,11 @@ export default function FollowUpSettingsPage() {
         }),
       });
 
-      if (!res.ok) throw new Error('Error al guardar configuración');
+      if (!res.ok) throw new Error(t("followup.errors.save"));
       await fetchSettings(); // ✅ recarga desde DB inmediatamente
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 4000);
 
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 4000);
     } catch (error) {
       console.error('❌ Error al guardar configuración:', error);
     } finally {
@@ -146,11 +148,11 @@ export default function FollowUpSettingsPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert("❌ Error al iniciar la compra.");
+        alert(`❌ ${t("followup.buy.errorStart")}`);
       }
     } catch (error) {
       console.error("❌ Error al procesar la compra:", error);
-      alert("❌ Error al procesar la compra.");
+      alert(`❌ ${t("followup.buy.errorProcess")}`);
     }
   };
 
@@ -224,7 +226,7 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
-    return <div className="text-white p-10">Cargando configuración...</div>;
+    return <div className="text-white p-10">{t("followup.loadingConfig")}</div>;
   }
 
   return (
@@ -247,9 +249,7 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
           size={28}
           className="text-green-400 animate-pulse sm:size-9"
         />
-        <span>
-          Seguimiento de Leads
-        </span>
+        <span>{t("followup.title")}</span>
       </h1>
 
       {/* ✅ Activar subcanales de Follow-up (clon de Meta Config) */}
@@ -257,18 +257,16 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
   <div className="flex flex-col gap-2">
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
       <div className="space-y-1">
-        <p className="font-semibold">Activar subcanales de seguimiento</p>
-        <p className="text-white/70 text-xs">
-          Si está OFF, el sistema no debe enviar seguimientos automáticos en ese canal.
-        </p>
+        <p className="font-semibold">{t("followup.subchannels.title")}</p>
+        <p className="text-white/70 text-xs">{t("followup.subchannels.hint")}</p>
       </div>
     </div>
 
     {/* WhatsApp */}
     <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
       <div className="space-y-0.5">
-        <p className="font-semibold">WhatsApp</p>
-        <p className="text-white/70 text-xs">Permite enviar seguimientos automáticos por WhatsApp.</p>
+        <p className="font-semibold">{t("followup.subchannels.whatsapp.title")}</p>
+        <p className="text-white/70 text-xs">{t("followup.subchannels.whatsapp.desc")}</p>
       </div>
 
       <button
@@ -280,17 +278,17 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
             ? "bg-green-600 hover:bg-green-700"
             : "bg-white/10 hover:bg-white/20 border border-white/20"
         } ${followupLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-        title={followupLoading ? "Cargando..." : ""}
+        title={followupLoading ? t("common.loading") : ""}
       >
-        {followupFlags.followup_whatsapp_enabled ? "ON" : "OFF"}
+        {followupFlags.followup_whatsapp_enabled ? t("common.on") : t("common.off")}
       </button>
     </div>
 
     {/* Facebook */}
     <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
       <div className="space-y-0.5">
-        <p className="font-semibold">Facebook</p>
-        <p className="text-white/70 text-xs">Permite enviar seguimientos automáticos por Facebook.</p>
+        <p className="font-semibold">{t("followup.subchannels.facebook.title")}</p>
+        <p className="text-white/70 text-xs">{t("followup.subchannels.facebook.desc")}</p>
       </div>
 
       <button
@@ -302,17 +300,17 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
             ? "bg-green-600 hover:bg-green-700"
             : "bg-white/10 hover:bg-white/20 border border-white/20"
         } ${followupLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-        title={followupLoading ? "Cargando..." : ""}
+        title={followupLoading ? t("common.loading") : ""}
       >
-        {followupFlags.followup_facebook_enabled ? "ON" : "OFF"}
+        {followupFlags.followup_facebook_enabled ? t("common.on") : t("common.off")}
       </button>
     </div>
 
         {/* Instagram */}
         <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
           <div className="space-y-0.5">
-            <p className="font-semibold">Instagram</p>
-            <p className="text-white/70 text-xs">Permite enviar seguimientos automáticos por Instagram.</p>
+            <p className="font-semibold">{t("followup.subchannels.instagram.title")}</p>
+            <p className="text-white/70 text-xs">{t("followup.subchannels.instagram.desc")}</p>
           </div>
 
           <button
@@ -324,9 +322,9 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
                 ? "bg-green-600 hover:bg-green-700"
                 : "bg-white/10 hover:bg-white/20 border border-white/20"
             } ${followupLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-            title={followupLoading ? "Cargando..." : ""}
+            title={followupLoading ? t("common.loading") : ""}
           >
-            {followupFlags.followup_instagram_enabled ? "ON" : "OFF"}
+            {followupFlags.followup_instagram_enabled ? t("common.on") : t("common.off")}
           </button>
         </div>
       </div>
@@ -335,17 +333,17 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
       {usoFollowup && (
         <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
           <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-            <SiSpeedtest /> Seguimiento de Leads (Follow-up)
+            <SiSpeedtest /> {t("followup.usage.title")}
           </h3>
 
           <p className="text-white text-sm mb-2">
-            {usoFollowup.usados ?? 0} de {usoFollowup.limite} seguimientos realizados
-            {(usoFollowup.creditos_extras ?? 0) > 0 && " (incluye créditos extra)"}
+            {usoFollowup.usados ?? 0} {t("followup.usage.of")} {usoFollowup.limite} {t("followup.usage.done")}
+            {(usoFollowup.creditos_extras ?? 0) > 0 && ` (${t("followup.usage.includesExtra")})`}
           </p>
 
           {(usoFollowup.creditos_extras ?? 0) > 0 && (
             <p className="text-green-300 text-sm">
-              Incluye {usoFollowup.creditos_extras} seguimientos extra comprados.
+              {t("followup.usage.includes")} {usoFollowup.creditos_extras} {t("followup.usage.extraBought")}
             </p>
           )}
 
@@ -379,19 +377,19 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
 
       {showSuccess && (
         <div className="bg-green-600/90 border border-green-400 text-white px-4 py-3 rounded-xl mb-8 text-center font-medium animate-pulse">
-          ✅ ¡Configuración guardada exitosamente!
+          ✅ {t("followup.savedOk")}
         </div>
       )}
 
       {/* Configuración de Seguimiento */}
       <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl mb-8 shadow-md">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <Clock3 className="text-purple-300" /> Tiempo de Espera para Seguimiento
+          <Clock3 className="text-purple-300" /> {t("followup.wait.title")}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm mb-2 font-semibold text-purple-200">Horas:</label>
+            <label className="block text-sm mb-2 font-semibold text-purple-200">{t("followup.wait.hours")}</label>
             <input
               type="number"
               min="0"
@@ -411,12 +409,12 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
       {/* Mensajes de Seguimiento */}
       <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl shadow-md space-y-6">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <Mail className="text-purple-300" /> Mensajes Personalizados de Seguimiento
+          <Mail className="text-purple-300" /> {t("followup.messages.title")}
         </h2>
 
         <div>
           <label className="block text-sm mb-2 font-semibold text-purple-200">
-            Nivel Bajo (1) — Interés bajo / curioso:
+            {t("followup.messages.low")}
           </label>
           <textarea
             value={mensajeNivelBajo}
@@ -428,7 +426,7 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
 
         <div>
           <label className="block text-sm mb-2 font-semibold text-purple-200">
-            Nivel Medio (2) — Pidiendo información:
+            {t("followup.messages.mid")}
           </label>
           <textarea
             value={mensajeNivelMedio}
@@ -440,7 +438,7 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
 
         <div>
           <label className="block text-sm mb-2 font-semibold text-purple-200">
-            Nivel Alto (3) — Intención clara de compra:
+            {t("followup.messages.high")}
           </label>
           <textarea
             value={mensajeNivelAlto}
@@ -462,7 +460,7 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
             disabled={saving}
             className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-full text-white font-bold w-full transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? 'Guardando...' : 'Guardar Configuración'}
+            {saving ? t("common.saving") : t("followup.saveCta")}
           </button>
         </div>
       </section>
@@ -471,21 +469,21 @@ async function toggleFollowup(canal: "whatsapp" | "facebook" | "instagram") {
       <section className="bg-gradient-to-r from-purple-800/20 to-fuchsia-600/10 border border-purple-600/30 backdrop-blur-md p-6 rounded-2xl shadow-md mt-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <SendHorizonal className="text-purple-300" /> Seguimientos Enviados
+            <SendHorizonal className="text-purple-300" /> {t("followup.sent.title")}
           </h2>
           <button
             onClick={handleReloadMensajes}
             className="text-xs px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded-full font-semibold transition-all disabled:opacity-50"
             disabled={reloadingMensajes}
           >
-            {reloadingMensajes ? 'Recargando...' : 'Recargar'}
+            {reloadingMensajes ? t("followup.sent.reloading") : t("followup.sent.reload")}
           </button>
         </div>
 
         {loadingMensajes ? (
-          <p className="text-white/50 animate-pulse">Cargando mensajes enviados...</p>
+          <p className="text-white/50 animate-pulse">{t("followup.sent.loading")}</p>
         ) : mensajesEnviados.length === 0 ? (
-          <p className="text-white/50">Aún no se han enviado mensajes de seguimiento.</p>
+          <p className="text-white/50">{t("followup.sent.empty")}</p>
         ) : (
           <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {mensajesEnviados.map((m) => {

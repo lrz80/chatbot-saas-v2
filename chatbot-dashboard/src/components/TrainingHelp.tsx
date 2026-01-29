@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Mic, ChevronDown, ChevronUp, Check, Copy, Search, Sparkles, Link2, Info } from "lucide-react";
 import { SiMeta, SiWhatsapp } from "react-icons/si";
 import { FaSms, FaEnvelope } from "react-icons/fa";
-import { useI18n } from "../i18n/LanguageProvider";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 interface Props {
   context: "training" | "meta" | "voice" | "campaign-sms" | "campaign-email";
