@@ -1,9 +1,8 @@
-// ✅ src/components/VoicePromptGenerator.tsx
-
 "use client";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { BACKEND_URL } from "@/utils/api";
+import { useI18n } from "@/i18n/LanguageProvider"; // ✅ ADD
 
 interface Props {
   idioma: string;
@@ -22,12 +21,13 @@ export default function VoicePromptGenerator({
   onGenerate,
   disabled = false,
 }: Props) {
+  const { t } = useI18n(); // ✅ ADD
   const [loading, setLoading] = useState(false);
-  const [modoResumenSMS, setModoResumenSMS] = useState(true); // 👈 nuevo toggle
+  const [modoResumenSMS, setModoResumenSMS] = useState(true);
 
   const handleGenerate = async () => {
     if (!funciones.trim() || !infoClave.trim()) {
-      toast.warn("Por favor completa ambos campos antes de generar el prompt.");
+      toast.warn(t("voicePromptGen.warn.fillBoth")); // ✅ i18n
       return;
     }
 
@@ -43,7 +43,7 @@ export default function VoicePromptGenerator({
           categoria,
           funciones_asistente: funciones.trim(),
           info_clave: infoClave.trim(),
-          modo_resumen_sms: modoResumenSMS, // 👈 enviamos la bandera
+          modo_resumen_sms: modoResumenSMS,
         }),
       });
 
@@ -51,12 +51,12 @@ export default function VoicePromptGenerator({
 
       if (res.ok) {
         onGenerate(data.prompt, data.bienvenida);
-        toast.success("✅ Prompt generado automáticamente");
+        toast.success(t("voicePromptGen.toast.success")); // ✅ i18n
       } else {
-        toast.error(data.error || "❌ No se pudo generar el prompt.");
+        toast.error(data.error || t("voicePromptGen.toast.error.generate")); // ✅ i18n fallback
       }
     } catch (err) {
-      toast.error("❌ Error al conectar con el servidor.");
+      toast.error(t("voicePromptGen.toast.error.server")); // ✅ i18n
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,6 @@ export default function VoicePromptGenerator({
 
   return (
     <div className="flex items-center gap-3">
-      {/* Toggle UI */}
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
@@ -73,7 +72,7 @@ export default function VoicePromptGenerator({
           onChange={(e) => setModoResumenSMS(e.target.checked)}
           disabled={disabled}
         />
-        Respuestas breves y ofrecer SMS con link
+        {t("voicePromptGen.toggle.label")} {/* ✅ i18n */}
       </label>
 
       <button
@@ -81,7 +80,7 @@ export default function VoicePromptGenerator({
         disabled={loading || disabled}
         className="bg-blue-600 text-white px-4 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? "Generando..." : "Generar Instrucciones de voz"}
+        {loading ? t("voicePromptGen.button.loading") : t("voicePromptGen.button.idle")} {/* ✅ i18n */}
       </button>
     </div>
   );

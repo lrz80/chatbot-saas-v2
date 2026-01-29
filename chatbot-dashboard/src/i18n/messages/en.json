@@ -1292,5 +1292,13 @@
   
   "voiceConfig.placeholder.type": "Type: booking, payment, etc.",
   "voiceConfig.placeholder.name": "Link name",
-  "voiceConfig.placeholder.url": "Target URL"
+  "voiceConfig.placeholder.url": "Target URL",
+  
+  "voicePromptGen.warn.fillBoth": "Please complete both fields before generating the prompt.",
+  "voicePromptGen.toggle.label": "Short replies and offer SMS with a link",
+  "voicePromptGen.button.loading": "Generating...",
+  "voicePromptGen.button.idle": "Generate Voice Instructions",
+  "voicePromptGen.toast.success": "✅ Prompt generated successfully",
+  "voicePromptGen.toast.error.generate": "❌ Couldn't generate the prompt.",
+  "voicePromptGen.toast.error.server": "❌ Error connecting to the server."
 }
