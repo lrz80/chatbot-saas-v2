@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { SiTarget, SiPaperspace, SiChatbot } from "react-icons/si";
 import { BACKEND_URL } from "@/utils/api";
+import { useI18n } from "../i18n/LanguageProvider";
 
 export type Intent = {
   id?: number | string;
@@ -27,6 +28,8 @@ export default function IntentSection({
   membresiaActiva,
   onSave,
 }: Props) {
+  const { t } = useI18n();
+
   const canEdit = membresiaActiva;
   const newId = () =>
     (globalThis?.crypto?.randomUUID?.() ?? `tmp_${Date.now()}_${Math.random()}`);
@@ -63,7 +66,7 @@ export default function IntentSection({
 
  const deleteIntent = async (id?: string | number, nombre?: string) => {
     if (!canEdit) return;
-    if (!confirm(`¿Eliminar la intención "${nombre || "(sin nombre)"}"?`)) return;
+    if (!confirm(t("intents.actions.confirmDelete", { name: nombre || t("intents.noName") }))) return;
 
     const isTmp = typeof id === "string" && id.startsWith("tmp_");
 
@@ -126,14 +129,12 @@ export default function IntentSection({
   return (
     <section className="mt-12">
       <h3 className="text-xl font-bold mb-2 text-blue-400 flex items-center gap-2">
-        Entrenamiento por Intención
+        {t("intents.title")}
       </h3>
       <p className="text-sm text-white/70 mb-4">
-        Define intenciones con ejemplos y una respuesta predefinida para
-        mejorar la precisión del asistente en el canal <strong>{canal}</strong>.
+        {t("intents.description1")} <strong>{canal}</strong>.
         <br />
-        <strong>Ejemplo:</strong> Intención: <em>reservar</em> | Ejemplos:
-        “Quiero agendar”, “Reserva para hoy” | Respuesta: “¡Claro! ¿Qué día prefieres?”
+        <strong>{t("intents.exampleTitle")}</strong> {t("intents.exampleText")}
       </p>
 
       {intents.map((item, i) => (
@@ -142,7 +143,7 @@ export default function IntentSection({
           className="mb-6 bg-white/10 border border-white/20 p-4 rounded-lg"
         >
           <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
-            <SiTarget /> Intención
+            <SiTarget /> {t("intents.field.name")}
           </label>
           <input
             type="text"
@@ -153,7 +154,7 @@ export default function IntentSection({
           />
 
           <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
-            <SiPaperspace /> Frases de ejemplo (una por línea)
+            <SiPaperspace /> {t("intents.field.examples")}
           </label>
           <textarea
             className="w-full p-2 border rounded mb-2 bg-white/10 border-white/20 text-white"
@@ -164,7 +165,7 @@ export default function IntentSection({
           />
 
           <label className="block text-sm font-semibold mb-1 flex items-center gap-2">
-            <SiChatbot /> Respuesta del Asistente
+            <SiChatbot /> {t("intents.field.response")}
           </label>
           <textarea
             className="w-full p-2 border rounded bg-white/10 border-white/20 text-white"
@@ -186,7 +187,7 @@ export default function IntentSection({
               }`}
               title="Duplicar intención"
             >
-              Duplicar
+              {t("intents.actions.duplicate")}
             </button>
 
             <button
@@ -200,7 +201,7 @@ export default function IntentSection({
               }`}
               title="Eliminar intención"
             >
-              Eliminar
+              {t("intents.actions.delete")}
             </button>
           </div>
         </div>
@@ -217,7 +218,7 @@ export default function IntentSection({
               : "bg-gray-600 text-white/50 cursor-not-allowed"
           }`}
         >
-          ➕ Agregar intención
+          ➕ {t("intents.actions.add")}
         </button>
 
         <button
@@ -230,7 +231,7 @@ export default function IntentSection({
               : "bg-gray-600 text-white/50 cursor-not-allowed"
           }`}
         >
-          Guardar Intenciones ({total})
+          {t("intents.actions.save")} ({total})
         </button>
       </div>
     </section>

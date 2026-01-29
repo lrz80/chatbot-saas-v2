@@ -850,6 +850,22 @@
 
 "faqSection.modal.title": "Edit suggested answer",
 "faqSection.modal.cancel": "Cancel",
-"faqSection.modal.saveApprove": "✅ Save & approve"
+"faqSection.modal.saveApprove": "✅ Save & approve",
+
+"intents.title": "Intent Training",
+"intents.description1": "Define intents with examples and a predefined response to improve assistant accuracy on channel",
+"intents.exampleTitle": "Example:",
+"intents.exampleText": "Intent: book | Examples: “I want to book”, “Book for today” | Response: “Sure! What day works for you?”",
+
+"intents.field.name": "Intent",
+"intents.field.examples": "Example phrases (one per line)",
+"intents.field.response": "Assistant response",
+
+"intents.actions.duplicate": "Duplicate",
+"intents.actions.delete": "Delete",
+"intents.actions.add": "Add intent",
+"intents.actions.save": "Save intents",
+"intents.actions.confirmDelete": "Delete intent \"{{name}}\"?",
+"intents.noName": "(no name)"
 }
 

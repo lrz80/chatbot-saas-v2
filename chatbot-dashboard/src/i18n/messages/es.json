@@ -850,6 +850,22 @@
 
 "faqSection.modal.title": "Editar respuesta sugerida",
 "faqSection.modal.cancel": "Cancelar",
-"faqSection.modal.saveApprove": "✅ Guardar y aprobar"
+"faqSection.modal.saveApprove": "✅ Guardar y aprobar",
+
+"intents.title": "Entrenamiento por Intención",
+"intents.description1": "Define intenciones con ejemplos y una respuesta predefinida para mejorar la precisión del asistente en el canal",
+"intents.exampleTitle": "Ejemplo:",
+"intents.exampleText": "Intención: reservar | Ejemplos: “Quiero agendar”, “Reserva para hoy” | Respuesta: “¡Claro! ¿Qué día prefieres?”",
+
+"intents.field.name": "Intención",
+"intents.field.examples": "Frases de ejemplo (una por línea)",
+"intents.field.response": "Respuesta del asistente",
+
+"intents.actions.duplicate": "Duplicar",
+"intents.actions.delete": "Eliminar",
+"intents.actions.add": "Agregar intención",
+"intents.actions.save": "Guardar intenciones",
+"intents.actions.confirmDelete": "¿Eliminar la intención \"{{name}}\"?",
+"intents.noName": "(sin nombre)"
 }
 
