@@ -548,6 +548,85 @@
 "verifyEmail.errors.invalidToken": "Token inválido",
 
 "dashboard.auth.error": "🔴 Error de autenticación:",
-"dashboard.auth.sessionError": "❌ Error al verificar sesión:"
+"dashboard.auth.sessionError": "❌ Error al verificar sesión:",
+
+"training.loading": "Cargando configuración...",
+"training.trial.banner": "🎁 Prueba Aamy 14 días eligiendo un plan. La prueba se aplica automáticamente en Stripe.",
+"training.trial.cta": "Elegir plan y probar gratis",
+"training.trialActive.banner": "🟡 Estás usando la prueba gratis. ¡Aprovecha para configurar tu asistente!",
+"training.membershipInactive.banner": "🚫 Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.",
+"training.membershipInactive.cta": "Activa un plan para continuar.",
+
+"training.title.line1": "Configuración del Asistente",
+"training.title.line2": "de WhatsApp",
+
+"training.twilio.title": "Twilio WhatsApp",
+"training.twilio.disconnect": "Desconectar",
+"training.twilio.disconnecting": "Desconectando...",
+"training.twilio.stateLabel": "Estado:",
+"training.twilio.connected": "Conectado",
+"training.twilio.pending": "Pendiente",
+"training.twilio.disconnected": "Desconectado",
+"training.twilio.numberLabel": "Número:",
+"training.twilio.assignedNumberLabel": "Número asignado:",
+"training.twilio.disconnectedHelp": "WhatsApp está desconectado. Presiona “Conectar WhatsApp” para activarlo.",
+"training.twilio.pendingHelp": "Si acabas de conectar, espera 1–3 minutos y luego presiona “Sincronizar”.",
+"training.twilio.notStartedHelp": "Aún no has iniciado la conexión. Presiona “Conectar WhatsApp”.",
+"training.twilio.sync": "Sincronizar",
+
+"training.twilio.confirmDisconnect": "¿Seguro que quieres desconectar WhatsApp?\n\nAl desconectar, tu asistente dejará de responder mensajes automáticamente. Podrás reconectarlo cuando quieras.",
+"training.twilio.disconnectedOk": "✅ WhatsApp desconectado.",
+"training.twilio.disconnectFail": "No se pudo desconectar WhatsApp",
+"training.twilio.disconnectError": "Error desconectando WhatsApp",
+
+"training.twilio.syncOk": "✅ WhatsApp conectado (sender ONLINE).",
+"training.twilio.syncPending": "⏳ Aún pendiente. Reintenta en 1–3 minutos.",
+"training.twilio.syncFail": "Error sincronizando sender",
+"training.twilio.syncError": "Error sincronizando",
+
+"training.channel.maintenance.title": "WhatsApp en mantenimiento",
+"training.channel.maintenance.defaultMsg": "Estamos trabajando para restablecer el servicio.",
+"training.channel.disabled.title": "WhatsApp está deshabilitado en tu cuenta",
+"training.channel.disabled.msg": "Actívalo en tu configuración o actualiza tu plan si aplica.",
+
+"training.guard.maintenance": "🛠️ WhatsApp en mantenimiento. {{msg}}",
+"training.guard.disabled": "📴 El canal WhatsApp está deshabilitado en tu configuración.",
+"training.guard.needPlan": "⚠️ Activa un plan o tu prueba gratis para usar este canal.",
+
+"training.usage.title": "Uso de WhatsApp",
+"training.usage.line": "{{used}} de {{limit}} mensajes enviados",
+"training.usage.includesExtra": "(incluye créditos extra)",
+"training.usage.extraLine": "Incluye {{extra}} mensajes extra comprados.",
+
+"training.fields.businessName": "Nombre del negocio",
+"training.fields.welcome": "Mensaje de bienvenida",
+"training.fields.systemPrompt": "Prompt del sistema",
+
+"training.savedOk": "Configuración del bot guardada ✅",
+
+"training.intents.needOne": "❌ Agrega al menos una intención válida.",
+"training.intents.savedOk": "Intenciones guardadas ✅",
+"training.intents.saveError": "❌ Error guardando intenciones.",
+
+"training.faqs.needOne": "❌ Agrega al menos una FAQ válida.",
+"training.faqs.savedOk": "FAQs guardadas ✅",
+"training.faqs.saveError": "❌ Error guardando FAQs.",
+
+"training.preview.title": "Vista previa del Asistente",
+"training.preview.typing": "El asistente está escribiendo...",
+"training.preview.placeholder": "Escribe algo...",
+"training.preview.error": "Lo siento, ocurrió un error en la vista previa.",
+
+"training.credits.startError": "❌ Error al iniciar la compra.",
+"training.credits.processError": "❌ Error al procesar la compra.",
+
+"common.saving": "Guardando...",
+"common.saveConfig": "Guardar configuración",
+"common.send": "Enviar",
+"common.saveError": "❌ Error al guardar: {{msg}}",
+"common.unknownError": "Error desconocido",
+"common.saveErrorGeneric": "Error al guardar la configuración.",
+"common.lang.es": "Español",
+"common.lang.en": "English"
 }
 

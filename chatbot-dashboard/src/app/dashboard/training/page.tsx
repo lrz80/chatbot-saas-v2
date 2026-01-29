@@ -14,8 +14,9 @@ import type { FaqSugerida } from "@/components/FaqSection";
 import IntentSection, { Intent } from "@/components/IntentSection";
 import CTASection from "@/components/CTASection";
 import ChannelStatus from "@/components/ChannelStatus";
-import MembershipBanner from "@/components/MembershipBanner";
 import ConnectWhatsAppTwilioEmbeddedSignupButton from "@/components/ConnectWhatsAppTwilioEmbeddedSignupButton";
+import { useI18n } from "../../../i18n/LanguageProvider";
+
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
@@ -51,6 +52,7 @@ type SettingsState = {
 };
 
 export default function TrainingPage() {
+  const { t, lang } = useI18n();
   const router = useRouter();
   type ChannelState = {
     enabled: boolean;              // pasa gates (plan + toggle)
@@ -291,9 +293,8 @@ export default function TrainingPage() {
   const disconnectWhatsApp = async () => {
     if (!verificarPermiso()) return;
 
-    const ok = window.confirm(
-      "¿Seguro que quieres desconectar WhatsApp?\n\nAl desconectar, tu asistente dejará de responder mensajes automáticamente. Podrás reconectarlo cuando quieras."
-    );
+    const ok = window.confirm('{t("training.twilio.confirmDisconnect")}');
+
     if (!ok) return;
 
     setIsDisconnecting(true);
@@ -306,13 +307,13 @@ export default function TrainingPage() {
       });
 
       const j = await r.json().catch(() => ({} as any));
-      if (!r.ok) throw new Error(j?.error || "No se pudo desconectar WhatsApp");
+      if (!r.ok) throw new Error(j?.error || t("training.twilio.disconnectFail"));
 
-      alert("✅ WhatsApp desconectado.");
+      alert(t("training.twilio.disconnectedOk"));
       await reloadSettings();
     } catch (e: any) {
       console.error("❌ disconnect error:", e);
-      alert(e?.message || "Error desconectando WhatsApp");
+      alert(e?.message || t("training.twilio.disconnectError"));
     } finally {
       setIsDisconnecting(false);
     }
@@ -321,18 +322,18 @@ export default function TrainingPage() {
   const verificarPermiso = (e?: Event | React.SyntheticEvent) => {
     if (channelState?.maintenance) {
       e?.preventDefault();
-      alert(`🛠️ WhatsApp en mantenimiento. ${channelState.maintenance_message || ""}`);
+      alert(t("training.guard.maintenance", { msg: channelState.maintenance_message || "" }));
       return false;
     }
     if (channelState?.enabled === false) {
       e?.preventDefault();
-      alert("📴 El canal WhatsApp está deshabilitado en tu configuración.");
+      alert(t("training.guard.disabled"));
       return false;
     }
     if (!settings.can_edit) {
       e?.preventDefault();
       // Si no puede editar, puede ser que tenga trial disponible => lo mandaremos al flujo correcto con el banner
-      alert("⚠️ Activa un plan o tu prueba gratis para usar este canal.");
+      alert(t("training.guard.needPlan"));
       router.push("/upgrade");
       return false;
     }
@@ -384,8 +385,8 @@ export default function TrainingPage() {
             settings_enabled: !!d.settings_enabled,
             maintenance_message: d.maintenance_message || null,
           });
-          if (d.maintenance) alert(`🛠️ WhatsApp en mantenimiento. ${d.maintenance_message || ""}`);
-          else alert("📴 WhatsApp deshabilitado en tu configuración.");
+          if (d.maintenance) alert(t("training.guard.maintenance", { msg: d.maintenance_message || "" }));
+          else alert(t("training.guard.disabled"));
         } catch { /* noop */ }
         throw new Error("channel_blocked");
       }
@@ -437,13 +438,13 @@ export default function TrainingPage() {
       console.log("✅ Respuesta del servidor:", data);
   
       if (!res.ok) {
-        alert("❌ Error al guardar: " + (data?.error || "Error desconocido"));
+        alert(t("common.saveError", { msg: data?.error || t("common.unknownError") }));
       } else {
-        alert("Configuración del bot guardada ✅");
+        alert(t("training.savedOk"));
       }
     } catch (err) {
       console.error("❌ Error en handleSave:", err);
-      alert("Error al guardar la configuración.");
+      alert(t("common.saveErrorGeneric"));
     } finally {
       setSaving(false);
     }
@@ -473,7 +474,7 @@ export default function TrainingPage() {
     .filter(i => i.nombre && i.ejemplos.length > 0 && i.respuesta);
 
   if (!intencionesLimpias.length) {
-    return alert("❌ Agrega al menos una intención válida.");
+    return alert(t("training.intents.needOne"));
   }
 
   try {
@@ -494,7 +495,7 @@ export default function TrainingPage() {
     // Opcional: ver cuántas borró/insertó
     console.log("PUT /api/intents =>", json);
 
-    alert("Intenciones guardadas ✅");
+    alert(t("training.intents.savedOk"));
 
     // Recargar desde DB
     const r2 = await fetch(`${BACKEND_URL}/api/intents?canal=${canal}`, {
@@ -516,7 +517,7 @@ export default function TrainingPage() {
     }
   } catch (e) {
     console.error("❌ Error guardando intenciones (PUT):", e);
-    alert("❌ Error guardando intenciones.");
+    alert(t("training.intents.saveError"));
   }
 };
 
@@ -533,7 +534,7 @@ export default function TrainingPage() {
       .filter(f => f.pregunta && f.respuesta);
   
     if (!faqsValidas.length) {
-      alert("❌ Agrega al menos una FAQ válida.");
+      alert(t("training.faqs.needOne"));
       return;
     }
   
@@ -559,10 +560,10 @@ export default function TrainingPage() {
       });
       if (reload.ok) setFaq(await reload.json());
   
-      alert("FAQs guardadas ✅");
+      alert(t("training.faqs.savedOk"));
     } catch (e) {
       console.error("❌ Error guardando FAQs:", e);
-      alert("❌ Error guardando FAQs.");
+      alert(t("training.faqs.saveError"));
     }
   };
   
@@ -600,7 +601,7 @@ export default function TrainingPage() {
       console.error("❌ Error en preview:", e);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Lo siento, ocurrió un error en la vista previa." },
+        { role: "assistant", content: t("training.preview.error") },
       ]);
     } finally {
       setIsTyping(false);
@@ -628,11 +629,11 @@ export default function TrainingPage() {
       if (data.url) {
         window.location.href = data.url;  // Redirige a Stripe Checkout
       } else {
-        alert("❌ Error al iniciar la compra.");
+        alert(t("training.credits.startError"));
       }
     } catch (error) {
       console.error("❌ Error al comprar créditos:", error);
-      alert("❌ Error al procesar la compra.");
+      alert(t("training.credits.processError"));
     }
   };  
 
@@ -683,7 +684,7 @@ export default function TrainingPage() {
     );
   };
   
-  if (loading) return <p className="text-center">Cargando configuración...</p>;
+  if (loading) return <p className="text-center">{t("training.loading")}</p>;
 
   const canSync =
     settings.whatsapp_mode === "twilio" &&
@@ -714,12 +715,12 @@ export default function TrainingPage() {
         {/* 🎁 Caso 1: Nunca ha usado el trial → invitar a activar prueba (vía Stripe) */}
         {settings?.trial_disponible && !settings?.can_edit && (
           <div className="mb-6 p-4 bg-purple-500/20 border border-purple-400 text-purple-100 rounded-lg text-center font-medium">
-            🎁 <strong>Prueba Aamy 14 días</strong> eligiendo un plan. La prueba se aplica automáticamente en Stripe.
+            t("training.trial.banner")
             <button
               onClick={() => router.push('/upgrade?trial=1')}
               className="ml-3 inline-flex items-center px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
             >
-              Elegir plan y probar gratis
+              {t("training.trial.cta")}
             </button>
           </div>
         )}
@@ -727,16 +728,16 @@ export default function TrainingPage() {
         {/* 🟡 Caso 2: Trial activo (puede editar) → aviso informativo */}
         {!settings?.membresia_activa && settings?.trial_activo && (
           <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-400 text-yellow-200 rounded-lg text-center font-medium">
-            🟡 Estás usando la <strong>prueba gratis</strong>. ¡Aprovecha para configurar tu asistente!
+            {t("training.trialActive.banner")}
           </div>
         )}
 
         {/* 🔴 Caso 3: Sin plan y sin trial activo → banner de inactiva */}
         {!settings?.can_edit && !settings?.trial_disponible && !settings?.trial_activo && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg text-center font-medium">
-            🚫 Tu membresía está inactiva. No puedes guardar cambios ni entrenar el asistente.{' '}
+            {t("training.membershipInactive.banner")}
             <a onClick={() => router.push('/upgrade')} className="underline cursor-pointer">
-              Activa un plan para continuar.
+              {t("training.membershipInactive.cta")}
             </a>
           </div>
         )}
@@ -760,9 +761,9 @@ export default function TrainingPage() {
             className="text-green-400 animate-pulse sm:size-9"
              />
           <span>
-            Configuración del Asistente
+            {t("training.title.line1")}
             <br className="sm:hidden" />
-            de WhatsApp
+            {t("training.title.line2")}
           </span>
         </h1>
 
@@ -779,7 +780,7 @@ export default function TrainingPage() {
         <div className="mb-4 p-4 rounded-lg border border-indigo-500/30 bg-indigo-500/10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <div className="font-semibold">Twilio WhatsApp</div>
+              <div className="font-semibold">{t("training.twilio.title")}</div>
               <div className="text-xs text-white/70"></div>
             </div>
 
@@ -813,7 +814,7 @@ export default function TrainingPage() {
                     : "bg-red-500/10 border-red-500/40 hover:bg-red-500/20 text-red-200"
                 }`}
               >
-                {isDisconnecting ? "Desconectando..." : "Desconectar"}
+                {isDisconnecting ? t("training.twilio.disconnecting") : t("training.twilio.disconnect")}
               </button>
             </div>
           </div>
@@ -822,46 +823,52 @@ export default function TrainingPage() {
           <div className="mt-3 text-sm">
             {settings.whatsapp_status === "connected" ? (
               <div className="text-green-300">
-                Estado: <span className="font-semibold">Conectado</span>
+                {t("training.twilio.stateLabel")}{" "}
+                <span className="font-semibold">{t("training.twilio.connected")}</span>
+
                 <div className="mt-1 text-white/80">
-                  Número:{" "}
+                  {t("training.twilio.numberLabel")}{" "}
                   <span className="ml-2 font-mono font-semibold">
                     {settings.twilio_number || "(no disponible)"}
                   </span>
                 </div>
               </div>
-
             ) : settings.whatsapp_status === "disconnected" ? (
               <div className="text-red-300">
-                Estado: <span className="font-semibold">Desconectado</span>
+                {t("training.twilio.stateLabel")}{" "}
+                <span className="font-semibold">{t("training.twilio.disconnected")}</span>
+
                 <div className="mt-1 text-white/80">
-                  WhatsApp está desconectado. Presiona “Conectar WhatsApp” para activarlo.
+                  {t("training.twilio.disconnectedHelp")}
                 </div>
               </div>
-
             ) : settings.whatsapp_status === "pending" ? (
               <div className="text-yellow-300">
-                Estado: <span className="font-semibold">Pendiente</span>
+                {t("training.twilio.stateLabel")}{" "}
+                <span className="font-semibold">{t("training.twilio.pending")}</span>
+
                 <div className="mt-1 text-white/80">
-                  Si acabas de conectar, espera 1–3 minutos y luego presiona “Sincronizar”.
+                  {t("training.twilio.pendingHelp")}
                 </div>
+
                 {!!settings.twilio_number && (
                   <div className="mt-1 text-white/70">
-                    Número asignado: <span className="ml-2 font-mono">{settings.twilio_number}</span>
+                    {t("training.twilio.assignedNumberLabel")}{" "}
+                    <span className="ml-2 font-mono">{settings.twilio_number}</span>
                   </div>
                 )}
               </div>
-
             ) : (
               <div className="text-red-300">
-                Estado: <span className="font-semibold">Desconectado</span>
+                {t("training.twilio.stateLabel")}{" "}
+                <span className="font-semibold">{t("training.twilio.disconnected")}</span>
+
                 <div className="mt-1 text-white/80">
-                  Aún no has iniciado la conexión. Presiona “Conectar WhatsApp”.
+                  {t("training.twilio.notStartedHelp")}
                 </div>
               </div>
             )}
           </div>
-
 
           <div className="mt-3 flex flex-col sm:flex-row gap-2">
             <button
@@ -876,18 +883,18 @@ export default function TrainingPage() {
                   body: JSON.stringify({}),
                 });
                 const j = await r.json().catch(() => ({} as any));
-                if (!r.ok) throw new Error(j?.error || "Error sincronizando sender");
+                if (!r.ok) throw new Error(j?.error || t("training.twilio.syncFail"));
 
                 if (j?.status === "connected") {
-                  alert("✅ WhatsApp conectado (sender ONLINE).");
+                  alert(t("training.twilio.syncOk"));
                   reloadSettings?.();
                 } else {
-                  alert("⏳ Aún pendiente. Reintenta en 1–3 minutos.");
+                  alert(t("training.twilio.syncPending"));
                   reloadSettings?.();
                 }
               } catch (e: any) {
                 console.error("❌ sync-sender error:", e);
-                alert(e?.message || "Error sincronizando");
+                alert(e?.message || t("training.twilio.syncError"));
               }
             }}
             className={`w-full sm:w-auto px-3 py-1.5 rounded-md ${
@@ -896,7 +903,7 @@ export default function TrainingPage() {
                 : "bg-white/5 border-white/20 hover:bg-white/10"
             }`}
           >
-            Sincronizar
+            {t("training.twilio.sync")}
           </button>
           </div>
 
@@ -907,17 +914,17 @@ export default function TrainingPage() {
         {/* 🛠️ Mantenimiento real */}
         {channelState?.maintenance && (
           <div className="mb-6 p-4 bg-red-600/15 border border-red-600/40 text-red-200 rounded">
-            <p className="font-semibold mb-1">WhatsApp en mantenimiento</p>
-            <p className="text-sm">{channelState.maintenance_message || "Estamos trabajando para restablecer el servicio."}</p>
+            <p className="font-semibold mb-1">{t("training.channel.maintenance.title")}</p>
+            <p className="text-sm">{channelState.maintenance_message || t("training.channel.maintenance.defaultMsg")}</p>
           </div>
         )}
 
         {/* 🚫 Bloqueo por configuración (si NO está en mantenimiento) */}
         {!channelState?.maintenance && channelState?.enabled === false && (
           <div className="mb-6 p-4 bg-yellow-500/15 border border-yellow-500/40 text-yellow-200 rounded">
-            <p className="font-semibold mb-2">WhatsApp está deshabilitado en tu cuenta</p>
+            <p className="font-semibold mb-2">{t("training.channel.disabled.title")}</p>
             <p className="text-sm mb-0">
-              Actívalo en tu configuración o actualiza tu plan si aplica.
+              {t("training.channel.disabled.msg")}
             </p>
           </div>
         )}
@@ -925,17 +932,17 @@ export default function TrainingPage() {
         {usoWhatsapp && (
           <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded">
             <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-              <MdWhatsapp /> Uso de WhatsApp
+              <MdWhatsapp /> {t("training.usage.title")}
             </h3>
 
             <p className="text-white text-sm mb-2">
-              {usoWhatsapp.usados ?? 0} de {usoWhatsapp.limite} mensajes enviados
-              { (usoWhatsapp.creditos_extras ?? 0) > 0 && " (incluye créditos extra)" }
+              {t("training.usage.line", { used: usoWhatsapp.usados ?? 0, limit: usoWhatsapp.limite })}
+              {(usoWhatsapp.creditos_extras ?? 0) > 0 && ` ${t("training.usage.includesExtra")}`}
             </p>
 
             {(usoWhatsapp.creditos_extras ?? 0) > 0 && (
               <p className="text-green-300 text-sm">
-                Incluye {usoWhatsapp.creditos_extras} mensajes extra comprados.
+                {t("training.usage.extraLine", { extra: usoWhatsapp.creditos_extras })}
               </p>
             )}
 
@@ -971,7 +978,7 @@ export default function TrainingPage() {
           name="name"
           value={settings.name}
           readOnly
-          placeholder="Nombre del negocio"
+          placeholder={t("training.fields.businessName")}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
         />
   
@@ -982,8 +989,8 @@ export default function TrainingPage() {
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
           disabled={disabledAll}
         >
-          <option value="es">Español</option>
-          <option value="en">Inglés</option>
+          <option value="es">{t("common.lang.es")}</option>
+          <option value="en">{t("common.lang.en")}</option>
         </select>
   
         <PromptGenerator
@@ -1003,7 +1010,7 @@ export default function TrainingPage() {
           value={settings.bienvenida}
           onChange={handleChange}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          placeholder="Mensaje de bienvenida"
+          placeholder={t("training.fields.welcome")}
           disabled={disabledAll}
         />
   
@@ -1013,7 +1020,7 @@ export default function TrainingPage() {
           onChange={handleChange}
           rows={3}
           className="w-full p-3 border rounded mb-4 bg-white/10 border-white/20 text-white"
-          placeholder="Prompt del sistema"
+          placeholder={t("training.fields.systemPrompt")}
           disabled={disabledAll}
         />
   
@@ -1028,7 +1035,7 @@ export default function TrainingPage() {
               : "bg-gray-600 text-white/50 cursor-not-allowed"
           }`}
         >
-          <Save size={18} /> {saving ? "Guardando..." : "Guardar configuración"}
+          <Save size={18} /> {saving ? t("common.saving") : t("common.saveConfig")}
         </button>
 
         <FaqSection
@@ -1056,7 +1063,7 @@ export default function TrainingPage() {
 
         <h3 className="text-lg sm:text-xl font-bold mb-2 text-purple-300 flex items-center gap-2">
           <SiMinutemailer className="animate-pulse" size={20} />
-          Vista previa del Asistente
+          {t("training.preview.title")}
         </h3>
 
           <div
@@ -1081,7 +1088,7 @@ export default function TrainingPage() {
             ))}
             {isTyping && (
               <div className="max-w-[85%] sm:max-w-[80%] bg-green-400/20 self-start text-left text-xs sm:text-sm text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg italic animate-pulse">
-                El asistente está escribiendo...
+                {t("training.preview.typing")}
               </div>
             )}
           </div>
@@ -1097,7 +1104,7 @@ export default function TrainingPage() {
                   handleSend();
                 }
               }}              
-              placeholder="Escribe algo..."
+              placeholder={t("training.preview.placeholder")}
               disabled={disabledAll}
               className="w-full sm:flex-1 border px-3 py-2.5 sm:p-3 rounded bg-white/10 border-white/20 text-white text-sm placeholder-white/50"
             />
@@ -1110,7 +1117,7 @@ export default function TrainingPage() {
                   : "bg-gray-600 text-white/50 cursor-not-allowed"
               }`}
             >
-              Enviar
+              {t("common.send")}
             </button>
           </div>
         </div>

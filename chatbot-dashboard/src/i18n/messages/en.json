@@ -548,6 +548,85 @@
 "verifyEmail.errors.invalidToken": "Invalid token",
 
 "dashboard.auth.error": "🔴 Authentication error:",
-"dashboard.auth.sessionError": "❌ Error verifying session:"
+"dashboard.auth.sessionError": "❌ Error verifying session:",
+
+"training.loading": "Loading settings...",
+"training.trial.banner": "🎁 Try Aamy free for 14 days by choosing a plan. The trial is applied automatically in Stripe.",
+"training.trial.cta": "Choose a plan & try free",
+"training.trialActive.banner": "🟡 You're on the free trial. Use this time to configure your assistant!",
+"training.membershipInactive.banner": "🚫 Your membership is inactive. You can't save changes or train the assistant.",
+"training.membershipInactive.cta": "Activate a plan to continue.",
+
+"training.title.line1": "WhatsApp Assistant",
+"training.title.line2": "Configuration",
+
+"training.twilio.title": "Twilio WhatsApp",
+"training.twilio.disconnect": "Disconnect",
+"training.twilio.disconnecting": "Disconnecting...",
+"training.twilio.stateLabel": "Status:",
+"training.twilio.connected": "Connected",
+"training.twilio.pending": "Pending",
+"training.twilio.disconnected": "Disconnected",
+"training.twilio.numberLabel": "Number:",
+"training.twilio.assignedNumberLabel": "Assigned number:",
+"training.twilio.disconnectedHelp": "WhatsApp is disconnected. Click “Connect WhatsApp” to enable it.",
+"training.twilio.pendingHelp": "If you just connected, wait 1–3 minutes and then click “Sync”.",
+"training.twilio.notStartedHelp": "You haven't started the connection yet. Click “Connect WhatsApp”.",
+"training.twilio.sync": "Sync",
+
+"training.twilio.confirmDisconnect": "Are you sure you want to disconnect WhatsApp?\n\nAfter disconnecting, your assistant will stop replying automatically. You can reconnect anytime.",
+"training.twilio.disconnectedOk": "✅ WhatsApp disconnected.",
+"training.twilio.disconnectFail": "Could not disconnect WhatsApp",
+"training.twilio.disconnectError": "Error disconnecting WhatsApp",
+
+"training.twilio.syncOk": "✅ WhatsApp connected (sender ONLINE).",
+"training.twilio.syncPending": "⏳ Still pending. Try again in 1–3 minutes.",
+"training.twilio.syncFail": "Error syncing sender",
+"training.twilio.syncError": "Sync error",
+
+"training.channel.maintenance.title": "WhatsApp under maintenance",
+"training.channel.maintenance.defaultMsg": "We're working to restore the service.",
+"training.channel.disabled.title": "WhatsApp is disabled on your account",
+"training.channel.disabled.msg": "Enable it in settings or upgrade your plan if needed.",
+
+"training.guard.maintenance": "🛠️ WhatsApp is under maintenance. {{msg}}",
+"training.guard.disabled": "📴 WhatsApp is disabled in your configuration.",
+"training.guard.needPlan": "⚠️ Activate a plan or free trial to use this channel.",
+
+"training.usage.title": "WhatsApp usage",
+"training.usage.line": "{{used}} of {{limit}} messages sent",
+"training.usage.includesExtra": "(includes extra credits)",
+"training.usage.extraLine": "Includes {{extra}} extra messages purchased.",
+
+"training.fields.businessName": "Business name",
+"training.fields.welcome": "Welcome message",
+"training.fields.systemPrompt": "System prompt",
+
+"training.savedOk": "Bot configuration saved ✅",
+
+"training.intents.needOne": "❌ Add at least one valid intent.",
+"training.intents.savedOk": "Intents saved ✅",
+"training.intents.saveError": "❌ Error saving intents.",
+
+"training.faqs.needOne": "❌ Add at least one valid FAQ.",
+"training.faqs.savedOk": "FAQs saved ✅",
+"training.faqs.saveError": "❌ Error saving FAQs.",
+
+"training.preview.title": "Assistant preview",
+"training.preview.typing": "Assistant is typing...",
+"training.preview.placeholder": "Type something...",
+"training.preview.error": "Sorry, something went wrong in the preview.",
+
+"training.credits.startError": "❌ Could not start the purchase.",
+"training.credits.processError": "❌ Error processing the purchase.",
+
+"common.saving": "Saving...",
+"common.saveConfig": "Save configuration",
+"common.send": "Send",
+"common.saveError": "❌ Error saving: {{msg}}",
+"common.unknownError": "Unknown error",
+"common.saveErrorGeneric": "Error saving configuration.",
+"common.lang.es": "Spanish",
+"common.lang.en": "English"
 }
 
