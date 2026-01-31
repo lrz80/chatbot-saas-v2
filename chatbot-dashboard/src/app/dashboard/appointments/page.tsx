@@ -125,7 +125,15 @@ export default function AppointmentsPage() {
   const [bookingEnabled, setBookingEnabled] = useState<boolean>(true);
   const [bookingSaving, setBookingSaving] = useState<boolean>(false);
   const [bookingLink, setBookingLink] = useState<string | null>(null);
-  const [gcStatus, setGcStatus] = useState<{connected: boolean; calendar_id?: string}>({connected:false});
+  const [gcStatus, setGcStatus] = useState<{
+    connected: boolean;
+    calendar_id?: string;
+    connected_email?: string | null;
+  }>({
+    connected: false,
+    calendar_id: undefined,
+    connected_email: null,
+  });
   const [gcLoading, setGcLoading] = useState(false);
   const [gcConnecting, setGcConnecting] = useState(false);
   const [filters, setFilters] = useState<{
@@ -184,6 +192,7 @@ export default function AppointmentsPage() {
         setGcStatus({
           connected: !!data.connected,
           calendar_id: data.calendar_id,
+          connected_email: data.connected_email ?? null,
         });
       } catch {}
     };
@@ -314,7 +323,11 @@ export default function AppointmentsPage() {
         credentials: "include",
       });
       const data = await res.json();
-      setGcStatus({ connected: !!data.connected, calendar_id: data.calendar_id });
+      setGcStatus({
+        connected: !!data.connected,
+        calendar_id: data.calendar_id,
+        connected_email: data.connected_email ?? null, // si tu backend no lo manda en disconnect, quedará null
+      });
     } catch {
       setError(t("appointments.errors.gcDisconnect"));
     } finally {
@@ -432,6 +445,13 @@ export default function AppointmentsPage() {
                 {t("appointments.gc.status")} {gcStatus.connected ? t("appointments.gc.connected") : t("appointments.gc.disconnected")}
               </div>
             </div>
+
+            {gcStatus.connected && gcStatus.connected_email && (
+              <div className="text-xs text-white/60 mt-1">
+                {lang === "es" ? "Conectado como:" : "Connected as:"}{" "}
+                <span className="text-white/90 font-medium">{gcStatus.connected_email}</span>
+              </div>
+            )}
 
             {gcStatus.connected ? (
               <button
