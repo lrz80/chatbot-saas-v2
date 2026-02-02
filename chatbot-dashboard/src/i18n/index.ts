@@ -31,12 +31,8 @@ export function t(
 
 // Sustituye variables: {name} y también {{name}}
 if (vars) {
-  for (const [k, v] of Object.entries(vars)) {
-    const val = String(v);
-    out = out.replaceAll(`{${k}}`, val);
-    out = out.replaceAll(`{{${k}}}`, val);
-  }
+  out = out.replace(/{{\s*(\w+)\s*}}/g, (_, k) => String(vars[k] ?? ""));
+  out = out.replace(/{\s*(\w+)\s*}/g, (_, k) => String(vars[k] ?? ""));
 }
-
   return out;
 }
