@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  FiHome, FiUser, FiCalendar, FiMic, FiClock, FiMail, FiUsers, FiMessageSquare,
+  FiHome, FiUser, FiCalendar, FiMic, FiClock, FiMail, FiUsers, FiMessageSquare, FiList,
 } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookMessenger } from 'react-icons/fa';
 import ClientOnly from './ClientOnly';
@@ -121,6 +121,7 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
               { href: "/dashboard/follow-up", icon: <FiUsers />, labelKey: "sidebar.nav.leadFollowUp" },
               { href: "/dashboard/campaigns/sms", icon: <FiMessageSquare />, labelKey: "sidebar.nav.smsCampaigns" },
               { href: "/dashboard/campaigns/email", icon: <FiMail />, labelKey: "sidebar.nav.emailCampaigns" },
+              { href: "/dashboard/services", icon: <FiList />, labelKey: "sidebar.nav.services" },
             ].map((item, index) => (
               <a
                 key={index}
