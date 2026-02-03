@@ -1446,5 +1446,5 @@
   "email.contacts.title": "Contacts",
   "email.csv.uploadTitle": "Upload contacts via CSV",
   "email.contacts.deleteAll": "Delete all",
-  "services": "Services"
+  "sidebar.nav.services": "Services"
 }

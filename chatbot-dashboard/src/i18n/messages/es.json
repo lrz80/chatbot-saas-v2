@@ -1446,5 +1446,5 @@
   "email.contacts.title": "Contactos",
   "email.csv.uploadTitle": "Subir contactos por CSV",
   "email.contacts.deleteAll": "Eliminar todos",
-  "services": "Servicios"
+  "sidebar.nav.services": "Servicios"
 }

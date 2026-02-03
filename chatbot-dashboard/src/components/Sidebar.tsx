@@ -113,6 +113,7 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
             {[
               { href: "/dashboard", icon: <FiHome />, labelKey: "sidebar.nav.home" },
               { href: "/dashboard/profile", icon: <FiUser />, labelKey: "sidebar.nav.businessProfile" },
+              { href: "/dashboard/services", icon: <FiList />, labelKey: "sidebar.nav.services" },
               { href: "/dashboard/training", icon: <FaWhatsapp className="text-white" />, labelKey: "sidebar.nav.whatsappAssistant" },
               { href: "/dashboard/meta-config", icon: <FaFacebookMessenger className="text-white" />, labelKey: "sidebar.nav.metaAssistant" },
               { href: "/dashboard/voice-config", icon: <FiMic />, labelKey: "sidebar.nav.voiceAssistant" },
@@ -121,7 +122,6 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
               { href: "/dashboard/follow-up", icon: <FiUsers />, labelKey: "sidebar.nav.leadFollowUp" },
               { href: "/dashboard/campaigns/sms", icon: <FiMessageSquare />, labelKey: "sidebar.nav.smsCampaigns" },
               { href: "/dashboard/campaigns/email", icon: <FiMail />, labelKey: "sidebar.nav.emailCampaigns" },
-              { href: "/dashboard/services", icon: <FiList />, labelKey: "sidebar.nav.services" },
             ].map((item, index) => (
               <a
                 key={index}
