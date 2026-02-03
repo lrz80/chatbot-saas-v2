@@ -124,17 +124,33 @@ function Modal({
   onClose: () => void;
 }) {
   if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-[100]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6">
+      {/* overlay */}
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="absolute inset-x-0 top-10 mx-auto w-[92vw] max-w-3xl rounded-2xl bg-white text-black shadow-xl">
-        <div className="flex items-center justify-between border-b px-5 py-4">
+
+      {/* panel */}
+      <div
+        className={[
+          "relative w-[92vw] max-w-3xl",
+          "rounded-2xl bg-white text-black shadow-xl",
+          // ✅ altura máxima y layout flex para scroll interno
+          "max-h-[92dvh] flex flex-col",
+        ].join(" ")}
+      >
+        {/* header sticky */}
+        <div className="sticky top-0 z-10 bg-white flex items-center justify-between border-b px-5 py-4 rounded-t-2xl">
           <h2 className="text-lg font-semibold">{title}</h2>
           <button onClick={onClose} className="px-3 py-1 rounded-md border text-sm">
             Cerrar
           </button>
         </div>
-        <div className="p-5">{children}</div>
+
+        {/* body scroll */}
+        <div className="p-5 overflow-y-auto">
+          {children}
+        </div>
       </div>
     </div>
   );
