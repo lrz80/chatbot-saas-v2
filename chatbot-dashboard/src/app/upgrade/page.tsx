@@ -11,6 +11,18 @@ type SettingsResp = {
   estado_membresia_texto?: string;
 };
 
+type StripePlan = {
+  price_id: string;
+  product_id: string;
+  name: string;
+  description: string;
+  interval?: string;
+  interval_count: number;
+  unit_amount: number | null;
+  currency: string;
+  metadata: Record<string, string>;
+};
+
 export default function UpgradePage() {
   const { t } = useI18n();
 
@@ -18,6 +30,9 @@ export default function UpgradePage() {
   const [loading, setLoading] = useState(true);
   const [startingCheckout, setStartingCheckout] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [plans, setPlans] = useState<StripePlan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -47,15 +62,37 @@ export default function UpgradePage() {
     })();
   }, [t]);
 
-  const startCheckout = async () => {
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`${BACKEND_URL}/api/stripe/plans`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!r.ok) {
+          const e = await r.json().catch(() => ({}));
+          throw new Error(e?.error || "No se pudieron cargar planes");
+        }
+
+        const data = await r.json();
+        setPlans(Array.isArray(data?.plans) ? data.plans : []);
+      } catch (e: any) {
+        setError(e?.message || "Error cargando planes");
+      } finally {
+        setPlansLoading(false);
+      }
+    })();
+  }, []);
+  
+    const startCheckoutByPriceId = async (priceId: string, unitAmount: number) => {
     try {
       setStartingCheckout(true);
       setError(null);
 
-      // ✅ Meta Pixel: inició checkout
       track("InitiateCheckout", {
-        content_name: t("upgrade.plan.name"),
-        value: 399,
+        content_name: "Membership",
+        value: (unitAmount ?? 0) / 100,
         currency: "USD",
       });
 
@@ -63,6 +100,7 @@ export default function UpgradePage() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId }),
       });
 
       const data = await r.json();
@@ -104,41 +142,56 @@ export default function UpgradePage() {
       <h1 className="text-3xl font-bold mb-2">{t("upgrade.hero.title")}</h1>
       <p className="text-white/80 mb-8">{t("upgrade.hero.subtitle")}</p>
 
-      <div className="rounded-2xl border border-white/15 bg-white/5 p-6">
-        <h2 className="text-xl font-semibold">{t("upgrade.plan.name")}</h2>
-
-        <ul className="mt-4 space-y-2 text-white/80 text-sm">
-          <li>• {t("upgrade.plan.features.f1")}</li>
-          <li>• {t("upgrade.plan.features.f2")}</li>
-          <li>• {t("upgrade.plan.features.f3")}</li>
-          <li>• {t("upgrade.plan.features.f4")}</li>
-        </ul>
-
-        <div className="mt-6">
-          <div className="text-3xl font-extrabold">
-            $399 <span className="text-sm font-normal text-white/70">{t("upgrade.plan.today")}</span>
-          </div>
-          <div className="text-white/70 text-sm mt-1">
-            {t("upgrade.plan.pricingLine")}
-          </div>
+      {plansLoading ? (
+        <div className="rounded-2xl border border-white/15 bg-white/5 p-6 text-white/70">
+          {t("common.loading")}
         </div>
+      ) : plans.length === 0 ? (
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-red-200">
+          No hay planes disponibles en Stripe.
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {plans.map((p) => {
+            const cents = p.unit_amount ?? 0;
+            const dollars = (cents / 100).toFixed(0);
+            const interval = p.interval || "month";
 
-        {error ? <div className="mt-4 text-red-300 text-sm">{error}</div> : null}
+            return (
+              <div key={p.price_id} className="rounded-2xl border border-white/15 bg-white/5 p-6">
+                <h2 className="text-xl font-semibold">{p.name}</h2>
 
-        <button
-          className="mt-6 w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 py-3 font-semibold disabled:opacity-60"
-          onClick={startCheckout}
-          disabled={startingCheckout || isActive}
-        >
-          {isActive
-            ? t("upgrade.cta.active")
-            : startingCheckout
-            ? t("upgrade.cta.redirecting")
-            : t("upgrade.cta.pay")}
-        </button>
+                {p.description ? (
+                  <p className="text-white/70 text-sm mt-1">{p.description}</p>
+                ) : null}
 
-        <p className="mt-4 text-xs text-white/60">{t("upgrade.footer.note")}</p>
-      </div>
+                <div className="mt-6">
+                  <div className="text-3xl font-extrabold">
+                    {cents === 0 ? "$0" : `$${dollars}`}{" "}
+                    <span className="text-sm font-normal text-white/70">/{interval}</span>
+                  </div>
+                </div>
+
+                {error ? <div className="mt-4 text-red-300 text-sm">{error}</div> : null}
+
+                <button
+                  className="mt-6 w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 py-3 font-semibold disabled:opacity-60"
+                  onClick={() => startCheckoutByPriceId(p.price_id, cents)}
+                  disabled={startingCheckout}
+                >
+                  {isActive
+                    ? t("upgrade.cta.active")
+                    : startingCheckout
+                    ? t("upgrade.cta.redirecting")
+                    : "Activar"}
+                </button>
+
+                <p className="mt-4 text-xs text-white/60">{t("upgrade.footer.note")}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
