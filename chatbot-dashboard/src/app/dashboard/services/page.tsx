@@ -13,6 +13,8 @@ type ServiceVariant = {
   variant_name: string;
   description: string | null;
   price_base: number | null;      // ajusta si tu DB usa price_from
+  price: number | null;           // ✅ en DB: service_variants.price
+  currency?: string | null;       // opcional si lo devuelves
   duration_min: number | null;
   variant_url: string | null;
   active: boolean;
@@ -64,7 +66,7 @@ function toVariantDraft(v?: ServiceVariant | null): VariantDraft {
     id: v?.id,
     variant_name: v?.variant_name || "",
     description: v?.description || "",
-    price_base: v?.price_base != null ? String(v.price_base) : "",
+    price_base: v?.price != null ? String(v.price) : "",
     duration_min: v?.duration_min != null ? String(v.duration_min) : "",
     variant_url: v?.variant_url || "",
     active: v?.active ?? true,
@@ -391,6 +393,8 @@ export default function ServicesPage() {
         const payloadVariant = {
           variant_name: vn,
           description: v.description.trim() || null,
+          price: numOrNull(v.price_base),           // ✅ ENVÍA "price" AL BACKEND
+          currency: "USD",                          // opcional (si tu backend lo soporta)
           price_base: numOrNull(v.price_base),      // ajusta si tu backend espera price_from
           duration_min: numOrNull(v.duration_min),
           variant_url: vurl,
