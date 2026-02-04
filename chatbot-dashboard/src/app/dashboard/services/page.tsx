@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 
 /** ===== Types ===== */
+type ServiceTipo = "service" | "plan";
+
 type ServiceVariant = {
   id: string;
   service_id: string;
@@ -56,8 +58,6 @@ type ServiceDraft = {
 
   variants: VariantDraft[]; // ✅ NEW
 };
-
-type ServiceTipo = "service" | "plan";
 
 function toVariantDraft(v?: ServiceVariant | null): VariantDraft {
   return {
@@ -228,7 +228,7 @@ export default function ServicesPage() {
       if (category !== "all" && (s.category || "").trim() !== category) return false;
 
       // ✅ filtro por tipo (si backend no manda tipo, asumimos "service")
-      const tipo = (s as any)?.tipo || "service";
+      const tipo = (s.tipo === "plan" ? "plan" : "service");
       if (tipoFilter !== "all" && tipo !== tipoFilter) return false;
 
       if (!qn) return true;
@@ -573,6 +573,7 @@ export default function ServicesPage() {
               <tr className="text-left">
                 <th className="p-3">Nombre</th>
                 <th className="p-3">Categoría</th>
+                <th className="p-3">Tipo</th>
                 <th className="p-3">Precio</th>
                 <th className="p-3">Duración</th>
                 <th className="p-3">Variantes</th>
@@ -605,6 +606,9 @@ export default function ServicesPage() {
                       )}
                     </td>
                     <td className="p-3">{s.category || "-"}</td>
+                    <td className="p-3">
+                      {(s.tipo || "service") === "plan" ? "Plan" : "Servicio"}
+                    </td>
                     <td className="p-3">{renderPriceCell(s)}</td>
                     <td className="p-3">{renderDurationCell(s)}</td>
                     <td className="p-3">{Array.isArray(s.variants) ? s.variants.length : 0}</td>
