@@ -26,6 +26,7 @@ type Service = {
   price_base: number | null;
   active: boolean;
   service_url: string | null;
+  tipo?: ServiceTipo | null; // ✅ viene del backend
 
   variants?: ServiceVariant[]; // ✅ viene del backend
 };
@@ -51,9 +52,12 @@ type ServiceDraft = {
   price_base: string;   // input text -> number
   service_url: string;
   active: boolean;
+  tipo: ServiceTipo; // ✅ controlado por front
 
   variants: VariantDraft[]; // ✅ NEW
 };
+
+type ServiceTipo = "service" | "plan";
 
 function toVariantDraft(v?: ServiceVariant | null): VariantDraft {
   return {
@@ -78,6 +82,9 @@ function toDraft(s?: Service | null): ServiceDraft {
     price_base: s?.price_base != null ? String(s.price_base) : "",
     service_url: s?.service_url || "",
     active: s?.active ?? true,
+
+    // ✅ si backend no manda tipo, default service
+    tipo: (s?.tipo === "plan" ? "plan" : "service"),
 
     variants: Array.isArray(s?.variants)
       ? s!.variants!.map((v) => toVariantDraft(v))
@@ -166,6 +173,8 @@ export default function ServicesPage() {
   const [category, setCategory] = useState<string>("all");
   const [activeOnly, setActiveOnly] = useState(true);
 
+  const [tipoFilter, setTipoFilter] = useState<"all" | "service" | "plan">("all");
+
   // modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -218,11 +227,15 @@ export default function ServicesPage() {
       if (activeOnly && !s.active) return false;
       if (category !== "all" && (s.category || "").trim() !== category) return false;
 
+      // ✅ filtro por tipo (si backend no manda tipo, asumimos "service")
+      const tipo = (s as any)?.tipo || "service";
+      if (tipoFilter !== "all" && tipo !== tipoFilter) return false;
+
       if (!qn) return true;
-      const hay = `${s.name} ${s.description || ""} ${s.category || ""}`.toLowerCase();
+      const hay = `${s.name} ${s.description || ""} ${s.category || ""} ${tipo}`.toLowerCase();
       return hay.includes(qn);
     });
-  }, [services, q, category, activeOnly]);
+  }, [services, q, category, tipoFilter, activeOnly]);
 
   function openCreate() {
     setDraft(toDraft(null));
@@ -304,6 +317,7 @@ export default function ServicesPage() {
       name,
       description: draft.description.trim() || null,
       category: draft.category.trim() || null,
+      tipo: draft.tipo, // ✅ ADD
       duration_min: numOrNull(draft.duration_min),
       price_base: numOrNull(draft.price_base),
       active: !!draft.active,
@@ -518,6 +532,16 @@ export default function ServicesPage() {
           ))}
         </select>
 
+        <select
+          value={tipoFilter}
+          onChange={(e) => setTipoFilter(e.target.value as any)}
+          className="border rounded-md px-3 py-2"
+        >
+          <option value="all">Todos</option>
+          <option value="service">Servicios</option>
+          <option value="plan">Planes</option>
+        </select>
+
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -631,6 +655,23 @@ export default function ServicesPage() {
                   className="border rounded-md px-3 py-2 w-full"
                   placeholder="Ej: Grooming"
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium">Tipo *</label>
+                <select
+                    value={draft.tipo}
+                    onChange={(e) =>
+                    setDraft({ ...draft, tipo: e.target.value as any })
+                    }
+                    className="border rounded-md px-3 py-2 w-full"
+                >
+                    <option value="service">Servicio</option>
+                    <option value="plan">Plan / Paquete</option>
+                </select>
+                <div className="text-[11px] opacity-70 mt-1">
+                    “Servicio” = lo que ofrecen (clases). “Plan” = paquetes/membresías.
+                </div>
               </div>
 
               <div>
