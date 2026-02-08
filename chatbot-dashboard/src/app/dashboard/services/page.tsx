@@ -19,6 +19,11 @@ type ServiceVariant = {
   variant_url: string | null;
   active: boolean;
   sort_order?: number | null;
+
+  // ✅ NEW: metadata para resolver por tamaño/peso
+  size_token?: "small" | "medium" | "large" | "xl" | null;
+  min_weight_lbs?: number | null;
+  max_weight_lbs?: number | null;
 };
 
 type Service = {
@@ -45,6 +50,11 @@ type VariantDraft = {
   active: boolean;
   sort_order: string;      // input text -> number
   _delete?: boolean;       // marcar para borrar
+
+  // ✅ NEW: metadata editable desde el dashboard
+  size_token: "" | "small" | "medium" | "large" | "xl";
+  min_weight_lbs: string; // input text -> number|null
+  max_weight_lbs: string; // input text -> number|null
 };
 
 type ServiceDraft = {
@@ -71,6 +81,11 @@ function toVariantDraft(v?: ServiceVariant | null): VariantDraft {
     variant_url: v?.variant_url || "",
     active: v?.active ?? true,
     sort_order: v?.sort_order != null ? String(v.sort_order) : "0",
+
+    // ✅ NEW
+    size_token: (v?.size_token as any) || "",
+    min_weight_lbs: v?.min_weight_lbs != null ? String(v.min_weight_lbs) : "",
+    max_weight_lbs: v?.max_weight_lbs != null ? String(v.max_weight_lbs) : "",
   };
 }
 
@@ -107,6 +122,35 @@ function intOrNull(v: string): number | null {
   const n = Number(t);
   if (!Number.isFinite(n)) return null;
   return Math.trunc(n);
+}
+
+function numOrNullFromText(v: string): number | null {
+  const t = String(v || "").trim();
+  if (!t) return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+}
+
+async function patchVariantMeta(variantId: string, v: VariantDraft) {
+  // ✅ payload con nulls cuando el user borra el input ("" => null)
+  const payload = {
+    size_token: v.size_token || null,
+    min_weight_lbs: numOrNullFromText(v.min_weight_lbs),
+    max_weight_lbs: numOrNullFromText(v.max_weight_lbs),
+  };
+
+  // Si no hay cambios (todo null), igual puedes enviarlo (es idempotente).
+  const res = await fetch(`${BACKEND_URL}/api/service-variants/${variantId}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`PATCH service-variants meta failed: ${res.status} ${t}`);
+  }
 }
 
 function cleanUrl(v: string): string | null {
@@ -262,6 +306,11 @@ export default function ServicesPage() {
           variant_url: "",
           active: true,
           sort_order: "0",
+
+          // ✅ NEW defaults
+          size_token: "",
+          min_weight_lbs: "",
+          max_weight_lbs: "",
         },
       ],
     }));
@@ -416,6 +465,9 @@ export default function ServicesPage() {
             const t = await up.text();
             throw new Error(`PUT variant failed: ${up.status} ${t}`);
           }
+
+          // ✅ NEW: patch metadata (size/weight)
+          await patchVariantMeta(v.id, v);
         } else {
           const cr = await fetch(`${BACKEND_URL}/api/services/${serviceId}/variants`, {
             method: "POST",
@@ -427,6 +479,17 @@ export default function ServicesPage() {
             const t = await cr.text();
             throw new Error(`POST variant failed: ${cr.status} ${t}`);
           }
+
+          // ✅ NEW: para variantes nuevas, necesitamos el ID devuelto
+          const created = await cr.json();
+          const newId = created?.variant?.id || created?.id || created?.data?.variant?.id;
+
+          if (!newId) {
+            // Si tu backend no devuelve id, aquí es donde debes arreglarlo del lado backend.
+            throw new Error("POST variant: no se recibió id de variante para guardar metadata (size/weight).");
+          }
+
+          await patchVariantMeta(String(newId), v);
         }
       }
 
@@ -864,6 +927,70 @@ export default function ServicesPage() {
                             className="border rounded-md px-3 py-2 w-full"
                             placeholder="Ej: 60"
                           />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                          <div>
+                            <label className="text-xs font-medium">Size token (opcional)</label>
+                            <select
+                              value={v.size_token}
+                              disabled={disabled}
+                              onChange={(e) => {
+                                const value = e.target.value as any;
+                                setDraft((d) => {
+                                  const copy = [...d.variants];
+                                  copy[idx] = { ...copy[idx], size_token: value };
+                                  return { ...d, variants: copy };
+                                });
+                              }}
+                              className="border rounded-md px-3 py-2 w-full"
+                            >
+                              <option value="">(sin size)</option>
+                              <option value="small">small</option>
+                              <option value="medium">medium</option>
+                              <option value="large">large</option>
+                              <option value="xl">xl</option>
+                            </select>
+                            <div className="text-[11px] opacity-70 mt-1">
+                              Ayuda a resolver “small/medium/large” sin inventar.
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-medium">Min weight (lbs)</label>
+                            <input
+                              value={v.min_weight_lbs}
+                              disabled={disabled}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setDraft((d) => {
+                                  const copy = [...d.variants];
+                                  copy[idx] = { ...copy[idx], min_weight_lbs: value };
+                                  return { ...d, variants: copy };
+                                });
+                              }}
+                              className="border rounded-md px-3 py-2 w-full"
+                              placeholder="ej: 0"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-medium">Max weight (lbs)</label>
+                            <input
+                              value={v.max_weight_lbs}
+                              disabled={disabled}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setDraft((d) => {
+                                  const copy = [...d.variants];
+                                  copy[idx] = { ...copy[idx], max_weight_lbs: value };
+                                  return { ...d, variants: copy };
+                                });
+                                }}
+                              className="border rounded-md px-3 py-2 w-full"
+                              placeholder="ej: 40"
+                            />
+                          </div>
                         </div>
                       </div>
 
