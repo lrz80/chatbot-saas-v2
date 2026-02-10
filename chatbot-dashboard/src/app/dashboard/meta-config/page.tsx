@@ -167,8 +167,8 @@ const refreshMetaConn = async () => {
 
   const isMembershipActive = Boolean(settings?.membresia_activa || settings?.trial_activo); // ✅ trial cuenta como activo
   const membershipInactive  = !isMembershipActive;
-  const planHasMeta        = Boolean(channelState.plan_enabled);
-  const channelMetaOn      = Boolean(channelState.settings_enabled);
+  const planHasMeta   = Boolean((features as any)?.meta ?? channelState.plan_enabled);
+  const channelMetaOn = Boolean(channelState.settings_enabled ?? channelState.enabled);
 
   // ✅ Desbloquea si: plan lo incluye + toggle ON + sin mantenimiento + (plan activo o trial activo)
   const canMeta = Boolean(planHasMeta && channelMetaOn && !channelState.maintenance && (settings?.can_edit || isMembershipActive));
@@ -315,12 +315,33 @@ const refreshMetaConn = async () => {
 
             setChannelState((prev) => ({
               ...prev,
-              enabled: Boolean(data.enabled),
-              plan_enabled: Boolean(data.plan_enabled),
-              settings_enabled: Boolean(data.settings_enabled),
+
+              // ✅ "enabled" general del canal (admin/settings)
+              enabled: Boolean(
+                data.enabled ??
+                data.settings_enabled ??
+                data.channel_enabled ??
+                data.meta_enabled
+              ),
+
+              // ✅ permitido por plan
+              plan_enabled: Boolean(
+                data.plan_enabled ??
+                data.allowed_by_plan ??
+                data.meta_enabled ??
+                data.enabled_by_plan
+              ),
+
+              // ✅ toggle ON/OFF desde settings (admin)
+              settings_enabled: Boolean(
+                data.settings_enabled ??
+                data.enabled ??
+                data.meta_enabled ??
+                data.channel_enabled
+              ),
+
               maintenance: Boolean(data.maintenance),
 
-              // ✅ si tu endpoint ya los manda, se usan; si no, quedan como venían
               facebook_enabled: data.facebook_enabled !== undefined
                 ? Boolean(data.facebook_enabled)
                 : prev.facebook_enabled,
