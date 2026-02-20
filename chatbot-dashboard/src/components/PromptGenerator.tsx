@@ -5,12 +5,15 @@ import { BACKEND_URL } from "@/utils/api";
 import { SiOpenai, SiDatabricks } from "react-icons/si";
 import { useI18n } from "../i18n/LanguageProvider";
 
+type Canal = "whatsapp" | "meta" | "preview"; // 👈 sin voz
+
 interface PromptGeneratorProps {
   infoClave: string;
   funcionesAsistente: string;
   setInfoClave: (value: string) => void;
   setFuncionesAsistente: (value: string) => void;
-  idioma: string; // tu idioma actual del tenant (si lo usas en backend)
+  idioma: string;
+  canal: Canal;                    // 👈 NUEVO
   membresiaActiva: boolean;
   onPromptGenerated: (prompt: string) => void;
 }
@@ -21,15 +24,14 @@ export default function PromptGenerator({
   setInfoClave,
   setFuncionesAsistente,
   idioma,
+  canal,                           // 👈 NUEVO
   membresiaActiva,
   onPromptGenerated,
 }: PromptGeneratorProps) {
   const { t } = useI18n();
   const [loading, setLoading] = useState(false);
 
-  // Template y placeholder traducibles (flat keys)
   const infoTemplate = useMemo(() => t("promptGen.infoTemplate"), [t]);
-
   const funcionesPlaceholder = useMemo(
     () => t("promptGen.funciones.placeholder"),
     [t]
@@ -61,7 +63,8 @@ export default function PromptGenerator({
         body: JSON.stringify({
           descripcion: funcionesAsistente,
           informacion: infoClave,
-          idioma, // se mantiene igual
+          idioma,
+          canal, // 👈 AHORA SÍ LO ENVIAMOS
         }),
       });
 

@@ -996,13 +996,18 @@ export default function TrainingPage() {
         <PromptGenerator
           infoClave={settings.info_clave}
           funcionesAsistente={settings.funciones_asistente}
-          setInfoClave={(value) => setSettings((prev) => ({ ...prev, info_clave: value }))}
+          setInfoClave={(value) =>
+            setSettings((prev) => ({ ...prev, info_clave: value }))
+          }
           setFuncionesAsistente={(value) =>
             setSettings((prev) => ({ ...prev, funciones_asistente: value }))
           }
           idioma={settings.idioma}
+          canal="whatsapp"                     // 👈 AÑADIR ESTO AQUÍ
           membresiaActiva={!disabledAll}
-          onPromptGenerated={(prompt) => setSettings((prev) => ({ ...prev, prompt }))}
+          onPromptGenerated={(prompt) =>
+            setSettings((prev) => ({ ...prev, prompt }))
+          }
         />
   
         <input
