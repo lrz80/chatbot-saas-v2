@@ -13,7 +13,7 @@ interface PromptGeneratorProps {
   setInfoClave: (value: string) => void;
   setFuncionesAsistente: (value: string) => void;
   idioma: string;
-  canal: Canal;                    // 👈 NUEVO
+  canal: "whatsapp" | "meta" | "preview";   // 👈 SOLO estos
   membresiaActiva: boolean;
   onPromptGenerated: (prompt: string) => void;
 }
@@ -24,7 +24,7 @@ export default function PromptGenerator({
   setInfoClave,
   setFuncionesAsistente,
   idioma,
-  canal,                           // 👈 NUEVO
+  canal,
   membresiaActiva,
   onPromptGenerated,
 }: PromptGeneratorProps) {
