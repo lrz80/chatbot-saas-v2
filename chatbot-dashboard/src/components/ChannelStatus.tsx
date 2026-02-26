@@ -44,12 +44,14 @@ export default function ChannelStatus({
   showBanner = true,
   hideTitle = true,
   membershipInactive = false,              // ✅ nueva prop
+  planEnabledOverride, 
 }: {
   canal: Canal;
   className?: string;
   showBanner?: boolean;
   hideTitle?: boolean;
   membershipInactive?: boolean;           // ✅ en el tipo también
+  planEnabledOverride?: boolean; 
 }) {
   const { t } = useI18n();
 
@@ -86,7 +88,11 @@ export default function ChannelStatus({
       );
     }
 
-    const isPlanBlocked = status.blocked_by_plan || status.reason === "plan";
+    const basePlanBlocked = status.blocked_by_plan || status.reason === "plan";
+
+    // 👇 Si planEnabledOverride === true, forzamos que NO esté bloqueado por plan
+    const isPlanBlocked = planEnabledOverride ? false : basePlanBlocked;
+
     const isMaint = status.reason === "maintenance";
     const isPaused = status.reason === "paused";
 
@@ -119,7 +125,11 @@ export default function ChannelStatus({
   const banner = (() => {
     if (!showBanner || loading || !status) return null;
 
-    const isPlanBlocked = status.blocked_by_plan || status.reason === "plan";
+    const basePlanBlocked = status.blocked_by_plan || status.reason === "plan";
+
+    // 👇 Si planEnabledOverride === true, forzamos que NO esté bloqueado por plan
+    const isPlanBlocked = planEnabledOverride ? false : basePlanBlocked;
+
     const isMaint = status.reason === "maintenance";
     const isPaused = status.reason === "paused";
 
