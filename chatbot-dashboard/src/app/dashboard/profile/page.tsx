@@ -139,86 +139,87 @@ export default function BusinessProfilePage() {
 
   // 🚀 Mover fetchSettings fuera del useEffect
   const fetchSettings = async () => {
-  try {
-    const [sRes, tRes] = await Promise.all([
-      fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include', cache: 'no-store' }),
-      fetch(`${BACKEND_URL}/api/tenants/me`, { credentials: 'include', cache: 'no-store' }),
-    ]);
-    if (!sRes.ok) throw new Error('Error al obtener settings');
-    const settingsData = await sRes.json();
+    try {
+      const [sRes, tRes] = await Promise.all([
+        fetch(`${BACKEND_URL}/api/settings`, { credentials: 'include', cache: 'no-store' }),
+        fetch(`${BACKEND_URL}/api/tenants/me`, { credentials: 'include', cache: 'no-store' }),
+      ]);
+      if (!sRes.ok) throw new Error('Error al obtener settings');
+      const settingsData = await sRes.json();
 
-    let tenantData: any = {};
-    if (tRes.ok) tenantData = await tRes.json();
+      let tenantData: any = {};
+      if (tRes.ok) tenantData = await tRes.json();
 
-    setFormData({
-      tenant_id: settingsData.tenant_id,
-      nombre_negocio: settingsData.name,
-      horario_atencion:
+      setFormData({
+        tenant_id: settingsData.tenant_id,
+        nombre_negocio: settingsData.name,
+        horario_atencion:
+          settingsData.horario_atencion ??
+          tenantData?.horario_atencion ??
+          '',
+        categoria: settingsData.categoria,
+        idioma: settingsData.idioma,
+        logo_url: settingsData.logo_url,
+        twilio_number: (settingsData.twilio_number || '').replace(/^whatsapp:/i, ''),
+        twilio_sms_number: settingsData.twilio_sms_number,
+        twilio_voice_number: settingsData.twilio_voice_number,
+        plan:
+          settingsData.plan_name       // si el backend ya te manda un nombre “bonito”
+          ?? tenantData?.plan          // valor de la columna tenants.plan (Stripe)
+          ?? tenantData?.plan_activo   // fallback: "trial", "sin_plan", etc.
+          ?? '',
+        fecha_registro: settingsData.registered_at ?? tenantData?.created_at ?? null,
+        owner_name: settingsData.owner_name,
+        email: settingsData.email,
+        email_negocio: settingsData.email_negocio || '',
+        telefono_negocio: settingsData.telefono_negocio || '',
+        // ⬇️ NUEVO
+        membresia_activa: settingsData.membresia_activa,
+        membresia_vigencia: settingsData.membresia_vigencia,
+        es_trial: settingsData.es_trial,
+        estado_membresia_texto: settingsData.estado_membresia_texto,
+        trial_disponible: Boolean(settingsData.trial_disponible),
+        trial_activo: Boolean(settingsData.trial_vigente || settingsData.trial_activo),
+        can_edit: Boolean(
+          settingsData.can_edit ??
+          settingsData.membresia_activa ??
+          (settingsData.trial_vigente || settingsData.trial_activo)
+        ),
+      });
+
+      const rawHorario =
         settingsData.horario_atencion ??
         tenantData?.horario_atencion ??
-        '',
-      categoria: settingsData.categoria,
-      idioma: settingsData.idioma,
-      logo_url: settingsData.logo_url,
-      twilio_number: (settingsData.twilio_number || '').replace(/^whatsapp:/i, ''),
-      twilio_sms_number: settingsData.twilio_sms_number,
-      twilio_voice_number: settingsData.twilio_voice_number,
-      plan: tenantData?.plan_activo
-        ?? settingsData.plan_name
-        ?? tenantData?.plan
-        ?? '',
-      fecha_registro: settingsData.registered_at ?? tenantData?.created_at ?? null,
-      owner_name: settingsData.owner_name,
-      email: settingsData.email,
-      email_negocio: settingsData.email_negocio || '',
-      telefono_negocio: settingsData.telefono_negocio || '',
-      // ⬇️ NUEVO
-      membresia_activa: settingsData.membresia_activa,
-      membresia_vigencia: settingsData.membresia_vigencia,
-      es_trial: settingsData.es_trial,
-      estado_membresia_texto: settingsData.estado_membresia_texto,
-      trial_disponible: Boolean(settingsData.trial_disponible),
-      trial_activo: Boolean(settingsData.trial_vigente || settingsData.trial_activo),
-      can_edit: Boolean(
-        settingsData.can_edit ??
-        settingsData.membresia_activa ??
-        (settingsData.trial_vigente || settingsData.trial_activo)
-      ),
-    });
+        '';
 
-    const rawHorario =
-      settingsData.horario_atencion ??
-      tenantData?.horario_atencion ??
-      '';
+      setHorarioSemana(normalizeHorario(rawHorario));
 
-    setHorarioSemana(normalizeHorario(rawHorario));
+      setDireccion(settingsData.direccion || '');
 
-    setDireccion(settingsData.direccion || '');
+      // ✅ Meta Pixel (viene de /api/settings)
+      setMetaPixelId(settingsData.meta_pixel_id || '');
+      setMetaPixelEnabled(Boolean(settingsData.meta_pixel_enabled));
 
-    // ✅ Meta Pixel (viene de /api/settings)
-    setMetaPixelId(settingsData.meta_pixel_id || '');
-    setMetaPixelEnabled(Boolean(settingsData.meta_pixel_enabled));
+      // ✅ CAPI Token (si el backend lo devuelve; si no, déjalo vacío)
+      setMetaCapiToken(''); // nunca lo prellenes
+      setMetaCapiTokenEverSet(Boolean(settingsData.meta_capi_token_configured));
 
-    // ✅ CAPI Token (si el backend lo devuelve; si no, déjalo vacío)
-    setMetaCapiToken(''); // nunca lo prellenes
-    setMetaCapiTokenEverSet(Boolean(settingsData.meta_capi_token_configured));
+      setMetaCapiTokenPreview(settingsData.meta_capi_token_preview || '');
 
-    setMetaCapiTokenPreview(settingsData.meta_capi_token_preview || '');
+      // 👇 toma los nuevos valores del tenant.settings si existen
+      const s = tenantData?.settings || {};
+      setBookingUrl(s?.booking?.booking_url || '');
+      setAvailabilityApiUrl(s?.availability?.api_url || '');
+      setAvailabilityHeadersText(
+        s?.availability?.headers ? JSON.stringify(s.availability.headers, null, 2) : ''
+      );
 
-    // 👇 toma los nuevos valores del tenant.settings si existen
-    const s = tenantData?.settings || {};
-    setBookingUrl(s?.booking?.booking_url || '');
-    setAvailabilityApiUrl(s?.availability?.api_url || '');
-    setAvailabilityHeadersText(
-      s?.availability?.headers ? JSON.stringify(s.availability.headers, null, 2) : ''
-    );
-
-  } catch (error) {
-    console.error('❌ Error al obtener settings:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (error) {
+      console.error('❌ Error al obtener settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 // en el guardar:
 const handleSave = async () => {
