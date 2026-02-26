@@ -167,7 +167,16 @@ const refreshMetaConn = async () => {
 
   const isMembershipActive = Boolean(settings?.membresia_activa || settings?.trial_activo); // ✅ trial cuenta como activo
   const membershipInactive  = !isMembershipActive;
-  const planHasMeta   = Boolean((features as any)?.meta ?? channelState.plan_enabled);
+  // ✅ Meta se considera incluido si:
+  // - useFeatures().meta es true, O
+  // - el backend de channel-settings dice que el plan lo permite
+  const hasMetaLimit = usoMeta && Number(usoMeta.limite ?? 0) > 0;
+
+  const planHasMeta =
+    Boolean((features as any)?.meta) ||
+    Boolean(channelState.plan_enabled) ||
+    Boolean(hasMetaLimit);
+    
   const channelMetaOn = Boolean(channelState.settings_enabled ?? channelState.enabled);
 
   // ✅ Desbloquea si: plan lo incluye + toggle ON + sin mantenimiento + (plan activo o trial activo)
