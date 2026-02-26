@@ -163,10 +163,7 @@ export default function BusinessProfilePage() {
       twilio_number: (settingsData.twilio_number || '').replace(/^whatsapp:/i, ''),
       twilio_sms_number: settingsData.twilio_sms_number,
       twilio_voice_number: settingsData.twilio_voice_number,
-      plan: tenantData?.plan_activo
-        ?? settingsData.plan_name
-        ?? tenantData?.plan
-        ?? '',
+      plan: settingsData.plan_name ?? tenantData?.plan ?? '',
       fecha_registro: settingsData.registered_at ?? tenantData?.created_at ?? null,
       owner_name: settingsData.owner_name,
       email: settingsData.email,
