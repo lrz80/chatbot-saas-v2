@@ -5,10 +5,9 @@ import { useEffect, useMemo, useState, useRef } from 'react';
 import { BACKEND_URL } from '@/utils/api';
 import { FiChevronDown } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookMessenger, FaInstagram } from 'react-icons/fa';
-import { io, Socket } from "socket.io-client"; // 👈 ya lo tenías
+import { io, Socket } from "socket.io-client";
 import AppointmentSettingsCard from "@/components/AppointmentSettingsCard";
 import { useI18n } from "@/i18n/LanguageProvider";
-
 
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended';
 
@@ -122,9 +121,15 @@ export default function AppointmentsPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [openStatusId, setOpenStatusId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
   const [bookingEnabled, setBookingEnabled] = useState<boolean>(true);
   const [bookingSaving, setBookingSaving] = useState<boolean>(false);
-  const [bookingLink, setBookingLink] = useState<string | null>(null);
+
+  // 🔥 Nuevo: modo de link para las citas (meet | calendar)
+  const [bookingLinkMode, setBookingLinkMode] = useState<"meet" | "calendar">("calendar");
+
+  const [bookingLink, setBookingLink] = useState<string | null>(null); // (si luego quieres mostrar un link global)
+
   const [gcStatus, setGcStatus] = useState<{
     connected: boolean;
     calendar_id?: string;
@@ -134,8 +139,10 @@ export default function AppointmentsPage() {
     calendar_id: undefined,
     connected_email: null,
   });
+
   const [gcLoading, setGcLoading] = useState(false);
   const [gcConnecting, setGcConnecting] = useState(false);
+
   const [filters, setFilters] = useState<{
     desde: string;
     hasta: string;
@@ -152,9 +159,9 @@ export default function AppointmentsPage() {
     telefono: "",
   });
 
-  // 👇 socket ref (igual patrón que history)
   const socketRef = useRef<Socket | null>(null);
 
+  // 👉 Cargar settings del canal google_calendar (enabled + booking_link_mode)
   useEffect(() => {
     const fetchBookingSettings = async () => {
       try {
@@ -166,9 +173,12 @@ export default function AppointmentsPage() {
         );
         const data = await res.json();
 
-        // en tu backend NO existe data.ok en este endpoint, devuelve { canal, enabled, settings_enabled, ... }
         if (data?.canal === "google_calendar") {
           setBookingEnabled(!!data.settings_enabled);
+
+          // 🔥 Leer modo de link; default "calendar"
+          const modeRaw = (data.booking_link_mode || "").toString().trim().toLowerCase();
+          setBookingLinkMode(modeRaw === "meet" ? "meet" : "calendar");
         }
       } catch (e) {
         console.warn("⚠️ booking-settings no cargó:", e);
@@ -186,7 +196,7 @@ export default function AppointmentsPage() {
           credentials: "include",
         });
 
-        if (!res.ok) return; // opcional
+        if (!res.ok) return;
         const data = await res.json();
 
         setGcStatus({
@@ -200,7 +210,7 @@ export default function AppointmentsPage() {
     loadGc();
   }, []);
 
-    const fetchAppointments = async () => {
+  const fetchAppointments = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -212,8 +222,6 @@ export default function AppointmentsPage() {
       if (filters.cliente) qs.set("cliente", filters.cliente);
       if (filters.telefono) qs.set("telefono", filters.telefono);
 
-      // datetime-local -> "YYYY-MM-DDTHH:mm"
-      // el backend puede recibir esto tal cual si tu columna es timestamptz/timestamp
       if (filters.desde) qs.set("desde", filters.desde);
       if (filters.hasta) qs.set("hasta", filters.hasta);
 
@@ -243,49 +251,47 @@ export default function AppointmentsPage() {
 
   // Recargar cuando cambien filtros (con debounce simple)
   useEffect(() => {
-    const t = setTimeout(() => {
+    const tId = setTimeout(() => {
       fetchAppointments();
     }, 350);
 
-    return () => clearTimeout(t);
+    return () => clearTimeout(tId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
+  // Socket para nuevas citas
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const socket: Socket = io(BACKEND_URL, {
-        transports: ["websocket"],
-        withCredentials: true,
+      transports: ["websocket"],
+      withCredentials: true,
     });
 
     socketRef.current = socket;
 
     socket.on("connect", () => {
-        console.log("🔌 [SOCKET] Conectado en appointments:", socket.id);
+      console.log("🔌 [SOCKET] Conectado en appointments:", socket.id);
     });
 
     socket.on("connect_error", (err) => {
-        console.error("❌ [SOCKET] Error de conexión en appointments:", err.message);
+      console.error("❌ [SOCKET] Error de conexión en appointments:", err.message);
     });
 
     socket.on("appointment:new", (payload: any) => {
-        console.log("📥 [SOCKET] appointment:new recibido:", payload);
+      console.log("📥 [SOCKET] appointment:new recibido:", payload);
 
-        // Normalizamos: puede venir { appointment: {...} } o puede venir directo {...}
-        const appt = payload?.appointment ?? payload;
+      const appt = payload?.appointment ?? payload;
 
-        // Validación mínima
-        if (!appt || typeof appt !== "object" || !appt.id) {
+      if (!appt || typeof appt !== "object" || !appt.id) {
         console.warn("⚠️ [SOCKET] appointment:new inválido, se ignora:", payload);
         return;
-        }
+      }
 
-        setAppointments((prev) => {
-        // Blindaje: elimina cualquier cosa rara en el state
+      setAppointments((prev) => {
         const safePrev = Array.isArray(prev)
-            ? prev.filter((x) => x && typeof x === "object" && (x as any).id)
-            : [];
+          ? prev.filter((x) => x && typeof x === "object" && (x as any).id)
+          : [];
 
         if (safePrev.some((a) => a.id === appt.id)) return safePrev;
 
@@ -294,19 +300,19 @@ export default function AppointmentsPage() {
           const bn = new Date(b.start_time).getTime();
           const aPast = an < Date.now();
           const bPast = bn < Date.now();
-          if (aPast !== bPast) return aPast ? 1 : -1; // futuras primero
-          return an - bn; // más cercana primero
+          if (aPast !== bPast) return aPast ? 1 : -1;
+          return an - bn;
         });
-        });
+      });
     });
 
     return () => {
-        console.log("🔌 [SOCKET] Desconectando en appointments...");
-        socket.off("appointment:new");
-        socket.disconnect();
-        socketRef.current = null;
+      console.log("🔌 [SOCKET] Desconectando en appointments...");
+      socket.off("appointment:new");
+      socket.disconnect();
+      socketRef.current = null;
     };
-    }, []);
+  }, []);
 
   const handleConnectGoogle = () => {
     if (gcConnecting) return;
@@ -326,7 +332,7 @@ export default function AppointmentsPage() {
       setGcStatus({
         connected: !!data.connected,
         calendar_id: data.calendar_id,
-        connected_email: data.connected_email ?? null, // si tu backend no lo manda en disconnect, quedará null
+        connected_email: data.connected_email ?? null,
       });
     } catch {
       setError(t("appointments.errors.gcDisconnect"));
@@ -375,10 +381,11 @@ export default function AppointmentsPage() {
   };
 
   const safeAppointments = Array.isArray(appointments)
-  ? appointments.filter((x) => x && typeof x === "object" && (x as any).id)
-  : [];
+    ? appointments.filter((x) => x && typeof x === "object" && (x as any).id)
+    : [];
 
-    const toggleBooking = async () => {
+  // 🔁 Toggle ON/OFF del agendamiento (siempre envía el modo actual)
+  const toggleBooking = async () => {
     const next = !bookingEnabled;
 
     try {
@@ -389,13 +396,55 @@ export default function AppointmentsPage() {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ canal: "google_calendar", enabled: next })
+        body: JSON.stringify({
+          canal: "google_calendar",
+          enabled: next,
+          booking_link_mode: bookingLinkMode, // 🔥 mandar modo actual
+        })
       });
 
       const data = await res.json();
       if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
 
       setBookingEnabled(!!data.google_calendar_enabled);
+
+      if (typeof data.booking_link_mode === "string") {
+        const modeRaw = data.booking_link_mode.toLowerCase().trim();
+        setBookingLinkMode(modeRaw === "meet" ? "meet" : "calendar");
+      }
+    } catch (err: any) {
+      setError(err?.message || t("appointments.errors.bookingToggle"));
+    } finally {
+      setBookingSaving(false);
+    }
+  };
+
+  // 🔀 Cambiar solo el modo de link (sin tocar ON/OFF)
+  const handleChangeBookingMode = async (mode: "meet" | "calendar") => {
+    if (mode === bookingLinkMode) return;
+
+    try {
+      setBookingSaving(true);
+      setError(null);
+
+      const res = await fetch(`${BACKEND_URL}/api/channel-settings`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          canal: "google_calendar",
+          enabled: bookingEnabled,      // conserva estado actual
+          booking_link_mode: mode,      // 🔥 nuevo modo
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
+      setBookingEnabled(!!data.google_calendar_enabled);
+
+      const modeRaw = (data.booking_link_mode || "").toString().trim().toLowerCase();
+      setBookingLinkMode(modeRaw === "meet" ? "meet" : "calendar");
     } catch (err: any) {
       setError(err?.message || t("appointments.errors.bookingToggle"));
     } finally {
@@ -413,7 +462,9 @@ export default function AppointmentsPage() {
           <p className="mt-2 text-sm text-white/60 max-w-2xl">
             {t("appointments.subtitle")}
           </p>
-          <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+
+          {/* 🔧 Bloque principal de booking + modo de link */}
+          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col">
               <div className="text-sm font-semibold text-white">
                 {t("appointments.booking.title")}
@@ -425,31 +476,77 @@ export default function AppointmentsPage() {
               </div>
             </div>
 
-            <button
-              onClick={toggleBooking}
-              disabled={bookingSaving}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition
-                ${bookingEnabled
-                  ? "bg-emerald-600/80 border-emerald-400/40 hover:bg-emerald-600"
-                  : "bg-red-600/70 border-red-400/40 hover:bg-red-600"}
-                ${bookingSaving ? "opacity-60 cursor-not-allowed" : ""}`}
-            >
-              {bookingSaving ? t("appointments.booking.saving") : bookingEnabled ? t("common.on") : t("common.off")}
-            </button>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              {/* Modo de link: Meet vs Calendar */}
+              <div className="flex flex-col">
+                <span className="text-xs text-white/60 mb-1">
+                  {t("appointments.booking.modeLabel") /* ej: "Tipo de enlace para la cita" */}
+                </span>
+                <div className="inline-flex rounded-xl bg-black/40 border border-white/10 p-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleChangeBookingMode("calendar")}
+                    className={`px-3 py-1.5 rounded-lg font-medium transition ${
+                      bookingLinkMode === "calendar"
+                        ? "bg-white text-black shadow-sm"
+                        : "text-white/70 hover:bg-white/10"
+                    }`}
+                    disabled={bookingSaving}
+                  >
+                    {t("appointments.booking.mode.calendar") /* "Solo confirmación de calendario" */}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleChangeBookingMode("meet")}
+                    className={`px-3 py-1.5 rounded-lg font.medium transition ${
+                      bookingLinkMode === "meet"
+                        ? "bg-white text-black shadow-sm"
+                        : "text-white/70 hover:bg.white/10"
+                    }`}
+                    disabled={bookingSaving}
+                  >
+                    {t("appointments.booking.mode.meet") /* "Incluir link de Google Meet" */}
+                  </button>
+                </div>
+              </div>
+
+              {/* Toggle ON/OFF */}
+              <button
+                onClick={toggleBooking}
+                disabled={bookingSaving}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold border transition
+                  ${bookingEnabled
+                    ? "bg-emerald-600/80 border-emerald-400/40 hover:bg-emerald-600"
+                    : "bg-red-600/70 border-red-400/40 hover:bg-red-600"}
+                  ${bookingSaving ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                {bookingSaving
+                  ? t("appointments.booking.saving")
+                  : bookingEnabled
+                    ? t("common.on")
+                    : t("common.off")}
+              </button>
+            </div>
           </div>
 
-          <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 flex items-center justify-between">
+          {/* Bloque de Google Calendar connect/disconnect */}
+          <div className="mb-6 mt-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <div className="text-sm font-semibold">{t("appointments.gc.title")}</div>
-              <div className="text-xs text-white/60 mt-1">
-                {t("appointments.gc.status")} {gcStatus.connected ? t("appointments.gc.connected") : t("appointments.gc.disconnected")}
+              <div className="text-xs text.white/60 mt-1">
+                {t("appointments.gc.status")}{" "}
+                {gcStatus.connected
+                  ? t("appointments.gc.connected")
+                  : t("appointments.gc.disconnected")}
               </div>
             </div>
 
             {gcStatus.connected && gcStatus.connected_email && (
               <div className="text-xs text-white/60 mt-1">
                 {lang === "es" ? "Conectado como:" : "Connected as:"}{" "}
-                <span className="text-white/90 font-medium">{gcStatus.connected_email}</span>
+                <span className="text-white/90 font-medium">
+                  {gcStatus.connected_email}
+                </span>
               </div>
             )}
 
@@ -472,7 +569,8 @@ export default function AppointmentsPage() {
               </button>
             )}
           </div>
-            <AppointmentSettingsCard />
+
+          <AppointmentSettingsCard />
         </header>
 
         {error && (
@@ -485,31 +583,37 @@ export default function AppointmentsPage() {
         <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
             <div>
-              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.from")}</label>
+              <label className="block text-xs text-white/60 mb-1">
+                {t("appointments.filters.from")}
+              </label>
               <input
                 type="datetime-local"
                 value={filters.desde}
                 onChange={(e) => setFilters((p) => ({ ...p, desde: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+                className="w-full px-3 py-2 rounded-lg bg-white/10 border border.white/20 text-white"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.to")}</label>
+              <label className="block text-xs text.white/60 mb-1">
+                {t("appointments.filters.to")}
+              </label>
               <input
                 type="datetime-local"
                 value={filters.hasta}
                 onChange={(e) => setFilters((p) => ({ ...p, hasta: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+                className="w-full px-3 py-2 rounded-lg bg-white/10 border border.white/20 text.white"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.channel")}</label>
+              <label className="block text-xs text.white/60 mb-1">
+                {t("appointments.filters.channel")}
+              </label>
               <select
                 value={filters.canal}
                 onChange={(e) => setFilters((p) => ({ ...p, canal: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white"
+                className="w-full px-3 py-2 rounded-lg bg-black/40 border border.white/20 text.white"
               >
                 <option value="">{t("appointments.filters.all")}</option>
                 <option value="whatsapp">{t("appointments.channel.whatsapp")}</option>
@@ -520,11 +624,13 @@ export default function AppointmentsPage() {
             </div>
 
             <div>
-              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.status")}</label>
+              <label className="block text-xs text.white/60 mb-1">
+                {t("appointments.filters.status")}
+              </label>
               <select
                 value={filters.estado}
                 onChange={(e) => setFilters((p) => ({ ...p, estado: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white"
+                className="w-full px-3 py-2 rounded-lg bg-black/40 border border.white/20 text.white"
               >
                 <option value="">{t("appointments.filters.all")}</option>
                 <option value="pending">{t("appointments.status.pending")}</option>
@@ -535,24 +641,28 @@ export default function AppointmentsPage() {
             </div>
 
             <div>
-              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.customer")}</label>
+              <label className="block text-xs text.white/60 mb-1">
+                {t("appointments.filters.customer")}
+              </label>
               <input
                 type="text"
                 placeholder={t("appointments.filters.searchPlaceholder")}
                 value={filters.cliente}
                 onChange={(e) => setFilters((p) => ({ ...p, cliente: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+                className="w-full px-3 py-2 rounded-lg bg-white/10 border border.white/20 text.white"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-white/60 mb-1">{t("appointments.filters.phone")}</label>
+              <label className="block text-xs text.white/60 mb-1">
+                {t("appointments.filters.phone")}
+              </label>
               <input
                 type="text"
                 placeholder={t("appointments.filters.phonePlaceholder")}
                 value={filters.telefono}
                 onChange={(e) => setFilters((p) => ({ ...p, telefono: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+                className="w-full px-3 py-2 rounded-lg bg.white/10 border border.white/20 text.white"
               />
             </div>
           </div>
@@ -570,7 +680,7 @@ export default function AppointmentsPage() {
                   telefono: "",
                 })
               }
-              className="px-4 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
+              className="px-4 py-2 rounded-xl text-sm font-semibold border border.white/10 bg.white/10 hover:bg.white/15"
             >
               {t("appointments.filters.clear")}
             </button>
@@ -585,240 +695,242 @@ export default function AppointmentsPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl">
+        <div className="rounded-2xl border border.white/10 bg.white/5 backdrop-blur-sm shadow-xl">
           {/* Cabecera (solo desktop) */}
-          <div className="hidden sm:grid grid-cols-12 gap-2 px-4 sm:px-6 py-3 text-xs font-semibold text-white/60 bg-white/5 border-b border-white/10">
+          <div className="hidden sm:grid grid-cols-12 gap-2 px-4 sm:px-6 py-3 text-xs font-semibold text.white/60 bg.white/5 border-b border.white/10">
             <div className="col-span-3 sm:col-span-3 flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/15 text-[10px]">
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border.white/15 text-[10px]">
                 ⏱
               </span>
               {t("appointments.table.datetime")}
             </div>
-            <div className="col-span-2 sm:col-span-2 flex items-center">{t("appointments.table.channel")}</div>
-            <div className="col-span-3 sm:col-span-3 flex items-center">{t("appointments.table.customer")}</div>
-            <div className="col-span-2 sm:col-span-2 flex items-center">{t("appointments.table.phone")}</div>
+            <div className="col-span-2 sm:col-span-2 flex items-center">
+              {t("appointments.table.channel")}
+            </div>
+            <div className="col-span-3 sm:col-span-3 flex items-center">
+              {t("appointments.table.customer")}
+            </div>
+            <div className="col-span-2 sm:col-span-2 flex items-center">
+              {t("appointments.table.phone")}
+            </div>
             <div className="col-span-2 sm:col-span-2 flex items-center justify-end">
               {t("appointments.table.status")}
             </div>
           </div>
 
-          {/* Estado de carga */}
           {loading && (
-            <div className="px-6 py-10 text-center text-sm text-white/60">
+            <div className="px-6 py-10 text-center text-sm text.white/60">
               {t("appointments.loading")}
             </div>
           )}
 
           {!loading && appointments.length === 0 && (
-            <div className="px-6 py-10 text-center text-sm text-white/60">
+            <div className="px-6 py-10 text-center text-sm text.white/60">
               {t("appointments.empty")}
             </div>
           )}
 
-          {/* Filas */}
-        {!loading && appointments.length > 0 && (
-          <>
-            {/* MOBILE: Cards */}
-            <div className="sm:hidden p-3 space-y-3">
-              {safeAppointments.map((appt) => {
-                const statusMeta = STATUS_META[appt.status] || STATUS_META.pending;
+          {!loading && appointments.length > 0 && (
+            <>
+              {/* MOBILE: Cards */}
+              <div className="sm:hidden p-3 space-y-3">
+                {safeAppointments.map((appt) => {
+                  const statusMeta = STATUS_META[appt.status] || STATUS_META.pending;
 
-                return (
-                  <div
-                    key={appt.id}
-                    className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-xl"
-                  >
-                    {/* Top: Fecha + Estado */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold text-white">
+                  return (
+                    <div
+                      key={appt.id}
+                      className="rounded-2xl border border.white/10 bg.white/5 p-4 shadow-xl"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text.white">
+                            {formatDateTime(appt.start_time)}
+                          </div>
+                          <div className="mt-1 text-[11px] text.white/45">
+                            {t("appointments.created")} {formatDateTime(appt.created_at)}
+                          </div>
+                        </div>
+
+                        <div className="relative shrink-0">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpenStatusId(openStatusId === appt.id ? null : appt.id)
+                            }
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#050314] focus:ring-purple-500 ${statusMeta.badgeClass}`}
+                            disabled={savingId === appt.id}
+                          >
+                            <span>{statusMeta.label}</span>
+                            <FiChevronDown
+                              className={`text-sm transition-transform ${
+                                openStatusId === appt.id ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+
+                          {openStatusId === appt.id && (
+                            <div
+                              className="absolute right-0 w-44 rounded-xl bg-[#050314] border border.white/10 shadow-2xl z-30"
+                              style={{ top: "calc(100% + 8px)" }}
+                            >
+                              <div className="py-1 text-xs text.white/80">
+                                {STATUS_OPTIONS.map((opt) => {
+                                  const optMeta = STATUS_META[opt];
+                                  const isActive = opt === appt.status;
+
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => handleChangeStatus(appt.id, opt)}
+                                      className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg.white/10 ${
+                                        isActive ? "text.white" : "text.white/70"
+                                      }`}
+                                      disabled={savingId === appt.id}
+                                    >
+                                      <span>{optMeta.label}</span>
+                                      {isActive && (
+                                        <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        <div className="text-[11px] text.white/50 mb-1">
+                          {t("appointments.table.channel")}
+                        </div>
+                        <div>{getChannelBadge(appt.channel)}</div>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-1 gap-3">
+                        <div className="min-w-0">
+                          <div className="text-sm text.white truncate">
+                            {appt.customer_name ||
+                              appt.customer_phone ||
+                              t("appointments.customer.unnamed")}
+                          </div>
+                          <div className="text-[11px] text.white/40 truncate">
+                            {t("appointments.table.id")}: {appt.id}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-[11px] text.white/50 mb-1">
+                            {t("appointments.table.phone")}
+                          </div>
+                          <div className="text-sm text.white">
+                            {appt.customer_phone || "-"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* DESKTOP: Grid */}
+              <div className="hidden sm:block">
+                {safeAppointments.map((appt) => {
+                  const statusMeta = STATUS_META[appt.status] || STATUS_META.pending;
+
+                  return (
+                    <div
+                      key={appt.id}
+                      className="grid grid-cols-12 gap-2 px-4 sm:px-6 py-4 border-t border.white/5 hover:bg.white/5 transition-colors"
+                    >
+                      <div className="col-span-3 sm:col-span-3">
+                        <div className="text-sm font-medium text.white">
                           {formatDateTime(appt.start_time)}
                         </div>
-                        <div className="mt-1 text-[11px] text-white/45">
+                        <div className="mt-1 text-[11px] text.white/45">
                           {t("appointments.created")} {formatDateTime(appt.created_at)}
                         </div>
                       </div>
 
-                      {/* Estado dropdown (mismo que tenías, pero en móvil) */}
-                      <div className="relative shrink-0">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setOpenStatusId(openStatusId === appt.id ? null : appt.id)
-                          }
-                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#050314] focus:ring-purple-500 ${statusMeta.badgeClass}`}
-                          disabled={savingId === appt.id}
-                        >
-                          <span>{statusMeta.label}</span>
-                          <FiChevronDown
-                            className={`text-sm transition-transform ${
-                              openStatusId === appt.id ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-
-                        {openStatusId === appt.id && (
-                          <div
-                            className="absolute right-0 w-44 rounded-xl bg-[#050314] border border-white/10 shadow-2xl z-30"
-                            style={{ top: "calc(100% + 8px)" }}
-                          >
-                            <div className="py-1 text-xs text-white/80">
-                              {STATUS_OPTIONS.map((opt) => {
-                                const optMeta = STATUS_META[opt];
-                                const isActive = opt === appt.status;
-
-                                return (
-                                  <button
-                                    key={opt}
-                                    type="button"
-                                    onClick={() => handleChangeStatus(appt.id, opt)}
-                                    className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg-white/10 ${
-                                      isActive ? "text-white" : "text-white/70"
-                                    }`}
-                                    disabled={savingId === appt.id}
-                                  >
-                                    <span>{optMeta.label}</span>
-                                    {isActive && (
-                                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                                    )}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
+                      <div className="col-span-2 sm:col-span-2 flex items-center">
+                        {getChannelBadge(appt.channel)}
                       </div>
-                    </div>
 
-                    {/* Middle: Canal */}
-                    <div className="mt-3">
-                      <div className="text-[11px] text-white/50 mb-1">{t("appointments.table.channel")}</div>
-                      <div>{getChannelBadge(appt.channel)}</div>
-                    </div>
-
-                    {/* Bottom: Cliente + Tel */}
-                    <div className="mt-3 grid grid-cols-1 gap-3">
-                      <div className="min-w-0">
-                        <div className="text-[11px] text-white/50 mb-1">{t("appointments.table.customer")}</div>
-                        <div className="text-sm text-white truncate">
-                          {appt.customer_name || appt.customer_phone || t("appointments.customer.unnamed")}
+                      <div className="col-span-3 sm:col-span-3 flex flex-col justify-center">
+                        <div className="text-sm text.white">
+                          {appt.customer_name ||
+                            appt.customer_phone ||
+                            t("appointments.customer.unnamed")}
                         </div>
-                        <div className="text-[11px] text-white/40 truncate">
+                        <div className="text-[11px] text.white/40 truncate max-w-[220px]">
                           {t("appointments.table.id")}: {appt.id}
                         </div>
                       </div>
 
-                      <div>
-                        <div className="text-[11px] text-white/50 mb-1">{t("appointments.table.phone")}</div>
-                        <div className="text-sm text-white">
-                          {appt.customer_phone || "-"}
+                      <div className="col-span-2 sm:col-span-2 flex items-center text-sm text.white">
+                        {appt.customer_phone || "-"}
+                      </div>
+
+                      <div className="col-span-2 sm:col-span-2 flex items-center justify-end relative">
+                        <div className="relative inline-block text-left">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpenStatusId(openStatusId === appt.id ? null : appt.id)
+                            }
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#050314] focus:ring-purple-500 ${statusMeta.badgeClass}`}
+                            disabled={savingId === appt.id}
+                          >
+                            <span>{statusMeta.label}</span>
+                            <FiChevronDown
+                              className={`text-sm transition-transform ${
+                                openStatusId === appt.id ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+
+                          {openStatusId === appt.id && (
+                            <div
+                              className="absolute right-0 w-40 rounded-xl bg-[#050314] border border.white/10 shadow-2xl z-30"
+                              style={{ bottom: "calc(100% + 8px)" }}
+                            >
+                              <div className="py-1 text-xs text.white/80">
+                                {STATUS_OPTIONS.map((opt) => {
+                                  const optMeta = STATUS_META[opt];
+                                  const isActive = opt === appt.status;
+
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => handleChangeStatus(appt.id, opt)}
+                                      className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg.white/10 ${
+                                        isActive ? "text.white" : "text.white/70"
+                                      }`}
+                                      disabled={savingId === appt.id}
+                                    >
+                                      <span>{optMeta.label}</span>
+                                      {isActive && (
+                                        <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* DESKTOP: Grid/Table (tu versión actual) */}
-            <div className="hidden sm:block">
-              {safeAppointments.map((appt) => {
-                const statusMeta = STATUS_META[appt.status] || STATUS_META.pending;
-
-                return (
-                  <div
-                    key={appt.id}
-                    className="grid grid-cols-12 gap-2 px-4 sm:px-6 py-4 border-t border-white/5 hover:bg-white/5 transition-colors"
-                  >
-                    {/* Fecha / hora */}
-                    <div className="col-span-3 sm:col-span-3">
-                      <div className="text-sm font-medium text-white">
-                        {formatDateTime(appt.start_time)}
-                      </div>
-                      <div className="mt-1 text-[11px] text-white/45">
-                        {t("appointments.created")} {formatDateTime(appt.created_at)}
-                      </div>
-                    </div>
-
-                    {/* Canal */}
-                    <div className="col-span-2 sm:col-span-2 flex items-center">
-                      {getChannelBadge(appt.channel)}
-                    </div>
-
-                    {/* Cliente */}
-                    <div className="col-span-3 sm:col-span-3 flex flex-col justify-center">
-                      <div className="text-sm text-white">
-                        {appt.customer_name || appt.customer_phone || t("appointments.customer.unnamed")}
-                      </div>
-                      <div className="text-[11px] text-white/40 truncate max-w-[220px]">
-                        {t("appointments.table.id")}: {appt.id}
-                      </div>
-                    </div>
-
-                    {/* Teléfono */}
-                    <div className="col-span-2 sm:col-span-2 flex items-center text-sm text-white">
-                      {appt.customer_phone || "-"}
-                    </div>
-
-                    {/* Estado + dropdown */}
-                    <div className="col-span-2 sm:col-span-2 flex items-center justify-end relative">
-                      <div className="relative inline-block text-left">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setOpenStatusId(openStatusId === appt.id ? null : appt.id)
-                          }
-                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#050314] focus:ring-purple-500 ${statusMeta.badgeClass}`}
-                          disabled={savingId === appt.id}
-                        >
-                          <span>{statusMeta.label}</span>
-                          <FiChevronDown
-                            className={`text-sm transition-transform ${
-                              openStatusId === appt.id ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-
-                        {openStatusId === appt.id && (
-                          <div
-                            className="absolute right-0 w-40 rounded-xl bg-[#050314] border border-white/10 shadow-2xl z-30"
-                            style={{ bottom: "calc(100% + 8px)" }}
-                          >
-                            <div className="py-1 text-xs text-white/80">
-                              {STATUS_OPTIONS.map((opt) => {
-                                const optMeta = STATUS_META[opt];
-                                const isActive = opt === appt.status;
-
-                                return (
-                                  <button
-                                    key={opt}
-                                    type="button"
-                                    onClick={() => handleChangeStatus(appt.id, opt)}
-                                    className={`w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg-white/10 ${
-                                      isActive ? "text-white" : "text-white/70"
-                                    }`}
-                                    disabled={savingId === appt.id}
-                                  >
-                                    <span>{optMeta.label}</span>
-                                    {isActive && (
-                                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                                    )}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
-  </div>
   );
 }
