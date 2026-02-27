@@ -1446,5 +1446,9 @@
   "email.contacts.title": "Contacts",
   "email.csv.uploadTitle": "Upload contacts via CSV",
   "email.contacts.deleteAll": "Delete all",
-  "sidebar.nav.services": "Services"
+  "sidebar.nav.services": "Services",
+
+  "appointments.booking.modeLabel": "Type of link sent to the client",
+  "appointments.booking.mode.calendar": "Calendar confirmation only",
+  "appointments.booking.mode.meet": "Include Google Meet link"
 }

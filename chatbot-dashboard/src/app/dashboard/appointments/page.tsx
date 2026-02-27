@@ -480,7 +480,7 @@ export default function AppointmentsPage() {
               {/* Modo de link: Meet vs Calendar */}
               <div className="flex flex-col">
                 <span className="text-xs text-white/60 mb-1">
-                  {t("appointments.booking.modeLabel") /* ej: "Tipo de enlace para la cita" */}
+                  {t("appointments.booking.modeLabel")}
                 </span>
                 <div className="inline-flex rounded-xl bg-black/40 border border-white/10 p-1 text-xs">
                   <button
@@ -493,19 +493,20 @@ export default function AppointmentsPage() {
                     }`}
                     disabled={bookingSaving}
                   >
-                    {t("appointments.booking.mode.calendar") /* "Solo confirmación de calendario" */}
+                    {t("appointments.booking.mode.calendar")}
                   </button>
+
                   <button
                     type="button"
                     onClick={() => handleChangeBookingMode("meet")}
-                    className={`px-3 py-1.5 rounded-lg font.medium transition ${
+                    className={`px-3 py-1.5 rounded-lg font-medium transition ${
                       bookingLinkMode === "meet"
                         ? "bg-white text-black shadow-sm"
-                        : "text-white/70 hover:bg.white/10"
+                        : "text-white/70 hover:bg-white/10"
                     }`}
                     disabled={bookingSaving}
                   >
-                    {t("appointments.booking.mode.meet") /* "Incluir link de Google Meet" */}
+                    {t("appointments.booking.mode.meet")}
                   </button>
                 </div>
               </div>
