@@ -58,15 +58,15 @@
 
   "hero.micro": "Powered by conversational AI, Aamy replies using verified business info and chat context. You stay in control at all times.",
 
-  "hero.pricing.setup": "setup (includes the first month)",
-  "hero.pricing.monthly": "/month starting month 2",
+  "hero.pricing.setup": "One-time activation (includes the first month)",
+  "hero.pricing.monthly": "/month starting from month two",
 
   "hero.tip.before": "Tip: if you recover",
   "hero.tip.highlight1": "just one customer per month",
   "hero.tip.middle": "Aamy typically",
   "hero.tip.highlight2": "pays for itself",
 
-  "hero.cta": "Activate Aamy now",
+  "hero.cta": "Set up my assistant",
   "hero.note": "Guided setup with your info. Cancel anytime.",
 
   "benefits.title": "What does your business gain with",
