@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: "Aamy AI — Turn Conversations Into Customers",
     description:
       "Automate customer messages, detect buying intent, run follow-ups, and optimize campaigns with Pixel/CAPI.",
-    images: ["/og-image.png"],
+    images: ["https://www.aamy.ai/og-image.png"],
   },
 
   robots: {
