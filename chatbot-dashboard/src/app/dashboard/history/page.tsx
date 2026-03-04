@@ -15,7 +15,7 @@ import { useI18n } from "@/i18n/LanguageProvider";
 const PAGE_SIZE = 10;
 
 type Msg = {
-  id: number;
+  id: string | number;
   timestamp: string;
   role?: string;
   content: string;
@@ -27,7 +27,25 @@ type Msg = {
   nivel_interes?: string | number;
 };
 
-const normalizeCanal = (c?: string) => (c || "").toString().trim().toLowerCase();
+const canonicalCanal = (c?: string) => {
+  const s = (c || "").toString().trim().toLowerCase();
+
+  if (!s) return "";
+
+  // WhatsApp: whatsapp, whatsapp_in, whatsapp_out, twilio_whatsapp, etc.
+  if (s.includes("whatsapp")) return "whatsapp";
+
+  // Meta
+  if (s.includes("facebook")) return "facebook";
+  if (s.includes("instagram")) return "instagram";
+
+  // Voice: voice, voz, call, twilio_voice, etc.
+  if (s === "voz" || s.includes("voice") || s.includes("call")) return "voice";
+
+  return s; // fallback
+};
+
+const normalizeCanal = canonicalCanal;
 
 export default function MessageHistory() {
   const { t } = useI18n();
@@ -39,7 +57,7 @@ export default function MessageHistory() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const lastIdRef = useRef<number | null>(null);
+  const lastIdRef = useRef<string | number | null>(null);
   const mensajesGlobalesRef = useRef<Msg[]>([]);
   const socketRef = useRef<Socket | null>(null);
 
@@ -78,7 +96,7 @@ export default function MessageHistory() {
           (a: Msg, b: Msg) =>
             new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         )
-        .map((m: Msg) => ({ ...m, canal: normalizeCanal(m.canal) }));
+        .map((m: Msg) => ({ ...m, canal: canonicalCanal(m.canal) }));
 
       // merge + dedupe por id
       const base = reset ? [] : mensajesGlobalesRef.current;
@@ -120,7 +138,7 @@ export default function MessageHistory() {
       if (!lastIdRef.current) return;
 
       const res = await fetch(
-        `${BACKEND_URL}/api/messages/nuevos?canal=${canal}&lastId=${lastIdRef.current}`,
+        `${BACKEND_URL}/api/messages/nuevos?canal=${canal}&lastId=${encodeURIComponent(String(lastIdRef.current))}`,
         { credentials: "include" }
       );
       if (!res.ok) return;
