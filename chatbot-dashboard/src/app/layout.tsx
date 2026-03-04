@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [
       {
-        url: "/og-image.png",
+        url: "https://www.aamy.ai/og-image.png",
         width: 1200,
         height: 630,
         alt: "Aamy AI — Conversational AI Automation",
