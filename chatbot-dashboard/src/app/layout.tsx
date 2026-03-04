@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Automate your business with Aamy AI — the advanced conversational AI that handles WhatsApp, Instagram, Facebook, and voice interactions 24/7.",
+    "Automate your business with Aamy AI — conversational AI that handles WhatsApp, Instagram, and Facebook messages 24/7.",
 
   applicationName: "Aamy AI",
 
@@ -34,9 +34,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://www.aamy.ai",
-    title: "Aamy AI — Advanced Conversational AI for Sales & Automation",
+    title: "Aamy AI — Turn Conversations Into Customers",
     description:
-      "Automate WhatsApp, Instagram, Facebook, and voice channels with real conversational intelligence, intent detection, follow-ups, and real-time tracking.",
+      "Automate WhatsApp, Instagram, and Facebook conversations with real conversational intelligence, intent detection, follow-ups, and real-time tracking.",
     siteName: "Aamy AI",
     locale: "en_US",
     images: [
@@ -51,11 +51,10 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Aamy AI — Conversational AI Automation",
+    title: "Aamy AI — Turn Conversations Into Customers",
     description:
-      "Automate customer messages 24/7, detect buying intent, run follow-ups, and optimize ads with Pixel/CAPI.",
+      "Automate customer messages, detect buying intent, run follow-ups, and optimize campaigns with Pixel/CAPI.",
     images: ["/og-image.png"],
-    creator: "@aamyai", // Optional — add only if you create a real Twitter/X handle
   },
 
   robots: {
