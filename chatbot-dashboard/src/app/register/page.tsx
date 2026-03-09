@@ -59,7 +59,7 @@ export default function RegisterPage() {
 
     try {
       // 1) Registro con timezone incluida
-      const res = await fetch(`${BACKEND_URL}/auth/register`, {
+      const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -87,7 +87,7 @@ export default function RegisterPage() {
 
       // 2) Fallback: intenta fijar timezone en el tenant (por si /auth/register no la guarda)
       try {
-        await fetch(`${BACKEND_URL}/tenants/timezone`, {
+        await fetch(`${BACKEND_URL}/api/tenants/timezone`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
