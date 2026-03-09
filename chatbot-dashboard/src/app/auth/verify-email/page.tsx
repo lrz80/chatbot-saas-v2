@@ -24,7 +24,7 @@ function VerificacionContenido() {
       }
 
       try {
-        const res = await fetch(`${BACKEND_URL}/auth/verify-email?token=${token}`);
+        const res = await fetch(`${BACKEND_URL}/api/auth/verify-email?token=${token}`);
         if (!res.ok) throw new Error(t("verifyEmail.errors.invalidToken"));
         setStatus("success");
         setTimeout(() => router.push("/login"), 5000);
