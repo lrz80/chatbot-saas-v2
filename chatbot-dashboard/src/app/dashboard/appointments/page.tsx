@@ -130,6 +130,9 @@ export default function AppointmentsPage() {
 
   const [bookingLink, setBookingLink] = useState<string | null>(null); // (si luego quieres mostrar un link global)
 
+  const [estimateFlowEnabled, setEstimateFlowEnabled] = useState<boolean>(false);
+  const [estimateFlowSaving, setEstimateFlowSaving] = useState<boolean>(false);
+
   const [gcStatus, setGcStatus] = useState<{
     connected: boolean;
     calendar_id?: string;
@@ -208,6 +211,25 @@ export default function AppointmentsPage() {
     };
 
     loadGc();
+  }, []);
+
+  useEffect(() => {
+    const fetchEstimateFlowStatus = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/estimate-flow/status`, {
+          credentials: "include",
+        });
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+        setEstimateFlowEnabled(!!data?.estimate_flow_enabled);
+      } catch (e) {
+        console.warn("⚠️ estimate-flow status no cargó:", e);
+      }
+    };
+
+    fetchEstimateFlowStatus();
   }, []);
 
   const fetchAppointments = async () => {
@@ -417,6 +439,37 @@ export default function AppointmentsPage() {
     } finally {
       setBookingSaving(false);
     }
+    };
+
+    const toggleEstimateFlow = async () => {
+    const next = !estimateFlowEnabled;
+
+    try {
+      setEstimateFlowSaving(true);
+      setError(null);
+
+      const res = await fetch(`${BACKEND_URL}/api/estimate-flow/status`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          estimate_flow_enabled: next,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+
+      setEstimateFlowEnabled(!!data.estimate_flow_enabled);
+    } catch (err: any) {
+      setError(err?.message || "No se pudo actualizar el flujo de estimados.");
+    } finally {
+      setEstimateFlowSaving(false);
+    }
   };
 
   // 🔀 Cambiar solo el modo de link (sin tocar ON/OFF)
@@ -528,6 +581,36 @@ export default function AppointmentsPage() {
                     : t("common.off")}
               </button>
             </div>
+          </div>
+
+          {/* 🔧 Bloque de estimados en sitio */}
+          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold text-white">
+                Estimados en sitio
+              </div>
+              <div className="text-xs text-white/60">
+                {estimateFlowEnabled
+                  ? "El asistente capturará nombre, teléfono, dirección y tipo de trabajo para agendar visitas de estimado."
+                  : "El flujo automático de estimados en sitio está desactivado."}
+              </div>
+            </div>
+
+            <button
+              onClick={toggleEstimateFlow}
+              disabled={estimateFlowSaving}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition
+                ${estimateFlowEnabled
+                  ? "bg-emerald-600/80 border-emerald-400/40 hover:bg-emerald-600"
+                  : "bg-red-600/70 border-red-400/40 hover:bg-red-600"}
+                ${estimateFlowSaving ? "opacity-60 cursor-not-allowed" : ""}`}
+            >
+              {estimateFlowSaving
+                ? "Guardando..."
+                : estimateFlowEnabled
+                  ? "ON"
+                  : "OFF"}
+            </button>
           </div>
 
           {/* Bloque de Google Calendar connect/disconnect */}
