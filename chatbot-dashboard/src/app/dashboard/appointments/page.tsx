@@ -421,7 +421,7 @@ export default function AppointmentsPage() {
         body: JSON.stringify({
           canal: "google_calendar",
           enabled: next,
-          booking_link_mode: bookingLinkMode, // 🔥 mandar modo actual
+          booking_link_mode: bookingLinkMode,
         })
       });
 
@@ -434,43 +434,89 @@ export default function AppointmentsPage() {
         const modeRaw = data.booking_link_mode.toLowerCase().trim();
         setBookingLinkMode(modeRaw === "meet" ? "meet" : "calendar");
       }
+
+      // ✅ si se activó booking, apaga estimate flow visualmente
+      if (next) {
+        try {
+          const res2 = await fetch(`${BACKEND_URL}/api/estimate-flow/status`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              estimate_flow_enabled: false,
+            }),
+          });
+
+          const data2 = await res2.json();
+          if (res2.ok && data2?.ok) {
+            setEstimateFlowEnabled(false);
+          }
+        } catch (e) {
+          console.warn("⚠️ No se pudo apagar estimate flow automáticamente:", e);
+        }
+      }
     } catch (err: any) {
       setError(err?.message || t("appointments.errors.bookingToggle"));
     } finally {
       setBookingSaving(false);
     }
-    };
+  };
 
     const toggleEstimateFlow = async () => {
-    const next = !estimateFlowEnabled;
+      const next = !estimateFlowEnabled;
 
-    try {
-      setEstimateFlowSaving(true);
-      setError(null);
+      try {
+        setEstimateFlowSaving(true);
+        setError(null);
 
-      const res = await fetch(`${BACKEND_URL}/api/estimate-flow/status`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          estimate_flow_enabled: next,
-        }),
-      });
+        const res = await fetch(`${BACKEND_URL}/api/estimate-flow/status`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            estimate_flow_enabled: next,
+          }),
+        });
 
-      const data = await res.json();
-      if (!res.ok || !data?.ok) {
-        throw new Error(data?.error || `HTTP ${res.status}`);
+        const data = await res.json();
+        if (!res.ok || !data?.ok) {
+          throw new Error(data?.error || `HTTP ${res.status}`);
+        }
+
+        setEstimateFlowEnabled(!!data.estimate_flow_enabled);
+
+        // ✅ si se activó estimate flow, apaga booking visualmente
+        if (next) {
+          try {
+            const res2 = await fetch(`${BACKEND_URL}/api/channel-settings`, {
+              method: "PATCH",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                canal: "google_calendar",
+                enabled: false,
+                booking_link_mode: bookingLinkMode,
+              }),
+            });
+
+            const data2 = await res2.json();
+            if (res2.ok && data2?.ok) {
+              setBookingEnabled(false);
+            }
+          } catch (e) {
+            console.warn("⚠️ No se pudo apagar booking automáticamente:", e);
+          }
+        }
+      } catch (err: any) {
+        setError(err?.message || "No se pudo actualizar el flujo de estimados.");
+      } finally {
+        setEstimateFlowSaving(false);
       }
-
-      setEstimateFlowEnabled(!!data.estimate_flow_enabled);
-    } catch (err: any) {
-      setError(err?.message || "No se pudo actualizar el flujo de estimados.");
-    } finally {
-      setEstimateFlowSaving(false);
-    }
-  };
+    };
 
   // 🔀 Cambiar solo el modo de link (sin tocar ON/OFF)
   const handleChangeBookingMode = async (mode: "meet" | "calendar") => {
