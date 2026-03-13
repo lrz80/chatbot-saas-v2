@@ -128,8 +128,8 @@ export default function TrainingPage() {
   const [settings, setSettings] = useState<SettingsState>({
     name: "",
     categoria: "",
-    prompt: "Eres un asistente útil.",
-    bienvenida: "¡Hola! ¿En qué puedo ayudarte hoy?",
+    prompt: "",
+    bienvenida: "",
     informacion_negocio: "",
     funciones_asistente: "",
     info_clave: "",
@@ -224,12 +224,7 @@ export default function TrainingPage() {
             twilio_subaccount_sid: data.twilio_subaccount_sid ?? prev.twilio_subaccount_sid ?? null,
             twilio_subaccount_auth_token: data.twilio_subaccount_auth_token ?? prev.twilio_subaccount_auth_token ?? null,
           }));
-          setMessages([
-            {
-              role: "assistant",
-              content: data.bienvenida ?? t("training.defaults.welcome"),
-            },
-          ]);
+          setMessages([]);
         }
 
         if (faqRes.ok) setFaq(await faqRes.json());

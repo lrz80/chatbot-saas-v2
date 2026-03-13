@@ -251,10 +251,10 @@ export default function AppointmentsPage() {
 
       const res = await fetch(url, { credentials: "include" });
 
-      if (!res.ok) throw new Error(`Error al cargar citas (${res.status})`);
+      if (!res.ok) throw new Error(`${t("appointments.errors.load")} (${res.status})`);
 
       const data = await res.json();
-      if (!data?.ok) throw new Error(data?.error || "Error al cargar citas");
+      if (!data?.ok) throw new Error(data?.error || t("appointments.errors.load"));
 
       setAppointments(data.appointments || []);
     } catch (err: any) {
@@ -380,12 +380,12 @@ export default function AppointmentsPage() {
       if (!res.ok) {
         const text = await res.text().catch(() => '');
         console.error('❌ Error HTTP al actualizar estado:', res.status, text);
-        throw new Error(`Error al actualizar estado (${res.status})`);
+        throw new Error(`${t("appointments.errors.statusUpdate")} (${res.status})`);
       }
 
       const data = await res.json();
       if (!data.ok) {
-        throw new Error(data.error || 'Error al actualizar estado');
+        throw new Error(data.error || t("appointments.errors.statusUpdate"));
       }
 
       const updated: Appointment = data.appointment;
@@ -512,7 +512,7 @@ export default function AppointmentsPage() {
           }
         }
       } catch (err: any) {
-        setError(err?.message || "No se pudo actualizar el flujo de estimados.");
+        setError(err?.message || t("appointments.errors.estimateToggle"));
       } finally {
         setEstimateFlowSaving(false);
       }
@@ -633,12 +633,12 @@ export default function AppointmentsPage() {
           <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col">
               <div className="text-sm font-semibold text-white">
-                Estimados en sitio
+                {t("appointments.estimate.title")}
               </div>
               <div className="text-xs text-white/60">
                 {estimateFlowEnabled
-                  ? "El asistente capturará nombre, teléfono, dirección y tipo de trabajo para agendar visitas de estimado."
-                  : "El flujo automático de estimados en sitio está desactivado."}
+                  ? t("appointments.estimate.onHint")
+                  : t("appointments.estimate.offHint")}
               </div>
             </div>
 
@@ -652,10 +652,10 @@ export default function AppointmentsPage() {
                 ${estimateFlowSaving ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               {estimateFlowSaving
-                ? "Guardando..."
+                ? t("appointments.estimate.saving")
                 : estimateFlowEnabled
-                  ? "ON"
-                  : "OFF"}
+                  ? t("common.on")
+                  : t("common.off")}
             </button>
           </div>
 
@@ -673,7 +673,7 @@ export default function AppointmentsPage() {
 
             {gcStatus.connected && gcStatus.connected_email && (
               <div className="text-xs text-white/60 mt-1">
-                {lang === "es" ? "Conectado como:" : "Connected as:"}{" "}
+                {t("appointments.gc.connectedAs")}{" "}
                 <span className="text-white/90 font-medium">
                   {gcStatus.connected_email}
                 </span>

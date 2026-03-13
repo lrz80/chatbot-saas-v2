@@ -1450,5 +1450,11 @@
 
   "appointments.booking.modeLabel": "Tipo de enlace que se enviará al cliente",
   "appointments.booking.mode.calendar": "Solo confirmación en el calendario",
-  "appointments.booking.mode.meet": "Incluir enlace de Google Meet"
+  "appointments.booking.mode.meet": "Incluir enlace de Google Meet",
+  "appointments.estimate.title": "Citas en sitio",
+  "appointments.estimate.onHint": "Recopila datos del cliente para agendar citas en sitio.",
+  "appointments.estimate.offHint": "La automatización de citas en sitio está desactivada.",
+  "appointments.estimate.saving": "Guardando...",
+  "appointments.errors.estimateToggle": "No se pudo actualizar el flujo de estimados.",
+  "appointments.gc.connectedAs": "Conectado como:"
 }

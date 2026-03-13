@@ -152,8 +152,8 @@ const refreshMetaConn = async () => {
   const [settings, setSettings] = useState({
     name: "",
     categoria: "",
-    prompt: "Eres un asistente útil.",
-    bienvenida: "¡Hola! ¿En qué puedo ayudarte hoy?",
+    prompt: "",
+    bienvenida: "",
     membresia_activa: false,
     informacion_negocio: "",
     funciones_asistente: "",
@@ -181,9 +181,6 @@ const refreshMetaConn = async () => {
 
   // ✅ Desbloquea si: plan lo incluye + toggle ON + sin mantenimiento + (plan activo o trial activo)
   const canMeta = Boolean(planHasMeta && channelMetaOn && !channelState.maintenance && (settings?.can_edit || isMembershipActive));
-
-  const canFacebook = Boolean(canMeta && channelState.facebook_enabled);
-  const canInstagram = Boolean(canMeta && channelState.instagram_enabled);
 
   const disabledAll = !canMeta;
 
@@ -254,7 +251,7 @@ const refreshMetaConn = async () => {
             idioma: data?.idioma ?? prev.idioma,
             // 👇 NO toques los flags de trial aquí: ya vinieron de /api/settings
           }));
-          setMessages([{ role: "assistant", content: data?.bienvenida ?? "¡Hola! ¿Cómo puedo ayudarte?" }]);
+          setMessages([]);
           setUsos(data?.limites || {});
         }
 
