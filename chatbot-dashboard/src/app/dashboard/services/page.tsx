@@ -35,9 +35,9 @@ type Service = {
   price_base: number | null;
   active: boolean;
   service_url: string | null;
-  tipo?: ServiceTipo | null; // ✅ viene del backend
-
-  variants?: ServiceVariant[]; // ✅ viene del backend
+  tipo?: ServiceTipo | null;
+  catalog_role?: "primary" | "addon" | null;
+  variants?: ServiceVariant[];
 };
 
 type VariantDraft = {
@@ -62,13 +62,13 @@ type ServiceDraft = {
   name: string;
   description: string;
   category: string;
-  duration_min: string; // input text -> number
-  price_base: string;   // input text -> number
+  duration_min: string;
+  price_base: string;
   service_url: string;
   active: boolean;
-  tipo: ServiceTipo; // ✅ controlado por front
-
-  variants: VariantDraft[]; // ✅ NEW
+  tipo: ServiceTipo;
+  catalog_role: "primary" | "addon";
+  variants: VariantDraft[];
 };
 
 function toVariantDraft(v?: ServiceVariant | null): VariantDraft {
@@ -99,10 +99,8 @@ function toDraft(s?: Service | null): ServiceDraft {
     price_base: s?.price_base != null ? String(s.price_base) : "",
     service_url: s?.service_url || "",
     active: s?.active ?? true,
-
-    // ✅ si backend no manda tipo, default service
     tipo: (s?.tipo === "plan" ? "plan" : "service"),
-
+    catalog_role: s?.catalog_role === "addon" ? "addon" : "primary",
     variants: Array.isArray(s?.variants)
       ? s!.variants!.map((v) => toVariantDraft(v))
       : [],
@@ -368,7 +366,8 @@ export default function ServicesPage() {
       name,
       description: draft.description.trim() || null,
       category: draft.category.trim() || null,
-      tipo: draft.tipo, // ✅ ADD
+      tipo: draft.tipo,
+      catalog_role: draft.catalog_role,
       duration_min: numOrNull(draft.duration_min),
       price_base: numOrNull(draft.price_base),
       active: !!draft.active,
@@ -766,6 +765,26 @@ export default function ServicesPage() {
               </div>
             </div>
 
+            <div>
+              <label className="text-xs font-medium">Rol en catálogo *</label>
+              <select
+                value={draft.catalog_role}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    catalog_role: e.target.value as "primary" | "addon",
+                  })
+                }
+                className="border rounded-md px-3 py-2 w-full"
+              >
+                <option value="primary">Servicio principal</option>
+                <option value="addon">Complemento / Extra</option>
+              </select>
+              <div className="text-[11px] opacity-70 mt-1">
+                “Servicio principal” se prioriza en listas generales. “Complemento / Extra” se muestra después.
+              </div>
+            </div>
+            
             <div>
               <label className="text-xs font-medium">Descripción</label>
               <textarea
