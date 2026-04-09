@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useMemo, useState } from "react";
-import type { Lang } from "./index";
+import type { UiLang as Lang } from "./index";
 import { getLangFromCookieClient, setLangCookieClient, t as translate } from "./index";
 
 type I18nCtx = {
