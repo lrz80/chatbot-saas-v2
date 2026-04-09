@@ -156,6 +156,7 @@ export default function AppointmentsPage() {
     location_id: null,
   });
 
+  const [tenantId, setTenantId] = useState<string>("");
   const [squareLoading, setSquareLoading] = useState(false);
   const [squareConnecting, setSquareConnecting] = useState(false);
 
@@ -206,6 +207,37 @@ export default function AppointmentsPage() {
   }, []);
 
   useEffect(() => {
+    const loadTenantId = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
+          credentials: "include",
+        });
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+
+        const resolvedTenantId =
+          String(
+            data?.tenantId ||
+            data?.tenant_id ||
+            data?.user?.tenantId ||
+            data?.user?.tenant_id ||
+            ""
+          ).trim();
+
+        if (resolvedTenantId) {
+          setTenantId(resolvedTenantId);
+        }
+      } catch (err) {
+        console.warn("⚠️ tenantId no cargó:", err);
+      }
+    };
+
+    loadTenantId();
+  }, []);
+
+  useEffect(() => {
     const loadGc = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/integrations/google-calendar/status`, {
@@ -229,21 +261,31 @@ export default function AppointmentsPage() {
   useEffect(() => {
     const loadSquare = async () => {
       try {
+        if (!tenantId) return;
+
         const res = await fetch(
-          `${BACKEND_URL}/api/integrations/square/status`,
+          `${BACKEND_URL}/api/integrations/square/status?tenantId=${encodeURIComponent(tenantId)}`,
           {
             credentials: "include",
           }
         );
 
-        if (!res.ok) return;
+        if (!res.ok) {
+          setSquareStatus({
+            connected: false,
+            merchant_id: null,
+            location_id: null,
+          });
+          return;
+        }
 
         const data = await res.json();
+        const squareData = data?.data || {};
 
         setSquareStatus({
-          connected: !!data.connected,
-          merchant_id: data.merchant_id ?? null,
-          location_id: data.location_id ?? null,
+          connected: !!squareData.connected,
+          merchant_id: squareData.merchantId ?? null,
+          location_id: squareData.locationId ?? null,
         });
       } catch (err) {
         console.warn("⚠️ square status no cargó:", err);
@@ -251,7 +293,7 @@ export default function AppointmentsPage() {
     };
 
     loadSquare();
-  }, []);
+  }, [tenantId]);
 
   useEffect(() => {
     const fetchEstimateFlowStatus = async () => {
@@ -405,15 +447,28 @@ export default function AppointmentsPage() {
 
   const handleConnectSquare = () => {
     if (squareConnecting) return;
+
+    if (!tenantId) {
+      setError("No se encontró el tenant actual para conectar Square.");
+      return;
+    }
+
     setSquareConnecting(true);
 
     window.location.assign(
-      `${BACKEND_URL}/api/integrations/square/connect?environment=production`
+      `${BACKEND_URL}/api/integrations/square/oauth/start?tenantId=${encodeURIComponent(
+        tenantId
+      )}&environment=production`
     );
   };
 
   const handleDisconnectSquare = async () => {
     try {
+      if (!tenantId) {
+        setError("No se encontró el tenant actual para desconectar Square.");
+        return;
+      }
+
       setSquareLoading(true);
 
       const res = await fetch(
@@ -421,6 +476,12 @@ export default function AppointmentsPage() {
         {
           method: "POST",
           credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            tenantId,
+          }),
         }
       );
 
@@ -428,12 +489,10 @@ export default function AppointmentsPage() {
         throw new Error(`HTTP ${res.status}`);
       }
 
-      const data = await res.json();
-
       setSquareStatus({
-        connected: !!data.connected,
-        merchant_id: data.merchant_id ?? null,
-        location_id: data.location_id ?? null,
+        connected: false,
+        merchant_id: null,
+        location_id: null,
       });
     } catch (err) {
       console.error("❌ Error desconectando Square:", err);
