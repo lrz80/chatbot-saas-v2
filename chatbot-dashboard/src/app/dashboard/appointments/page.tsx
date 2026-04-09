@@ -146,6 +146,19 @@ export default function AppointmentsPage() {
   const [gcLoading, setGcLoading] = useState(false);
   const [gcConnecting, setGcConnecting] = useState(false);
 
+  const [squareStatus, setSquareStatus] = useState<{
+    connected: boolean;
+    merchant_id?: string | null;
+    location_id?: string | null;
+  }>({
+    connected: false,
+    merchant_id: null,
+    location_id: null,
+  });
+
+  const [squareLoading, setSquareLoading] = useState(false);
+  const [squareConnecting, setSquareConnecting] = useState(false);
+
   const [filters, setFilters] = useState<{
     desde: string;
     hasta: string;
@@ -211,6 +224,33 @@ export default function AppointmentsPage() {
     };
 
     loadGc();
+  }, []);
+
+  useEffect(() => {
+    const loadSquare = async () => {
+      try {
+        const res = await fetch(
+          `${BACKEND_URL}/api/integrations/square/status`,
+          {
+            credentials: "include",
+          }
+        );
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+
+        setSquareStatus({
+          connected: !!data.connected,
+          merchant_id: data.merchant_id ?? null,
+          location_id: data.location_id ?? null,
+        });
+      } catch (err) {
+        console.warn("⚠️ square status no cargó:", err);
+      }
+    };
+
+    loadSquare();
   }, []);
 
   useEffect(() => {
@@ -360,6 +400,46 @@ export default function AppointmentsPage() {
       setError(t("appointments.errors.gcDisconnect"));
     } finally {
       setGcLoading(false);
+    }
+  };
+
+  const handleConnectSquare = () => {
+    if (squareConnecting) return;
+    setSquareConnecting(true);
+
+    window.location.assign(
+      `${BACKEND_URL}/api/integrations/square/connect?environment=production`
+    );
+  };
+
+  const handleDisconnectSquare = async () => {
+    try {
+      setSquareLoading(true);
+
+      const res = await fetch(
+        `${BACKEND_URL}/api/integrations/square/disconnect`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      setSquareStatus({
+        connected: !!data.connected,
+        merchant_id: data.merchant_id ?? null,
+        location_id: data.location_id ?? null,
+      });
+    } catch (err) {
+      console.error("❌ Error desconectando Square:", err);
+      setError("No se pudo desconectar Square.");
+    } finally {
+      setSquareLoading(false);
     }
   };
 
@@ -696,6 +776,52 @@ export default function AppointmentsPage() {
                 className="px-4 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-sm font-semibold"
               >
                 {gcConnecting ? t("appointments.gc.connecting") : t("appointments.gc.connect")}
+              </button>
+            )}
+          </div>
+
+          <div className="mb-6 mt-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold">Square Appointments</div>
+              <div className="text-xs text-white/60 mt-1">
+                Estado: {squareStatus.connected ? "Conectado" : "Desconectado"}
+              </div>
+
+              {squareStatus.connected && squareStatus.merchant_id && (
+                <div className="text-xs text-white/60 mt-1">
+                  Merchant ID:{" "}
+                  <span className="text-white/90 font-medium">
+                    {squareStatus.merchant_id}
+                  </span>
+                </div>
+              )}
+
+              {squareStatus.connected && squareStatus.location_id && (
+                <div className="text-xs text-white/60 mt-1">
+                  Location ID:{" "}
+                  <span className="text-white/90 font-medium">
+                    {squareStatus.location_id}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {squareStatus.connected ? (
+              <button
+                onClick={handleDisconnectSquare}
+                disabled={squareLoading}
+                className="px-4 py-2 rounded-xl bg-red-600/80 hover:bg-red-500 text-sm font-semibold"
+              >
+                {squareLoading ? "Desconectando..." : "Desconectar Square"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleConnectSquare}
+                disabled={squareLoading || squareConnecting}
+                className="px-4 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-sm font-semibold"
+              >
+                {squareConnecting ? "Conectando..." : "Conectar Square"}
               </button>
             )}
           </div>
