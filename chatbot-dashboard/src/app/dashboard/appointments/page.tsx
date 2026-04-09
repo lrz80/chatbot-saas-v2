@@ -209,7 +209,7 @@ export default function AppointmentsPage() {
   useEffect(() => {
     const loadTenantId = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
+        const res = await fetch(`${BACKEND_URL}/api/settings`, {
           credentials: "include",
         });
 
@@ -217,20 +217,13 @@ export default function AppointmentsPage() {
 
         const data = await res.json();
 
-        const resolvedTenantId =
-          String(
-            data?.tenantId ||
-            data?.tenant_id ||
-            data?.user?.tenantId ||
-            data?.user?.tenant_id ||
-            ""
-          ).trim();
+        const resolvedTenantId = String(data?.tenant_id || "").trim();
 
         if (resolvedTenantId) {
           setTenantId(resolvedTenantId);
         }
       } catch (err) {
-        console.warn("⚠️ tenantId no cargó:", err);
+        console.warn("⚠️ tenantId no cargó desde /api/settings:", err);
       }
     };
 
