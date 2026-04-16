@@ -17,14 +17,9 @@ type SettingsPayload = {
   email_negocio?: string;
   telefono_negocio?: string;
 
-  // NUEVO: booking & availability
+  // booking & availability
   booking_url?: string;
-  reservas_url?: string;
-  agenda_url?: string;
-  booking?: string;
-
   availability_api_url?: string;
-  booking_api_url?: string;
   availability_headers?: Record<string, any>;
 
   // Enviamos timezone en silencio
@@ -208,8 +203,20 @@ export default function BusinessProfilePage() {
 
       // 👇 toma los nuevos valores del tenant.settings si existen
       const s = tenantData?.settings || {};
-      setBookingUrl(s?.booking?.booking_url || '');
-      setAvailabilityApiUrl(s?.availability?.api_url || '');
+
+      setBookingUrl(
+        settingsData.booking_url ||
+        tenantData?.booking_url ||
+        s?.booking?.booking_url ||
+        ''
+      );
+
+      setAvailabilityApiUrl(
+        settingsData.availability_api_url ||
+        tenantData?.availability_api_url ||
+        s?.availability?.api_url ||
+        ''
+      );
       setAvailabilityHeadersText(
         s?.availability?.headers ? JSON.stringify(s.availability.headers, null, 2) : ''
       );
@@ -642,6 +649,79 @@ const handleSave = async () => {
         </div>
       </div>
 
+            {/* =======================
+      📅 Booking / Availability
+      ======================= */}
+      <div className="mt-8 p-6 rounded-2xl border border-white/20 bg-white/5 text-white md:col-span-2">
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-purple-300">
+            Booking / Availability
+          </h2>
+          <p className="text-sm text-white/70">
+            Configura aquí el link externo de agenda que Amy debe compartir cuando el negocio no usa booking nativo.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm text-indigo-200 font-semibold">
+              Booking URL
+            </label>
+            <input
+              type="url"
+              value={bookingUrl}
+              onChange={(e) => setBookingUrl(e.target.value)}
+              placeholder="https://tu-booking-link.com"
+              disabled={!formData?.can_edit}
+              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+            <p className="text-xs text-white/60 mt-1">
+              Este link se usará como acción externa para agendar cuando el tenant no tenga booking nativo activo.
+            </p>
+          </div>
+
+          <div>
+            <label className="text-sm text-indigo-200 font-semibold">
+              Availability API URL
+            </label>
+            <input
+              type="url"
+              value={availabilityApiUrl}
+              onChange={(e) => setAvailabilityApiUrl(e.target.value)}
+              placeholder="https://api.tusistema.com/availability"
+              disabled={!formData?.can_edit}
+              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+            <p className="text-xs text-white/60 mt-1">
+              Opcional. Úsalo solo si tu negocio consulta disponibilidad desde una API externa.
+            </p>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="text-sm text-indigo-200 font-semibold">
+              Availability Headers (JSON)
+            </label>
+            <textarea
+              value={availabilityHeadersText}
+              onChange={(e) => setAvailabilityHeadersText(e.target.value)}
+              placeholder={`{\n  "Authorization": "Bearer ..."\n}`}
+              disabled={!formData?.can_edit}
+              rows={6}
+              className="w-full bg-white/10 border border-white/20 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition font-mono text-sm"
+            />
+            <p className="text-xs text-white/60 mt-1">
+              Opcional. Debe ser un JSON válido si necesitas headers para consultar disponibilidad.
+            </p>
+          </div>
+        </div>
+
+        {!formData?.can_edit && (
+          <div className="mt-4 text-sm text-yellow-200 bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
+            Necesitas una membresía activa o trial vigente para editar esta configuración.
+          </div>
+        )}
+      </div>
+      
       {/* =======================
       ✅ Meta Pixel (por tenant) - FULL WIDTH
       ======================= */}
