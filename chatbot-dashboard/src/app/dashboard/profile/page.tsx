@@ -202,23 +202,35 @@ export default function BusinessProfilePage() {
       setMetaCapiTokenPreview(settingsData.meta_capi_token_preview || '');
 
       // 👇 toma los nuevos valores del tenant.settings si existen
-      const s = tenantData?.settings || {};
+      const settingsObj = tenantData?.settings || {};
+      const linksObj = tenantData?.links || {};
 
       setBookingUrl(
         settingsData.booking_url ||
         tenantData?.booking_url ||
-        s?.booking?.booking_url ||
+        linksObj?.booking?.booking_url ||
+        linksObj?.booking_url ||
+        settingsObj?.booking?.booking_url ||
         ''
       );
 
       setAvailabilityApiUrl(
         settingsData.availability_api_url ||
         tenantData?.availability_api_url ||
-        s?.availability?.api_url ||
+        linksObj?.availability?.api_url ||
+        linksObj?.booking_api_url ||
+        settingsObj?.availability?.api_url ||
         ''
       );
+
       setAvailabilityHeadersText(
-        s?.availability?.headers ? JSON.stringify(s.availability.headers, null, 2) : ''
+        linksObj?.availability?.headers
+          ? JSON.stringify(linksObj.availability.headers, null, 2)
+          : linksObj?.booking_headers
+          ? JSON.stringify(linksObj.booking_headers, null, 2)
+          : settingsObj?.availability?.headers
+          ? JSON.stringify(settingsObj.availability.headers, null, 2)
+          : ''
       );
 
     } catch (error) {
@@ -721,7 +733,7 @@ const handleSave = async () => {
           </div>
         )}
       </div>
-      
+
       {/* =======================
       ✅ Meta Pixel (por tenant) - FULL WIDTH
       ======================= */}
