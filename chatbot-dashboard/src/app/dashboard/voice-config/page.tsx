@@ -326,16 +326,26 @@ export default function VoiceConfigPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!e164Ok) {
-      setRepTouched(true); // muestra el error si aún no tocó el input
+      setRepTouched(true);
       toast.error(t("voice.form.rep.e164Error"));
+      return;
+    }
+
+    if (!promptVoz.trim()) {
+      toast.error("El prompt del sistema no puede estar vacío.");
+      return;
+    }
+
+    if (!bienvenidaVoz.trim()) {
+      toast.error("El mensaje de bienvenida no puede estar vacío.");
       return;
     }
 
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData(form);
 
-    // Asegura que los controlados también viajen
     formData.set("system_prompt", promptVoz);
     formData.set("welcome_message", bienvenidaVoz);
     formData.set("voice_hints", voiceHints);
@@ -351,10 +361,10 @@ export default function VoiceConfigPage() {
         credentials: "include",
       });
 
-      // 👇 Manejo del 403 por canal bloqueado
       if (res.status === 403) {
         let json: any = {};
         try { json = await res.json(); } catch {}
+
         if (json?.error === "channel_blocked") {
           const st = await refreshChannelVoice();
           if (st?.maintenance) {
@@ -374,7 +384,7 @@ export default function VoiceConfigPage() {
         toast.success(t("voice.saved"));
       } else {
         console.error("POST /api/voice-config error:", res.status, json);
-        toast.error(t("common.somethingWentWrong"));
+        toast.error(json?.error || t("common.somethingWentWrong"));
       }
     } catch (err) {
       console.error("Error al guardar:", err);
