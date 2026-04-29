@@ -27,36 +27,43 @@ export default function VoicePromptGenerator({
 
   const handleGenerate = async () => {
     if (!funciones.trim() || !infoClave.trim()) {
-      toast.warn(t("voicePromptGen.warn.fillBoth")); // ✅ i18n
+      toast.warn(t("voicePromptGen.warn.fillBoth"));
       return;
     }
+
+    console.log("[VoicePromptGenerator] idioma prop:", idioma);
+    console.log("[VoicePromptGenerator] categoria prop:", categoria);
 
     setLoading(true);
 
     try {
+      const payload = {
+        idioma,
+        categoria,
+        funciones_asistente: funciones.trim(),
+        info_clave: infoClave.trim(),
+        modo_resumen_sms: modoResumenSMS,
+      };
+
+      console.log("[VoicePromptGenerator] payload:", payload);
+
       const res = await fetch(`${BACKEND_URL}/api/voice-prompt`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          idioma,
-          categoria,
-          funciones_asistente: funciones.trim(),
-          info_clave: infoClave.trim(),
-          modo_resumen_sms: modoResumenSMS,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
 
       if (res.ok) {
         onGenerate(data.prompt, data.bienvenida);
-        toast.success(t("voicePromptGen.toast.success")); // ✅ i18n
+        toast.success(t("voicePromptGen.toast.success"));
       } else {
-        toast.error(data.error || t("voicePromptGen.toast.error.generate")); // ✅ i18n fallback
+        toast.error(data.error || t("voicePromptGen.toast.error.generate"));
       }
     } catch (err) {
-      toast.error(t("voicePromptGen.toast.error.server")); // ✅ i18n
+      toast.error(t("voicePromptGen.toast.error.server"));
     } finally {
       setLoading(false);
     }
