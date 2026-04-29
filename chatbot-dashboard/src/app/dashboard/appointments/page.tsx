@@ -8,6 +8,7 @@ import { FaWhatsapp, FaFacebookMessenger, FaInstagram } from 'react-icons/fa';
 import { io, Socket } from "socket.io-client";
 import AppointmentSettingsCard from "@/components/AppointmentSettingsCard";
 import { useI18n } from "@/i18n/LanguageProvider";
+import AppointmentBookingFlowCard from "@/components/AppointmentBookingFlowCard";
 
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended';
 
@@ -879,6 +880,8 @@ export default function AppointmentsPage() {
           </div>
 
           <AppointmentSettingsCard />
+
+          <AppointmentBookingFlowCard />
         </header>
 
         {error && (
