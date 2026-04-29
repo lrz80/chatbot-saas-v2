@@ -50,6 +50,14 @@ const DEFAULT_STEPS: BookingStep[] = [
     required: true,
     enabled: true,
   },
+  {
+    step_key: "success",
+    step_order: 999,
+    prompt: "Tu cita quedó confirmada para {service} el {datetime}. ¿Te ayudo en algo más?",
+    expected_type: "text",
+    required: false,
+    enabled: true
+  }
 ];
 
 export default function AppointmentBookingFlowCard() {
