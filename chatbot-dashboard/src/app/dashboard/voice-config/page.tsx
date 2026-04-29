@@ -16,6 +16,7 @@ import { useFeatures } from '@/hooks/usePlan';
 import ChannelStatus from "@/components/ChannelStatus";
 import { useI18n } from "@/i18n/LanguageProvider";
 
+const CHANNEL_KEY = "voice";
 
 export default function VoiceConfigPage() {
   const { t, lang } = useI18n();
@@ -131,7 +132,7 @@ export default function VoiceConfigPage() {
   useEffect(() => {
     const fetchVoiceConfig = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/voice-config?idioma=${idioma}&canal=voz`, {
+        const res = await fetch(`${BACKEND_URL}/api/voice-config?idioma=${idioma}&canal=${CHANNEL_KEY}`, {
           credentials: "include",
         });
         const data = await res.json();
@@ -182,7 +183,7 @@ export default function VoiceConfigPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=voice`, {
+        const res = await fetch(`${BACKEND_URL}/api/channel-settings?canal=${CHANNEL_KEY}`, {
           credentials: "include",
         });
         const d = await res.json();
@@ -210,7 +211,7 @@ export default function VoiceConfigPage() {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/messages?canal=voz`, {
+        const res = await fetch(`${BACKEND_URL}/api/messages?canal=${CHANNEL_KEY}`, {
           credentials: "include",
         });
         const data = await res.json();
@@ -385,7 +386,7 @@ export default function VoiceConfigPage() {
         const res = await fetch(`${BACKEND_URL}/api/usage`, { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
-          setUsoVoz(data.usos.find((u: any) => u.canal === "voz"));
+          setUsoVoz(data.usos.find((u: any) => u.canal === CHANNEL_KEY));
         }
       } catch (error) {
         console.error("Error obteniendo uso:", error);
@@ -428,7 +429,7 @@ export default function VoiceConfigPage() {
 
   const refreshChannelVoice = async () => {
     try {
-      const stRes = await fetch(`${BACKEND_URL}/api/channel-settings?canal=voice`, { credentials: "include" });
+      const stRes = await fetch(`${BACKEND_URL}/api/channel-settings?canal=${CHANNEL_KEY}`, { credentials: "include" });
       const st = await stRes.json();
       setChannelState({
         enabled: !!st.enabled,
@@ -497,7 +498,7 @@ export default function VoiceConfigPage() {
       </h1>
 
       <ChannelStatus
-        canal="voice"
+        canal={CHANNEL_KEY}
         showBanner
         hideTitle
         membershipInactive={membershipInactive}
@@ -575,7 +576,7 @@ export default function VoiceConfigPage() {
         className="mb-10"
       >
         <input type="hidden" name="idioma" value={idioma} />
-        <input type="hidden" name="canal" value="voz" />
+        <input type="hidden" name="canal" value={CHANNEL_KEY} />
         <input type="hidden" name="tenant_id" value={tenantId || ""} />
 
         <div className="grid grid-cols-1 gap-6 mb-6">
