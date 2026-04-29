@@ -165,10 +165,14 @@ export default function AppointmentBookingFlowCard() {
 
       const normalized = steps
         .map((step) => ({
-          ...step,
-          step_key: step.step_key.trim(),
-          prompt: step.prompt.trim(),
-          step_order: Number(step.step_order),
+            ...step,
+            step_key: step.step_key.trim(),
+            prompt: step.prompt.trim(),
+            step_order: Number(step.step_order),
+            validation_config: {
+            slot: step.validation_config?.slot || "none",
+            ...(step.validation_config || {}),
+            },
         }))
         .sort((a, b) => a.step_order - b.step_order);
 
