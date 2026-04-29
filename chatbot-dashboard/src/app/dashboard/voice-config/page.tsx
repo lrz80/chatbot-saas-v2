@@ -135,7 +135,15 @@ export default function VoiceConfigPage() {
         const res = await fetch(`${BACKEND_URL}/api/voice-config?idioma=${idioma}&canal=${CHANNEL_KEY}`, {
           credentials: "include",
         });
+      
         const data = await res.json();
+
+        console.log("[VOICE_CONFIG][FETCH]", {
+          idiomaSolicitado: idioma,
+          idiomaDevuelto: data?.idioma,
+          funcionesPreview: data?.funciones_asistente?.slice?.(0, 80),
+          infoPreview: data?.info_clave?.slice?.(0, 120),
+        });
 
         // Sincroniza inputs controlados con la config
         setPromptVoz(data?.system_prompt || "");
