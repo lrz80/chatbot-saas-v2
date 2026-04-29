@@ -368,10 +368,12 @@ export default function VoiceConfigPage() {
         }
       }
 
+      const json = await res.json().catch(() => null);
+
       if (res.ok) {
         toast.success(t("voice.saved"));
       } else {
-        console.error("POST /api/voice-config error:", res.status, JSON);
+        console.error("POST /api/voice-config error:", res.status, json);
         toast.error(t("common.somethingWentWrong"));
       }
     } catch (err) {
