@@ -371,6 +371,7 @@ export default function VoiceConfigPage() {
       if (res.ok) {
         toast.success(t("voice.saved"));
       } else {
+        console.error("POST /api/voice-config error:", res.status, JSON);
         toast.error(t("common.somethingWentWrong"));
       }
     } catch (err) {
