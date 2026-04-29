@@ -9,6 +9,8 @@ type BookingStep = {
   step_key: string;
   step_order: number;
   prompt: string;
+  retry_prompt?: string;
+  validation_config?: any;
   expected_type: "text" | "datetime" | "confirmation" | "phone" | "email" | "number";
   required: boolean;
   enabled: boolean;
@@ -306,6 +308,60 @@ export default function AppointmentBookingFlowCard() {
                   Puedes usar variables como {"{service}"} y {"{datetime}"} en el paso de confirmación.
                 </p>
               </div>
+
+              <div className="mt-3">
+                <label className="block text-xs text-white/60 mb-1">
+                    Pregunta si no entiende (retry)
+                </label>
+                <textarea
+                    value={step.retry_prompt || ""}
+                    onChange={(e) =>
+                    updateStep(index, { retry_prompt: e.target.value })
+                    }
+                    rows={2}
+                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
+                />
+                </div>
+
+                <div className="mt-3">
+                <label className="block text-xs text-white/60 mb-2">
+                    Reglas de validación
+                </label>
+
+                {step.expected_type === "datetime" && (
+                    <div className="flex gap-4 text-sm">
+                    <label>
+                        <input
+                        type="checkbox"
+                        checked={step.validation_config?.requires_date || false}
+                        onChange={(e) =>
+                            updateStep(index, {
+                            validation_config: {
+                                ...step.validation_config,
+                                requires_date: e.target.checked,
+                            },
+                            })
+                        }
+                        /> Fecha
+                    </label>
+
+                    <label>
+                        <input
+                        type="checkbox"
+                        checked={step.validation_config?.requires_time || false}
+                        onChange={(e) =>
+                            updateStep(index, {
+                            validation_config: {
+                                ...step.validation_config,
+                                requires_time: e.target.checked,
+                            },
+                            })
+                        }
+                        /> Hora
+                    </label>
+                    </div>
+                )}
+                </div>
 
               <div className="mt-3 flex justify-end">
                 <button
