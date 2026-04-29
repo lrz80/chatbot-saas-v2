@@ -35,6 +35,11 @@ const BOOKING_SLOTS: BookingSlot[] = [
   "confirmation",
 ];
 
+const PHONE_MODES = [
+  "free_input",
+  "confirm_or_replace",
+] as const;
+
 const EXPECTED_TYPES = [
   "text",
   "datetime",
@@ -450,6 +455,65 @@ export default function AppointmentBookingFlowCard() {
                         /> Hora
                     </label>
                     </div>
+                )}
+                {step.expected_type === "phone" && (
+                <div className="space-y-3 text-sm">
+                    <div>
+                    <label className="block text-xs text-white/60 mb-1">
+                        Modo de teléfono
+                    </label>
+                    <select
+                        value={step.validation_config?.mode || "free_input"}
+                        onChange={(e) =>
+                        updateStep(index, {
+                            validation_config: {
+                            ...step.validation_config,
+                            mode: e.target.value,
+                            },
+                        })
+                        }
+                        className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white"
+                    >
+                        {PHONE_MODES.map((mode) => (
+                        <option key={mode} value={mode}>
+                            {mode}
+                        </option>
+                        ))}
+                    </select>
+                    </div>
+
+                    <label className="inline-flex items-center gap-2 text-sm text-white/80">
+                    <input
+                        type="checkbox"
+                        checked={step.validation_config?.use_inbound_caller || false}
+                        onChange={(e) =>
+                        updateStep(index, {
+                            validation_config: {
+                            ...step.validation_config,
+                            use_inbound_caller: e.target.checked,
+                            },
+                        })
+                        }
+                    />
+                    Usar número entrante como candidato
+                    </label>
+
+                    <label className="inline-flex items-center gap-2 text-sm text-white/80">
+                    <input
+                        type="checkbox"
+                        checked={step.validation_config?.mask_in_prompt || false}
+                        onChange={(e) =>
+                        updateStep(index, {
+                            validation_config: {
+                            ...step.validation_config,
+                            mask_in_prompt: e.target.checked,
+                            },
+                        })
+                        }
+                    />
+                    Mostrar número enmascarado en el prompt
+                    </label>
+                </div>
                 )}
                 </div>
 
