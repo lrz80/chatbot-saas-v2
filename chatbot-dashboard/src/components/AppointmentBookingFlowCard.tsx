@@ -16,6 +16,25 @@ type BookingStep = {
   enabled: boolean;
 };
 
+type BookingSlot =
+  | "none"
+  | "service"
+  | "datetime"
+  | "customer_name"
+  | "customer_phone"
+  | "customer_email"
+  | "confirmation";
+
+const BOOKING_SLOTS: BookingSlot[] = [
+  "none",
+  "service",
+  "datetime",
+  "customer_name",
+  "customer_phone",
+  "customer_email",
+  "confirmation",
+];
+
 const EXPECTED_TYPES = [
   "text",
   "datetime",
@@ -33,6 +52,9 @@ const DEFAULT_STEPS: BookingStep[] = [
     expected_type: "text",
     required: true,
     enabled: true,
+    validation_config: {
+      slot: "service",
+    },
   },
   {
     step_key: "datetime",
@@ -41,6 +63,11 @@ const DEFAULT_STEPS: BookingStep[] = [
     expected_type: "datetime",
     required: true,
     enabled: true,
+    validation_config: {
+      slot: "datetime",
+      requires_date: true,
+      requires_time: true,
+    },
   },
   {
     step_key: "confirm",
@@ -49,6 +76,9 @@ const DEFAULT_STEPS: BookingStep[] = [
     expected_type: "confirmation",
     required: true,
     enabled: true,
+    validation_config: {
+      slot: "confirmation",
+    },
   },
   {
     step_key: "success",
@@ -56,8 +86,11 @@ const DEFAULT_STEPS: BookingStep[] = [
     prompt: "Tu cita quedó confirmada para {service} el {datetime}. ¿Te ayudo en algo más?",
     expected_type: "text",
     required: false,
-    enabled: true
-  }
+    enabled: true,
+    validation_config: {
+      slot: "none",
+    },
+  },
 ];
 
 export default function AppointmentBookingFlowCard() {
@@ -113,7 +146,10 @@ export default function AppointmentBookingFlowCard() {
         expected_type: "text",
         required: true,
         enabled: true,
-      },
+        validation_config: {
+            slot: "none",
+        },
+      }
     ]);
   };
 
@@ -142,6 +178,24 @@ export default function AppointmentBookingFlowCard() {
 
       if (!hasConfirm) {
         throw new Error("El flujo necesita al menos un paso de confirmación.");
+      }
+
+      const activeSteps = normalized.filter((step) => step.enabled);
+
+      const hasDatetimeSlot = activeSteps.some(
+        (step) => step.validation_config?.slot === "datetime"
+      );
+
+      const hasConfirmationSlot = activeSteps.some(
+        (step) => step.validation_config?.slot === "confirmation"
+      );
+
+      if (!hasDatetimeSlot) {
+        throw new Error("El flujo necesita un paso con slot datetime.");
+      }
+
+      if (!hasConfirmationSlot) {
+        throw new Error("El flujo necesita un paso con slot confirmation.");
       }
 
       const res = await fetch(`${BACKEND_URL}/api/appointment-booking-flow`, {
@@ -270,6 +324,30 @@ export default function AppointmentBookingFlowCard() {
                     {EXPECTED_TYPES.map((type) => (
                       <option key={type} value={type}>
                         {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="lg:col-span-3">
+                  <label className="block text-xs text-white/60 mb-1">
+                    Slot de cita
+                  </label>
+                  <select
+                    value={step.validation_config?.slot || "none"}
+                    onChange={(e) =>
+                      updateStep(index, {
+                        validation_config: {
+                        ...step.validation_config,
+                        slot: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white"
+                >
+                    {BOOKING_SLOTS.map((slot) => (
+                      <option key={slot} value={slot}>
+                        {slot}
                       </option>
                     ))}
                   </select>
