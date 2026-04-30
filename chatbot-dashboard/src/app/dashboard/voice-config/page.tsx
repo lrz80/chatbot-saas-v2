@@ -113,12 +113,21 @@ export default function VoiceConfigPage() {
       const data = await res.json();
 
       if (res.ok && data?.ok && Array.isArray(data.items)) {
+        console.log("[VOICE_SCHEDULES][GET][OK]", data.items);
         setServiceSchedules(data.items);
       } else {
+        console.error("[VOICE_SCHEDULES][GET][BAD_RESPONSE]", {
+          status: res.status,
+          data,
+          tenantId,
+        });
         setServiceSchedules([]);
       }
     } catch (error) {
-      console.error("Error cargando horarios de servicios:", error);
+      console.error("[VOICE_SCHEDULES][GET][ERROR]", {
+        error,
+        tenantId,
+      });
       setServiceSchedules([]);
     } finally {
       setLoadingSchedules(false);
