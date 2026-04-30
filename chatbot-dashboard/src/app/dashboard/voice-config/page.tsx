@@ -94,7 +94,11 @@ export default function VoiceConfigPage() {
   ];
 
   const fetchServiceSchedules = async () => {
-    if (!tenantId) return;
+    if (!tenantId) {
+      setServiceSchedules([]);
+      setLoadingSchedules(false);
+      return;
+    }
 
     try {
       setLoadingSchedules(true);
