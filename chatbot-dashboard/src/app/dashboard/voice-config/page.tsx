@@ -94,6 +94,7 @@ export default function VoiceConfigPage() {
   ];
 
   const fetchServiceSchedules = async () => {
+    console.log("[VOICE_SCHEDULES][FETCH_START]", { tenantId });
     if (!tenantId) {
       setServiceSchedules([]);
       setLoadingSchedules(false);
@@ -362,6 +363,7 @@ export default function VoiceConfigPage() {
 
   // Historial (usar canal = 'voz' para coincidir con backend)
   useEffect(() => {
+    console.log("[VOICE_SCHEDULES][USE_EFFECT]", { tenantId });
     fetchServiceSchedules();
   }, [tenantId]);
 
