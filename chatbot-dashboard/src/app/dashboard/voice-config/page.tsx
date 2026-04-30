@@ -62,10 +62,11 @@ export default function VoiceConfigPage() {
   // ✨ Estado controlado
   const [funcionesVoz, setFuncionesVoz] = useState("");
   const [infoClaveVoz, setInfoClaveVoz] = useState("");
+  const [bookingServicesText, setBookingServicesText] = useState("");
   const [promptVoz, setPromptVoz] = useState("");
   const [bienvenidaVoz, setBienvenidaVoz] = useState("");
   const [voiceName, setVoiceName] = useState("alice");
-  const [voiceHints, setVoiceHints] = useState("");    // NEW
+  const [voiceHints, setVoiceHints] = useState("");
 
   const idiomasDisponibles = [
     { label: t("common.lang.es"), value: "es-ES" },
@@ -151,6 +152,7 @@ export default function VoiceConfigPage() {
         setVoiceHints(data?.voice_hints || "");
         setFuncionesVoz(data?.funciones_asistente || "");
         setInfoClaveVoz(data?.info_clave || "");
+        setBookingServicesText(data?.booking_services_text || "");
         setVoiceName(data?.voice_name || "alice");
         setRepresentanteNumber(data?.representante_number || "");
 
@@ -359,6 +361,7 @@ export default function VoiceConfigPage() {
     formData.set("voice_hints", voiceHints);
     formData.set("funciones_asistente", funcionesVoz);
     formData.set("info_clave", infoClaveVoz);
+    formData.set("booking_services_text", bookingServicesText);
     formData.set("voice_name", voiceName || "alice");
     formData.set("representante_number", representanteNumber.trim());
 
@@ -622,6 +625,23 @@ export default function VoiceConfigPage() {
               placeholder={t("voice.form.infoClave.placeholder")}
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
+          </div>
+          <div>
+            <label className="block text-white font-semibold mb-1">
+              Servicios agendables por voz
+            </label>
+            <textarea
+              name="booking_services_text"
+              value={bookingServicesText}
+              onChange={(e) => setBookingServicesText(e.target.value)}
+              rows={5}
+              placeholder={`Indoor Cycling | cycling, cycle, clases de cycling, clases de cycle
+          Functional Classes | functional, funcional, clases funcionales`}
+              className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+            />
+            <p className="text-xs text-white/70 mt-1">
+              Una línea por servicio. Formato: Nombre canónico | alias1, alias2, alias3
+            </p>
           </div>
         </div>
 
