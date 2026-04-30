@@ -23,7 +23,8 @@ export default function VoiceConfigPage() {
 
   const [idioma, setIdioma] = useState("es-ES");
   const tenant = useTenant();
-  const tenantId = tenant?.id;
+  const [resolvedTenantId, setResolvedTenantId] = useState("");
+  const tenantId = resolvedTenantId || tenant?.id || "";
   const tieneMembresia = tenant?.membresia_activa;
   const router = useRouter();
   type ChannelState = {
@@ -320,6 +321,9 @@ export default function VoiceConfigPage() {
         });
         if (!res.ok) return;
         const s = await res.json();
+        if (s?.tenant_id) {
+          setResolvedTenantId(String(s.tenant_id));
+        }
         // el backend debe devolver: trial_disponible, trial_vigente (o trial_activo), can_edit
         const tDisponible = Boolean(s.trial_disponible);
         const tActivo = Boolean(s.trial_vigente || s.trial_activo);
