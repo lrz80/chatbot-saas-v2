@@ -63,6 +63,16 @@ export default function VoiceConfigPage() {
   const [funcionesVoz, setFuncionesVoz] = useState("");
   const [infoClaveVoz, setInfoClaveVoz] = useState("");
   const [bookingServicesText, setBookingServicesText] = useState("");
+
+  type VoiceScheduleEditorItem = {
+    service_name: string;
+    day_of_week: number;
+    times: string[];
+  };
+
+  const [serviceSchedules, setServiceSchedules] = useState<VoiceScheduleEditorItem[]>([]);
+  const [loadingSchedules, setLoadingSchedules] = useState(true);
+
   const [promptVoz, setPromptVoz] = useState("");
   const [bienvenidaVoz, setBienvenidaVoz] = useState("");
   const [voiceName, setVoiceName] = useState("alice");
@@ -72,6 +82,126 @@ export default function VoiceConfigPage() {
     { label: t("common.lang.es"), value: "es-ES" },
     { label: t("common.lang.en"), value: "en-US" },
   ];
+
+  const dayOptions = [
+    { value: 0, label: "Domingo" },
+    { value: 1, label: "Lunes" },
+    { value: 2, label: "Martes" },
+    { value: 3, label: "Miércoles" },
+    { value: 4, label: "Jueves" },
+    { value: 5, label: "Viernes" },
+    { value: 6, label: "Sábado" },
+  ];
+
+  const fetchServiceSchedules = async () => {
+    if (!tenantId) return;
+
+    try {
+      setLoadingSchedules(true);
+
+      const res = await fetch(
+        `${BACKEND_URL}/api/appointment-service-schedules?tenant_id=${tenantId}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok && data?.ok && Array.isArray(data.items)) {
+        setServiceSchedules(data.items);
+      } else {
+        setServiceSchedules([]);
+      }
+    } catch (error) {
+      console.error("Error cargando horarios de servicios:", error);
+      setServiceSchedules([]);
+    } finally {
+      setLoadingSchedules(false);
+    }
+  };
+
+  const updateScheduleRow = (
+    index: number,
+    patch: Partial<VoiceScheduleEditorItem>
+  ) => {
+    setServiceSchedules((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, ...patch } : row))
+    );
+  };
+
+  const addScheduleRow = () => {
+    setServiceSchedules((prev) => [
+      ...prev,
+      {
+        service_name: "",
+        day_of_week: 1,
+        times: [],
+      },
+    ]);
+  };
+
+  const removeScheduleRow = (index: number) => {
+    setServiceSchedules((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateScheduleTimes = (index: number, raw: string) => {
+    const times = raw
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    setServiceSchedules((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, times } : row))
+    );
+  };
+
+  const saveServiceSchedules = async () => {
+    if (!tenantId) return false;
+
+    const cleaned = serviceSchedules
+      .map((row) => ({
+        service_name: String(row.service_name || "").trim(),
+        day_of_week: Number(row.day_of_week),
+        times: Array.isArray(row.times)
+          ? row.times.map((t) => String(t || "").trim()).filter(Boolean)
+          : [],
+      }))
+      .filter((row) => row.service_name && row.times.length > 0);
+
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/api/appointment-service-schedules`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tenant_id: tenantId,
+            items: cleaned,
+          }),
+        }
+      );
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.ok) {
+        console.error("Error guardando horarios:", data);
+        toast.error("No se pudieron guardar los horarios.");
+        return false;
+      }
+
+      if (Array.isArray(data.items)) {
+        setServiceSchedules(data.items);
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error guardando horarios:", error);
+      toast.error("No se pudieron guardar los horarios.");
+      return false;
+    }
+  };
 
   const [voiceOptions, setVoiceOptions] = useState<{ label: string; value: string }[]>([]);
   const [voiceMessages, setVoiceMessages] = useState<any[]>([]);
@@ -218,6 +348,10 @@ export default function VoiceConfigPage() {
   }, []);
 
   // Historial (usar canal = 'voz' para coincidir con backend)
+  useEffect(() => {
+    fetchServiceSchedules();
+  }, [tenantId]);
+
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -392,7 +526,11 @@ export default function VoiceConfigPage() {
       const json = await res.json().catch(() => null);
 
       if (res.ok) {
-        toast.success(t("voice.saved"));
+        const schedulesOk = await saveServiceSchedules();
+
+        if (schedulesOk) {
+          toast.success(t("voice.saved"));
+        }
       } else {
         console.error("POST /api/voice-config error:", res.status, json);
         toast.error(json?.error || t("common.somethingWentWrong"));
@@ -641,6 +779,99 @@ export default function VoiceConfigPage() {
             />
             <p className="text-xs text-white/70 mt-1">
               Una línea por servicio. Formato: Nombre canónico | alias1, alias2, alias3
+            </p>
+          </div>
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-white font-semibold">
+                Horarios por servicio (voz)
+              </label>
+
+              <button
+                type="button"
+                onClick={addScheduleRow}
+                className="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                disabled={disabledAll}
+              >
+                Agregar horario
+              </button>
+            </div>
+
+            {loadingSchedules ? (
+              <div className="text-white/70 text-sm">Cargando horarios...</div>
+            ) : serviceSchedules.length === 0 ? (
+              <div className="text-white/70 text-sm mb-3">
+                No hay horarios configurados todavía.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {serviceSchedules.map((row, index) => (
+                  <div
+                    key={`${row.service_name}-${row.day_of_week}-${index}`}
+                    className="grid grid-cols-1 md:grid-cols-12 gap-3 bg-white/5 border border-white/10 rounded p-3"
+                  >
+                    <div className="md:col-span-4">
+                      <label className="block text-xs text-white/70 mb-1">Servicio</label>
+                      <input
+                        type="text"
+                        value={row.service_name}
+                        onChange={(e) =>
+                          updateScheduleRow(index, { service_name: e.target.value })
+                        }
+                        className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+                        placeholder="Indoor Cycling"
+                      />
+                    </div>
+
+                    <div className="md:col-span-3">
+                      <label className="block text-xs text-white/70 mb-1">Día</label>
+                      <select
+                        value={row.day_of_week}
+                        onChange={(e) =>
+                          updateScheduleRow(index, {
+                            day_of_week: Number(e.target.value),
+                          })
+                        }
+                        className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+                      >
+                        {dayOptions.map((day) => (
+                          <option key={day.value} value={day.value} className="text-black">
+                            {day.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="md:col-span-4">
+                      <label className="block text-xs text-white/70 mb-1">
+                        Horas (HH:mm separadas por coma)
+                      </label>
+                      <input
+                        type="text"
+                        value={row.times.join(", ")}
+                        onChange={(e) => updateScheduleTimes(index, e.target.value)}
+                        className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+                        placeholder="06:00, 09:00, 18:30"
+                      />
+                    </div>
+
+                    <div className="md:col-span-1 flex items-end">
+                      <button
+                        type="button"
+                        onClick={() => removeScheduleRow(index)}
+                        className="w-full px-3 py-2 rounded bg-red-600 hover:bg-red-700 text-white text-sm"
+                        disabled={disabledAll}
+                      >
+                        ✖
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <p className="text-xs text-white/70 mt-2">
+              Configura los horarios válidos por servicio. Aamy solo debe agendar horas que existan aquí.
             </p>
           </div>
         </div>
