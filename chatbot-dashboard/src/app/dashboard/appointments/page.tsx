@@ -9,6 +9,8 @@ import { io, Socket } from "socket.io-client";
 import AppointmentSettingsCard from "@/components/AppointmentSettingsCard";
 import { useI18n } from "@/i18n/LanguageProvider";
 import AppointmentBookingFlowCard from "@/components/AppointmentBookingFlowCard";
+import ServiceBookingRulesCard from "@/components/ServiceBookingRulesCard";
+import CollapsibleCard from "@/components/CollapsibleCard";
 
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended';
 
@@ -879,9 +881,30 @@ export default function AppointmentsPage() {
             )}
           </div>
 
-          <AppointmentSettingsCard />
+          <CollapsibleCard
+            title="Appointment settings"
+            subtitle="Duración, buffer, anticipación mínima y zona horaria."
+            defaultOpen={true}
+          >
+            <AppointmentSettingsCard />
+          </CollapsibleCard>
 
-          <AppointmentBookingFlowCard />
+          <CollapsibleCard
+            title="Booking rules by service"
+            subtitle="Configura capacidad, duración y modo por servicio."
+            defaultOpen={false}
+          >
+            <ServiceBookingRulesCard />
+          </CollapsibleCard>
+
+          <CollapsibleCard
+            title="Voice booking flow"
+            subtitle="Define los pasos del flujo de agendado por voz."
+            defaultOpen={false}
+          >
+            <AppointmentBookingFlowCard />
+          </CollapsibleCard>
+
         </header>
 
         {error && (
