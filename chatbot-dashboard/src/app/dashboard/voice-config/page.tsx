@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTenant } from "@/context/TenantContext";
 import { toast } from "react-toastify";
-import { Brain, User, Bot, Link } from "lucide-react";
+import { Brain, User, Bot, Link, ChevronDown } from "lucide-react";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
@@ -73,6 +73,7 @@ export default function VoiceConfigPage() {
 
   const [serviceSchedules, setServiceSchedules] = useState<VoiceScheduleEditorItem[]>([]);
   const [loadingSchedules, setLoadingSchedules] = useState(true);
+  const [schedulesOpen, setSchedulesOpen] = useState(false);
 
   const [promptVoz, setPromptVoz] = useState("");
   const [bienvenidaVoz, setBienvenidaVoz] = useState("");
@@ -800,98 +801,119 @@ export default function VoiceConfigPage() {
               Una línea por servicio. Formato: Nombre canónico | alias1, alias2, alias3
             </p>
           </div>
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-3">
-              <label className="block text-white font-semibold">
-                Horarios por servicio (voz)
-              </label>
-
-              <button
-                type="button"
-                onClick={addScheduleRow}
-                className="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
-                disabled={disabledAll}
-              >
-                Agregar horario
-              </button>
-            </div>
-
-            {loadingSchedules ? (
-              <div className="text-white/70 text-sm">Cargando horarios...</div>
-            ) : serviceSchedules.length === 0 ? (
-              <div className="text-white/70 text-sm mb-3">
-                No hay horarios configurados todavía.
+          <div className="mt-6 rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setSchedulesOpen((prev) => !prev)}
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition"
+            >
+              <div>
+                <div className="text-white font-semibold">
+                  Horarios por servicio (voz)
+                </div>
+                <div className="text-xs text-white/60 mt-1">
+                  Configura los horarios válidos por servicio para el agendado por voz.
+                </div>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {serviceSchedules.map((row, index) => (
-                  <div
-                    key={`${row.service_name}-${row.day_of_week}-${index}`}
-                    className="grid grid-cols-1 md:grid-cols-12 gap-3 bg-white/5 border border-white/10 rounded p-3"
+
+              <ChevronDown
+                className={`w-5 h-5 text-white/70 transition-transform ${
+                  schedulesOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {schedulesOpen && (
+              <div className="px-4 pb-4">
+                <div className="flex items-center justify-end mb-3">
+                  <button
+                    type="button"
+                    onClick={addScheduleRow}
+                    className="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                    disabled={disabledAll}
                   >
-                    <div className="md:col-span-4">
-                      <label className="block text-xs text-white/70 mb-1">Servicio</label>
-                      <input
-                        type="text"
-                        value={row.service_name}
-                        onChange={(e) =>
-                          updateScheduleRow(index, { service_name: e.target.value })
-                        }
-                        className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
-                        placeholder="Indoor Cycling"
-                      />
-                    </div>
+                    Agregar horario
+                  </button>
+                </div>
 
-                    <div className="md:col-span-3">
-                      <label className="block text-xs text-white/70 mb-1">Día</label>
-                      <select
-                        value={row.day_of_week}
-                        onChange={(e) =>
-                          updateScheduleRow(index, {
-                            day_of_week: Number(e.target.value),
-                          })
-                        }
-                        className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
-                      >
-                        {dayOptions.map((day) => (
-                          <option key={day.value} value={day.value} className="text-black">
-                            {day.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="md:col-span-4">
-                      <label className="block text-xs text-white/70 mb-1">
-                        Horas (HH:mm separadas por coma)
-                      </label>
-                      <input
-                        type="text"
-                        value={row.times.join(", ")}
-                        onChange={(e) => updateScheduleTimes(index, e.target.value)}
-                        className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
-                        placeholder="06:00, 09:00, 18:30"
-                      />
-                    </div>
-
-                    <div className="md:col-span-1 flex items-end">
-                      <button
-                        type="button"
-                        onClick={() => removeScheduleRow(index)}
-                        className="w-full px-3 py-2 rounded bg-red-600 hover:bg-red-700 text-white text-sm"
-                        disabled={disabledAll}
-                      >
-                        ✖
-                      </button>
-                    </div>
+                {loadingSchedules ? (
+                  <div className="text-white/70 text-sm">Cargando horarios...</div>
+                ) : serviceSchedules.length === 0 ? (
+                  <div className="text-white/70 text-sm mb-3">
+                    No hay horarios configurados todavía.
                   </div>
-                ))}
+                ) : (
+                  <div className="space-y-3">
+                    {serviceSchedules.map((row, index) => (
+                      <div
+                        key={`${row.service_name}-${row.day_of_week}-${index}`}
+                        className="grid grid-cols-1 md:grid-cols-12 gap-3 bg-white/5 border border-white/10 rounded p-3"
+                      >
+                        <div className="md:col-span-4">
+                          <label className="block text-xs text-white/70 mb-1">Servicio</label>
+                          <input
+                            type="text"
+                            value={row.service_name}
+                            onChange={(e) =>
+                              updateScheduleRow(index, { service_name: e.target.value })
+                            }
+                            className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+                            placeholder="Indoor Cycling"
+                          />
+                        </div>
+
+                        <div className="md:col-span-3">
+                          <label className="block text-xs text-white/70 mb-1">Día</label>
+                          <select
+                            value={row.day_of_week}
+                            onChange={(e) =>
+                              updateScheduleRow(index, {
+                                day_of_week: Number(e.target.value),
+                              })
+                            }
+                            className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+                          >
+                            {dayOptions.map((day) => (
+                              <option key={day.value} value={day.value} className="text-black">
+                                {day.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="md:col-span-4">
+                          <label className="block text-xs text-white/70 mb-1">
+                            Horas (HH:mm separadas por coma)
+                          </label>
+                          <input
+                            type="text"
+                            value={row.times.join(", ")}
+                            onChange={(e) => updateScheduleTimes(index, e.target.value)}
+                            className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
+                            placeholder="06:00, 09:00, 18:30"
+                          />
+                        </div>
+
+                        <div className="md:col-span-1 flex items-end">
+                          <button
+                            type="button"
+                            onClick={() => removeScheduleRow(index)}
+                            className="w-full px-3 py-2 rounded bg-red-600 hover:bg-red-700 text-white text-sm"
+                            disabled={disabledAll}
+                          >
+                            ✖
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <p className="text-xs text-white/70 mt-2">
+                  Configura los horarios válidos por servicio. Aamy solo debe agendar horas que existan aquí.
+                </p>
               </div>
             )}
-
-            <p className="text-xs text-white/70 mt-2">
-              Configura los horarios válidos por servicio. Aamy solo debe agendar horas que existan aquí.
-            </p>
           </div>
         </div>
 
