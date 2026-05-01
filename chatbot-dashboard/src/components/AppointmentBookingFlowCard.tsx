@@ -424,6 +424,7 @@ export default function AppointmentBookingFlowCard() {
                 </label>
 
                 {step.expected_type === "datetime" && (
+                <div className="space-y-3 text-sm">
                     <div className="flex gap-4 text-sm">
                     <label>
                         <input
@@ -437,7 +438,8 @@ export default function AppointmentBookingFlowCard() {
                             },
                             })
                         }
-                        /> Fecha
+                        />{" "}
+                        Fecha
                     </label>
 
                     <label>
@@ -452,9 +454,34 @@ export default function AppointmentBookingFlowCard() {
                             },
                             })
                         }
-                        /> Hora
+                        />{" "}
+                        Hora
                     </label>
                     </div>
+
+                    <div>
+                    <label className="block text-xs text-white/60 mb-1">
+                        Mensaje si el horario no está disponible
+                    </label>
+                    <textarea
+                        value={step.validation_config?.unavailable_prompt || ""}
+                        onChange={(e) =>
+                        updateStep(index, {
+                            validation_config: {
+                            ...step.validation_config,
+                            unavailable_prompt: e.target.value,
+                            },
+                        })
+                        }
+                        rows={2}
+                        placeholder="Ese horario no está disponible para {requested_service}. Los horarios disponibles son {available_times}. ¿Qué día y hora te gustaría?"
+                        className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
+                    />
+                    <p className="text-[11px] text-white/40 mt-1">
+                        Puedes usar variables como {"{requested_service}"} y {"{available_times}"}.
+                    </p>
+                    </div>
+                </div>
                 )}
                 {step.expected_type === "phone" && (
                 <div className="space-y-3 text-sm">
