@@ -13,23 +13,8 @@ type ServiceBookingRule = {
   slotCapacity: number;
 };
 
-const DEFAULT_ROWS: ServiceBookingRule[] = [
-  {
-    serviceName: "Indoor Cycling",
-    durationMin: 45,
-    bookingMode: "shared",
-    slotCapacity: 30,
-  },
-  {
-    serviceName: "Functional Classes",
-    durationMin: 45,
-    bookingMode: "shared",
-    slotCapacity: 20,
-  },
-];
-
 export default function ServiceBookingRulesCard() {
-  const [rows, setRows] = useState<ServiceBookingRule[]>(DEFAULT_ROWS);
+  const [rows, setRows] = useState<ServiceBookingRule[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +35,7 @@ export default function ServiceBookingRulesCard() {
 
         const data = await res.json();
 
-        if (Array.isArray(data?.rules) && data.rules.length > 0) {
+        if (Array.isArray(data?.rules)) {
           setRows(
             data.rules.map((rule: any) => ({
               serviceName: String(rule.service_name || ""),
@@ -59,6 +44,8 @@ export default function ServiceBookingRulesCard() {
               slotCapacity: Number(rule.slot_capacity || 1),
             }))
           );
+        } else {
+          setRows([]);
         }
       } catch (err) {
         console.error("❌ Error cargando reglas por servicio:", err);
