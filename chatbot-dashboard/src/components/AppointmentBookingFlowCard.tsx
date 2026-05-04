@@ -83,6 +83,7 @@ const DEFAULT_STEPS: BookingStep[] = [
     enabled: true,
     validation_config: {
       slot: "confirmation",
+      cancel_message: "No hay problema. No se realizó la reserva. ¿Puedo ayudarte con algo más?",
     },
   },
   {
@@ -419,9 +420,9 @@ export default function AppointmentBookingFlowCard() {
                 </div>
 
                 <div className="mt-3">
-                <label className="block text-xs text-white/60 mb-2">
-                    Reglas de validación
-                </label>
+                  <label className="block text-xs text-white/60 mb-2">
+                      Reglas de validación
+                  </label>
 
                 {step.expected_type === "datetime" && (
                 <div className="space-y-3 text-sm">
@@ -483,6 +484,34 @@ export default function AppointmentBookingFlowCard() {
                     </div>
                 </div>
                 )}
+
+                {step.expected_type === "confirmation" && (
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <label className="block text-xs text-white/60 mb-1">
+                        Mensaje si el cliente no confirma
+                      </label>
+                      <textarea
+                        value={step.validation_config?.cancel_message || ""}
+                        onChange={(e) =>
+                          updateStep(index, {
+                            validation_config: {
+                              ...step.validation_config,
+                              cancel_message: e.target.value,
+                            },
+                          })
+                        }
+                        rows={2}
+                        placeholder="No hay problema. No se realizó la reserva. ¿Puedo ayudarte con algo más?"
+                        className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
+                      />
+                      <p className="text-[11px] text-white/40 mt-1">
+                        Este mensaje se usa cuando el cliente responde que no en la confirmación final.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {step.expected_type === "phone" && (
                 <div className="space-y-3 text-sm">
                     <div>
