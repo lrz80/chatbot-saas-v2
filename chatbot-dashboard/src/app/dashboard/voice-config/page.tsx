@@ -77,6 +77,7 @@ export default function VoiceConfigPage() {
 
   const [promptVoz, setPromptVoz] = useState("");
   const [bienvenidaVoz, setBienvenidaVoz] = useState("");
+  const [mainMenuPrompt, setMainMenuPrompt] = useState("");
   const [voiceName, setVoiceName] = useState("alice");
   const [voiceHints, setVoiceHints] = useState("");
 
@@ -295,6 +296,7 @@ export default function VoiceConfigPage() {
         // Sincroniza inputs controlados con la config
         setPromptVoz(data?.system_prompt || "");
         setBienvenidaVoz(data?.welcome_message || "");
+        setMainMenuPrompt(data?.main_menu_prompt || "");
         setVoiceHints(data?.voice_hints || "");
         setFuncionesVoz(data?.funciones_asistente || "");
         setInfoClaveVoz(data?.info_clave || "");
@@ -512,6 +514,7 @@ export default function VoiceConfigPage() {
 
     formData.set("system_prompt", promptVoz);
     formData.set("welcome_message", bienvenidaVoz);
+    formData.set("main_menu_prompt", mainMenuPrompt);
     formData.set("voice_hints", voiceHints);
     formData.set("funciones_asistente", funcionesVoz);
     formData.set("info_clave", infoClaveVoz);
@@ -953,8 +956,22 @@ export default function VoiceConfigPage() {
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
 
-            <input type="hidden" name="voice_name" value={voiceName || "alice"} 
+            <label className="block text-white font-semibold mt-4 mb-1">
+              Prompt del menú principal
+            </label>
+            <textarea
+              name="main_menu_prompt"
+              value={mainMenuPrompt}
+              onChange={(e) => setMainMenuPrompt(e.target.value)}
+              rows={3}
+              placeholder="Puedes decirme que quieres reservar, o marcar 1 para precios, 2 para horarios o 3 para ubicación."
+              className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white resize-y"
             />
+            <p className="text-xs text-white/70 mt-1">
+              Este mensaje se usa en el menú inicial de voz después de la bienvenida.
+            </p>
+
+            <input type="hidden" name="voice_name" value={voiceName || "alice"} />
 
             <label className="block text-white font-semibold mt-4 mb-1">{t("voice.form.hints.label")}</label>
             <input
