@@ -396,53 +396,83 @@ export default function VoiceConfigPage() {
   useEffect(() => {
     const fetchLinksUtiles = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/voice-links`, {
+        const params = new URLSearchParams({
+          canal: CHANNEL_KEY,
+          idioma,
+        });
+
+        const res = await fetch(`${BACKEND_URL}/api/voice-links?${params.toString()}`, {
           credentials: "include",
         });
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          console.error("GET /api/voice-links failed:", res.status, err);
+          console.error("GET /api/voice-links failed:", {
+            status: res.status,
+            err,
+            idioma,
+            canal: CHANNEL_KEY,
+          });
+
           if (res.status === 401 || res.status === 403) {
             toast.warn("No autorizado para ver links. Inicia sesión nuevamente.");
           } else {
             toast.error("No se pudieron cargar los links útiles.");
           }
+
           setLinksUtiles([]);
           return;
         }
 
         const data = await res.json();
+
         if (Array.isArray(data)) {
           setLinksUtiles(data);
         } else {
-          console.warn("GET /api/voice-links no devolvió array:", data);
+          console.warn("GET /api/voice-links no devolvió array:", {
+            data,
+            idioma,
+            canal: CHANNEL_KEY,
+          });
           setLinksUtiles([]);
         }
       } catch (err) {
-        console.error("Error cargando links útiles:", err);
+        console.error("Error cargando links útiles:", {
+          err,
+          idioma,
+          canal: CHANNEL_KEY,
+        });
         setLinksUtiles([]);
       }
     };
 
     fetchLinksUtiles();
-  }, []); // <- sin tenantId en dependencias
+  }, [idioma]);
 
   const agregarLink = async () => {
     try {
+      const payload = {
+        ...nuevoLink,
+        canal: CHANNEL_KEY,
+        idioma,
+      };
+
       const res = await fetch(`${BACKEND_URL}/api/voice-links`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(nuevoLink),
+        body: JSON.stringify(payload),
       });
 
-      // 👇 Manejo del 403 por canal bloqueado
       if (res.status === 403) {
         let data: any = {};
-        try { data = await res.json(); } catch {}
+        try {
+          data = await res.json();
+        } catch {}
+
         if (data?.error === "channel_blocked") {
           const st = await refreshChannelVoice();
+
           if (st?.maintenance) {
             toast.warning(`🛠️ Voz en mantenimiento. ${st.maintenance_message || ""}`);
           } else if (!st?.plan_enabled) {
@@ -450,6 +480,7 @@ export default function VoiceConfigPage() {
           } else {
             toast.warning("📴 Voz deshabilitado en tu configuración.");
           }
+
           return;
         }
       }
@@ -459,19 +490,37 @@ export default function VoiceConfigPage() {
       if (res.ok) {
         toast.success(t("voice.links.added"));
         setNuevoLink({ tipo: "", nombre: "", url: "" });
-        if (data && Array.isArray(data)) {
+
+        if (Array.isArray(data)) {
           setLinksUtiles(data);
         } else {
-          const res2 = await fetch(`${BACKEND_URL}/api/voice-links`, { credentials: "include" });
+          const params = new URLSearchParams({
+            canal: CHANNEL_KEY,
+            idioma,
+          });
+
+          const res2 = await fetch(`${BACKEND_URL}/api/voice-links?${params.toString()}`, {
+            credentials: "include",
+          });
+
           const data2 = await res2.json().catch(() => []);
           setLinksUtiles(Array.isArray(data2) ? data2 : []);
         }
       } else {
-        console.error("POST /api/voice-links error:", res.status, data);
+        console.error("POST /api/voice-links error:", {
+          status: res.status,
+          data,
+          idioma,
+          canal: CHANNEL_KEY,
+        });
         toast.error(t("voice.links.addError"));
       }
     } catch (err) {
-      console.error("Error al agregar link:", err);
+      console.error("Error al agregar link:", {
+        err,
+        idioma,
+        canal: CHANNEL_KEY,
+      });
     }
   };
  
