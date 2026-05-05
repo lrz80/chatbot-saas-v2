@@ -56,6 +56,35 @@ const BOOKING_FLOW_LOCALES = [
   { value: "en-US", label: "English" },
 ] as const;
 
+const PRIMARY_BOOKING_FLOW_LOCALE = "es-ES";
+
+function normalizeLocalizedMap(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .map(([key, rawValue]) => [String(key).trim(), String(rawValue ?? "").trim()])
+      .filter(([key, text]) => key && text)
+  );
+}
+
+function buildLocalizedMapFromStep(params: {
+  existing?: Record<string, string>;
+  fallbackValue?: string;
+}) {
+  return Object.fromEntries(
+    BOOKING_FLOW_LOCALES.map(({ value }, localeIndex) => [
+      value,
+      (
+        params.existing?.[value] ||
+        (localeIndex === 0 ? params.fallbackValue || "" : "")
+      ).trim(),
+    ]).filter(([, value]) => value)
+  );
+}
+
 const DEFAULT_STEPS: BookingStep[] = [
   {
     step_key: "service",
@@ -207,35 +236,53 @@ export default function AppointmentBookingFlowCard() {
       setOk(null);
 
       const normalized = steps
-        .map((step) => ({
-          ...step,
-          step_key: step.step_key.trim(),
-          prompt: step.prompt.trim(),
-          retry_prompt: (step.retry_prompt || "").trim(),
-          step_order: Number(step.step_order),
-          prompt_translations: Object.fromEntries(
-            BOOKING_FLOW_LOCALES.map(({ value }, localeIndex) => [
+        .map((step) => {
+          const promptTranslations = Object.fromEntries(
+            BOOKING_FLOW_LOCALES.map(({ value }) => [
               value,
-              (
-                step.prompt_translations?.[value] ||
-                (localeIndex === 0 ? step.prompt || "" : "")
-              ).trim(),
+              (step.prompt_translations?.[value] || "").trim(),
             ]).filter(([, value]) => value)
-          ),
-          retry_prompt_translations: Object.fromEntries(
-            BOOKING_FLOW_LOCALES.map(({ value }, localeIndex) => [
+          );
+
+          const retryPromptTranslations = Object.fromEntries(
+            BOOKING_FLOW_LOCALES.map(({ value }) => [
               value,
-              (
-                step.retry_prompt_translations?.[value] ||
-                (localeIndex === 0 ? step.retry_prompt || "" : "")
-              ).trim(),
+              (step.retry_prompt_translations?.[value] || "").trim(),
             ]).filter(([, value]) => value)
-          ),
-          validation_config: {
-            slot: step.validation_config?.slot || "none",
-            ...(step.validation_config || {}),
-          },
-        }))
+          );
+
+          const promptFallback =
+            promptTranslations[PRIMARY_BOOKING_FLOW_LOCALE] ||
+            Object.values(promptTranslations)[0] ||
+            "";
+
+          const retryPromptFallback =
+            retryPromptTranslations[PRIMARY_BOOKING_FLOW_LOCALE] ||
+            Object.values(retryPromptTranslations)[0] ||
+            "";
+
+          return {
+            ...step,
+            step_key: step.step_key.trim(),
+            prompt: promptFallback,
+            retry_prompt: retryPromptFallback,
+            step_order: Number(step.step_order),
+            prompt_translations: promptTranslations,
+            retry_prompt_translations: retryPromptTranslations,
+            validation_config: {
+              slot: step.validation_config?.slot || "none",
+              ...(step.validation_config || {}),
+              cancel_message_translations: buildLocalizedMapFromStep({
+                existing: normalizeLocalizedMap(step.validation_config?.cancel_message_translations),
+                fallbackValue: step.validation_config?.cancel_message || "",
+              }),
+              unavailable_prompt_translations: buildLocalizedMapFromStep({
+                existing: normalizeLocalizedMap(step.validation_config?.unavailable_prompt_translations),
+                fallbackValue: step.validation_config?.unavailable_prompt || "",
+              }),
+            },
+          };
+        })
         .sort((a, b) => a.step_order - b.step_order);
 
       const hasConfirm = normalized.some(
@@ -447,17 +494,7 @@ export default function AppointmentBookingFlowCard() {
               </div>
 
               <div className="mt-3">
-                <label className="block text-xs text-white/60 mb-1">
-                  Pregunta de Amy (fallback/base)
-                </label>
-                <textarea
-                  value={step.prompt}
-                  onChange={(e) => updateStep(index, { prompt: e.target.value })}
-                  rows={2}
-                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {BOOKING_FLOW_LOCALES.map(({ value, label }) => (
                     <div key={`prompt-${value}`}>
                       <label className="block text-xs text-white/60 mb-1">
@@ -486,41 +523,29 @@ export default function AppointmentBookingFlowCard() {
               </div>
 
               <div className="mt-3">
-                  <label className="block text-xs text-white/60 mb-1">
-                    Pregunta si no entiende (retry fallback/base)
-                  </label>
-                  <textarea
-                    value={step.retry_prompt || ""}
-                    onChange={(e) =>
-                      updateStep(index, { retry_prompt: e.target.value })
-                    }
-                    rows={2}
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                    {BOOKING_FLOW_LOCALES.map(({ value, label }) => (
-                      <div key={`retry-${value}`}>
-                        <label className="block text-xs text-white/60 mb-1">
-                          Retry {label}
-                        </label>
-                        <textarea
-                          value={step.retry_prompt_translations?.[value] || ""}
-                          onChange={(e) =>
-                            updateStep(index, {
-                              retry_prompt_translations: {
-                                ...(step.retry_prompt_translations || {}),
-                                [value]: e.target.value,
-                              },
-                            })
-                          }
-                          rows={2}
-                          className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {BOOKING_FLOW_LOCALES.map(({ value, label }) => (
+                    <div key={`retry-${value}`}>
+                      <label className="block text-xs text-white/60 mb-1">
+                        Retry {label}
+                      </label>
+                      <textarea
+                        value={step.retry_prompt_translations?.[value] || ""}
+                        onChange={(e) =>
+                          updateStep(index, {
+                            retry_prompt_translations: {
+                              ...(step.retry_prompt_translations || {}),
+                              [value]: e.target.value,
+                            },
+                          })
+                        }
+                        rows={2}
+                        className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
+                      />
+                    </div>
+                  ))}
                 </div>
+              </div>
 
                 <div className="mt-3">
                   <label className="block text-xs text-white/60 mb-2">
@@ -564,54 +589,70 @@ export default function AppointmentBookingFlowCard() {
                     </div>
 
                     <div>
-                    <label className="block text-xs text-white/60 mb-1">
-                        Mensaje si el horario no está disponible
-                    </label>
-                    <textarea
-                        value={step.validation_config?.unavailable_prompt || ""}
-                        onChange={(e) =>
-                        updateStep(index, {
-                            validation_config: {
-                            ...step.validation_config,
-                            unavailable_prompt: e.target.value,
-                            },
-                        })
-                        }
-                        rows={2}
-                        placeholder="Ese horario no está disponible para {requested_service}. Los horarios disponibles son {available_times}. ¿Qué día y hora te gustaría?"
-                        className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
-                    />
-                    <p className="text-[11px] text-white/40 mt-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {BOOKING_FLOW_LOCALES.map(({ value, label }) => (
+                          <div key={`unavailable-prompt-${value}`}>
+                            <label className="block text-xs text-white/60 mb-1">
+                              Unavailable prompt {label}
+                            </label>
+                            <textarea
+                              value={step.validation_config?.unavailable_prompt_translations?.[value] || ""}
+                              onChange={(e) =>
+                                updateStep(index, {
+                                  validation_config: {
+                                    ...step.validation_config,
+                                    unavailable_prompt_translations: {
+                                      ...(step.validation_config?.unavailable_prompt_translations || {}),
+                                      [value]: e.target.value,
+                                    },
+                                  },
+                                })
+                              }
+                              rows={2}
+                              className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      <p className="text-[11px] text-white/40 mt-1">
                         Puedes usar variables como {"{requested_service}"} y {"{available_times}"}.
-                    </p>
+                      </p>
                     </div>
-                </div>
+                  </div>
                 )}
 
                 {step.expected_type === "confirmation" && (
                   <div className="space-y-3 text-sm">
-                    <div>
-                      <label className="block text-xs text-white/60 mb-1">
-                        Mensaje si el cliente no confirma
-                      </label>
-                      <textarea
-                        value={step.validation_config?.cancel_message || ""}
-                        onChange={(e) =>
-                          updateStep(index, {
-                            validation_config: {
-                              ...step.validation_config,
-                              cancel_message: e.target.value,
-                            },
-                          })
-                        }
-                        rows={2}
-                        placeholder="No hay problema. No se realizó la reserva. ¿Puedo ayudarte con algo más?"
-                        className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
-                      />
-                      <p className="text-[11px] text-white/40 mt-1">
-                        Este mensaje se usa cuando el cliente responde que no en la confirmación final.
-                      </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {BOOKING_FLOW_LOCALES.map(({ value, label }) => (
+                        <div key={`cancel-message-${value}`}>
+                          <label className="block text-xs text-white/60 mb-1">
+                            Cancel message {label}
+                          </label>
+                          <textarea
+                            value={step.validation_config?.cancel_message_translations?.[value] || ""}
+                            onChange={(e) =>
+                              updateStep(index, {
+                                validation_config: {
+                                  ...step.validation_config,
+                                  cancel_message_translations: {
+                                    ...(step.validation_config?.cancel_message_translations || {}),
+                                    [value]: e.target.value,
+                                  },
+                                },
+                              })
+                            }
+                            rows={2}
+                            className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
+                          />
+                        </div>
+                      ))}
                     </div>
+
+                    <p className="text-[11px] text-white/40 mt-1">
+                      Este mensaje se usa cuando el cliente responde que no en la confirmación final.
+                    </p>
                   </div>
                 )}
 
