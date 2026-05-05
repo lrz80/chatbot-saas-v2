@@ -1068,26 +1068,36 @@ export default function VoiceConfigPage() {
 
           <ul className="text-white space-y-2">
             {linksUtiles.map((link) => (
-              <li key={link.id} className="flex justify-between items-center bg-white/5 p-3 rounded-md">
-                <span className="text-sm">
-                  <strong>{link.tipo}</strong>: {link.nombre} —{" "}
-                  <a href={link.url} target="_blank" rel="noreferrer" className="underline">
+              <li
+                key={link.id}
+                className="flex items-start justify-between gap-3 bg-white/5 p-3 rounded-md"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-white break-words">
+                    <strong>{link.tipo}</strong>: {link.nombre}
+                  </p>
+
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-1 block text-sm underline break-words [overflow-wrap:anywhere]"
+                    title={link.url}
+                  >
                     {link.url}
                   </a>
-                </span>
+                </div>
+
                 <button
                   type="button"
                   onClick={(e) => {
-                    // Bloquea por plan o membresía
                     if (disabledAll || !tieneMembresia) return;
-                    // (Opcional) si usas verificarPermiso:
-                    // if (!verificarPermiso(e)) return;
                     eliminarLink(link.id);
                   }}
                   disabled={disabledAll || !tieneMembresia}
                   aria-disabled={disabledAll || !tieneMembresia}
                   tabIndex={(disabledAll || !tieneMembresia) ? -1 : 0}
-                  className={`text-lg font-bold ml-4 ${
+                  className={`shrink-0 text-lg font-bold ${
                     (disabledAll || !tieneMembresia)
                       ? "text-white/40 cursor-not-allowed"
                       : "text-red-500 hover:text-red-700"
