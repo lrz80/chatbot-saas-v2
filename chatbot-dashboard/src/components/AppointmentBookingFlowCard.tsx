@@ -124,12 +124,60 @@ const DEFAULT_STEPS: BookingStep[] = [
     },
   },
   {
-    step_key: "confirm",
+    step_key: "customer_name",
     step_order: 3,
+    prompt: "¿Cuál es tu nombre y apellido?",
+    prompt_translations: {
+      "es-ES": "¿Cuál es tu nombre y apellido?",
+      "en-US": "What is your first and last name?",
+    },
+    retry_prompt: "¿Puedes repetirme tu nombre y apellido, por favor?",
+    retry_prompt_translations: {
+      "es-ES": "¿Puedes repetirme tu nombre y apellido, por favor?",
+      "en-US": "Can you repeat your first and last name, please?",
+    },
+    expected_type: "text",
+    required: true,
+    enabled: true,
+    validation_config: {
+      slot: "customer_name",
+    },
+  },
+  {
+    step_key: "customer_phone",
+    step_order: 4,
+    prompt: "¿Este es el mejor número para contactarte?",
+    prompt_translations: {
+      "es-ES": "¿Este es el mejor número para contactarte?",
+      "en-US": "Is this the best number to contact you?",
+    },
+    retry_prompt: "No pude confirmarlo. Si quieres usar este mismo número, responde sí. Si no, dicta otro número.",
+    retry_prompt_translations: {
+      "es-ES": "No pude confirmarlo. Si quieres usar este mismo número, responde sí. Si no, dicta otro número.",
+      "en-US": "I couldn't confirm it. If you want to use this same number, say yes. Otherwise, say another number.",
+    },
+    expected_type: "phone",
+    required: true,
+    enabled: true,
+    validation_config: {
+      slot: "customer_phone",
+      mode: "confirm_or_replace",
+      use_inbound_caller: true,
+      mask_in_prompt: true,
+    },
+  },
+  {
+    step_key: "confirm",
+    step_order: 5,
     prompt: "Te tengo para {service} el {datetime}. ¿Confirmas?",
     prompt_translations: {
       "es-ES": "Te tengo para {service} el {datetime}. ¿Confirmas?",
       "en-US": "I have you down for {service} on {datetime}. Do you confirm?",
+    },
+    retry_prompt: "¿Me confirmas si deseas agendar esta cita?",
+    retry_prompt_translations: {
+      "es-ES": "¿Me confirmas si deseas agendar esta cita?",
+      "en-US": "Can you confirm if you want to book this appointment?",
     },
     expected_type: "confirmation",
     required: true,
@@ -137,6 +185,10 @@ const DEFAULT_STEPS: BookingStep[] = [
     validation_config: {
       slot: "confirmation",
       cancel_message: "No hay problema. No se realizó la reserva. ¿Puedo ayudarte con algo más?",
+      cancel_message_translations: {
+        "es-ES": "No hay problema. No se realizó la reserva. ¿Puedo ayudarte con algo más?",
+        "en-US": "No problem. The appointment was not booked. Can I help you with anything else?",
+      },
     },
   },
   {
@@ -155,6 +207,57 @@ const DEFAULT_STEPS: BookingStep[] = [
     },
   },
 ];
+
+function normalizeStepOrders(inputSteps: BookingStep[]): BookingStep[] {
+  return inputSteps.map((step, index) => ({
+    ...step,
+    step_order: index + 1,
+  }));
+}
+
+function buildNewCustomStep(nextVisualOrder: number): BookingStep {
+  return {
+    step_key: `custom_${nextVisualOrder}`,
+    step_order: nextVisualOrder,
+    prompt: "Escribe aquí la pregunta que Amy debe hacer.",
+    prompt_translations: {
+      "es-ES": "Escribe aquí la pregunta que Amy debe hacer.",
+      "en-US": "",
+    },
+    retry_prompt: "",
+    retry_prompt_translations: {
+      "es-ES": "",
+      "en-US": "",
+    },
+    expected_type: "text",
+    required: true,
+    enabled: true,
+    validation_config: {
+      slot: "none",
+    },
+  };
+}
+
+function insertStepAt(
+  currentSteps: BookingStep[],
+  insertIndex: number
+): BookingStep[] {
+  const safeIndex = Math.max(0, Math.min(insertIndex, currentSteps.length));
+  const nextVisualOrder = safeIndex + 1;
+
+  const next = [...currentSteps];
+  next.splice(safeIndex, 0, buildNewCustomStep(nextVisualOrder));
+
+  return normalizeStepOrders(next);
+}
+
+function removeStepAt(
+  currentSteps: BookingStep[],
+  removeIndex: number
+): BookingStep[] {
+  const next = currentSteps.filter((_, index) => index !== removeIndex);
+  return normalizeStepOrders(next);
+}
 
 export default function AppointmentBookingFlowCard() {
   const [steps, setSteps] = useState<BookingStep[]>([]);
@@ -197,36 +300,19 @@ export default function AppointmentBookingFlowCard() {
   };
 
   const addStep = () => {
-    const nextOrder =
-      steps.length > 0 ? Math.max(...steps.map((s) => Number(s.step_order) || 0)) + 1 : 1;
+    setSteps((prev) => insertStepAt(prev, prev.length));
+  };
 
-    setSteps((prev) => [
-      ...prev,
-      {
-        step_key: `custom_${nextOrder}`,
-        step_order: nextOrder,
-        prompt: "Escribe aquí la pregunta que Amy debe hacer.",
-        prompt_translations: {
-          "es-ES": "Escribe aquí la pregunta que Amy debe hacer.",
-          "en-US": "",
-        },
-        retry_prompt: "",
-        retry_prompt_translations: {
-          "es-ES": "",
-          "en-US": "",
-        },
-        expected_type: "text",
-        required: true,
-        enabled: true,
-        validation_config: {
-          slot: "none",
-        },
-      }
-    ]);
+  const addStepAbove = (index: number) => {
+    setSteps((prev) => insertStepAt(prev, index));
+  };
+
+  const addStepBelow = (index: number) => {
+    setSteps((prev) => insertStepAt(prev, index + 1));
   };
 
   const removeStep = (index: number) => {
-    setSteps((prev) => prev.filter((_, i) => i !== index));
+    setSteps((prev) => removeStepAt(prev, index));
   };
 
   const saveFlow = async () => {
@@ -235,55 +321,53 @@ export default function AppointmentBookingFlowCard() {
       setError(null);
       setOk(null);
 
-      const normalized = steps
-        .map((step) => {
-          const promptTranslations = Object.fromEntries(
-            BOOKING_FLOW_LOCALES.map(({ value }) => [
-              value,
-              (step.prompt_translations?.[value] || "").trim(),
-            ]).filter(([, value]) => value)
-          );
+      const normalized = normalizeStepOrders(steps).map((step) => {
+        const promptTranslations = Object.fromEntries(
+          BOOKING_FLOW_LOCALES.map(({ value }) => [
+            value,
+            (step.prompt_translations?.[value] || "").trim(),
+          ]).filter(([, value]) => value)
+        );
 
-          const retryPromptTranslations = Object.fromEntries(
-            BOOKING_FLOW_LOCALES.map(({ value }) => [
-              value,
-              (step.retry_prompt_translations?.[value] || "").trim(),
-            ]).filter(([, value]) => value)
-          );
+        const retryPromptTranslations = Object.fromEntries(
+          BOOKING_FLOW_LOCALES.map(({ value }) => [
+            value,
+            (step.retry_prompt_translations?.[value] || "").trim(),
+          ]).filter(([, value]) => value)
+        );
 
-          const promptFallback =
-            promptTranslations[PRIMARY_BOOKING_FLOW_LOCALE] ||
-            Object.values(promptTranslations)[0] ||
-            "";
+        const promptFallback =
+          promptTranslations[PRIMARY_BOOKING_FLOW_LOCALE] ||
+          Object.values(promptTranslations)[0] ||
+          "";
 
-          const retryPromptFallback =
-            retryPromptTranslations[PRIMARY_BOOKING_FLOW_LOCALE] ||
-            Object.values(retryPromptTranslations)[0] ||
-            "";
+        const retryPromptFallback =
+          retryPromptTranslations[PRIMARY_BOOKING_FLOW_LOCALE] ||
+          Object.values(retryPromptTranslations)[0] ||
+          "";
 
-          return {
-            ...step,
-            step_key: step.step_key.trim(),
-            prompt: promptFallback,
-            retry_prompt: retryPromptFallback,
-            step_order: Number(step.step_order),
-            prompt_translations: promptTranslations,
-            retry_prompt_translations: retryPromptTranslations,
-            validation_config: {
-              slot: step.validation_config?.slot || "none",
-              ...(step.validation_config || {}),
-              cancel_message_translations: buildLocalizedMapFromStep({
-                existing: normalizeLocalizedMap(step.validation_config?.cancel_message_translations),
-                fallbackValue: step.validation_config?.cancel_message || "",
-              }),
-              unavailable_prompt_translations: buildLocalizedMapFromStep({
-                existing: normalizeLocalizedMap(step.validation_config?.unavailable_prompt_translations),
-                fallbackValue: step.validation_config?.unavailable_prompt || "",
-              }),
-            },
-          };
-        })
-        .sort((a, b) => a.step_order - b.step_order);
+        return {
+          ...step,
+          step_key: step.step_key.trim(),
+          prompt: promptFallback,
+          retry_prompt: retryPromptFallback,
+          step_order: Number(step.step_order),
+          prompt_translations: promptTranslations,
+          retry_prompt_translations: retryPromptTranslations,
+          validation_config: {
+            slot: step.validation_config?.slot || "none",
+            ...(step.validation_config || {}),
+            cancel_message_translations: buildLocalizedMapFromStep({
+              existing: normalizeLocalizedMap(step.validation_config?.cancel_message_translations),
+              fallbackValue: step.validation_config?.cancel_message || "",
+            }),
+            unavailable_prompt_translations: buildLocalizedMapFromStep({
+              existing: normalizeLocalizedMap(step.validation_config?.unavailable_prompt_translations),
+              fallbackValue: step.validation_config?.unavailable_prompt || "",
+            }),
+          },
+        };
+      });
 
       const hasConfirm = normalized.some(
         (step) => step.enabled && step.expected_type === "confirmation"
@@ -398,12 +482,9 @@ export default function AppointmentBookingFlowCard() {
                   </label>
                   <input
                     type="number"
-                    min={1}
                     value={step.step_order}
-                    onChange={(e) =>
-                      updateStep(index, { step_order: Number(e.target.value) })
-                    }
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+                    readOnly
+                    className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 cursor-not-allowed"
                   />
                 </div>
 
@@ -717,7 +798,23 @@ export default function AppointmentBookingFlowCard() {
                 )}
                 </div>
 
-              <div className="mt-3 flex justify-end">
+              <div className="mt-3 flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => addStepAbove(index)}
+                  className="px-3 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
+                >
+                  + Agregar arriba
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => addStepBelow(index)}
+                  className="px-3 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
+                >
+                  + Agregar debajo
+                </button>
+
                 <button
                   type="button"
                   onClick={() => removeStep(index)}
