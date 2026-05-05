@@ -238,6 +238,34 @@ function buildNewCustomStep(nextVisualOrder: number): BookingStep {
   };
 }
 
+function buildOfferBookingSmsStep(nextVisualOrder: number): BookingStep {
+  return {
+    step_key: "offer_booking_sms",
+    step_order: nextVisualOrder,
+    prompt: "¿Quieres que te envíe por SMS los detalles de tu reserva?",
+    prompt_translations: {
+      "es-ES": "¿Quieres que te envíe por SMS los detalles de tu reserva?",
+      "en-US": "Would you like me to send your booking details by SMS?",
+    },
+    retry_prompt: "Por favor dime sí o no. ¿Quieres que te envíe los detalles por SMS?",
+    retry_prompt_translations: {
+      "es-ES": "Por favor dime sí o no. ¿Quieres que te envíe los detalles por SMS?",
+      "en-US": "Please say yes or no. Would you like me to send your booking details by SMS?",
+    },
+    expected_type: "confirmation",
+    required: false,
+    enabled: true,
+    validation_config: {
+      slot: "none",
+      cancel_message: "Perfecto, no te envío el SMS.",
+      cancel_message_translations: {
+        "es-ES": "Perfecto, no te envío el SMS.",
+        "en-US": "Perfect, I won't send the SMS.",
+      },
+    },
+  };
+}
+
 function insertStepAt(
   currentSteps: BookingStep[],
   insertIndex: number
@@ -309,6 +337,18 @@ export default function AppointmentBookingFlowCard() {
 
   const addStepBelow = (index: number) => {
     setSteps((prev) => insertStepAt(prev, index + 1));
+  };
+
+  const addOfferBookingSmsBelow = (index: number) => {
+    setSteps((prev) => {
+      const insertIndex = Math.max(0, Math.min(index + 1, prev.length));
+      const next = [...prev];
+      const nextVisualOrder = insertIndex + 1;
+
+      next.splice(insertIndex, 0, buildOfferBookingSmsStep(nextVisualOrder));
+
+      return normalizeStepOrders(next);
+    });
   };
 
   const removeStep = (index: number) => {
@@ -813,6 +853,14 @@ export default function AppointmentBookingFlowCard() {
                   className="px-3 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
                 >
                   + Agregar debajo
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => addOfferBookingSmsBelow(index)}
+                  className="px-3 py-2 rounded-xl text-sm font-semibold bg-blue-600/70 hover:bg-blue-600"
+                >
+                  + Insertar SMS debajo
                 </button>
 
                 <button
