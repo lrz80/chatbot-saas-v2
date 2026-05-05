@@ -10,6 +10,8 @@ type BookingStep = {
   step_order: number;
   prompt: string;
   retry_prompt?: string;
+  prompt_translations?: Record<string, string>;
+  retry_prompt_translations?: Record<string, string>;
   validation_config?: any;
   expected_type: "text" | "datetime" | "confirmation" | "phone" | "email" | "number";
   required: boolean;
@@ -49,11 +51,20 @@ const EXPECTED_TYPES = [
   "number",
 ] as const;
 
+const BOOKING_FLOW_LOCALES = [
+  { value: "es-ES", label: "Español" },
+  { value: "en-US", label: "English" },
+] as const;
+
 const DEFAULT_STEPS: BookingStep[] = [
   {
     step_key: "service",
     step_order: 1,
     prompt: "¿Qué servicio te interesa?",
+    prompt_translations: {
+      "es-ES": "¿Qué servicio te interesa?",
+      "en-US": "What service are you interested in?",
+    },
     expected_type: "text",
     required: true,
     enabled: true,
@@ -65,6 +76,15 @@ const DEFAULT_STEPS: BookingStep[] = [
     step_key: "datetime",
     step_order: 2,
     prompt: "¿Qué día y hora te gustaría?",
+    prompt_translations: {
+      "es-ES": "¿Qué día y hora te gustaría?",
+      "en-US": "What day and time would you prefer?",
+    },
+    retry_prompt: "¿Puedes repetirme qué día y hora te gustaría?",
+    retry_prompt_translations: {
+      "es-ES": "¿Puedes repetirme qué día y hora te gustaría?",
+      "en-US": "Can you repeat what day and time you would prefer?",
+    },
     expected_type: "datetime",
     required: true,
     enabled: true,
@@ -78,6 +98,10 @@ const DEFAULT_STEPS: BookingStep[] = [
     step_key: "confirm",
     step_order: 3,
     prompt: "Te tengo para {service} el {datetime}. ¿Confirmas?",
+    prompt_translations: {
+      "es-ES": "Te tengo para {service} el {datetime}. ¿Confirmas?",
+      "en-US": "I have you down for {service} on {datetime}. Do you confirm?",
+    },
     expected_type: "confirmation",
     required: true,
     enabled: true,
@@ -90,6 +114,10 @@ const DEFAULT_STEPS: BookingStep[] = [
     step_key: "success",
     step_order: 999,
     prompt: "Tu cita quedó confirmada para {service} el {datetime}. ¿Te ayudo en algo más?",
+    prompt_translations: {
+      "es-ES": "Tu cita quedó confirmada para {service} el {datetime}. ¿Te ayudo en algo más?",
+      "en-US": "Your appointment is confirmed for {service} on {datetime}. Can I help you with anything else?",
+    },
     expected_type: "text",
     required: false,
     enabled: true,
@@ -149,11 +177,20 @@ export default function AppointmentBookingFlowCard() {
         step_key: `custom_${nextOrder}`,
         step_order: nextOrder,
         prompt: "Escribe aquí la pregunta que Amy debe hacer.",
+        prompt_translations: {
+          "es-ES": "Escribe aquí la pregunta que Amy debe hacer.",
+          "en-US": "",
+        },
+        retry_prompt: "",
+        retry_prompt_translations: {
+          "es-ES": "",
+          "en-US": "",
+        },
         expected_type: "text",
         required: true,
         enabled: true,
         validation_config: {
-            slot: "none",
+          slot: "none",
         },
       }
     ]);
@@ -171,14 +208,33 @@ export default function AppointmentBookingFlowCard() {
 
       const normalized = steps
         .map((step) => ({
-            ...step,
-            step_key: step.step_key.trim(),
-            prompt: step.prompt.trim(),
-            step_order: Number(step.step_order),
-            validation_config: {
+          ...step,
+          step_key: step.step_key.trim(),
+          prompt: step.prompt.trim(),
+          retry_prompt: (step.retry_prompt || "").trim(),
+          step_order: Number(step.step_order),
+          prompt_translations: Object.fromEntries(
+            BOOKING_FLOW_LOCALES.map(({ value }, localeIndex) => [
+              value,
+              (
+                step.prompt_translations?.[value] ||
+                (localeIndex === 0 ? step.prompt || "" : "")
+              ).trim(),
+            ]).filter(([, value]) => value)
+          ),
+          retry_prompt_translations: Object.fromEntries(
+            BOOKING_FLOW_LOCALES.map(({ value }, localeIndex) => [
+              value,
+              (
+                step.retry_prompt_translations?.[value] ||
+                (localeIndex === 0 ? step.retry_prompt || "" : "")
+              ).trim(),
+            ]).filter(([, value]) => value)
+          ),
+          validation_config: {
             slot: step.validation_config?.slot || "none",
             ...(step.validation_config || {}),
-            },
+          },
         }))
         .sort((a, b) => a.step_order - b.step_order);
 
@@ -392,7 +448,7 @@ export default function AppointmentBookingFlowCard() {
 
               <div className="mt-3">
                 <label className="block text-xs text-white/60 mb-1">
-                  Pregunta de Amy
+                  Pregunta de Amy (fallback/base)
                 </label>
                 <textarea
                   value={step.prompt}
@@ -400,23 +456,70 @@ export default function AppointmentBookingFlowCard() {
                   rows={2}
                   className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
                 />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                  {BOOKING_FLOW_LOCALES.map(({ value, label }) => (
+                    <div key={`prompt-${value}`}>
+                      <label className="block text-xs text-white/60 mb-1">
+                        Prompt {label}
+                      </label>
+                      <textarea
+                        value={step.prompt_translations?.[value] || ""}
+                        onChange={(e) =>
+                          updateStep(index, {
+                            prompt_translations: {
+                              ...(step.prompt_translations || {}),
+                              [value]: e.target.value,
+                            },
+                          })
+                        }
+                        rows={2}
+                        className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
+                      />
+                    </div>
+                  ))}
+                </div>
+
                 <p className="text-[11px] text-white/40 mt-1">
                   Puedes usar variables como {"{service}"} y {"{datetime}"} en el paso de confirmación.
                 </p>
               </div>
 
               <div className="mt-3">
-                <label className="block text-xs text-white/60 mb-1">
-                    Pregunta si no entiende (retry)
-                </label>
-                <textarea
+                  <label className="block text-xs text-white/60 mb-1">
+                    Pregunta si no entiende (retry fallback/base)
+                  </label>
+                  <textarea
                     value={step.retry_prompt || ""}
                     onChange={(e) =>
-                    updateStep(index, { retry_prompt: e.target.value })
+                      updateStep(index, { retry_prompt: e.target.value })
                     }
                     rows={2}
                     className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
-                />
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                    {BOOKING_FLOW_LOCALES.map(({ value, label }) => (
+                      <div key={`retry-${value}`}>
+                        <label className="block text-xs text-white/60 mb-1">
+                          Retry {label}
+                        </label>
+                        <textarea
+                          value={step.retry_prompt_translations?.[value] || ""}
+                          onChange={(e) =>
+                            updateStep(index, {
+                              retry_prompt_translations: {
+                                ...(step.retry_prompt_translations || {}),
+                                [value]: e.target.value,
+                              },
+                            })
+                          }
+                          rows={2}
+                          className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="mt-3">
