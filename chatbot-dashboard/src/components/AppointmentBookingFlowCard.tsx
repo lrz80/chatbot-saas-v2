@@ -219,9 +219,9 @@ function buildNewCustomStep(nextVisualOrder: number): BookingStep {
   return {
     step_key: `custom_${nextVisualOrder}`,
     step_order: nextVisualOrder,
-    prompt: "Escribe aquí la pregunta que Amy debe hacer.",
+    prompt: "Escribe aquí la pregunta que Aamy debe hacer.",
     prompt_translations: {
-      "es-ES": "Escribe aquí la pregunta que Amy debe hacer.",
+      "es-ES": "Escribe aquí la pregunta que Aamy debe hacer.",
       "en-US": "",
     },
     retry_prompt: "",
@@ -469,7 +469,7 @@ export default function AppointmentBookingFlowCard() {
             Voice booking flow
           </h2>
           <p className="text-xs text-white/60 mt-1">
-            Edita las preguntas que Amy hará cuando un cliente quiera agendar por voz.
+            Edita las preguntas que Aamy hará cuando un cliente quiera agendar por voz.
           </p>
         </div>
 

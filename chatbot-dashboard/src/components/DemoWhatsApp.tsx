@@ -9,10 +9,10 @@ export default function DemoWhatsApp() {
   const { t } = useI18n();
     const mensajes = [
     { de: 'cliente', texto: t("demoWa.msg.1") },
-    { de: 'amy', texto: t("demoWa.msg.2") },
+    { de: 'aamy', texto: t("demoWa.msg.2") },
     { de: 'cliente', texto: t("demoWa.msg.3") },
-    { de: 'amy', texto: t("demoWa.msg.4") },
-    { de: 'amy', texto: t("demoWa.msg.5") },
+    { de: 'aamy', texto: t("demoWa.msg.4") },
+    { de: 'aamy', texto: t("demoWa.msg.5") },
   ];
 
   return (
@@ -51,11 +51,11 @@ export default function DemoWhatsApp() {
           {mensajes.map((msg, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, x: msg.de === 'amy' ? 50 : -50 }}
+              initial={{ opacity: 0, x: msg.de === 'aamy' ? 50 : -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.6 }}
               className={`p-2 rounded-md mb-2 max-w-[90%] ${
-                msg.de === 'amy'
+                msg.de === 'aamy'
                   ? 'bg-purple-600 ml-auto text-right'
                   : 'bg-white/10 text-left'
               }`}
