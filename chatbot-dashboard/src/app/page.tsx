@@ -187,9 +187,6 @@ export default function LandingPage() {
               </a>
               
             </div>
-            <p className="mt-3 text-white/60 text-xs">
-              {t("landing.pricing.line")}
-            </p>
           </div>
         </div>
       </section>
@@ -283,9 +280,6 @@ export default function LandingPage() {
             </a>
           </div>
 
-          <p className="mt-3 text-white/70 text-sm">
-            {t("landing.pricing.line")}
-          </p>
           <p className="mt-2 text-white/55 text-xs">
             {t("landing.final.tip")}
           </p>

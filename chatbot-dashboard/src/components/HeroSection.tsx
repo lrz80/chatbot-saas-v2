@@ -89,18 +89,6 @@ export default function HeroSection() {
           {t("hero.micro")}
         </div>
 
-        {/* Precio visible */}
-        <div className="mb-2 text-white/85 text-sm">
-          <span className="font-semibold text-white">$399 USD</span> {t("hero.pricing.setup")} ·{" "}
-          <span className="font-semibold text-white">$199 USD</span>{t("hero.pricing.monthly")}
-        </div>
-
-        <div className="mb-6 text-white/70 text-xs">
-          {t("hero.tip.before")}{" "}
-          <span className="font-semibold text-white">{t("hero.tip.highlight1")}</span>, {t("hero.tip.middle")}{" "}
-          <span className="font-semibold text-white">{t("hero.tip.highlight2")}</span>.
-        </div>
-
         {/* CTA */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <a

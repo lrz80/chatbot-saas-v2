@@ -346,7 +346,6 @@ export default function UpgradePage() {
                   )}
                 </button>
 
-                <p className="mt-4 text-xs text-white/55">{t("upgrade.footer.note")}</p>
               </div>
             );
           })}
