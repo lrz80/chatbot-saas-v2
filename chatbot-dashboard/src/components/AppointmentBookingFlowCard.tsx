@@ -20,21 +20,35 @@ type BookingStep = {
 
 type BookingSlot =
   | "none"
+  | "appointment_mode"
   | "service"
   | "datetime"
   | "customer_name"
   | "customer_phone"
   | "customer_email"
-  | "confirmation";
+  | "confirmation"
+  | "customer_subject"
+  | "subject_detail"
+  | "location_detail"
+  | "notes";
 
 const BOOKING_SLOTS: BookingSlot[] = [
   "none",
+
+  // Core booking slots
+  "appointment_mode",
   "service",
   "datetime",
   "customer_name",
   "customer_phone",
   "customer_email",
   "confirmation",
+
+  // Generic reusable detail slots
+  "customer_subject",
+  "subject_detail",
+  "location_detail",
+  "notes",
 ];
 
 const PHONE_MODES = [
