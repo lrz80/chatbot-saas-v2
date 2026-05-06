@@ -23,6 +23,28 @@ type StripePlan = {
   metadata: Record<string, string>;
 };
 
+function formatMoneyFromCents(cents: number | null | undefined, currency = "USD") {
+  const amount = Number(cents ?? 0) / 100;
+
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function parseMetadataCents(value: string | undefined): number | null {
+  if (!value) return null;
+
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return null;
+  }
+
+  return Math.trunc(parsed);
+}
+
 export default function UpgradePage() {
   const { t } = useI18n();
 
@@ -154,8 +176,16 @@ export default function UpgradePage() {
         <div className="grid gap-4">
           {plans.map((p) => {
             const cents = p.unit_amount ?? 0;
-            const dollars = (cents / 100).toFixed(0);
             const interval = p.interval || "month";
+
+            const displayPriceCents = parseMetadataCents(p.metadata?.display_price_cents);
+            const compareAtCents = parseMetadataCents(p.metadata?.compare_at_cents);
+
+            const shownPriceCents = displayPriceCents ?? cents;
+
+            const priceLabel = p.metadata?.price_label || null;
+            const renewalNote = p.metadata?.renewal_note || null;
+            const savingsNote = p.metadata?.savings_note || null;
 
             return (
               <div key={p.price_id} className="rounded-2xl border border-white/15 bg-white/5 p-6">
@@ -166,10 +196,28 @@ export default function UpgradePage() {
                 ) : null}
 
                 <div className="mt-6">
+                  {compareAtCents && compareAtCents > shownPriceCents ? (
+                    <div className="text-sm text-white/50 line-through">
+                      {formatMoneyFromCents(compareAtCents, p.currency)}
+                    </div>
+                  ) : null}
+
                   <div className="text-3xl font-extrabold">
-                    {cents === 0 ? "$0" : `$${dollars}`}{" "}
-                    <span className="text-sm font-normal text-white/70">/{interval}</span>
+                    {shownPriceCents === 0
+                      ? "$0"
+                      : formatMoneyFromCents(shownPriceCents, p.currency)}{" "}
+                    <span className="text-sm font-normal text-white/70">
+                      /{priceLabel || interval}
+                    </span>
                   </div>
+
+                  {renewalNote ? (
+                    <p className="mt-2 text-sm text-white/70">{renewalNote}</p>
+                  ) : null}
+
+                  {savingsNote ? (
+                    <p className="mt-1 text-sm text-emerald-300">{savingsNote}</p>
+                  ) : null}
                 </div>
 
                 {error ? <div className="mt-4 text-red-300 text-sm">{error}</div> : null}

@@ -1,7 +1,6 @@
 /// <reference types="react" />
 'use client';
 
-import DemoWhatsApp from '@/components/DemoWhatsApp';
 import ParaQuienEsAmy from '@/components/ParaQuienEsAmy';
 import 'keen-slider/keen-slider.min.css';
 import { useKeenSlider } from 'keen-slider/react';
@@ -16,7 +15,6 @@ import { useI18n } from "../i18n/LanguageProvider";
 
 import {
   FaRobot,
-  FaChartBar,
   FaWhatsapp,
   FaBullhorn,
   FaUserCheck,
@@ -24,7 +22,6 @@ import {
   FaCalendarAlt,
   FaGlobe,
   FaBrain,
-  FaPhoneAlt,
   FaCheckCircle,
 } from 'react-icons/fa';
 
