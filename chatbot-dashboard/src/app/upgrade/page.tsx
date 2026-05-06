@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
 import { track } from "@/lib/metaPixel";
-import { useI18n } from "@/i18n/LanguageProvider"; // ✅ ajusta si el path cambia
+import { useI18n } from "@/i18n/LanguageProvider";
 
-type SettingsResp = {
-  membresia_activa: boolean;
-  // lo puedes mantener pero NO lo uses para UI (puede venir en español)
-  estado_membresia_texto?: string;
+type SettingsResponse = {
+  membership_active: boolean;
+  membership_status_text?: string;
 };
 
 type StripePlan = {
@@ -23,7 +22,10 @@ type StripePlan = {
   metadata: Record<string, string>;
 };
 
-function formatMoneyFromCents(cents: number | null | undefined, currency = "USD") {
+function formatMoneyFromCents(
+  cents: number | null | undefined,
+  currency = "USD"
+): string {
   const amount = Number(cents ?? 0) / 100;
 
   return new Intl.NumberFormat("en-US", {
@@ -45,41 +47,80 @@ function parseMetadataCents(value: string | undefined): number | null {
   return Math.trunc(parsed);
 }
 
+function parseMetadataBoolean(value: string | undefined): boolean {
+  if (!value) return false;
+
+  const normalized = value.trim().toLowerCase();
+  return normalized === "true" || normalized === "1" || normalized === "yes";
+}
+
+function getPlanBadgeText(plan: StripePlan, isFeatured: boolean): string | null {
+  const explicitBadge =
+    typeof plan.metadata?.badge_text === "string" && plan.metadata.badge_text.trim()
+      ? plan.metadata.badge_text.trim()
+      : null;
+
+  if (explicitBadge) return explicitBadge;
+  if (isFeatured) return "Recommended";
+
+  return null;
+}
+
+function getPlanCtaLabel(
+  plan: StripePlan,
+  isStartingCheckout: boolean,
+  isMembershipActive: boolean,
+  t: (key: string) => string
+): string {
+  if (isMembershipActive) {
+    return t("upgrade.cta.active");
+  }
+
+  if (isStartingCheckout) {
+    return t("upgrade.cta.redirecting");
+  }
+
+  const metadataLabel =
+    typeof plan.metadata?.cta_label === "string" && plan.metadata.cta_label.trim()
+      ? plan.metadata.cta_label.trim()
+      : null;
+
+  return metadataLabel || "Choose plan";
+}
+
 export default function UpgradePage() {
   const { t } = useI18n();
 
-  const [settings, setSettings] = useState<SettingsResp | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [startingCheckout, setStartingCheckout] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [plans, setPlans] = useState<StripePlan[]>([]);
+  const [settings, setSettings] = useState<SettingsResponse | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(true);
   const [plansLoading, setPlansLoading] = useState(true);
+  const [startingCheckoutPriceId, setStartingCheckoutPriceId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [plans, setPlans] = useState<StripePlan[]>([]);
 
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch(`${BACKEND_URL}/api/settings`, {
+        const response = await fetch(`${BACKEND_URL}/api/settings`, {
           credentials: "include",
           cache: "no-store",
         });
 
-        // ✅ Si no hay sesión, saca al usuario
-        if (r.status === 401) {
-          window.location.href = "/login"; // ✅ mejor que /register (a menos que quieras registro)
+        if (response.status === 401) {
+          window.location.href = "/login";
           return;
         }
 
-        const s = await r.json();
+        const data = await response.json();
 
         setSettings({
-          membresia_activa: !!s.membresia_activa,
-          estado_membresia_texto: s.estado_membresia_texto,
+          membership_active: Boolean(data.membresia_activa),
+          membership_status_text: data.estado_membresia_texto,
         });
-      } catch (e) {
+      } catch {
         setError(t("upgrade.errors.sessionReadFail"));
       } finally {
-        setLoading(false);
+        setSettingsLoading(false);
       }
     })();
   }, [t]);
@@ -87,159 +128,236 @@ export default function UpgradePage() {
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch(`${BACKEND_URL}/api/stripe/plans`, {
+        const response = await fetch(`${BACKEND_URL}/api/stripe/plans`, {
           credentials: "include",
           cache: "no-store",
         });
 
-        if (!r.ok) {
-          const e = await r.json().catch(() => ({}));
-          throw new Error(e?.error || "No se pudieron cargar planes");
+        if (!response.ok) {
+          const apiError = await response.json().catch(() => ({}));
+          throw new Error(apiError?.error || "Failed to load plans.");
         }
 
-        const data = await r.json();
+        const data = await response.json();
         setPlans(Array.isArray(data?.plans) ? data.plans : []);
-      } catch (e: any) {
-        setError(e?.message || "Error cargando planes");
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Failed to load plans.");
+        }
       } finally {
         setPlansLoading(false);
       }
     })();
   }, []);
-  
-    const startCheckoutByPriceId = async (priceId: string, unitAmount: number) => {
+
+  const displayedPlans = useMemo(() => {
+    return plans.map((plan) => {
+      const displayPriceCents = parseMetadataCents(plan.metadata?.display_price_cents);
+      const compareAtCents = parseMetadataCents(plan.metadata?.compare_at_cents);
+      const isFeatured =
+        parseMetadataBoolean(plan.metadata?.featured) ||
+        parseMetadataBoolean(plan.metadata?.recommended);
+
+      return {
+        ...plan,
+        isFeatured,
+        displayPriceCents,
+        compareAtCents,
+        shownPriceCents: displayPriceCents ?? plan.unit_amount ?? 0,
+        priceLabel: plan.metadata?.price_label?.trim() || null,
+        renewalNote: plan.metadata?.renewal_note?.trim() || null,
+        savingsNote: plan.metadata?.savings_note?.trim() || null,
+        eyebrow: plan.metadata?.eyebrow?.trim() || null,
+        badgeText: getPlanBadgeText(plan, isFeatured),
+      };
+    });
+  }, [plans]);
+
+  const startCheckoutByPriceId = async (priceId: string, unitAmount: number | null) => {
     try {
-      setStartingCheckout(true);
+      setStartingCheckoutPriceId(priceId);
       setError(null);
 
       track("InitiateCheckout", {
         content_name: "Membership",
-        value: (unitAmount ?? 0) / 100,
+        value: Number(unitAmount ?? 0) / 100,
         currency: "USD",
       });
 
-      const r = await fetch(`${BACKEND_URL}/api/stripe/checkout`, {
+      const response = await fetch(`${BACKEND_URL}/api/stripe/checkout`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ priceId }),
       });
 
-      const data = await r.json();
-      if (!r.ok || !data?.url) {
+      const data = await response.json();
+
+      if (!response.ok || !data?.url) {
         throw new Error(data?.error || t("upgrade.errors.checkoutStartFail"));
       }
 
       window.location.href = data.url;
-    } catch (e: any) {
-      setError(e?.message || t("upgrade.errors.checkoutGeneric"));
-      setStartingCheckout(false);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(t("upgrade.errors.checkoutGeneric"));
+      }
+
+      setStartingCheckoutPriceId(null);
     }
   };
 
-  if (loading) return <div className="text-white text-center mt-10">{t("common.loading")}</div>;
+  if (settingsLoading) {
+    return <div className="mt-10 text-center text-white">{t("common.loading")}</div>;
+  }
 
   if (!settings) {
     return (
-      <div className="text-red-300 text-center mt-10">
+      <div className="mt-10 text-center text-red-300">
         {error || t("upgrade.errors.sessionReadFail")}
       </div>
     );
   }
 
-  const isActive = settings.membresia_activa;
+  const isMembershipActive = settings.membership_active;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 text-white">
-      {!isActive ? (
-        <div className="mb-6 p-4 rounded-lg border border-yellow-400 bg-yellow-500/10 text-yellow-200 text-center">
+    <div className="mx-auto max-w-6xl px-6 py-8 text-white">
+      {!isMembershipActive ? (
+        <div className="mb-8 rounded-xl border border-yellow-400/60 bg-yellow-500/10 px-4 py-3 text-center text-sm text-yellow-200">
           {t("upgrade.membership.inactiveBanner")}
         </div>
       ) : (
-        <div className="mb-6 p-4 rounded-lg border border-emerald-400 bg-emerald-500/10 text-emerald-200 text-center">
+        <div className="mb-8 rounded-xl border border-emerald-400/60 bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-200">
           {t("upgrade.membership.activeBanner")}
         </div>
       )}
 
-      <h1 className="text-3xl font-bold mb-2">{t("upgrade.hero.title")}</h1>
-      <p className="text-white/80 mb-8">{t("upgrade.hero.subtitle")}</p>
+      <div className="mx-auto mb-10 max-w-3xl text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">
+          {t("upgrade.hero.title")}
+        </h1>
+        <p className="mt-3 text-base text-white/75 md:text-lg">
+          {t("upgrade.hero.subtitle")}
+        </p>
+      </div>
 
       {plansLoading ? (
-        <div className="rounded-2xl border border-white/15 bg-white/5 p-6 text-white/70">
+        <div className="rounded-3xl border border-white/15 bg-white/5 p-6 text-center text-white/70">
           {t("common.loading")}
         </div>
-      ) : plans.length === 0 ? (
-        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-red-200">
-          No hay planes disponibles en Stripe.
+      ) : displayedPlans.length === 0 ? (
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-6 text-center text-red-200">
+          No plans are currently available.
         </div>
       ) : (
-        <div className="grid gap-4">
-          {plans.map((p) => {
-            const cents = p.unit_amount ?? 0;
-            const interval = p.interval || "month";
-
-            const displayPriceCents = parseMetadataCents(p.metadata?.display_price_cents);
-            const compareAtCents = parseMetadataCents(p.metadata?.compare_at_cents);
-
-            const shownPriceCents = displayPriceCents ?? cents;
-
-            const priceLabel = p.metadata?.price_label || null;
-            const renewalNote = p.metadata?.renewal_note || null;
-            const savingsNote = p.metadata?.savings_note || null;
+        <div className="grid gap-6 md:grid-cols-2">
+          {displayedPlans.map((plan) => {
+            const isCurrentCheckout = startingCheckoutPriceId === plan.price_id;
 
             return (
-              <div key={p.price_id} className="rounded-2xl border border-white/15 bg-white/5 p-6">
-                <h2 className="text-xl font-semibold">{p.name}</h2>
+              <div
+                key={plan.price_id}
+                className={[
+                  "relative overflow-hidden rounded-3xl border p-6 transition-all duration-200",
+                  plan.isFeatured
+                    ? "border-indigo-400/70 bg-gradient-to-b from-indigo-500/10 to-white/5 shadow-[0_0_0_1px_rgba(129,140,248,0.2),0_20px_60px_rgba(79,70,229,0.18)]"
+                    : "border-white/15 bg-white/5",
+                ].join(" ")}
+              >
+                {plan.badgeText ? (
+                  <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
+                    <span
+                      className={[
+                        "rounded-full px-4 py-1 text-xs font-semibold tracking-wide",
+                        plan.isFeatured
+                          ? "bg-indigo-400 text-slate-950"
+                          : "bg-white/10 text-white/85",
+                      ].join(" ")}
+                    >
+                      {plan.badgeText}
+                    </span>
+                  </div>
+                ) : null}
 
-                {p.description ? (
-                  <p className="text-white/70 text-sm mt-1">{p.description}</p>
+                {plan.eyebrow ? (
+                  <p className="mt-2 text-sm font-medium text-indigo-300">{plan.eyebrow}</p>
+                ) : (
+                  <div className="mt-2 h-5" />
+                )}
+
+                <h2 className="mt-2 text-3xl font-bold tracking-tight">{plan.name}</h2>
+
+                {plan.description ? (
+                  <p className="mt-3 min-h-[48px] text-sm leading-6 text-white/72">
+                    {plan.description}
+                  </p>
                 ) : null}
 
                 <div className="mt-6">
-                  {compareAtCents && compareAtCents > shownPriceCents ? (
-                    <div className="text-sm text-white/50 line-through">
-                      {formatMoneyFromCents(compareAtCents, p.currency)}
+                  {plan.compareAtCents &&
+                  plan.compareAtCents > plan.shownPriceCents ? (
+                    <div className="mb-2 text-lg text-white/40 line-through">
+                      {formatMoneyFromCents(plan.compareAtCents, plan.currency)}
                     </div>
                   ) : null}
 
-                  <div className="text-3xl font-extrabold">
-                    {shownPriceCents === 0
-                      ? "$0"
-                      : formatMoneyFromCents(shownPriceCents, p.currency)}{" "}
-                    <span className="text-sm font-normal text-white/70">
-                      /{priceLabel || interval}
-                    </span>
+                  <div className="flex items-end gap-2">
+                    <div className="text-5xl font-extrabold leading-none">
+                      {plan.shownPriceCents === 0
+                        ? "$0"
+                        : formatMoneyFromCents(plan.shownPriceCents, plan.currency)}
+                    </div>
+                    <div className="pb-1 text-base text-white/70">
+                      /{plan.priceLabel || plan.interval || "month"}
+                    </div>
                   </div>
 
-                  {renewalNote ? (
-                    <p className="mt-2 text-sm text-white/70">{renewalNote}</p>
+                  {plan.renewalNote ? (
+                    <p className="mt-3 text-sm text-white/72">{plan.renewalNote}</p>
                   ) : null}
 
-                  {savingsNote ? (
-                    <p className="mt-1 text-sm text-emerald-300">{savingsNote}</p>
+                  {plan.savingsNote ? (
+                    <p className="mt-2 text-sm font-semibold text-emerald-300">
+                      {plan.savingsNote}
+                    </p>
                   ) : null}
                 </div>
 
-                {error ? <div className="mt-4 text-red-300 text-sm">{error}</div> : null}
-
                 <button
-                  className="mt-6 w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 py-3 font-semibold disabled:opacity-60"
-                  onClick={() => startCheckoutByPriceId(p.price_id, cents)}
-                  disabled={startingCheckout}
+                  className={[
+                    "mt-8 w-full rounded-xl px-4 py-3.5 text-base font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
+                    plan.isFeatured
+                      ? "bg-indigo-500 text-white hover:bg-indigo-400"
+                      : "bg-white text-slate-950 hover:bg-white/90",
+                  ].join(" ")}
+                  onClick={() => startCheckoutByPriceId(plan.price_id, plan.unit_amount)}
+                  disabled={Boolean(startingCheckoutPriceId)}
                 >
-                  {isActive
-                    ? t("upgrade.cta.active")
-                    : startingCheckout
-                    ? t("upgrade.cta.redirecting")
-                    : "Activar"}
+                  {getPlanCtaLabel(
+                    plan,
+                    isCurrentCheckout,
+                    isMembershipActive,
+                    t
+                  )}
                 </button>
 
-                <p className="mt-4 text-xs text-white/60">{t("upgrade.footer.note")}</p>
+                <p className="mt-4 text-xs text-white/55">{t("upgrade.footer.note")}</p>
               </div>
             );
           })}
         </div>
       )}
+
+      {error ? (
+        <div className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {error}
+        </div>
+      ) : null}
     </div>
   );
 }
