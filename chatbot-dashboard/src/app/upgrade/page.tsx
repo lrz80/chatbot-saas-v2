@@ -263,7 +263,7 @@ export default function UpgradePage() {
               <div
                 key={plan.price_id}
                 className={[
-                  "relative overflow-hidden rounded-3xl border p-6 transition-all duration-200",
+                  "relative rounded-3xl border p-6 transition-all duration-200 flex h-full flex-col",
                   plan.isFeatured
                     ? "border-indigo-400/70 bg-gradient-to-b from-indigo-500/10 to-white/5 shadow-[0_0_0_1px_rgba(129,140,248,0.2),0_20px_60px_rgba(79,70,229,0.18)]"
                     : "border-white/15 bg-white/5",
@@ -293,12 +293,12 @@ export default function UpgradePage() {
                 <h2 className="mt-2 text-3xl font-bold tracking-tight">{plan.name}</h2>
 
                 {plan.description ? (
-                  <p className="mt-3 min-h-[48px] text-sm leading-6 text-white/72">
+                  <p className="mt-3 min-h-[72px] text-sm leading-6 text-white/72">
                     {plan.description}
                   </p>
                 ) : null}
 
-                <div className="mt-6">
+                <div className="mt-6 min-h-[150px]">
                   {plan.compareAtCents &&
                   plan.compareAtCents > plan.shownPriceCents ? (
                     <div className="mb-2 text-lg text-white/40 line-through">
@@ -330,7 +330,7 @@ export default function UpgradePage() {
 
                 <button
                   className={[
-                    "mt-8 w-full rounded-xl px-4 py-3.5 text-base font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
+                     "mt-auto w-full rounded-xl px-4 py-3.5 text-base font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
                     plan.isFeatured
                       ? "bg-indigo-500 text-white hover:bg-indigo-400"
                       : "bg-white text-slate-950 hover:bg-white/90",
