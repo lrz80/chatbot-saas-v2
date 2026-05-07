@@ -28,6 +28,30 @@ export default function AppointmentSettingsCard() {
     enabled: true,
   });
 
+  const leadDays = Math.floor(Number(form.min_lead_minutes || 0) / 1440);
+  const leadExtraMinutes = Number(form.min_lead_minutes || 0) % 1440;
+
+  const updateLeadDays = (rawValue: string) => {
+    const nextDays = Math.max(0, Number(rawValue) || 0);
+    const currentExtraMinutes = Number(form.min_lead_minutes || 0) % 1440;
+
+    setForm((prev) => ({
+      ...prev,
+      min_lead_minutes: nextDays * 1440 + currentExtraMinutes,
+    }));
+  };
+
+  const updateLeadExtraMinutes = (rawValue: string) => {
+    const parsed = Number(rawValue) || 0;
+    const nextMinutes = Math.max(0, Math.min(1439, parsed));
+    const currentDays = Math.floor(Number(form.min_lead_minutes || 0) / 1440);
+
+    setForm((prev) => ({
+      ...prev,
+      min_lead_minutes: currentDays * 1440 + nextMinutes,
+    }));
+  };
+
   const load = async () => {
     setError("");
     setOkMsg("");
@@ -152,19 +176,41 @@ export default function AppointmentSettingsCard() {
             </div>
 
             <div>
-              <label className="block text-sm text-white/80 mb-1">
+              <label className="block text-sm text-white/80 mb-2">
                 {t("apptSettings.minLeadLabel")}
               </label>
-              <input
-                type="number"
-                min={0}
-                max={1440}
-                value={form.min_lead_minutes}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, min_lead_minutes: Number(e.target.value) }))
-                }
-                className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
-              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-white/60 mb-1">
+                    Days
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={leadDays}
+                    onChange={(e) => updateLeadDays(e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs text-white/60 mb-1">
+                    Extra minutes
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={1439}
+                    step={1}
+                    value={leadExtraMinutes}
+                    onChange={(e) => updateLeadExtraMinutes(e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  />
+                </div>
+              </div>
+
               <p className="text-xs text-white/50 mt-1">
                 {t("apptSettings.minLeadHelp")}
               </p>
