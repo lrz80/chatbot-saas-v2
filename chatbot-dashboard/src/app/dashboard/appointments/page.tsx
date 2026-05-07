@@ -14,6 +14,9 @@ import CollapsibleCard from "@/components/CollapsibleCard";
 
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended';
 
+type AppointmentAutomationMode = 'automatic_scheduling' | 'on_site_appointment';
+type CalendarProvider = 'google_calendar' | 'square';
+
 type Appointment = {
   id: string;
   tenant_id: string;
@@ -127,6 +130,12 @@ export default function AppointmentsPage() {
 
   const [bookingEnabled, setBookingEnabled] = useState<boolean>(true);
   const [bookingSaving, setBookingSaving] = useState<boolean>(false);
+
+  const [selectedAutomationMode, setSelectedAutomationMode] =
+    useState<AppointmentAutomationMode>('automatic_scheduling');
+
+  const [selectedCalendarProvider, setSelectedCalendarProvider] =
+    useState<CalendarProvider>('google_calendar');
 
   // 🔥 Nuevo: modo de link para las citas (meet | calendar)
   const [bookingLinkMode, setBookingLinkMode] = useState<"meet" | "calendar">("calendar");
@@ -309,6 +318,28 @@ export default function AppointmentsPage() {
 
     fetchEstimateFlowStatus();
   }, []);
+
+  useEffect(() => {
+    if (estimateFlowEnabled) {
+      setSelectedAutomationMode('on_site_appointment');
+      return;
+    }
+
+    if (bookingEnabled) {
+      setSelectedAutomationMode('automatic_scheduling');
+    }
+  }, [bookingEnabled, estimateFlowEnabled]);
+
+  useEffect(() => {
+    if (squareStatus.connected) {
+      setSelectedCalendarProvider('square');
+      return;
+    }
+
+    if (gcStatus.connected) {
+      setSelectedCalendarProvider('google_calendar');
+    }
+  }, [gcStatus.connected, squareStatus.connected]);
 
   const fetchAppointments = async () => {
     try {
@@ -686,6 +717,55 @@ export default function AppointmentsPage() {
     }
   };
 
+  const isAutomaticSchedulingSelected =
+    selectedAutomationMode === 'automatic_scheduling';
+
+  const isSelectedAutomationEnabled = isAutomaticSchedulingSelected
+    ? bookingEnabled
+    : estimateFlowEnabled;
+
+  const isSelectedAutomationSaving = isAutomaticSchedulingSelected
+    ? bookingSaving
+    : estimateFlowSaving;
+
+  const toggleSelectedAutomation = async () => {
+    if (isAutomaticSchedulingSelected) {
+      await toggleBooking();
+      return;
+    }
+
+    await toggleEstimateFlow();
+  };
+
+  const selectedProviderConnected =
+    selectedCalendarProvider === 'google_calendar'
+      ? gcStatus.connected
+      : squareStatus.connected;
+
+  const selectedProviderLoading =
+    selectedCalendarProvider === 'google_calendar'
+      ? gcLoading || gcConnecting
+      : squareLoading || squareConnecting;
+
+  const handleSelectedProviderAction = async () => {
+    if (selectedCalendarProvider === 'google_calendar') {
+      if (gcStatus.connected) {
+        await handleDisconnectGoogle();
+        return;
+      }
+
+      handleConnectGoogle();
+      return;
+    }
+
+    if (squareStatus.connected) {
+      await handleDisconnectSquare();
+      return;
+    }
+
+    handleConnectSquare();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#050314] via-[#050018] to-[#050010] text-white px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-6xl mx-auto">
@@ -697,188 +777,202 @@ export default function AppointmentsPage() {
             {t("appointments.subtitle")}
           </p>
 
-          {/* 🔧 Bloque principal de booking + modo de link */}
-          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold text-white">
-                {t("appointments.booking.title")}
-              </div>
-              <div className="text-xs text-white/60">
-                {bookingEnabled
-                  ? t("appointments.booking.onHint")
-                  : t("appointments.booking.offHint")}
-              </div>
-            </div>
+          <div className="mt-4 flex flex-col gap-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-sm">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-white">
+                    Appointment automation
+                  </div>
+                  <div className="mt-1 text-xs text-white/60">
+                    {selectedAutomationMode === 'automatic_scheduling'
+                      ? bookingEnabled
+                        ? t("appointments.booking.onHint")
+                        : t("appointments.booking.offHint")
+                      : estimateFlowEnabled
+                        ? t("appointments.estimate.onHint")
+                        : t("appointments.estimate.offHint")}
+                  </div>
+                </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              {/* Modo de link: Meet vs Calendar */}
-              <div className="flex flex-col">
-                <span className="text-xs text-white/60 mb-1">
-                  {t("appointments.booking.modeLabel")}
-                </span>
-                <div className="inline-flex rounded-xl bg-black/40 border border-white/10 p-1 text-xs">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="flex flex-col">
+                    <label className="mb-1 text-xs text-white/60">
+                      Automation type
+                    </label>
+                    <select
+                      value={selectedAutomationMode}
+                      onChange={(e) =>
+                        setSelectedAutomationMode(
+                          e.target.value as AppointmentAutomationMode
+                        )
+                      }
+                      className="min-w-[240px] rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none"
+                    >
+                      <option value="automatic_scheduling">Automatic Scheduling</option>
+                      <option value="on_site_appointment">On-site appointment</option>
+                    </select>
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => handleChangeBookingMode("calendar")}
-                    className={`px-3 py-1.5 rounded-lg font-medium transition ${
-                      bookingLinkMode === "calendar"
-                        ? "bg-white text-black shadow-sm"
-                        : "text-white/70 hover:bg-white/10"
-                    }`}
-                    disabled={bookingSaving}
+                    onClick={toggleSelectedAutomation}
+                    disabled={isSelectedAutomationSaving}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold border transition ${
+                      isSelectedAutomationEnabled
+                        ? "bg-emerald-600/80 border-emerald-400/40 hover:bg-emerald-600"
+                        : "bg-red-600/70 border-red-400/40 hover:bg-red-600"
+                    } ${isSelectedAutomationSaving ? "opacity-60 cursor-not-allowed" : ""}`}
                   >
-                    {t("appointments.booking.mode.calendar")}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleChangeBookingMode("meet")}
-                    className={`px-3 py-1.5 rounded-lg font-medium transition ${
-                      bookingLinkMode === "meet"
-                        ? "bg-white text-black shadow-sm"
-                        : "text-white/70 hover:bg-white/10"
-                    }`}
-                    disabled={bookingSaving}
-                  >
-                    {t("appointments.booking.mode.meet")}
+                    {isSelectedAutomationSaving
+                      ? selectedAutomationMode === 'automatic_scheduling'
+                        ? t("appointments.booking.saving")
+                        : t("appointments.estimate.saving")
+                      : isSelectedAutomationEnabled
+                        ? t("common.on")
+                        : t("common.off")}
                   </button>
                 </div>
               </div>
 
-              {/* Toggle ON/OFF */}
-              <button
-                onClick={toggleBooking}
-                disabled={bookingSaving}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold border transition
-                  ${bookingEnabled
-                    ? "bg-emerald-600/80 border-emerald-400/40 hover:bg-emerald-600"
-                    : "bg-red-600/70 border-red-400/40 hover:bg-red-600"}
-                  ${bookingSaving ? "opacity-60 cursor-not-allowed" : ""}`}
-              >
-                {bookingSaving
-                  ? t("appointments.booking.saving")
-                  : bookingEnabled
-                    ? t("common.on")
-                    : t("common.off")}
-              </button>
-            </div>
-          </div>
+              {selectedAutomationMode === 'automatic_scheduling' && (
+                <div className="mt-4 border-t border-white/10 pt-4">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xs text-white/60">
+                      {t("appointments.booking.modeLabel")}
+                    </span>
 
-          {/* 🔧 Bloque de estimados en sitio */}
-          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col">
-              <div className="text-sm font-semibold text-white">
-                {t("appointments.estimate.title")}
-              </div>
-              <div className="text-xs text-white/60">
-                {estimateFlowEnabled
-                  ? t("appointments.estimate.onHint")
-                  : t("appointments.estimate.offHint")}
-              </div>
-            </div>
+                    <div className="inline-flex w-fit rounded-xl bg-black/40 border border-white/10 p-1 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => handleChangeBookingMode("calendar")}
+                        className={`px-3 py-1.5 rounded-lg font-medium transition ${
+                          bookingLinkMode === "calendar"
+                            ? "bg-white text-black shadow-sm"
+                            : "text-white/70 hover:bg-white/10"
+                        }`}
+                        disabled={bookingSaving}
+                      >
+                        {t("appointments.booking.mode.calendar")}
+                      </button>
 
-            <button
-              onClick={toggleEstimateFlow}
-              disabled={estimateFlowSaving}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition
-                ${estimateFlowEnabled
-                  ? "bg-emerald-600/80 border-emerald-400/40 hover:bg-emerald-600"
-                  : "bg-red-600/70 border-red-400/40 hover:bg-red-600"}
-                ${estimateFlowSaving ? "opacity-60 cursor-not-allowed" : ""}`}
-            >
-              {estimateFlowSaving
-                ? t("appointments.estimate.saving")
-                : estimateFlowEnabled
-                  ? t("common.on")
-                  : t("common.off")}
-            </button>
-          </div>
-
-          {/* Bloque de Google Calendar connect/disconnect */}
-          <div className="mb-6 mt-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <div className="text-sm font-semibold">{t("appointments.gc.title")}</div>
-              <div className="text-xs text.white/60 mt-1">
-                {t("appointments.gc.status")}{" "}
-                {gcStatus.connected
-                  ? t("appointments.gc.connected")
-                  : t("appointments.gc.disconnected")}
-              </div>
-            </div>
-
-            {gcStatus.connected && gcStatus.connected_email && (
-              <div className="text-xs text-white/60 mt-1">
-                {t("appointments.gc.connectedAs")}{" "}
-                <span className="text-white/90 font-medium">
-                  {gcStatus.connected_email}
-                </span>
-              </div>
-            )}
-
-            {gcStatus.connected ? (
-              <button
-                onClick={handleDisconnectGoogle}
-                disabled={gcLoading}
-                className="px-4 py-2 rounded-xl bg-red-600/80 hover:bg-red-500 text-sm font-semibold"
-              >
-                {t("appointments.gc.disconnect")}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleConnectGoogle}
-                disabled={gcLoading || gcConnecting}
-                className="px-4 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-sm font-semibold"
-              >
-                {gcConnecting ? t("appointments.gc.connecting") : t("appointments.gc.connect")}
-              </button>
-            )}
-          </div>
-
-          <div className="mb-6 mt-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <div className="text-sm font-semibold">Square Appointments</div>
-              <div className="text-xs text-white/60 mt-1">
-                Estado: {squareStatus.connected ? "Conectado" : "Desconectado"}
-              </div>
-
-              {squareStatus.connected && squareStatus.merchant_id && (
-                <div className="text-xs text-white/60 mt-1">
-                  Merchant ID:{" "}
-                  <span className="text-white/90 font-medium">
-                    {squareStatus.merchant_id}
-                  </span>
-                </div>
-              )}
-
-              {squareStatus.connected && squareStatus.location_id && (
-                <div className="text-xs text-white/60 mt-1">
-                  Location ID:{" "}
-                  <span className="text-white/90 font-medium">
-                    {squareStatus.location_id}
-                  </span>
+                      <button
+                        type="button"
+                        onClick={() => handleChangeBookingMode("meet")}
+                        className={`px-3 py-1.5 rounded-lg font-medium transition ${
+                          bookingLinkMode === "meet"
+                            ? "bg-white text-black shadow-sm"
+                            : "text-white/70 hover:bg-white/10"
+                        }`}
+                        disabled={bookingSaving}
+                      >
+                        {t("appointments.booking.mode.meet")}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
 
-            {squareStatus.connected ? (
-              <button
-                onClick={handleDisconnectSquare}
-                disabled={squareLoading}
-                className="px-4 py-2 rounded-xl bg-red-600/80 hover:bg-red-500 text-sm font-semibold"
-              >
-                {squareLoading ? "Desconectando..." : "Desconectar Square"}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleConnectSquare}
-                disabled={squareLoading || squareConnecting}
-                className="px-4 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-sm font-semibold"
-              >
-                {squareConnecting ? "Conectando..." : "Conectar Square"}
-              </button>
-            )}
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-sm">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-white">
+                    Calendar provider
+                  </div>
+
+                  <div className="mt-1 text-xs text-white/60">
+                    {selectedCalendarProvider === 'google_calendar'
+                      ? `${t("appointments.gc.status")} ${
+                          gcStatus.connected
+                            ? t("appointments.gc.connected")
+                            : t("appointments.gc.disconnected")
+                        }`
+                      : `Estado: ${squareStatus.connected ? "Conectado" : "Desconectado"}`}
+                  </div>
+
+                  {selectedCalendarProvider === 'google_calendar' &&
+                    gcStatus.connected &&
+                    gcStatus.connected_email && (
+                      <div className="mt-1 text-xs text-white/60">
+                        {t("appointments.gc.connectedAs")}{" "}
+                        <span className="font-medium text-white/90">
+                          {gcStatus.connected_email}
+                        </span>
+                      </div>
+                    )}
+
+                  {selectedCalendarProvider === 'square' &&
+                    squareStatus.connected &&
+                    squareStatus.merchant_id && (
+                      <div className="mt-1 text-xs text-white/60">
+                        Merchant ID:{" "}
+                        <span className="font-medium text-white/90">
+                          {squareStatus.merchant_id}
+                        </span>
+                      </div>
+                    )}
+
+                  {selectedCalendarProvider === 'square' &&
+                    squareStatus.connected &&
+                    squareStatus.location_id && (
+                      <div className="mt-1 text-xs text-white/60">
+                        Location ID:{" "}
+                        <span className="font-medium text-white/90">
+                          {squareStatus.location_id}
+                        </span>
+                      </div>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="flex flex-col">
+                    <label className="mb-1 text-xs text-white/60">
+                      Provider
+                    </label>
+                    <select
+                      value={selectedCalendarProvider}
+                      onChange={(e) =>
+                        setSelectedCalendarProvider(
+                          e.target.value as CalendarProvider
+                        )
+                      }
+                      className="min-w-[240px] rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none"
+                    >
+                      <option value="google_calendar">Google Calendar</option>
+                      <option value="square">Square Appointments</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSelectedProviderAction}
+                    disabled={selectedProviderLoading}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition ${
+                      selectedProviderConnected
+                        ? "bg-red-600/80 hover:bg-red-500"
+                        : "bg-emerald-600/80 hover:bg-emerald-500"
+                    } ${selectedProviderLoading ? "opacity-60 cursor-not-allowed" : ""}`}
+                  >
+                    {selectedProviderLoading
+                      ? selectedCalendarProvider === 'google_calendar'
+                        ? gcStatus.connected
+                          ? t("appointments.gc.disconnect")
+                          : t("appointments.gc.connecting")
+                        : squareStatus.connected
+                          ? "Desconectando..."
+                          : "Conectando..."
+                      : selectedProviderConnected
+                        ? selectedCalendarProvider === 'google_calendar'
+                          ? t("appointments.gc.disconnect")
+                          : "Desconectar Square"
+                        : selectedCalendarProvider === 'google_calendar'
+                          ? t("appointments.gc.connect")
+                          : "Conectar Square"}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <CollapsibleCard
