@@ -408,18 +408,36 @@ export default function AppointmentBookingFlowCard() {
           step_order: Number(step.step_order),
           prompt_translations: promptTranslations,
           retry_prompt_translations: retryPromptTranslations,
-          validation_config: {
-            slot: step.validation_config?.slot || "none",
-            ...(step.validation_config || {}),
-            cancel_message_translations: buildLocalizedMapFromStep({
+          validation_config: (() => {
+            const cancelMessageTranslations = buildLocalizedMapFromStep({
               existing: normalizeLocalizedMap(step.validation_config?.cancel_message_translations),
               fallbackValue: step.validation_config?.cancel_message || "",
-            }),
-            unavailable_prompt_translations: buildLocalizedMapFromStep({
+            });
+
+            const unavailablePromptTranslations = buildLocalizedMapFromStep({
               existing: normalizeLocalizedMap(step.validation_config?.unavailable_prompt_translations),
               fallbackValue: step.validation_config?.unavailable_prompt || "",
-            }),
-          },
+            });
+
+            const cancelMessageFallback =
+              cancelMessageTranslations[PRIMARY_BOOKING_FLOW_LOCALE] ||
+              Object.values(cancelMessageTranslations)[0] ||
+              "";
+
+            const unavailablePromptFallback =
+              unavailablePromptTranslations[PRIMARY_BOOKING_FLOW_LOCALE] ||
+              Object.values(unavailablePromptTranslations)[0] ||
+              "";
+
+            return {
+              ...(step.validation_config || {}),
+              slot: step.validation_config?.slot || "none",
+              cancel_message: cancelMessageFallback,
+              cancel_message_translations: cancelMessageTranslations,
+              unavailable_prompt: unavailablePromptFallback,
+              unavailable_prompt_translations: unavailablePromptTranslations,
+            };
+          })(),
         };
       });
 
