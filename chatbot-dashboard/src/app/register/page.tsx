@@ -1,7 +1,7 @@
 "use client";
 
 import Footer from '@/components/Footer';
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FaRobot,
@@ -26,20 +26,31 @@ const nodos = [
   { Icon: FaBullhorn, color: "#facc15", titleKey: "register.nodes.campaigns.title", descKey: "register.nodes.campaigns.desc", posClass: "bottom-[5%] left-[40%]", x: 40, y: 95 },
 ];
 
+type RegisterFormData = {
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono: string;
+  password: string;
+  smsOptIn: boolean;
+};
+
 export default function RegisterPage() {
   const { t } = useI18n();
   const router = useRouter();
-  const [formData, setFormData] = useState({
+
+  const [formData, setFormData] = useState<RegisterFormData>({
     nombre: "",
     apellido: "",
     email: "",
     telefono: "",
     password: "",
+    smsOptIn: false,
   });
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  // 👉 Detecta timezone del navegador (IANA)
   const timezoneGuess = useMemo(() => {
     try {
       return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -49,7 +60,12 @@ export default function RegisterPage() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, type, value, checked } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -58,34 +74,39 @@ export default function RegisterPage() {
     setSuccess(false);
 
     try {
-      // 1) Registro con timezone incluida
       const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          ...formData,
-          timezone: timezoneGuess, // 👈 se envía al backend de registro
+          nombre: formData.nombre,
+          apellido: formData.apellido,
+          email: formData.email,
+          telefono: formData.telefono,
+          password: formData.password,
+          timezone: timezoneGuess,
+          sms_opt_in: formData.smsOptIn,
         }),
       });
 
       const contentType = res.headers.get("Content-Type") || "";
       let data: any = null;
+
       if (contentType.includes("application/json")) {
         data = await res.json();
       }
+
       if (!res.ok) {
         const msg = data?.error || t("register.errors.failed");
         throw new Error(msg);
       }
 
-      // ✅ Meta Pixel: registro completado
       track("CompleteRegistration", {
         content_name: "Aamy AI Register",
         status: "success",
+        sms_opt_in: formData.smsOptIn,
       });
 
-      // 2) Fallback: intenta fijar timezone en el tenant (por si /auth/register no la guarda)
       try {
         await fetch(`${BACKEND_URL}/api/tenants/timezone`, {
           method: "PATCH",
@@ -94,12 +115,10 @@ export default function RegisterPage() {
           body: JSON.stringify({ timezone: timezoneGuess }),
         });
       } catch (e) {
-        // No bloquea el flujo si falla; solo log
         console.warn("No se pudo fijar timezone vía PATCH /tenants/timezone:", e);
       }
 
       setSuccess(true);
-      // Si quieres redirigir a onboarding:
       // router.push("/onboarding");
     } catch (error: any) {
       console.error("❌ Error al registrar:", error);
@@ -145,10 +164,17 @@ export default function RegisterPage() {
       </div>
 
       {!success ? (
-        <form onSubmit={handleRegister} className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl space-y-4">
+        <form
+          onSubmit={handleRegister}
+          className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl space-y-4"
+        >
           <h2 className="text-2xl font-bold text-center text-purple-300">{t("register.title")}</h2>
 
-          {error && <p className="bg-red-100 text-red-700 p-2 rounded text-sm text-center">{error}</p>}
+          {error && (
+            <p className="bg-red-100 text-red-700 p-2 rounded text-sm text-center">
+              {error}
+            </p>
+          )}
 
           <div className="flex gap-4">
             <input
@@ -191,6 +217,24 @@ export default function RegisterPage() {
             className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
           />
 
+          <label className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
+            <input
+              name="smsOptIn"
+              type="checkbox"
+              checked={formData.smsOptIn}
+              onChange={handleChange}
+              className="mt-1 h-4 w-4 rounded border-white/30 bg-transparent accent-purple-600"
+            />
+            <div className="text-sm leading-5 text-white/80">
+              <p className="font-medium text-white">
+                I agree to receive account-related and service-related text messages from Aamy.
+              </p>
+              <p className="mt-1 text-white/60">
+                Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out and HELP for help.
+              </p>
+            </div>
+          </label>
+
           <input
             name="password"
             type="password"
@@ -201,12 +245,15 @@ export default function RegisterPage() {
             className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
           />
 
-          {/* 👇 Solo informativo; si prefieres, ocúltalo */}
           <div className="hidden">
-            {t("register.debug.timezone")}: <span className="text-white/80 font-mono">{timezoneGuess}</span>
+            {t("register.debug.timezone")}:{" "}
+            <span className="text-white/80 font-mono">{timezoneGuess}</span>
           </div>
 
-          <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold transition duration-200">
+          <button
+            type="submit"
+            className="w-full bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold transition duration-200"
+          >
             {t("register.form.submit")}
           </button>
 
@@ -216,11 +263,14 @@ export default function RegisterPage() {
               {t("register.links.login")}
             </a>
           </p>
+
           <Footer />
         </form>
       ) : (
         <div className="relative z-20 w-full max-w-md bg-white/10 border border-white/20 backdrop-blur-md text-white rounded-2xl p-8 shadow-2xl text-center">
-          <h2 className="text-2xl font-bold text-purple-300 mb-4">{t("register.success.title")}</h2>
+          <h2 className="text-2xl font-bold text-purple-300 mb-4">
+            {t("register.success.title")}
+          </h2>
           <p className="text-white/80 text-sm">{t("register.success.subtitle")}</p>
         </div>
       )}
