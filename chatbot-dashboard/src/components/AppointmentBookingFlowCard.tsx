@@ -127,6 +127,22 @@ function normalizeBookingOptions(
     .filter((item) => item.label || item.value || item.synonyms.length > 0);
 }
 
+function getEditableBookingOptions(
+  value: unknown
+): Array<{
+  label: string;
+  value: string;
+  synonyms: string[];
+}> {
+  const normalized = normalizeBookingOptions(value);
+
+  if (normalized.length > 0) {
+    return normalized;
+  }
+
+  return [{ label: "", value: "", synonyms: [] }];
+}
+
 const DEFAULT_STEPS: BookingStep[] = [
   {
     step_key: "service",
@@ -776,10 +792,8 @@ export default function AppointmentBookingFlowCard() {
                     Opciones reconocibles
                   </label>
 
-                  {(normalizeBookingOptions(step.validation_config?.options).length > 0
-                    ? normalizeBookingOptions(step.validation_config?.options)
-                    : [{ label: "", value: "", synonyms: [] }]
-                  ).map((option, optionIndex) => (
+                  {getEditableBookingOptions(step.validation_config?.options).map(
+                    (option, optionIndex) => (
                     <div
                       key={`${step.step_key}-option-${optionIndex}`}
                       className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-white/5 border border-white/10 rounded p-3"
@@ -864,13 +878,27 @@ export default function AppointmentBookingFlowCard() {
                   <button
                     type="button"
                     onClick={() => {
-                      const nextOptions = normalizeBookingOptions(step.validation_config?.options);
-                      nextOptions.push({ label: "", value: "", synonyms: [] });
+                      const nextOptions = getEditableBookingOptions(
+                        step.validation_config?.options
+                      );
+
+                      const hasOnlySingleEmptyRow =
+                        nextOptions.length === 1 &&
+                        !nextOptions[0].label &&
+                        !nextOptions[0].value &&
+                        nextOptions[0].synonyms.length === 0;
+
+                      const finalOptions = hasOnlySingleEmptyRow
+                        ? [
+                            ...nextOptions,
+                            { label: "", value: "", synonyms: [] },
+                          ]
+                        : [...nextOptions, { label: "", value: "", synonyms: [] }];
 
                       updateStep(index, {
                         validation_config: {
                           ...step.validation_config,
-                          options: nextOptions,
+                          options: finalOptions,
                         },
                       });
                     }}
