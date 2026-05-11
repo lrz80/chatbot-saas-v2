@@ -154,6 +154,18 @@ function getEditableBookingOptions(
   });
 }
 
+function getEditableSpeechHintsText(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item ?? "")).join(", ");
+  }
+
+  return "";
+}
+
 const DEFAULT_STEPS: BookingStep[] = [
   {
     step_key: "service",
@@ -484,9 +496,13 @@ export default function AppointmentBookingFlowCard() {
               Object.values(unavailablePromptTranslations)[0] ||
               "";
 
-            const speechHints = normalizeStringArray(
-              step.validation_config?.speech_hints
-            );
+            const speechHints =
+              typeof step.validation_config?.speech_hints === "string"
+                ? step.validation_config.speech_hints
+                    .split(",")
+                    .map((item: string) => item.trim())
+                    .filter(Boolean)
+                : normalizeStringArray(step.validation_config?.speech_hints);
 
             const options = normalizeBookingOptions(
               step.validation_config?.options
@@ -775,17 +791,12 @@ export default function AppointmentBookingFlowCard() {
                     Speech hints
                   </label>
                   <textarea
-                    value={Array.isArray(step.validation_config?.speech_hints)
-                      ? step.validation_config.speech_hints.join(", ")
-                      : ""}
+                    value={getEditableSpeechHintsText(step.validation_config?.speech_hints)}
                     onChange={(e) =>
                       updateStep(index, {
                         validation_config: {
                           ...step.validation_config,
-                          speech_hints: e.target.value
-                            .split(",")
-                            .map((item) => item.trim())
-                            .filter(Boolean),
+                          speech_hints: e.target.value,
                         },
                       })
                     }
