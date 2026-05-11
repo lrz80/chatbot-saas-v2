@@ -20,7 +20,7 @@ type BookingStep = {
 
 type BookingSlot =
   | "none"
-  | "appointment_mode"
+  | "appointment_type"
   | "service"
   | "datetime"
   | "customer_name"
@@ -36,7 +36,7 @@ const BOOKING_SLOTS: BookingSlot[] = [
   "none",
 
   // Core booking slots
-  "appointment_mode",
+  "appointment_type",
   "service",
   "datetime",
   "customer_name",
@@ -97,6 +97,34 @@ function buildLocalizedMapFromStep(params: {
       ).trim(),
     ]).filter(([, value]) => value)
   );
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => String(item ?? "").trim())
+    .filter(Boolean);
+}
+
+function normalizeBookingOptions(
+  value: unknown
+): Array<{
+  label: string;
+  value: string;
+  synonyms: string[];
+}> {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      const row = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
+      return {
+        label: String(row.label ?? "").trim(),
+        value: String(row.value ?? "").trim(),
+        synonyms: normalizeStringArray(row.synonyms),
+      };
+    })
+    .filter((item) => item.label || item.value || item.synonyms.length > 0);
 }
 
 const DEFAULT_STEPS: BookingStep[] = [
@@ -429,6 +457,14 @@ export default function AppointmentBookingFlowCard() {
               Object.values(unavailablePromptTranslations)[0] ||
               "";
 
+            const speechHints = normalizeStringArray(
+              step.validation_config?.speech_hints
+            );
+
+            const options = normalizeBookingOptions(
+              step.validation_config?.options
+            );
+
             return {
               ...(step.validation_config || {}),
               slot: step.validation_config?.slot || "none",
@@ -436,6 +472,8 @@ export default function AppointmentBookingFlowCard() {
               cancel_message_translations: cancelMessageTranslations,
               unavailable_prompt: unavailablePromptFallback,
               unavailable_prompt_translations: unavailablePromptTranslations,
+              speech_hints: speechHints,
+              options,
             };
           })(),
         };
@@ -704,6 +742,147 @@ export default function AppointmentBookingFlowCard() {
                   <label className="block text-xs text-white/60 mb-2">
                       Reglas de validación
                   </label>
+
+                <div className="space-y-2 text-sm">
+                  <label className="block text-xs text-white/60">
+                    Speech hints
+                  </label>
+                  <textarea
+                    value={Array.isArray(step.validation_config?.speech_hints)
+                      ? step.validation_config.speech_hints.join(", ")
+                      : ""}
+                    onChange={(e) =>
+                      updateStep(index, {
+                        validation_config: {
+                          ...step.validation_config,
+                          speech_hints: e.target.value
+                            .split(",")
+                            .map((item) => item.trim())
+                            .filter(Boolean),
+                        },
+                      })
+                    }
+                    rows={2}
+                    placeholder="salon, in salon, mobile, mobile service"
+                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
+                  />
+                  <p className="text-[11px] text-white/40">
+                    Separa los hints por coma. Aamy los enviará al recognizer de voz para este paso.
+                  </p>
+                </div>
+
+                                <div className="space-y-2 text-sm">
+                  <label className="block text-xs text-white/60">
+                    Opciones reconocibles
+                  </label>
+
+                  {(normalizeBookingOptions(step.validation_config?.options).length > 0
+                    ? normalizeBookingOptions(step.validation_config?.options)
+                    : [{ label: "", value: "", synonyms: [] }]
+                  ).map((option, optionIndex) => (
+                    <div
+                      key={`${step.step_key}-option-${optionIndex}`}
+                      className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-white/5 border border-white/10 rounded p-3"
+                    >
+                      <input
+                        type="text"
+                        value={option.label}
+                        onChange={(e) => {
+                          const nextOptions = normalizeBookingOptions(step.validation_config?.options);
+                          while (nextOptions.length <= optionIndex) {
+                            nextOptions.push({ label: "", value: "", synonyms: [] });
+                          }
+                          nextOptions[optionIndex] = {
+                            ...nextOptions[optionIndex],
+                            label: e.target.value,
+                          };
+
+                          updateStep(index, {
+                            validation_config: {
+                              ...step.validation_config,
+                              options: nextOptions,
+                            },
+                          });
+                        }}
+                        placeholder="Label"
+                        className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+                      />
+
+                      <input
+                        type="text"
+                        value={option.value}
+                        onChange={(e) => {
+                          const nextOptions = normalizeBookingOptions(step.validation_config?.options);
+                          while (nextOptions.length <= optionIndex) {
+                            nextOptions.push({ label: "", value: "", synonyms: [] });
+                          }
+                          nextOptions[optionIndex] = {
+                            ...nextOptions[optionIndex],
+                            value: e.target.value,
+                          };
+
+                          updateStep(index, {
+                            validation_config: {
+                              ...step.validation_config,
+                              options: nextOptions,
+                            },
+                          });
+                        }}
+                        placeholder="Canonical value"
+                        className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+                      />
+
+                      <input
+                        type="text"
+                        value={option.synonyms.join(", ")}
+                        onChange={(e) => {
+                          const nextOptions = normalizeBookingOptions(step.validation_config?.options);
+                          while (nextOptions.length <= optionIndex) {
+                            nextOptions.push({ label: "", value: "", synonyms: [] });
+                          }
+                          nextOptions[optionIndex] = {
+                            ...nextOptions[optionIndex],
+                            synonyms: e.target.value
+                              .split(",")
+                              .map((item) => item.trim())
+                              .filter(Boolean),
+                          };
+
+                          updateStep(index, {
+                            validation_config: {
+                              ...step.validation_config,
+                              options: nextOptions,
+                            },
+                          });
+                        }}
+                        placeholder="Synonyms separados por coma"
+                        className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+                      />
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextOptions = normalizeBookingOptions(step.validation_config?.options);
+                      nextOptions.push({ label: "", value: "", synonyms: [] });
+
+                      updateStep(index, {
+                        validation_config: {
+                          ...step.validation_config,
+                          options: nextOptions,
+                        },
+                      });
+                    }}
+                    className="px-3 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
+                  >
+                    + Agregar opción
+                  </button>
+
+                  <p className="text-[11px] text-white/40">
+                    Útil para pasos como salon/mobile. Cada tenant define sus propias variantes sin tocar backend.
+                  </p>
+                </div>
 
                 {step.expected_type === "datetime" && (
                 <div className="space-y-3 text-sm">
