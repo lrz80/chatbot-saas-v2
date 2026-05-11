@@ -134,13 +134,24 @@ function getEditableBookingOptions(
   value: string;
   synonyms: string[];
 }> {
-  const normalized = normalizeBookingOptions(value);
-
-  if (normalized.length > 0) {
-    return normalized;
+  if (!Array.isArray(value) || value.length === 0) {
+    return [{ label: "", value: "", synonyms: [] }];
   }
 
-  return [{ label: "", value: "", synonyms: [] }];
+  return value.map((item) => {
+    const row =
+      item && typeof item === "object"
+        ? (item as Record<string, unknown>)
+        : {};
+
+    return {
+      label: String(row.label ?? "").trim(),
+      value: String(row.value ?? "").trim(),
+      synonyms: Array.isArray(row.synonyms)
+        ? row.synonyms.map((syn) => String(syn ?? "").trim()).filter(Boolean)
+        : [],
+    };
+  });
 }
 
 const DEFAULT_STEPS: BookingStep[] = [
@@ -802,7 +813,7 @@ export default function AppointmentBookingFlowCard() {
                         type="text"
                         value={option.label}
                         onChange={(e) => {
-                          const nextOptions = normalizeBookingOptions(step.validation_config?.options);
+                          const nextOptions = getEditableBookingOptions(step.validation_config?.options);
                           while (nextOptions.length <= optionIndex) {
                             nextOptions.push({ label: "", value: "", synonyms: [] });
                           }
@@ -826,7 +837,7 @@ export default function AppointmentBookingFlowCard() {
                         type="text"
                         value={option.value}
                         onChange={(e) => {
-                          const nextOptions = normalizeBookingOptions(step.validation_config?.options);
+                          const nextOptions = getEditableBookingOptions(step.validation_config?.options);
                           while (nextOptions.length <= optionIndex) {
                             nextOptions.push({ label: "", value: "", synonyms: [] });
                           }
@@ -850,7 +861,7 @@ export default function AppointmentBookingFlowCard() {
                         type="text"
                         value={option.synonyms.join(", ")}
                         onChange={(e) => {
-                          const nextOptions = normalizeBookingOptions(step.validation_config?.options);
+                          const nextOptions = getEditableBookingOptions(step.validation_config?.options);
                           while (nextOptions.length <= optionIndex) {
                             nextOptions.push({ label: "", value: "", synonyms: [] });
                           }
