@@ -1,268 +1,233 @@
 'use client';
 
-import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { useI18n } from "../../i18n/LanguageProvider";
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 
-const UPDATED_AT = "2025-04-27";
+const UPDATED_AT = '2026-05-11';
 
-const PRIVACY_CONTENT = {
-  es: {
-    back: "Volver",
-    title: "Política de Privacidad",
-    intro:
-      "En Aamy.ai, tu privacidad es nuestra prioridad. Esta Política de Privacidad explica cómo recopilamos, usamos y protegemos la información que manejamos en nuestra plataforma de automatización de comunicaciones.",
-    sections: [
-      {
-        title: "1. Información que recopilamos",
-        body: (
-          <>
-            <p>Recopilamos datos proporcionados por nuestros usuarios y sus clientes, como:</p>
-            <ul className="list-disc list-inside ml-4">
-              <li>Nombre</li>
-              <li>Correo electrónico</li>
-              <li>Número de teléfono</li>
-              <li>Mensajes enviados por WhatsApp, Facebook Messenger, Instagram, SMS o Voz</li>
-              <li>Información del negocio registrada en la plataforma</li>
-            </ul>
-          </>
-        ),
-      },
-      {
-        title: "2. Cómo usamos tu información",
-        body: (
-          <>
-            <p>Utilizamos la información para:</p>
-            <ul className="list-disc list-inside ml-4">
-              <li>Facilitar la automatización de conversaciones</li>
-              <li>Programar y enviar mensajes automáticos personalizados</li>
-              <li>Optimizar y mejorar nuestros servicios</li>
-              <li>Analizar interacciones para ofrecer mejores experiencias</li>
-            </ul>
-          </>
-        ),
-      },
-      {
-        title: "3. Compartir información",
-        body: (
-          <>
-            <p>No vendemos ni compartimos tu información personal. Solo la compartimos:</p>
-            <ul className="list-disc list-inside ml-4">
-              <li>Con proveedores tecnológicos confiables para operar el servicio</li>
-              <li>Cuando sea requerido por ley o autoridades competentes</li>
-            </ul>
-          </>
-        ),
-      },
-      {
-        title: "4. Seguridad de los datos",
-        body: (
-          <p>
-            Implementamos medidas de seguridad administrativas, técnicas y físicas para proteger tu
-            información de accesos no autorizados, pérdida o alteración.
-          </p>
-        ),
-      },
-      {
-        title: "5. Integraciones de terceros",
-        body: (
-          <p>
-            Podemos interactuar con servicios externos como WhatsApp, Facebook Messenger, Instagram
-            Direct y SMS. Cada servicio externo tiene su propia política de privacidad.
-          </p>
-        ),
-      },
-      {
-        title: "6. Tus derechos",
-        body: (
-          <p>
-            Puedes solicitar acceso, rectificación o eliminación de tus datos personales en cualquier
-            momento escribiéndonos a nuestro correo de soporte.
-          </p>
-        ),
-      },
-      {
-        title: "7. Cambios en esta política",
-        body: (
-          <p>
-            Nos reservamos el derecho de modificar esta Política de Privacidad. Publicaremos los
-            cambios en esta página.
-          </p>
-        ),
-      },
-      {
-        title: "8. Contacto",
-        body: (
-          <>
-            <p>Si tienes preguntas o deseas ejercer tus derechos, puedes contactarnos en:</p>
-            <ul className="list-none ml-4 mt-2">
-              <li>
-                📧 Correo:{" "}
-                <a href="mailto:noreply@aamy.ai" className="text-purple-400 underline">
-                  noreply@aamy.ai
-                </a>
-              </li>
-              <li>
-                🌐 Web:{" "}
-                <a href="https://aamy.ai" className="text-purple-400 underline">
-                  https://aamy.ai
-                </a>
-              </li>
-            </ul>
-          </>
-        ),
-      },
-    ],
-  },
-
-  en: {
-    back: "Back",
-    title: "Privacy Policy",
-    intro:
-      "At Aamy.ai, your privacy is our priority. This Privacy Policy explains how we collect, use, and protect the information handled within our communication automation platform.",
-    sections: [
-      {
-        title: "1. Information We Collect",
-        body: (
-          <>
-            <p>We collect information provided by our users and their customers, such as:</p>
-            <ul className="list-disc list-inside ml-4">
-              <li>Name</li>
-              <li>Email</li>
-              <li>Phone number</li>
-              <li>Messages sent through WhatsApp, Facebook Messenger, Instagram, SMS, or Voice</li>
-              <li>Business information registered in the platform</li>
-            </ul>
-          </>
-        ),
-      },
-      {
-        title: "2. How We Use Your Information",
-        body: (
-          <>
-            <p>We use the information to:</p>
-            <ul className="list-disc list-inside ml-4">
-              <li>Enable automated conversations</li>
-              <li>Schedule and send personalized automated messages</li>
-              <li>Optimize and improve our services</li>
-              <li>Analyze interactions to improve experiences</li>
-            </ul>
-          </>
-        ),
-      },
-      {
-        title: "3. Information Sharing",
-        body: (
-          <>
-            <p>
-              We do not sell or share your personal information. We only share it with:
-            </p>
-            <ul className="list-disc list-inside ml-4">
-              <li>Trusted technology providers used to operate the service</li>
-              <li>When required by law or authorities</li>
-            </ul>
-          </>
-        ),
-      },
-      {
-        title: "4. Data Security",
-        body: (
-          <p>
-            We implement administrative, technical, and physical safeguards to protect your data from
-            unauthorized access, loss, or alteration.
-          </p>
-        ),
-      },
-      {
-        title: "5. Third-Party Integrations",
-        body: (
-          <p>
-            We may interact with external services such as WhatsApp, Facebook Messenger, Instagram
-            Direct, and SMS. Each external service has its own privacy policy.
-          </p>
-        ),
-      },
-      {
-        title: "6. Your Rights",
-        body: (
-          <p>
-            You can request access, correction, or deletion of your personal data anytime by
-            contacting our support team.
-          </p>
-        ),
-      },
-      {
-        title: "7. Changes to This Policy",
-        body: (
-          <p>
-            We reserve the right to modify this Privacy Policy. Updates will be posted on this page.
-          </p>
-        ),
-      },
-      {
-        title: "8. Contact",
-        body: (
-          <>
-            <p>If you have questions or wish to exercise your rights, contact us at:</p>
-            <ul className="list-none ml-4 mt-2">
-              <li>
-                📧 Email:{" "}
-                <a href="mailto:noreply@aamy.ai" className="text-purple-400 underline">
-                  noreply@aamy.ai
-                </a>
-              </li>
-              <li>
-                🌐 Web:{" "}
-                <a href="https://aamy.ai" className="text-purple-400 underline">
-                  https://aamy.ai
-                </a>
-              </li>
-            </ul>
-          </>
-        ),
-      },
-    ],
-  },
+type PrivacySection = {
+  title: string;
+  body: React.ReactNode;
 };
+
+const PRIVACY_SECTIONS: PrivacySection[] = [
+  {
+    title: '1. Information We Collect',
+    body: (
+      <>
+        <p>We may collect information provided by our customers, their businesses, and their end users, including:</p>
+        <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+          <li>Business name, contact information, address, operating hours, services, pricing, and policies</li>
+          <li>Customer names, phone numbers, email addresses, appointment details, and communication preferences</li>
+          <li>Call metadata, call transcripts, call summaries, voicemail information, and message history</li>
+          <li>SMS delivery information and related communication records</li>
+          <li>Account, billing, subscription, and payment-related information</li>
+          <li>Technical information such as IP address, browser type, device information, logs, and usage analytics</li>
+          <li>Configuration data used to operate AI voice automation, including prompts, business instructions, FAQs, and workflows</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    title: '2. How We Use Information',
+    body: (
+      <>
+        <p>We use collected information to:</p>
+        <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+          <li>Provide AI voice receptionist and call automation services</li>
+          <li>Process, answer, route, summarize, or automate inbound business calls</li>
+          <li>Assist with appointment scheduling, customer follow-up, and SMS notifications when enabled</li>
+          <li>Personalize responses based on the customer’s business configuration</li>
+          <li>Maintain, secure, monitor, troubleshoot, and improve the platform</li>
+          <li>Process subscriptions, payments, billing records, and account administration</li>
+          <li>Comply with legal, regulatory, carrier, and payment processor requirements</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    title: '3. AI Voice Processing',
+    body: (
+      <p>
+        Aamy.ai uses artificial intelligence and automation technologies to process business communications. This may include
+        speech recognition, transcription, natural language processing, AI-generated responses, call summaries, and automated
+        decision support based on the business configuration provided by the customer.
+      </p>
+    ),
+  },
+  {
+    title: '4. Call Transcripts, Recordings, and Metadata',
+    body: (
+      <p>
+        Depending on the customer’s configuration, applicable law, and service requirements, calls may be processed,
+        transcribed, summarized, analyzed, stored, or recorded. Call-related data may be used to provide the service,
+        improve quality, support customers, debug issues, monitor performance, and maintain accurate business records.
+      </p>
+    ),
+  },
+  {
+    title: '5. Payment and Subscription Data',
+    body: (
+      <p>
+        Payments and recurring subscriptions may be processed through Stripe or another authorized payment processor.
+        Aamy.ai does not store full credit card numbers. Payment processors may collect and process billing details,
+        payment method information, transaction records, and fraud prevention data according to their own terms and privacy
+        policies.
+      </p>
+    ),
+  },
+  {
+    title: '6. Third-Party Service Providers',
+    body: (
+      <>
+        <p>
+          We may share information with trusted service providers only as necessary to operate, secure, bill, support, and
+          improve the service. These providers may include:
+        </p>
+        <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+          <li>Telecommunications and voice providers, including Twilio and phone carriers</li>
+          <li>Artificial intelligence and language processing providers, including OpenAI</li>
+          <li>Payment processors, including Stripe</li>
+          <li>Cloud hosting, database, storage, analytics, security, and infrastructure providers</li>
+          <li>Calendar, booking, CRM, or messaging integrations enabled by the customer</li>
+        </ul>
+        <p className="mt-2">
+          We do not sell personal information. We may disclose information if required by law, legal process, enforcement
+          request, or to protect Aamy.ai, our customers, end users, providers, or the public.
+        </p>
+      </>
+    ),
+  },
+  {
+    title: '7. Customer Responsibilities',
+    body: (
+      <p>
+        Customers are responsible for ensuring that their use of Aamy.ai complies with all laws and regulations applicable to
+        their business, including privacy, consent, call recording, telecommunications, SMS, telemarketing, and customer
+        communication laws. Customers are responsible for providing any legally required notices or obtaining any required
+        consents from callers, customers, employees, or end users.
+      </p>
+    ),
+  },
+  {
+    title: '8. Data Retention',
+    body: (
+      <p>
+        We retain information for as long as reasonably necessary to provide the service, maintain business records, comply
+        with legal obligations, resolve disputes, enforce agreements, prevent abuse, and improve platform reliability. Some
+        data may be deleted, anonymized, or aggregated when it is no longer required for these purposes.
+      </p>
+    ),
+  },
+  {
+    title: '9. Data Security',
+    body: (
+      <p>
+        We use commercially reasonable administrative, technical, and organizational safeguards designed to protect
+        information against unauthorized access, loss, misuse, alteration, or disclosure. However, no system, transmission,
+        or storage method is completely secure, and we cannot guarantee absolute security.
+      </p>
+    ),
+  },
+  {
+    title: '10. International and Cross-Border Processing',
+    body: (
+      <p>
+        Information may be processed and stored in the United States or other locations where Aamy.ai or its service
+        providers operate. By using the service, customers acknowledge that information may be transferred to and processed
+        in jurisdictions that may have different data protection laws.
+      </p>
+    ),
+  },
+  {
+    title: '11. Access, Correction, and Deletion Requests',
+    body: (
+      <p>
+        Customers may contact Aamy.ai to request access, correction, deletion, or export of certain information, subject to
+        identity verification, legal obligations, security requirements, and technical limitations. End users should first
+        contact the business with which they communicated, because Aamy.ai often processes end-user information on behalf of
+        that business.
+      </p>
+    ),
+  },
+  {
+    title: '12. Children’s Privacy',
+    body: (
+      <p>
+        Aamy.ai is intended for business use and is not directed to children. We do not knowingly collect personal
+        information from children under 13. If we become aware that such information has been collected, we will take
+        reasonable steps to delete it.
+      </p>
+    ),
+  },
+  {
+    title: '13. Changes to This Privacy Policy',
+    body: (
+      <p>
+        We may update this Privacy Policy from time to time. Updates will be posted on this page with a revised update date.
+        Continued use of the service after an update means the customer acknowledges the updated policy.
+      </p>
+    ),
+  },
+  {
+    title: '14. Contact',
+    body: (
+      <>
+        <p>If you have questions about this Privacy Policy or wish to submit a privacy request, contact us at:</p>
+        <ul className="list-none ml-4 mt-2">
+          <li>
+            Email:{' '}
+            <a href="mailto:support@aamy.ai" className="text-purple-400 underline">
+              support@aamy.ai
+            </a>
+          </li>
+          <li>
+            Website:{' '}
+            <a href="https://www.aamy.ai" className="text-purple-400 underline">
+              https://www.aamy.ai
+            </a>
+          </li>
+        </ul>
+      </>
+    ),
+  },
+];
 
 export default function PrivacyPolicyPage() {
   const router = useRouter();
-  const { lang } = useI18n();
-  const content = PRIVACY_CONTENT[lang];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-6 py-8">
       <div className="max-w-4xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 shadow-md">
-
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 mb-6"
         >
           <ArrowLeft size={20} />
-          {content.back}
+          Back
         </button>
 
         <h1 className="text-3xl md:text-4xl font-extrabold text-center mb-8 text-purple-300">
-          {content.title}
+          Privacy Policy
         </h1>
 
         <div className="space-y-6 text-sm md:text-base text-gray-300 leading-relaxed">
+          <p>
+            This Privacy Policy explains how Aamy.ai collects, uses, processes, stores, and protects information in
+            connection with our AI voice automation services, website, platform, subscriptions, and related business
+            communication tools.
+          </p>
 
-          <p>{content.intro}</p>
-
-          {content.sections.map((sec, idx) => (
-            <div key={idx}>
-              <h2 className="text-xl text-purple-200 font-bold mt-6">{sec.title}</h2>
-              {sec.body}
-            </div>
+          {PRIVACY_SECTIONS.map((section) => (
+            <section key={section.title}>
+              <h2 className="text-xl text-purple-200 font-bold mt-6">{section.title}</h2>
+              {section.body}
+            </section>
           ))}
 
-          <p className="mt-8 text-sm text-gray-400">
-            {lang === "es" ? "Fecha de última actualización" : "Last updated"}: {UPDATED_AT}
-          </p>
+          <p className="mt-8 text-sm text-gray-400">Last updated: {UPDATED_AT}</p>
         </div>
       </div>
     </div>
   );
 }
-
