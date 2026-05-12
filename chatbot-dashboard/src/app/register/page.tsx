@@ -217,20 +217,45 @@ export default function RegisterPage() {
             className="w-full px-4 py-2 rounded bg-white/10 placeholder-white/70 border border-white/20"
           />
 
-          <label className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
+          <label
+            htmlFor="smsOptIn"
+            className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/5 p-3"
+          >
             <input
+              id="smsOptIn"
               name="smsOptIn"
               type="checkbox"
               checked={formData.smsOptIn}
               onChange={handleChange}
+              aria-describedby="sms-opt-in-disclosure"
               className="mt-1 h-4 w-4 rounded border-white/30 bg-transparent accent-purple-600"
             />
-            <div className="text-sm leading-5 text-white/80">
+            <div id="sms-opt-in-disclosure" className="text-sm leading-5 text-white/80">
               <p className="font-medium text-white">
-                I agree to receive account-related and service-related text messages from Aamy.
+                By checking this box, you agree to receive account-related and service-related text messages from Aamy.
               </p>
               <p className="mt-1 text-white/60">
                 Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out and HELP for help.
+              </p>
+              <p className="mt-2 text-white/60">
+                See our{" "}
+                <a
+                  href="https://www.aamy.ai/terms-of-service"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-300 underline hover:text-purple-200"
+                >
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a
+                  href="https://www.aamy.ai/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-300 underline hover:text-purple-200"
+                >
+                  Privacy Policy
+                </a>.
               </p>
             </div>
           </label>
