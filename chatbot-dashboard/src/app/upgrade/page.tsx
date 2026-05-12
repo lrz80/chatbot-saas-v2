@@ -97,6 +97,7 @@ export default function UpgradePage() {
   const [startingCheckoutPriceId, setStartingCheckoutPriceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [plans, setPlans] = useState<StripePlan[]>([]);
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -190,7 +191,10 @@ export default function UpgradePage() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({
+          priceId,
+          acceptedLegal,
+        }),
       });
 
       const data = await response.json();
@@ -336,7 +340,10 @@ export default function UpgradePage() {
                       : "bg-white text-slate-950 hover:bg-white/90",
                   ].join(" ")}
                   onClick={() => startCheckoutByPriceId(plan.price_id, plan.unit_amount)}
-                  disabled={Boolean(startingCheckoutPriceId)}
+                  disabled={
+                    Boolean(startingCheckoutPriceId) ||
+                    !acceptedLegal
+                  }
                 >
                   {getPlanCtaLabel(
                     plan,
@@ -351,6 +358,54 @@ export default function UpgradePage() {
           })}
         </div>
       )}
+
+      <div className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={acceptedLegal}
+            onChange={(e) => setAcceptedLegal(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-white/20 bg-transparent"
+          />
+
+          <div className="text-sm text-white/75 leading-relaxed">
+            <p>
+              I agree to the{" "}
+              <a
+                href="/terms-of-service"
+                target="_blank"
+                className="text-purple-300 underline hover:text-purple-200"
+              >
+                Terms of Service
+              </a>
+              ,{" "}
+              <a
+                href="/privacy-policy"
+                target="_blank"
+                className="text-purple-300 underline hover:text-purple-200"
+              >
+                Privacy Policy
+              </a>
+              , and{" "}
+              <a
+                href="/acceptable-use-policy"
+                target="_blank"
+                className="text-purple-300 underline hover:text-purple-200"
+              >
+                Acceptable Use Policy
+              </a>
+              .
+            </p>
+
+            <p className="mt-3 text-white/60">
+              By subscribing to Aamy Voice Pro, you acknowledge and agree
+              to a 12-month service commitment billed monthly at $250/month.
+              You may cancel within the first 30 days. After the first 30 days,
+              an early termination fee equal to 3 monthly payments applies.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {error ? (
         <div className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
