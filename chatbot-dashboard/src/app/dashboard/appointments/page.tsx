@@ -482,11 +482,17 @@ export default function AppointmentsPage() {
 
     setSquareConnecting(true);
 
-    window.location.assign(
-      `${BACKEND_URL}/api/integrations/square/oauth/start?tenantId=${encodeURIComponent(
-        tenantId
-      )}&environment=sandbox`
-    );
+    const squareEnvironment =
+      process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT === "sandbox"
+        ? "sandbox"
+        : "production";
+
+    const url = new URL(`${BACKEND_URL}/api/integrations/square/oauth/start`);
+
+    url.searchParams.set("tenantId", tenantId);
+    url.searchParams.set("environment", squareEnvironment);
+
+    window.location.assign(url.toString());
   };
 
   const handleDisconnectSquare = async () => {
