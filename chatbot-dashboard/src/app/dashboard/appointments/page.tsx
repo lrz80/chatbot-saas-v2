@@ -485,7 +485,7 @@ export default function AppointmentsPage() {
     window.location.assign(
       `${BACKEND_URL}/api/integrations/square/oauth/start?tenantId=${encodeURIComponent(
         tenantId
-      )}&environment=production`
+      )}&environment=sandbox`
     );
   };
 
