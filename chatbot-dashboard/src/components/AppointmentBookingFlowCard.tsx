@@ -361,15 +361,15 @@ function buildStaffStep(nextVisualOrder: number): BookingStep {
   return {
     step_key: "staff",
     step_order: nextVisualOrder,
-    prompt: "¿Quieres reservar con alguien en específico o con cualquier especialista disponible?",
+    prompt: "",
     prompt_translations: {
-      "es-ES": "¿Quieres reservar con alguien en específico o con cualquier especialista disponible?",
-      "en-US": "Would you like to book with someone specific, or with any available specialist?",
+      "es-ES": "",
+      "en-US": "",
     },
-    retry_prompt: "¿Puedes repetirme si prefieres alguien en específico o cualquier especialista disponible?",
+    retry_prompt: "",
     retry_prompt_translations: {
-      "es-ES": "¿Puedes repetirme si prefieres alguien en específico o cualquier especialista disponible?",
-      "en-US": "Can you repeat whether you prefer someone specific or any available specialist?",
+      "es-ES": "",
+      "en-US": "",
     },
     expected_type: "staff",
     required: false,
@@ -379,12 +379,37 @@ function buildStaffStep(nextVisualOrder: number): BookingStep {
       mode: "provider_staff",
       allow_any: true,
       any_option_value: "any_available",
-      any_option_labels: {
-        "es-ES": ["cualquier especialista disponible", "sin preferencia"],
-        "en-US": ["any available specialist", "no preference"],
-      },
+      options: [],
     },
   };
+}
+
+function normalizeLoadedStep(step: BookingStep): BookingStep {
+  if (step.expected_type !== "staff" && step.step_key !== "staff") {
+    return step;
+  }
+
+  return {
+    ...step,
+    step_key: step.step_key || "staff",
+    expected_type: "staff",
+    validation_config: {
+      ...(step.validation_config || {}),
+      slot: step.validation_config?.slot || "staff_member",
+      mode: step.validation_config?.mode || "provider_staff",
+      allow_any:
+        typeof step.validation_config?.allow_any === "boolean"
+          ? step.validation_config.allow_any
+          : true,
+      any_option_value:
+        step.validation_config?.any_option_value || "any_available",
+      options: normalizeBookingOptions(step.validation_config?.options),
+    },
+  };
+}
+
+function normalizeLoadedSteps(inputSteps: BookingStep[]): BookingStep[] {
+  return normalizeStepOrders(inputSteps.map(normalizeLoadedStep));
 }
 
 function insertStepAt(
@@ -430,7 +455,11 @@ export default function AppointmentBookingFlowCard() {
         throw new Error(data?.error || `HTTP ${res.status}`);
       }
 
-      setSteps(data.steps?.length ? data.steps : DEFAULT_STEPS);
+      setSteps(
+        data.steps?.length
+          ? normalizeLoadedSteps(data.steps)
+          : normalizeLoadedSteps(DEFAULT_STEPS)
+      );
     } catch (err: any) {
       setError(err?.message || "No se pudo cargar el flujo de booking.");
     } finally {
