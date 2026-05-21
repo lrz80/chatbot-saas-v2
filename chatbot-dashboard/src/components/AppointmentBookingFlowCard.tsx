@@ -13,7 +13,14 @@ type BookingStep = {
   prompt_translations?: Record<string, string>;
   retry_prompt_translations?: Record<string, string>;
   validation_config?: any;
-  expected_type: "text" | "datetime" | "confirmation" | "phone" | "email" | "number";
+  expected_type:
+    | "text"
+    | "datetime"
+    | "confirmation"
+    | "phone"
+    | "email"
+    | "number"
+    | "staff";
   required: boolean;
   enabled: boolean;
 };
@@ -23,6 +30,7 @@ type BookingSlot =
   | "appointment_type"
   | "service"
   | "datetime"
+  | "staff_member"
   | "customer_name"
   | "customer_phone"
   | "customer_email"
@@ -39,6 +47,7 @@ const BOOKING_SLOTS: BookingSlot[] = [
   "appointment_type",
   "service",
   "datetime",
+  "staff_member",
   "customer_name",
   "customer_phone",
   "customer_email",
@@ -63,6 +72,7 @@ const EXPECTED_TYPES = [
   "phone",
   "email",
   "number",
+  "staff",
 ] as const;
 
 const BOOKING_FLOW_LOCALES = [
@@ -347,6 +357,36 @@ function buildOfferBookingSmsStep(nextVisualOrder: number): BookingStep {
   };
 }
 
+function buildStaffStep(nextVisualOrder: number): BookingStep {
+  return {
+    step_key: "staff",
+    step_order: nextVisualOrder,
+    prompt: "¿Quieres reservar con alguien en específico o con cualquier especialista disponible?",
+    prompt_translations: {
+      "es-ES": "¿Quieres reservar con alguien en específico o con cualquier especialista disponible?",
+      "en-US": "Would you like to book with someone specific, or with any available specialist?",
+    },
+    retry_prompt: "¿Puedes repetirme si prefieres alguien en específico o cualquier especialista disponible?",
+    retry_prompt_translations: {
+      "es-ES": "¿Puedes repetirme si prefieres alguien en específico o cualquier especialista disponible?",
+      "en-US": "Can you repeat whether you prefer someone specific or any available specialist?",
+    },
+    expected_type: "staff",
+    required: false,
+    enabled: true,
+    validation_config: {
+      slot: "staff_member",
+      mode: "provider_staff",
+      allow_any: true,
+      any_option_value: "any_available",
+      any_option_labels: {
+        "es-ES": ["cualquier especialista disponible", "sin preferencia"],
+        "en-US": ["any available specialist", "no preference"],
+      },
+    },
+  };
+}
+
 function insertStepAt(
   currentSteps: BookingStep[],
   insertIndex: number
@@ -427,6 +467,18 @@ export default function AppointmentBookingFlowCard() {
       const nextVisualOrder = insertIndex + 1;
 
       next.splice(insertIndex, 0, buildOfferBookingSmsStep(nextVisualOrder));
+
+      return normalizeStepOrders(next);
+    });
+  };
+
+  const addStaffStepBelow = (index: number) => {
+    setSteps((prev) => {
+      const insertIndex = Math.max(0, Math.min(index + 1, prev.length));
+      const next = [...prev];
+      const nextVisualOrder = insertIndex + 1;
+
+      next.splice(insertIndex, 0, buildStaffStep(nextVisualOrder));
 
       return normalizeStepOrders(next);
     });
@@ -1122,6 +1174,14 @@ export default function AppointmentBookingFlowCard() {
                   className="px-3 py-2 rounded-xl text-sm font-semibold bg-blue-600/70 hover:bg-blue-600"
                 >
                   + Insertar SMS debajo
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => addStaffStepBelow(index)}
+                  className="px-3 py-2 rounded-xl text-sm font-semibold bg-emerald-600/70 hover:bg-emerald-600"
+                >
+                  + Insertar staff debajo
                 </button>
 
                 <button
