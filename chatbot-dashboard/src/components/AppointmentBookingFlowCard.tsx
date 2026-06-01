@@ -29,6 +29,7 @@ type BookingSlot =
   | "none"
   | "appointment_type"
   | "service"
+  | "service_address"
   | "datetime"
   | "staff_member"
   | "customer_name"
@@ -46,6 +47,7 @@ const BOOKING_SLOTS: BookingSlot[] = [
   // Core booking slots
   "appointment_type",
   "service",
+  "service_address",
   "datetime",
   "staff_member",
   "customer_name",
