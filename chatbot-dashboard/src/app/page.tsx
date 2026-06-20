@@ -8,7 +8,6 @@ import HeroSection from '@/components/HeroSection';
 import DashboardPreviewSection from '@/components/DashboardPreviewSection';
 import WhatsAppDemoButton from '@/components/WhatsAppDemoButton';
 import { useI18n } from '../i18n/LanguageProvider';
-
 import { FaWhatsapp } from 'react-icons/fa';
 
 export default function LandingPage() {
@@ -31,7 +30,6 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#0f0a1e] text-white overflow-x-hidden">
       <HeroSection />
 
-      {/* Trust Bar */}
       <section className="px-4 sm:px-6 md:px-8 mt-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-5 bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl px-6 py-5 shadow-sm">
@@ -64,7 +62,6 @@ export default function LandingPage() {
       <ParaQuienEsAmy />
       <DashboardPreviewSection />
 
-      {/* Final CTA */}
       <section className="py-16 px-4 sm:px-6 md:px-8 bg-indigo-950/40 text-center backdrop-blur-md">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-extrabold mb-4 text-white">
@@ -95,44 +92,40 @@ export default function LandingPage() {
   );
 }
 
-/** =========================
- *  New landing sections
- *  ========================= */
-
 function OperatingSystemSection() {
+  const { t } = useI18n();
+
   return (
     <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#0f0a1e] to-[#1c1236]">
       <div className="max-w-6xl mx-auto">
         <div className="max-w-3xl">
           <p className="text-purple-300 text-sm font-semibold mb-3">
-            Sistema de atención
+            {t('landing.system.eyebrow')}
           </p>
 
           <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-5 leading-tight">
-            La atención de tu negocio, organizada en un solo sistema
+            {t('landing.system.title')}
           </h2>
 
           <p className="text-white/70 text-lg leading-relaxed">
-            Aamy reúne conversaciones, reglas, reservas, historial e instrucciones
-            para que cada cliente sea atendido con contexto y siguiendo la forma
-            real en que trabaja tu negocio.
+            {t('landing.system.subtitle')}
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-5 mt-12">
           <SystemCard
-            title="Conversaciones con contexto"
-            desc="Aamy mantiene el hilo de lo que el cliente ya dijo y continúa sin tratar cada mensaje como una conversación nueva."
+            title={t('landing.system.cards.1.title')}
+            desc={t('landing.system.cards.1.desc')}
           />
 
           <SystemCard
-            title="Reglas del negocio"
-            desc="Servicios, horarios, políticas, zonas, pasos requeridos y condiciones se configuran para cada operación."
+            title={t('landing.system.cards.2.title')}
+            desc={t('landing.system.cards.2.desc')}
           />
 
           <SystemCard
-            title="Reservas estructuradas"
-            desc="Cuando corresponde, Aamy guía al cliente paso a paso hasta dejar la información lista para confirmar."
+            title={t('landing.system.cards.3.title')}
+            desc={t('landing.system.cards.3.desc')}
           />
         </div>
       </div>
@@ -141,48 +134,48 @@ function OperatingSystemSection() {
 }
 
 function HowAamyWorksSection() {
+  const { t } = useI18n();
+
   return (
     <section className="py-20 px-4 sm:px-6 md:px-8 bg-[#0f0a1e]">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-start">
         <div>
           <p className="text-purple-300 text-sm font-semibold mb-3">
-            Cómo funciona
+            {t('landing.howNew.eyebrow')}
           </p>
 
           <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-5 leading-tight">
-            De información del negocio a atención real
+            {t('landing.howNew.title')}
           </h2>
 
           <p className="text-white/70 leading-relaxed">
-            Aamy no se configura con respuestas sueltas. Se configura con la
-            operación: qué ofrece el negocio, cómo se reserva, qué datos se
-            necesitan y qué reglas deben respetarse antes de responder o confirmar.
+            {t('landing.howNew.subtitle')}
           </p>
         </div>
 
         <div className="grid gap-4">
           <ProcessStep
             n="01"
-            title="Se configura la operación"
-            desc="Servicios, horarios, preguntas frecuentes, reglas, políticas, zonas de servicio y proceso de reserva."
+            title={t('landing.howNew.steps.1.title')}
+            desc={t('landing.howNew.steps.1.desc')}
           />
 
           <ProcessStep
             n="02"
-            title="Se define el flujo correcto"
-            desc="Cada negocio puede tener pasos distintos: servicio, empleado, dirección, peso, fecha, nombre, teléfono o confirmación."
+            title={t('landing.howNew.steps.2.title')}
+            desc={t('landing.howNew.steps.2.desc')}
           />
 
           <ProcessStep
             n="03"
-            title="El cliente conversa naturalmente"
-            desc="El cliente puede escribir o hablar como normalmente lo haría. Aamy interpreta el contexto y sigue el proceso definido."
+            title={t('landing.howNew.steps.3.title')}
+            desc={t('landing.howNew.steps.3.desc')}
           />
 
           <ProcessStep
             n="04"
-            title="La información queda organizada"
-            desc="El negocio puede ver lo importante: cliente, servicio, fecha, estado, notas y datos pendientes."
+            title={t('landing.howNew.steps.4.title')}
+            desc={t('landing.howNew.steps.4.desc')}
           />
         </div>
       </div>
@@ -191,44 +184,44 @@ function HowAamyWorksSection() {
 }
 
 function BusinessContextSection() {
+  const { t } = useI18n();
+
   return (
     <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#151032] to-[#0f0a1e]">
       <div className="max-w-6xl mx-auto">
         <div className="text-center max-w-3xl mx-auto">
           <p className="text-purple-300 text-sm font-semibold mb-3">
-            Contexto operativo
+            {t('landing.context.eyebrow')}
           </p>
 
           <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-5 leading-tight">
-            Aamy atiende con la información que define tu negocio
+            {t('landing.context.title')}
           </h2>
 
           <p className="text-white/70 leading-relaxed">
-            Cada negocio tiene su propia forma de trabajar. Aamy está diseñada
-            para respetar esa estructura y evitar respuestas genéricas o procesos
-            incompletos.
+            {t('landing.context.subtitle')}
           </p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-12">
           <SystemCard
-            title="Servicios"
-            desc="Qué ofrece el negocio, cómo se explica y qué información necesita cada servicio."
+            title={t('landing.context.cards.1.title')}
+            desc={t('landing.context.cards.1.desc')}
           />
 
           <SystemCard
-            title="Horarios"
-            desc="Disponibilidad, duración de citas, buffers y reglas para ofrecer horarios."
+            title={t('landing.context.cards.2.title')}
+            desc={t('landing.context.cards.2.desc')}
           />
 
           <SystemCard
-            title="Políticas"
-            desc="Cancelaciones, depósitos, zonas, condiciones y detalles importantes para el cliente."
+            title={t('landing.context.cards.3.title')}
+            desc={t('landing.context.cards.3.desc')}
           />
 
           <SystemCard
-            title="Tono"
-            desc="La forma en que el negocio quiere sonar: profesional, cercana, directa o bilingüe."
+            title={t('landing.context.cards.4.title')}
+            desc={t('landing.context.cards.4.desc')}
           />
         </div>
       </div>
@@ -237,69 +230,93 @@ function BusinessContextSection() {
 }
 
 function ConversationFlowSection() {
+  const { t } = useI18n();
+
   return (
     <section className="py-20 px-4 sm:px-6 md:px-8 bg-[#0f0a1e]">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-start">
         <div>
           <p className="text-purple-300 text-sm font-semibold mb-3">
-            Ejemplo práctico
+            {t('landing.example.eyebrow')}
           </p>
 
           <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-5 leading-tight">
-            Así se ve una atención guiada por proceso
+            {t('landing.example.title')}
           </h2>
 
           <p className="text-white/70 leading-relaxed mb-6">
-            El cliente no tiene que llenar un formulario frío. Aamy puede
-            conversar, pedir la información necesaria y avanzar según las reglas
-            configuradas.
+            {t('landing.example.subtitle')}
           </p>
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
             <p className="text-sm text-white/60 mb-4">
-              Información estructurada
+              {t('landing.example.structured.title')}
             </p>
 
             <div className="grid gap-3 text-sm">
-              <InfoRow label="Servicio" value="Full Grooming" />
-              <InfoRow label="Mascota" value="20 libras" />
-              <InfoRow label="Dirección" value="123 Main Street" />
-              <InfoRow label="Horario" value="Mañana, 1:00 p.m." />
-              <InfoRow label="Estado" value="Lista para confirmar" />
+              <InfoRow
+                label={t('landing.example.structured.service')}
+                value={t('landing.example.structured.serviceValue')}
+              />
+              <InfoRow
+                label={t('landing.example.structured.pet')}
+                value={t('landing.example.structured.petValue')}
+              />
+              <InfoRow
+                label={t('landing.example.structured.address')}
+                value={t('landing.example.structured.addressValue')}
+              />
+              <InfoRow
+                label={t('landing.example.structured.time')}
+                value={t('landing.example.structured.timeValue')}
+              />
+              <InfoRow
+                label={t('landing.example.structured.status')}
+                value={t('landing.example.structured.statusValue')}
+              />
             </div>
           </div>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
           <ChatBubble
-            who="Cliente"
-            text="Hola, necesito una cita para mi perro."
+            who={t('landing.example.chat.customer')}
+            text={t('landing.example.chat.1')}
           />
 
           <ChatBubble
             who="Aamy"
-            text="Claro. ¿Qué servicio te gustaría agendar?"
+            text={t('landing.example.chat.2')}
           />
 
-          <ChatBubble who="Cliente" text="Full grooming." />
+          <ChatBubble
+            who={t('landing.example.chat.customer')}
+            text={t('landing.example.chat.3')}
+          />
 
           <ChatBubble
             who="Aamy"
-            text="Perfecto. ¿Cuál es el peso aproximado de tu mascota?"
+            text={t('landing.example.chat.4')}
           />
 
-          <ChatBubble who="Cliente" text="20 libras." />
+          <ChatBubble
+            who={t('landing.example.chat.customer')}
+            text={t('landing.example.chat.5')}
+          />
 
           <ChatBubble
             who="Aamy"
-            text="Gracias. ¿Qué día y hora te gustaría?"
+            text={t('landing.example.chat.6')}
           />
 
-          <ChatBubble who="Cliente" text="Mañana a las 11." />
+          <ChatBubble
+            who={t('landing.example.chat.customer')}
+            text={t('landing.example.chat.7')}
+          />
 
           <ChatBubble
             who="Aamy"
-            text="Ese horario no está disponible. Tengo opciones cercanas a las 9:00 a.m., 11:15 a.m. o 1:00 p.m. ¿Cuál prefieres?"
+            text={t('landing.example.chat.8')}
           />
         </div>
       </div>
@@ -308,56 +325,52 @@ function ConversationFlowSection() {
 }
 
 function ControlSection() {
+  const { t } = useI18n();
+
   return (
     <section className="py-20 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-[#0f0a1e] to-[#151032]">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
           <div className="grid gap-4">
             <ControlRow
-              title="Configuración por negocio"
-              desc="Cada operación mantiene sus propios servicios, reglas, prompts, horarios e integraciones."
+              title={t('landing.control.rows.1.title')}
+              desc={t('landing.control.rows.1.desc')}
             />
 
             <ControlRow
-              title="Procesos definidos"
-              desc="Aamy puede seguir flujos distintos según el servicio, canal, idioma o tipo de solicitud."
+              title={t('landing.control.rows.2.title')}
+              desc={t('landing.control.rows.2.desc')}
             />
 
             <ControlRow
-              title="Información aprobada"
-              desc="Las respuestas importantes salen del contexto configurado, no de improvisaciones genéricas."
+              title={t('landing.control.rows.3.title')}
+              desc={t('landing.control.rows.3.desc')}
             />
 
             <ControlRow
-              title="Preparada para crecer"
-              desc="La estructura permite manejar múltiples negocios sin mezclar datos, reglas ni comportamientos."
+              title={t('landing.control.rows.4.title')}
+              desc={t('landing.control.rows.4.desc')}
             />
           </div>
         </div>
 
         <div>
           <p className="text-purple-300 text-sm font-semibold mb-3">
-            Control y estructura
+            {t('landing.control.eyebrow')}
           </p>
 
           <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-5 leading-tight">
-            Diseñada para operaciones reales, no para respuestas improvisadas
+            {t('landing.control.title')}
           </h2>
 
           <p className="text-white/70 leading-relaxed">
-            Aamy funciona mejor cuando el negocio necesita consistencia:
-            preguntas correctas, información precisa, procesos claros y control
-            sobre cómo se atiende cada conversación.
+            {t('landing.control.subtitle')}
           </p>
         </div>
       </div>
     </section>
   );
 }
-
-/** =========================
- *  UI helpers
- *  ========================= */
 
 function ChannelPill({
   label,
