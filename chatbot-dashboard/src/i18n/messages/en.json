@@ -9,8 +9,8 @@
   "pwa.install": "Install",
   "pwa.close": "Close",
 
-  "landing.trust.title": "A client communication system for businesses that work through messages, calls, and appointments.",
-  "landing.trust.subtitle": "Aamy brings conversations, rules, bookings, and history together so every client is handled with the right information and according to the real process of the business.",
+  "landing.trust.title": "AI-powered attention system for businesses that work through calls, messages, and appointments.",
+  "landing.trust.subtitle": "Aamy brings conversations, rules, bookings, and history together so every request moves with real business context, not as an isolated reply.",
 
   "landing.capabilities.title": "A communication structure designed for real businesses",
   "landing.capabilities.subtitle": "Aamy helps keep conversations organized, consistent, and aligned with the way each business operates.",
@@ -30,42 +30,42 @@
 
   "landing.testimonials.title": "Experiences with Aamy",
 
-  "landing.final.title": "Organize your business communication in one system",
-  "landing.final.subtitle": "Configure services, hours, rules, and processes so every conversation moves forward clearly, keeps its context, and avoids improvised replies.",
-  "landing.final.cta": "Request a demo",
+  "landing.final.title": "Run client attention with AI, rules, and real business context",
+  "landing.final.subtitle": "Set up your services, hours, policies, booking steps, and channels so Aamy can keep every request organized from first contact to confirmed appointment.",
+  "landing.final.cta": "Book a demo",
   "landing.final.tip": "Guided setup using the real information from your business.",
 
-  "landing.system.eyebrow": "Communication system",
-  "landing.system.title": "Your business communication, organized in one system",
-  "landing.system.subtitle": "Aamy brings conversations, rules, bookings, history, and instructions together so every client is handled with context and according to how your business actually works.",
-  "landing.system.cards.1.title": "Conversations with context",
-  "landing.system.cards.1.desc": "Aamy keeps track of what the client already said and continues without treating every message as a new conversation.",
+  "landing.system.eyebrow": "AI-powered operations",
+  "landing.system.title": "More than replies. A structured way to run client attention.",
+  "landing.system.subtitle": "Aamy uses AI to understand requests, follow your business rules, collect the right details, and keep every conversation connected to the next step.",
+  "landing.system.cards.1.title": "Client context",
+  "landing.system.cards.1.desc": "Aamy keeps track of what the customer already said, what is missing, and what should happen next.",
   "landing.system.cards.2.title": "Business rules",
-  "landing.system.cards.2.desc": "Services, hours, policies, service areas, required steps, and conditions are configured for each operation.",
-  "landing.system.cards.3.title": "Structured bookings",
-  "landing.system.cards.3.desc": "When needed, Aamy guides the client step by step until the information is ready to confirm.",
+  "landing.system.cards.2.desc": "Services, hours, policies, service areas, booking steps, and conditions are configured around each business.",
+  "landing.system.cards.3.title": "Booking-ready requests",
+  "landing.system.cards.3.desc": "When a request needs an appointment, Aamy collects the required details before moving it forward.",
 
   "landing.howNew.eyebrow": "How it works",
-  "landing.howNew.title": "From internal operation to consistent client communication",
-  "landing.howNew.subtitle": "Aamy is configured with the business operation: what it offers, how bookings work, what information is required, and what rules must be followed before moving forward.",
+  "landing.howNew.title": "From scattered conversations to a clear attention operation",
+  "landing.howNew.subtitle": "Aamy is configured around how the business actually works: what it offers, how bookings happen, what information is required, and what rules must be followed before moving forward.",
   "landing.howNew.steps.1.title": "The operation is configured",
   "landing.howNew.steps.1.desc": "Services, hours, frequently asked questions, rules, policies, service areas, and booking process.",
-  "landing.howNew.steps.2.title": "The correct flow is defined",
+  "landing.howNew.steps.2.title": "The right flow is defined",
   "landing.howNew.steps.2.desc": "Each business can have different steps: service, staff member, address, weight, date, name, phone, or confirmation.",
-  "landing.howNew.steps.3.title": "The client speaks naturally",
-  "landing.howNew.steps.3.desc": "The client can write or speak as they normally would. Aamy keeps the context and follows the defined process.",
-  "landing.howNew.steps.4.title": "The information stays organized",
-  "landing.howNew.steps.4.desc": "The business can see what matters: client, service, date, status, notes, and missing information.",
+  "landing.howNew.steps.3.title": "The customer speaks or writes naturally",
+  "landing.howNew.steps.3.desc": "The customer can communicate the way they normally would. Aamy understands the request, keeps the context, and follows the defined process.",
+  "landing.howNew.steps.4.title": "The request stays organized",
+  "landing.howNew.steps.4.desc": "The business can see what matters: customer, service, date, status, notes, missing details, and next step.",
 
   "landing.context.eyebrow": "Operational context",
-  "landing.context.title": "Aamy communicates using the information that defines your business",
-  "landing.context.subtitle": "Every business has its own way of working. Aamy is designed to respect that structure and avoid generic replies or incomplete processes.",
+  "landing.context.title": "Aamy works with the information that defines your business",
+  "landing.context.subtitle": "Every business has its own rules, services, policies, and way of handling clients. Aamy uses that context to avoid generic replies and incomplete processes.",
   "landing.context.cards.1.title": "Services",
   "landing.context.cards.1.desc": "What the business offers, how it should be explained, and what information each service requires.",
-  "landing.context.cards.2.title": "Hours",
-  "landing.context.cards.2.desc": "Availability, appointment duration, buffers, and rules for offering times.",
+  "landing.context.cards.2.title": "Availability",
+  "landing.context.cards.2.desc": "Hours, appointment duration, buffers, calendar, and rules for offering real options.",
   "landing.context.cards.3.title": "Policies",
-  "landing.context.cards.3.desc": "Cancellations, deposits, service areas, conditions, and important client details.",
+  "landing.context.cards.3.desc": "Cancellations, deposits, service areas, conditions, and important details before confirmation.",
   "landing.context.cards.4.title": "Tone",
   "landing.context.cards.4.desc": "How the business wants to sound: professional, friendly, direct, or bilingual.",
 
@@ -95,115 +95,115 @@
 
   "landing.control.eyebrow": "Control and structure",
   "landing.control.title": "Designed for real operations, not improvised replies",
-  "landing.control.subtitle": "Aamy works best when the business needs consistency: the right questions, accurate information, clear processes, and control over how each conversation is handled.",
+  "landing.control.subtitle": "Aamy works best when the business needs consistency: the right questions, accurate information, clear processes, and control over how each request is handled.",
   "landing.control.rows.1.title": "Per-business configuration",
-  "landing.control.rows.1.desc": "Each operation keeps its own services, rules, instructions, hours, and integrations.",
+  "landing.control.rows.1.desc": "Each operation keeps its own services, rules, instructions, hours, channels, and integrations.",
   "landing.control.rows.2.title": "Defined processes",
   "landing.control.rows.2.desc": "Aamy can follow different flows depending on the service, channel, language, or type of request.",
   "landing.control.rows.3.title": "Approved information",
   "landing.control.rows.3.desc": "Important replies come from the configured context, not from generic improvisation.",
-  "landing.control.rows.4.title": "Ready to grow",
-  "landing.control.rows.4.desc": "The structure supports multiple businesses without mixing data, rules, or behaviors.",
+  "landing.control.rows.4.title": "Multi-business structure",
+  "landing.control.rows.4.desc": "The platform is built to handle multiple businesses without mixing data, rules, or behaviors.",
 
-  "hero.tag": "Communication system for appointment-based businesses",
+  "hero.tag": "AI-powered attention system",
 
-  "hero.title.line1": "Your business communication,",
-  "hero.title.line2": "organized in one system",
+  "hero.title.line1": "Run your business attention",
+  "hero.title.line2": "from one smart system",
 
-  "hero.subtitle": "Aamy brings messages, calls, bookings, rules, and history together so every conversation follows the right process for your business.",
+  "hero.subtitle": "Aamy brings calls, messages, booking steps, customer details, and business rules into one organized system, so every request moves with context from first contact to confirmed appointment.",
 
   "hero.bullets.messages.title": "Messages",
-  "hero.bullets.messages.desc": "WhatsApp, Instagram, and Facebook under one structured communication process.",
+  "hero.bullets.messages.desc": "WhatsApp, Instagram, and Facebook under one structured attention process.",
 
   "hero.bullets.calls.title": "Calls",
-  "hero.bullets.calls.desc": "Voice conversations aligned with the process defined by your business.",
+  "hero.bullets.calls.desc": "Voice conversations aligned with the rules and process defined by your business.",
 
   "hero.bullets.bookings.title": "Bookings",
-  "hero.bullets.bookings.desc": "Clear flows to collect the required information before confirmation.",
+  "hero.bullets.bookings.desc": "Clear flows to collect the required information before confirming an appointment.",
 
   "hero.bullets.rules.title": "Rules",
   "hero.bullets.rules.desc": "Services, hours, policies, service areas, and steps configured per business.",
 
-  "hero.micro": "Aamy is configured around how your operation works: what you offer, what questions need to be asked, what information is missing, and when a conversation is ready to move forward.",
+  "hero.micro": "Aamy is configured around how your operation works: what you offer, what questions must be asked, what information is missing, and when a request is ready to move forward.",
 
-  "hero.cta.primary": "Request a demo",
+  "hero.cta.primary": "Book a demo",
   "hero.cta.secondary": "See how it works",
 
   "hero.channels.voice": "Voice",
   "hero.channels.calendar": "Calendar",
 
-  "hero.h1.before": "Your business communication,",
-  "hero.h1.highlight1": "organized",
-  "hero.h1.after": "in one",
+  "hero.h1.before": "Run your business",
+  "hero.h1.highlight1": "attention",
+  "hero.h1.after": "from one",
   "hero.h1.highlight2": "system",
 
   "hero.bullets.omni.title": "Connected channels",
-  "hero.bullets.omni.desc": "WhatsApp, Instagram, and Facebook under one shared structure.",
+  "hero.bullets.omni.desc": "WhatsApp, Instagram, Facebook, and calls under one shared structure.",
 
   "hero.bullets.pixel.title": "Organized data",
-  "hero.bullets.pixel.desc": "Conversations and events organized to review the client journey more clearly.",
+  "hero.bullets.pixel.desc": "Conversations, events, and customer details organized to review every request more clearly.",
 
   "hero.bullets.booking.title": "Bookings",
   "hero.bullets.booking.desc": "Connect calendar to coordinate appointments with clear rules.",
 
   "hero.bullets.intent.title": "Context",
-  "hero.bullets.intent.desc": "Each conversation moves forward based on what the client has already shared.",
+  "hero.bullets.intent.desc": "Each conversation moves forward based on what the customer has already shared.",
 
   "hero.pricing.setup": "Initial setup",
   "hero.pricing.monthly": "/month after initial setup",
 
-  "hero.tip.before": "Tip: a more organized operation helps you",
-  "hero.tip.highlight1": "communicate more clearly",
-  "hero.tip.middle": "and maintain",
-  "hero.tip.highlight2": "better continuity",
+  "hero.tip.before": "AI-powered does not mean losing control:",
+  "hero.tip.highlight1": "your business defines the rules",
+  "hero.tip.middle": "and Aamy keeps",
+  "hero.tip.highlight2": "the process in order",
 
-  "hero.cta": "Request a demo",
+  "hero.cta": "Book a demo",
   "hero.note": "Guided setup using the real information from your business.",
 
   "benefits.title": "What your business gains with",
-  "benefits.subtitle": "Aamy helps organize conversations, bookings, history, and rules so your team works with more context and less scattered information.",
+  "benefits.subtitle": "Aamy helps turn calls, messages, bookings, history, and rules into a clearer, measurable, and more consistent attention operation.",
 
-  "benefits.cards.1.title": "Context per conversation",
-  "benefits.cards.1.desc": "Aamy keeps track of what the client already shared and helps continue the conversation without starting from zero.",
+  "benefits.cards.1.title": "Context per customer",
+  "benefits.cards.1.desc": "Aamy keeps track of what the customer already shared and helps continue the interaction without starting from zero.",
 
   "benefits.cards.2.title": "Channels under one structure",
-  "benefits.cards.2.desc": "WhatsApp, Instagram, and Facebook can work with shared rules, history, and client data.",
+  "benefits.cards.2.desc": "WhatsApp, Instagram, Facebook, and calls can work with shared rules, history, and customer data.",
 
-  "benefits.cards.3.title": "Organized continuity",
+  "benefits.cards.3.title": "Requests with status",
   "benefits.cards.3.desc": "Conversations can stay organized by status, missing information, and next steps.",
 
   "benefits.cards.4.title": "Useful information to review",
-  "benefits.cards.4.desc": "History and events help you better understand how clients communicate with the business.",
+  "benefits.cards.4.desc": "History and events help you better understand how requests come in, move forward, and get completed.",
 
   "benefits.cards.5.title": "Bookings with calendar",
   "benefits.cards.5.desc": "Aamy can help coordinate times, check availability, and keep appointments organized in the calendar.",
 
-  "benefits.cards.6.title": "Bilingual communication",
-  "benefits.cards.6.desc": "The business can communicate in English or Spanish while keeping the same process and information.",
+  "benefits.cards.6.title": "Bilingual attention",
+  "benefits.cards.6.desc": "The business can handle customers in English or Spanish while keeping the same process and information.",
 
   "benefits.closing.before": "It is not about replying just to reply.",
-  "benefits.closing.highlight": "It is about communicating with structure.",
-  "benefits.closing.after": "Aamy helps every conversation have context, order, and a clear next step.",
+  "benefits.closing.highlight": "It is about running attention with structure.",
+  "benefits.closing.after": "Aamy helps every request have context, order, and a clear next step.",
 
   "dashprev.title.before": "A dashboard to control",
-  "dashprev.title.highlight": "conversations, bookings, and history",
+  "dashprev.title.highlight": "requests, bookings, and history",
 
-  "dashprev.subtitle": "Aamy centralizes conversations, channels, client data, bookings, and operational metrics so the business can review what happened, what is missing, and what needs attention.",
+  "dashprev.subtitle": "Aamy centralizes conversations, channels, customer data, bookings, and operational metrics so the business can review what happened, what is missing, and what needs attention.",
 
   "dashprev.bullets.1.title": "History by channel",
-  "dashprev.bullets.1.desc": "WhatsApp, Instagram, and Facebook in one view, with conversations organized by client.",
+  "dashprev.bullets.1.desc": "WhatsApp, Instagram, Facebook, and calls in one view, with conversations organized by customer.",
 
-  "dashprev.bullets.2.title": "Conversation status",
-  "dashprev.bullets.2.desc": "Review whether a conversation is started, incomplete, ready to confirm, or needs team attention.",
+  "dashprev.bullets.2.title": "Request status",
+  "dashprev.bullets.2.desc": "Review whether a request has started, is incomplete, ready to confirm, or needs team attention.",
 
-  "dashprev.bullets.3.title": "Continuity of communication",
+  "dashprev.bullets.3.title": "Attention continuity",
   "dashprev.bullets.3.desc": "Keep context for conversations that still have missing information or next steps.",
 
   "dashprev.bullets.4.title": "Operational KPIs",
   "dashprev.bullets.4.desc": "Measure conversations, channels, peak activity times, and general service behavior.",
 
   "dashprev.bullets.5.title": "Events and history",
-  "dashprev.bullets.5.desc": "Record important activity from channels to review each client journey more clearly.",
+  "dashprev.bullets.5.desc": "Record important activity from channels to review each customer journey more clearly.",
 
   "dashprev.mock.alt": "Aamy dashboard preview: conversations, bookings, history, and operational metrics",
   "dashprev.closing": "Guided setup with your information. You stay in control; Aamy follows the defined structure.",
@@ -241,7 +241,7 @@
   "whofor.targets.3.title": "Fitness and education",
   "whofor.targets.3.desc": "Gyms, indoor cycling, yoga, courses, workshops, and schools.",
 
-  "footer.tagline": "Aamy.ai — communication system for conversations, bookings, and history.",
+  "footer.tagline": "Aamy.ai — AI-powered attention system for calls, messages, bookings, and history.",
   "footer.terms": "Terms of Service",
   "footer.privacy": "Privacy Policy",
   "footer.delete": "Delete Account",

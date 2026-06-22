@@ -9,8 +9,8 @@
   "pwa.install": "Instalar",
   "pwa.close": "Cerrar",
 
-  "landing.trust.title": "Sistema de atención para negocios que trabajan por mensajes, llamadas y citas.",
-  "landing.trust.subtitle": "Aamy reúne conversaciones, reglas, reservas e historial para que cada cliente sea atendido con la información correcta y siguiendo el proceso real del negocio.",
+  "landing.trust.title": "AI-powered. Sistema de atencion para negocios que trabajan por llamadas, mensajes y citas.",
+  "landing.trust.subtitle": "Aamy conecta conversaciones, reglas, reservas e historial para que cada solicitud avance con contexto real del negocio, no como una respuesta suelta.",
 
   "landing.capabilities.title": "Una estructura de atención pensada para negocios reales",
   "landing.capabilities.subtitle": "Aamy ayuda a mantener conversaciones ordenadas, consistentes y alineadas con la forma en que trabaja cada negocio.",
@@ -30,8 +30,8 @@
 
   "landing.testimonials.title": "Experiencias con Aamy",
 
-  "landing.final.title": "Ordena la atención de tu negocio en un solo sistema",
-  "landing.final.subtitle": "Configura servicios, horarios, reglas y procesos para que cada conversación avance con claridad, sin perder contexto y sin depender de respuestas improvisadas.",
+  "landing.final.title": "Maneja la atención de tus clientes con AI, reglas y contexto real del negocio",
+  "landing.final.subtitle": "Configura servicios, horarios, políticas, pasos de reserva y canales para que Aamy mantenga cada solicitud organizada desde el primer contacto hasta la cita confirmada.",
   "landing.final.cta": "Solicitar demostración",
   "landing.final.tip": "Configuración guiada con la información real de tu negocio.",
 
@@ -58,14 +58,14 @@
   "landing.howNew.steps.4.desc": "El negocio puede ver lo importante: cliente, servicio, fecha, estado, notas y datos pendientes.",
 
   "landing.context.eyebrow": "Contexto operativo",
-  "landing.context.title": "Aamy atiende con la información que define tu negocio",
-  "landing.context.subtitle": "Cada negocio tiene su propia forma de trabajar. Aamy está diseñada para respetar esa estructura y evitar respuestas genéricas o procesos incompletos.",
+  "landing.context.title": "Aamy trabaja con la información que define tu negocio",
+  "landing.context.subtitle": "Cada negocio tiene reglas, servicios, políticas y formas distintas de atender. Aamy usa ese contexto para evitar respuestas genéricas y procesos incompletos.",
   "landing.context.cards.1.title": "Servicios",
   "landing.context.cards.1.desc": "Qué ofrece el negocio, cómo se explica y qué información necesita cada servicio.",
-  "landing.context.cards.2.title": "Horarios",
-  "landing.context.cards.2.desc": "Disponibilidad, duración de citas, buffers y reglas para ofrecer horarios.",
+  "landing.context.cards.2.title": "Disponibilidad",
+  "landing.context.cards.2.desc": "Horarios, duración de citas, buffers, calendario y reglas para ofrecer opciones reales.",
   "landing.context.cards.3.title": "Políticas",
-  "landing.context.cards.3.desc": "Cancelaciones, depósitos, zonas, condiciones y detalles importantes para el cliente.",
+  "landing.context.cards.3.desc": "Cancelaciones, depósitos, zonas, condiciones y detalles importantes antes de confirmar.",
   "landing.context.cards.4.title": "Tono",
   "landing.context.cards.4.desc": "La forma en que el negocio quiere sonar: profesional, cercana, directa o bilingüe.",
 
@@ -95,36 +95,36 @@
 
   "landing.control.eyebrow": "Control y estructura",
   "landing.control.title": "Diseñada para operaciones reales, no para respuestas improvisadas",
-  "landing.control.subtitle": "Aamy funciona mejor cuando el negocio necesita consistencia: preguntas correctas, información precisa, procesos claros y control sobre cómo se atiende cada conversación.",
+  "landing.control.subtitle": "Aamy funciona mejor cuando el negocio necesita consistencia: preguntas correctas, información precisa, procesos claros y control sobre cómo se atiende cada solicitud.",
   "landing.control.rows.1.title": "Configuración por negocio",
-  "landing.control.rows.1.desc": "Cada operación mantiene sus propios servicios, reglas, instrucciones, horarios e integraciones.",
+  "landing.control.rows.1.desc": "Cada operación mantiene sus propios servicios, reglas, instrucciones, horarios, canales e integraciones.",
   "landing.control.rows.2.title": "Procesos definidos",
   "landing.control.rows.2.desc": "Aamy puede seguir flujos distintos según el servicio, canal, idioma o tipo de solicitud.",
   "landing.control.rows.3.title": "Información aprobada",
   "landing.control.rows.3.desc": "Las respuestas importantes salen del contexto configurado, no de improvisaciones genéricas.",
-  "landing.control.rows.4.title": "Preparada para crecer",
-  "landing.control.rows.4.desc": "La estructura permite manejar múltiples negocios sin mezclar datos, reglas ni comportamientos.",
+  "landing.control.rows.4.title": "Estructura multinegocio",
+  "landing.control.rows.4.desc": "La plataforma está preparada para manejar múltiples negocios sin mezclar datos, reglas ni comportamientos.",
 
-  "hero.tag": "Sistema de atención para negocios por cita",
+  "hero.tag": "AI-powered attention system",
 
-  "hero.title.line1": "La atención de tu negocio,",
-  "hero.title.line2": "organizada en un solo sistema",
+  "hero.title.line1": "Controla la atención de tu negocio",
+  "hero.title.line2": "desde un solo sistema inteligente",
 
-  "hero.subtitle": "Aamy reúne mensajes, llamadas, reservas, reglas e historial para que cada conversación siga el proceso correcto de tu negocio.",
+  "hero.subtitle": "Aamy reúne llamadas, mensajes, pasos de reserva, datos del cliente y reglas del negocio en un sistema organizado para que cada solicitud avance con contexto desde el primer contacto hasta la cita confirmada.",
 
   "hero.bullets.messages.title": "Mensajes",
   "hero.bullets.messages.desc": "WhatsApp, Instagram y Facebook bajo una misma estructura de atención.",
 
   "hero.bullets.calls.title": "Llamadas",
-  "hero.bullets.calls.desc": "Conversaciones por voz alineadas con el proceso definido por tu negocio.",
+  "hero.bullets.calls.desc": "Conversaciones por voz alineadas con las reglas y el proceso definido por tu negocio.",
 
   "hero.bullets.bookings.title": "Reservas",
-  "hero.bullets.bookings.desc": "Flujos claros para pedir la información necesaria antes de confirmar.",
+  "hero.bullets.bookings.desc": "Flujos claros para pedir la información necesaria antes de confirmar una cita.",
 
   "hero.bullets.rules.title": "Reglas",
   "hero.bullets.rules.desc": "Servicios, horarios, políticas, zonas y pasos configurados por cada negocio.",
 
-  "hero.micro": "Aamy se configura alrededor de cómo trabaja tu operación: qué ofreces, qué preguntas deben hacerse, qué datos faltan y cuándo una conversación está lista para avanzar.",
+  "hero.micro": "Aamy se configura alrededor de cómo trabaja tu operación: qué ofreces, qué preguntas deben hacerse, qué datos faltan y cuándo una solicitud está lista para avanzar.",
 
   "hero.cta.primary": "Solicitar demostración",
   "hero.cta.secondary": "Ver cómo funciona",
@@ -132,16 +132,16 @@
   "hero.channels.voice": "Voz",
   "hero.channels.calendar": "Calendario",
 
-  "hero.h1.before": "La atención de tu negocio,",
-  "hero.h1.highlight1": "organizada",
-  "hero.h1.after": "en un solo",
+  "hero.h1.before": "Controla la atención",
+  "hero.h1.highlight1": "de tu negocio",
+  "hero.h1.after": "desde un solo",
   "hero.h1.highlight2": "sistema",
 
   "hero.bullets.omni.title": "Canales conectados",
-  "hero.bullets.omni.desc": "WhatsApp, Instagram y Facebook bajo una estructura común.",
+  "hero.bullets.omni.desc": "WhatsApp, Instagram, Facebook y llamadas bajo una estructura común.",
 
   "hero.bullets.pixel.title": "Datos organizados",
-  "hero.bullets.pixel.desc": "Conversaciones y eventos ordenados para revisar mejor el recorrido del cliente.",
+  "hero.bullets.pixel.desc": "Conversaciones, eventos y datos del cliente ordenados para revisar mejor cada solicitud.",
 
   "hero.bullets.booking.title": "Reservas",
   "hero.bullets.booking.desc": "Conecta calendario para coordinar citas con reglas claras.",
@@ -152,28 +152,28 @@
   "hero.pricing.setup": "Configuración inicial",
   "hero.pricing.monthly": "/mes después de la configuración inicial",
 
-  "hero.tip.before": "Tip: una operación más ordenada ayuda a",
-  "hero.tip.highlight1": "responder con más claridad",
-  "hero.tip.middle": "y a mantener",
-  "hero.tip.highlight2": "mejor seguimiento",
+  "hero.tip.before": "AI-powered no significa perder control:",
+  "hero.tip.highlight1": "tu negocio define las reglas",
+  "hero.tip.middle": "y Aamy mantiene",
+  "hero.tip.highlight2": "el proceso en orden",
 
   "hero.cta": "Solicitar demostración",
   "hero.note": "Configuración guiada con la información real de tu negocio.",
 
   "benefits.title": "Qué gana tu negocio con",
-  "benefits.subtitle": "Aamy ayuda a organizar conversaciones, reservas, historial y reglas para que tu equipo trabaje con más contexto y menos información dispersa.",
+  "benefits.subtitle": "Aamy ayuda a convertir llamadas, mensajes, reservas, historial y reglas en una operación de atención más clara, medible y consistente.",
 
-  "benefits.cards.1.title": "Contexto por conversación",
+  "benefits.cards.1.title": "Contexto por cliente",
   "benefits.cards.1.desc": "Aamy mantiene el hilo de lo que el cliente ya compartió y ayuda a continuar la atención sin empezar desde cero.",
 
   "benefits.cards.2.title": "Canales bajo una misma estructura",
-  "benefits.cards.2.desc": "WhatsApp, Instagram y Facebook pueden trabajar con reglas comunes, historial y datos organizados por cliente.",
+  "benefits.cards.2.desc": "WhatsApp, Instagram, Facebook y llamadas pueden trabajar con reglas comunes, historial y datos organizados por cliente.",
 
-  "benefits.cards.3.title": "Seguimiento ordenado",
+  "benefits.cards.3.title": "Solicitudes con estado",
   "benefits.cards.3.desc": "Las conversaciones pueden mantenerse organizadas según su estado, datos pendientes y próximos pasos.",
 
   "benefits.cards.4.title": "Información útil para revisar",
-  "benefits.cards.4.desc": "El historial y los eventos ayudan a entender mejor cómo se comunican los clientes con el negocio.",
+  "benefits.cards.4.desc": "El historial y los eventos ayudan a entender mejor cómo entran, avanzan y terminan las solicitudes.",
 
   "benefits.cards.5.title": "Reservas con calendario",
   "benefits.cards.5.desc": "Aamy puede ayudar a coordinar horarios, revisar disponibilidad y dejar citas organizadas en el calendario.",
@@ -181,20 +181,20 @@
   "benefits.cards.6.title": "Atención bilingüe",
   "benefits.cards.6.desc": "El negocio puede atender en español o inglés manteniendo el mismo proceso y la misma información.",
 
-  "benefits.closing.before": "No se trata de contestar por contestar.",
-  "benefits.closing.highlight": "Se trata de atender con estructura.",
-  "benefits.closing.after": "Aamy ayuda a que cada conversación tenga contexto, orden y un siguiente paso claro.",
+  "benefits.closing.before": "No se trata de responder por responder.",
+  "benefits.closing.highlight": "Se trata de manejar la atención con estructura.",
+  "benefits.closing.after": "Aamy ayuda a que cada solicitud tenga contexto, orden y un siguiente paso claro.",
 
   "dashprev.title.before": "Un dashboard para controlar",
-  "dashprev.title.highlight": "conversaciones, reservas e historial",
+  "dashprev.title.highlight": "solicitudes, reservas e historial",
 
   "dashprev.subtitle": "Aamy centraliza conversaciones, canales, datos del cliente, reservas y métricas operativas para que el negocio pueda revisar qué ocurrió, qué falta y qué necesita atención.",
 
   "dashprev.bullets.1.title": "Historial por canal",
-  "dashprev.bullets.1.desc": "WhatsApp, Instagram y Facebook en una sola vista, con conversaciones organizadas por cliente.",
+  "dashprev.bullets.1.desc": "WhatsApp, Instagram, Facebook y llamadas en una sola vista, con conversaciones organizadas por cliente.",
 
-  "dashprev.bullets.2.title": "Estado de la conversación",
-  "dashprev.bullets.2.desc": "Revisa si una conversación está iniciada, incompleta, lista para confirmar o necesita atención del equipo.",
+  "dashprev.bullets.2.title": "Estado de la solicitud",
+  "dashprev.bullets.2.desc": "Revisa si una solicitud está iniciada, incompleta, lista para confirmar o necesita atención del equipo.",
 
   "dashprev.bullets.3.title": "Continuidad de atención",
   "dashprev.bullets.3.desc": "Mantén el contexto de conversaciones que todavía tienen información pendiente o próximos pasos.",
@@ -241,7 +241,7 @@
   "whofor.targets.3.title": "Fitness y educación",
   "whofor.targets.3.desc": "Gimnasios, indoor cycling, yoga, cursos, talleres y escuelas.",
 
-  "footer.tagline": "Aamy.ai — sistema de atención para conversaciones, reservas e historial.",
+  "footer.tagline": "Aamy.ai — AI-powered attention system para llamadas, mensajes, reservas e historial.",
   "footer.terms": "Términos de Servicio",
   "footer.privacy": "Política de Privacidad",
   "footer.delete": "Eliminar Cuenta",
