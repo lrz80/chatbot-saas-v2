@@ -1,7 +1,6 @@
 /// <reference types="react" />
 'use client';
 
-import ParaQuienEsAmy from '@/components/ParaQuienEsAmy';
 import Footer from '@/components/Footer';
 import React, { useEffect } from 'react';
 import HeroSection from '@/components/HeroSection';
@@ -59,7 +58,6 @@ export default function LandingPage() {
       <ConversationFlowSection />
       <ControlSection />
 
-      <ParaQuienEsAmy />
       <DashboardPreviewSection />
 
       <section className="py-16 px-4 sm:px-6 md:px-8 bg-indigo-950/40 text-center backdrop-blur-md">
