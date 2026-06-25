@@ -227,6 +227,9 @@ export default function VoiceConfigPage() {
   const [nuevoLink, setNuevoLink] = useState({ tipo: "", nombre: "", url: "" });
   const [audioDemoUrl, setAudioDemoUrl] = useState<string>("");
   const [usoVoz, setUsoVoz] = useState<any>(null);
+  const [voiceSetupLoading, setVoiceSetupLoading] = useState(false);
+  const [twilioVoiceNumber, setTwilioVoiceNumber] = useState<string | null>(null);
+  const [twilioSubaccountSid, setTwilioSubaccountSid] = useState<string | null>(null);
   // E.164: + y 10–15 dígitos
   const E164_REGEX = /^\+\d{10,15}$/;
 
@@ -327,6 +330,10 @@ export default function VoiceConfigPage() {
         if (s?.tenant_id) {
           setResolvedTenantId(String(s.tenant_id));
         }
+
+        setTwilioVoiceNumber(s?.twilio_voice_number || null);
+        setTwilioSubaccountSid(s?.twilio_subaccount_sid || null);
+
         // el backend debe devolver: trial_disponible, trial_vigente (o trial_activo), can_edit
         const tDisponible = Boolean(s.trial_disponible);
         const tActivo = Boolean(s.trial_vigente || s.trial_activo);
@@ -661,6 +668,73 @@ export default function VoiceConfigPage() {
     return "bg-green-500";
   };
 
+  const refreshVoiceSetup = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/settings?canal=${CHANNEL_KEY}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+
+      setTwilioVoiceNumber(data?.twilio_voice_number || null);
+      setTwilioSubaccountSid(data?.twilio_subaccount_sid || null);
+
+      if (data?.tenant_id) {
+        setResolvedTenantId(String(data.tenant_id));
+      }
+    } catch (error) {
+      console.error("❌ Error refrescando setup de voz:", error);
+    }
+  };
+
+  const handleSetupVoice = async () => {
+    if (!verificarPermiso()) return;
+
+    const ok = window.confirm(
+      "¿Quieres activar voz para este negocio? Aamy puede asignar un número Twilio para recibir llamadas."
+    );
+
+    if (!ok) return;
+
+    try {
+      setVoiceSetupLoading(true);
+
+      const res = await fetch(`${BACKEND_URL}/api/twilio/voice/setup`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.error || "No se pudo activar voz.");
+      }
+
+      setTwilioVoiceNumber(data?.twilio_voice_number || null);
+      setTwilioSubaccountSid(data?.twilio_subaccount_sid || null);
+
+      toast.success(
+        data?.twilio_voice_number
+          ? `Voz activada. Número: ${data.twilio_voice_number}`
+          : "Voz activada correctamente."
+      );
+
+      await refreshVoiceSetup();
+    } catch (error: any) {
+      console.error("❌ Error activando voz:", error);
+      toast.error(error?.message || "Error activando voz.");
+    } finally {
+      setVoiceSetupLoading(false);
+    }
+  };
+
   const refreshChannelVoice = async () => {
     try {
       const stRes = await fetch(`${BACKEND_URL}/api/channel-settings?canal=${CHANNEL_KEY}`, { credentials: "include" });
@@ -772,6 +846,61 @@ export default function VoiceConfigPage() {
       )}
 
       <TrainingHelp context="voice" />
+
+      <div className="mb-6 p-4 rounded-xl border border-indigo-500/30 bg-indigo-500/10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="text-white font-semibold">
+              Conexión de voz Twilio
+            </div>
+
+            <div className="text-sm text-white/70 mt-1">
+              Activa el número de voz para que Aamy pueda recibir llamadas de este negocio.
+            </div>
+
+            <div className="mt-3 text-sm">
+              {twilioVoiceNumber ? (
+                <div className="text-green-300">
+                  Estado: <span className="font-semibold">Activo</span>
+                  <div className="mt-1 text-white/80">
+                    Número de voz:{" "}
+                    <span className="font-mono font-semibold">
+                      {twilioVoiceNumber}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-yellow-300">
+                  Estado: <span className="font-semibold">No activado</span>
+                </div>
+              )}
+
+              {twilioSubaccountSid && (
+                <div className="mt-1 text-xs text-white/50">
+                  Subaccount: <span className="font-mono">{twilioSubaccountSid}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSetupVoice}
+            disabled={disabledAll || voiceSetupLoading}
+            className={`px-4 py-2 rounded-md text-sm border ${
+              disabledAll || voiceSetupLoading
+                ? "opacity-60 cursor-not-allowed bg-white/5 border-white/20 text-white/60"
+                : "bg-indigo-600 hover:bg-indigo-700 border-indigo-500 text-white"
+            }`}
+          >
+            {voiceSetupLoading
+              ? "Activando voz..."
+              : twilioVoiceNumber
+                ? "Reconfigurar voz"
+                : "Activar voz"}
+          </button>
+        </div>
+      </div>
 
       <VoiceMinutesCard />
 
