@@ -11,7 +11,6 @@ import type { ReactNode } from "react";
 import { io, Socket } from 'socket.io-client';
 import { useI18n } from "@/i18n/LanguageProvider";
 
-
 const PAGE_SIZE = 10;
 
 type Msg = {
@@ -20,6 +19,8 @@ type Msg = {
   role?: string;
   content: string;
   canal?: string;
+  channel?: string;
+  source?: string;
   nombre_cliente?: string;
   from_number?: string;
   emotion?: string;
@@ -43,6 +44,10 @@ const canonicalCanal = (c?: string) => {
   if (s === "voz" || s.includes("voice") || s.includes("call")) return "voice";
 
   return s; // fallback
+};
+
+const resolveCanal = (m: Partial<Msg> | any): string => {
+  return canonicalCanal(m.canal ?? m.channel ?? m.source);
 };
 
 const normalizeCanal = canonicalCanal;
@@ -96,7 +101,7 @@ export default function MessageHistory() {
           (a: Msg, b: Msg) =>
             new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         )
-        .map((m: Msg) => ({ ...m, canal: canonicalCanal(m.canal) }));
+        .map((m: Msg) => ({ ...m, canal: resolveCanal(m) }));
 
       // merge + dedupe por id
       const base = reset ? [] : mensajesGlobalesRef.current;
@@ -146,7 +151,7 @@ export default function MessageHistory() {
       const data = await res.json();
       const nuevos: Msg[] = (data.mensajes || []).map((m: Msg) => ({
         ...m,
-        canal: normalizeCanal(m.canal),
+        canal: resolveCanal(m),
       }));
 
       if (nuevos.length > 0) {
@@ -223,7 +228,7 @@ export default function MessageHistory() {
         timestamp: data.created_at ?? new Date().toISOString(),
         role: data.role,
         content: data.content,
-        canal: normalizeCanal(data.canal),
+        canal: resolveCanal(data),
         from_number: data.from_number,
       };
 
