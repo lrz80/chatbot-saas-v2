@@ -283,6 +283,45 @@ export default function MessageHistory() {
       setMessages([...ordenadosDesc]);
     });
 
+    socket.on("message:update", (data) => {
+      console.log("✏️ Evento message:update recibido EN TIEMPO REAL:", data);
+
+      const updated: Msg = {
+        id: data.id,
+        timestamp: data.timestamp ?? data.created_at ?? new Date().toISOString(),
+        role: data.role,
+        content: data.content,
+        canal: resolveCanal(data),
+        from_number: data.from_number,
+        nombre_cliente: data.nombre_cliente,
+        emotion: data.emotion,
+        intencion: data.intencion,
+        nivel_interes: data.nivel_interes,
+      };
+
+      mensajesGlobalesRef.current = mensajesGlobalesRef.current.map((m) => {
+        if (m.id === updated.id) {
+          return {
+            ...m,
+            ...updated,
+          };
+        }
+
+        return m;
+      });
+
+      const filtrados = canal
+        ? mensajesGlobalesRef.current.filter((m) => m.canal === canal)
+        : mensajesGlobalesRef.current;
+
+      const ordenadosDesc = filtrados.sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+
+      setMessages([...ordenadosDesc]);
+    });
+
     socket.on('disconnect', () => {
       console.log('🔴 Socket desconectado');
     });
