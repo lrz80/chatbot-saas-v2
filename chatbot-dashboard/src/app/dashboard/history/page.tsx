@@ -63,6 +63,7 @@ export default function MessageHistory() {
   const [hasMore, setHasMore] = useState(true);
 
   const lastIdRef = useRef<string | number | null>(null);
+  const lastTsRef = useRef<string | null>(null);
   const mensajesGlobalesRef = useRef<Msg[]>([]);
   const socketRef = useRef<Socket | null>(null);
 
@@ -117,7 +118,14 @@ export default function MessageHistory() {
       setHasMore(nuevosMensajes.length === PAGE_SIZE);
 
       if (nuevosMensajes.length > 0) {
-        lastIdRef.current = nuevosMensajes[nuevosMensajes.length - 1].id;
+        const masReciente = nuevosMensajes.reduce((latest, msg) => {
+          return new Date(msg.timestamp).getTime() > new Date(latest.timestamp).getTime()
+            ? msg
+            : latest;
+        }, nuevosMensajes[0]);
+
+        lastIdRef.current = masReciente.id;
+        lastTsRef.current = masReciente.timestamp;
       }
 
       // aplicar filtro activo (por si acaso, aunque el backend ya filtra)
@@ -140,10 +148,22 @@ export default function MessageHistory() {
 
   const fetchMensajesNuevos = async () => {
     try {
-      if (!lastIdRef.current) return;
+      if (!lastTsRef.current) return;
+
+      const params = new URLSearchParams();
+
+      if (canal) {
+        params.set("canal", canal);
+      }
+
+      params.set("lastTs", lastTsRef.current);
+
+      if (lastIdRef.current) {
+        params.set("lastId", String(lastIdRef.current));
+      }
 
       const res = await fetch(
-        `${BACKEND_URL}/api/messages/nuevos?canal=${canal}&lastId=${encodeURIComponent(String(lastIdRef.current))}`,
+        `${BACKEND_URL}/api/messages/nuevos?${params.toString()}`,
         { credentials: "include" }
       );
       if (!res.ok) return;
@@ -171,7 +191,14 @@ export default function MessageHistory() {
         );
         setMessages(ordenadosDesc);
 
-        lastIdRef.current = nuevos[nuevos.length - 1].id;
+        const masReciente = nuevos.reduce((latest, msg) => {
+          return new Date(msg.timestamp).getTime() > new Date(latest.timestamp).getTime()
+            ? msg
+            : latest;
+        }, nuevos[0]);
+
+        lastIdRef.current = masReciente.id;
+        lastTsRef.current = masReciente.timestamp;
       }
     } catch (err) {
       console.error("❌ Error en polling de nuevos mensajes:", err);
@@ -183,6 +210,7 @@ export default function MessageHistory() {
     setMessages([]);
     mensajesGlobalesRef.current = [];
     lastIdRef.current = null;
+    lastTsRef.current = null;
     setPage(1);
     setHasMore(true);
     fetchMessages(true);
