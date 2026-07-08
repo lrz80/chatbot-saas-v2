@@ -412,6 +412,7 @@
 "sidebar.nav.metaAssistant": "Asistente de Meta",
 "sidebar.nav.voiceAssistant": "Asistente de Voz",
 "sidebar.nav.messageHistory": "Historial de Mensajes",
+"sidebar.nav.reports": "Reportes",
 "sidebar.nav.calendar": "Agenda",
 "sidebar.nav.leadFollowUp": "Seguimiento de Leads",
 "sidebar.nav.smsCampaigns": "Campañas SMS",
@@ -1548,8 +1549,6 @@
   "appointments.estimate.saving": "Guardando...",
   "appointments.errors.estimateToggle": "No se pudo actualizar el flujo de estimados.",
   "appointments.gc.connectedAs": "Conectado como:",
-
-  "sidebar.nav.reports": "Reportes",
 
   "reports.title": "Reporte mensual",
   "reports.subtitle": "Resumen del rendimiento de Aamy en conversaciones, llamadas y reservas.",
