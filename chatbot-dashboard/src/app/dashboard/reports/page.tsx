@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.aamy.ai";
+import { BACKEND_URL } from "@/utils/api";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 type MonthlySummary = {
   month: string;
@@ -48,11 +47,11 @@ function getCurrentMonth(): string {
   return `${year}-${month}`;
 }
 
-function formatMonthLabel(month: string): string {
+function formatMonthLabel(month: string, lang: string): string {
   const [year, monthNumber] = month.split("-");
   const date = new Date(Number(year), Number(monthNumber) - 1, 1);
 
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString(lang === "en" ? "en-US" : "es-ES", {
     month: "long",
     year: "numeric",
   });
@@ -78,13 +77,7 @@ function StatCard({
   );
 }
 
-function ProgressBar({
-  value,
-  max,
-}: {
-  value: number;
-  max: number;
-}) {
+function ProgressBar({ value, max }: { value: number; max: number }) {
   const percent = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
 
   return (
@@ -98,10 +91,39 @@ function ProgressBar({
 }
 
 export default function MonthlyReportsPage() {
+  const { t, lang } = useI18n();
+
   const [month, setMonth] = useState(getCurrentMonth());
   const [data, setData] = useState<MonthlySummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  function tr(
+    key: string,
+    vars?: Record<string, string | number>
+  ): string {
+    let text = t(key);
+
+    if (!vars) return text;
+
+    for (const [name, value] of Object.entries(vars)) {
+      text = text.replaceAll(`{{${name}}}`, String(value));
+    }
+
+    return text;
+  }
+
+  function getChannelLabel(channel: string): string {
+    const normalized = channel.toLowerCase();
+
+    if (normalized === "voice") return t("dashboard.channels.voice");
+    if (normalized === "whatsapp") return t("dashboard.channels.whatsapp");
+    if (normalized === "instagram") return t("dashboard.channels.instagram");
+    if (normalized === "facebook") return t("dashboard.channels.facebook");
+    if (normalized === "unknown") return t("dashboard.channels.other");
+
+    return channel;
+  }
 
   const maxChannelValue = useMemo(() => {
     if (!data) return 0;
@@ -123,21 +145,20 @@ export default function MonthlyReportsPage() {
         `${BACKEND_URL}/api/reports/monthly-summary?month=${selectedMonth}`,
         {
           credentials: "include",
+          cache: "no-store",
         }
       );
 
       const json = await response.json();
 
       if (!response.ok) {
-        throw new Error(json?.error || "Error loading monthly report");
+        throw new Error(json?.error || t("reports.errorLoading"));
       }
 
       setData(json);
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Error loading monthly report"
+        err instanceof Error ? err.message : t("reports.errorLoading")
       );
       setData(null);
     } finally {
@@ -147,13 +168,14 @@ export default function MonthlyReportsPage() {
 
   useEffect(() => {
     loadReport(month);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month]);
 
   const voiceEstimateLabel = data?.voice.estimatedFromMessages
-    ? "Estimated from conversation history"
+    ? t("reports.voiceCallsEstimated")
     : data?.voice.partiallyEstimated
-      ? "Partially estimated from history"
-      : "Based on real voice call records";
+      ? t("reports.voiceCallsMixed")
+      : t("reports.voiceCallsReal");
 
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-6 sm:px-6 lg:px-8">
@@ -161,16 +183,16 @@ export default function MonthlyReportsPage() {
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Monthly Report
+              {t("reports.title")}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Performance summary for Aamy conversations, voice calls, and bookings.
+              {t("reports.subtitle")}
             </p>
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
-              Select month
+              {t("reports.selectMonth")}
             </label>
             <input
               type="month"
@@ -183,7 +205,7 @@ export default function MonthlyReportsPage() {
 
         {loading ? (
           <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500 shadow-sm">
-            Loading report...
+            {t("reports.loading")}
           </div>
         ) : null}
 
@@ -199,10 +221,10 @@ export default function MonthlyReportsPage() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">
-                    Report period
+                    {t("reports.reportPeriod")}
                   </p>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {formatMonthLabel(data.month)}
+                  <h2 className="text-2xl font-bold capitalize text-gray-900">
+                    {formatMonthLabel(data.month, lang)}
                   </h2>
                 </div>
 
@@ -214,27 +236,29 @@ export default function MonthlyReportsPage() {
 
             <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard
-                title="Total messages"
+                title={t("reports.totalMessages")}
                 value={data.totalMessages}
-                subtitle="All recorded customer and assistant messages"
+                subtitle={t("reports.totalMessagesSubtitle")}
               />
 
               <StatCard
-                title="Unique customers"
+                title={t("reports.uniqueCustomers")}
                 value={data.uniqueCustomers}
-                subtitle="Unique contacts detected this month"
+                subtitle={t("reports.uniqueCustomersSubtitle")}
               />
 
               <StatCard
-                title="Voice calls"
+                title={t("reports.voiceCalls")}
                 value={data.voice.calls}
                 subtitle={voiceEstimateLabel}
               />
 
               <StatCard
-                title="Voice minutes"
+                title={t("reports.voiceMinutes")}
                 value={data.voice.minutes}
-                subtitle={`${data.voice.seconds} seconds used`}
+                subtitle={tr("reports.secondsUsed", {
+                  seconds: data.voice.seconds,
+                })}
               />
             </section>
 
@@ -243,49 +267,47 @@ export default function MonthlyReportsPage() {
                 <div className="mb-5 flex items-start justify-between gap-4">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">
-                      Bookings
+                      {t("reports.bookings")}
                     </h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      Booking activity created by Aamy during this period.
+                      {t("reports.bookingsSubtitle")}
                     </p>
                   </div>
 
                   <div className="rounded-full bg-gray-900 px-4 py-2 text-sm font-bold text-white">
-                    {data.bookings.conversionRate}% conversion
+                    {tr("reports.conversion", {
+                      rate: data.bookings.conversionRate,
+                    })}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <StatCard
-                    title="Started"
+                    title={t("reports.started")}
                     value={data.bookings.started}
-                    subtitle={
-                      data.bookings.startedEstimatedFromAppointments
-                        ? "Estimated from appointments"
-                        : "From booking sessions"
-                    }
+                    subtitle={t("reports.startedSubtitle")}
                   />
 
                   <StatCard
-                    title="Created"
+                    title={t("reports.created")}
                     value={data.bookings.appointmentsCreated}
-                    subtitle="Appointments created"
+                    subtitle={t("reports.createdSubtitle")}
                   />
 
                   <StatCard
-                    title="Confirmed"
+                    title={t("reports.confirmed")}
                     value={data.bookings.confirmed}
-                    subtitle="Successful appointments"
+                    subtitle={t("reports.confirmedSubtitle")}
                   />
                 </div>
               </div>
 
               <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900">
-                  Follow-up needed
+                  {t("reports.followUpNeeded")}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  High-interest conversations that may need human attention.
+                  {t("reports.followUpSubtitle")}
                 </p>
 
                 <div className="mt-6 text-center">
@@ -293,7 +315,7 @@ export default function MonthlyReportsPage() {
                     {data.followUpNeeded}
                   </p>
                   <p className="mt-2 text-sm text-gray-500">
-                    pending follow-ups
+                    {t("reports.pendingFollowUps")}
                   </p>
                 </div>
               </div>
@@ -302,10 +324,10 @@ export default function MonthlyReportsPage() {
             <section className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
               <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900">
-                  Conversations by channel
+                  {t("reports.conversationsByChannel")}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Message volume grouped by channel.
+                  {t("reports.channelSubtitle")}
                 </p>
 
                 <div className="mt-6 space-y-5">
@@ -316,8 +338,8 @@ export default function MonthlyReportsPage() {
                       return (
                         <div key={channel}>
                           <div className="mb-2 flex items-center justify-between">
-                            <p className="capitalize text-sm font-medium text-gray-700">
-                              {channel}
+                            <p className="text-sm font-medium text-gray-700">
+                              {getChannelLabel(channel)}
                             </p>
                             <p className="text-sm font-bold text-gray-900">
                               {total}
@@ -333,10 +355,10 @@ export default function MonthlyReportsPage() {
 
               <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-gray-900">
-                  Top intentions
+                  {t("reports.topIntentions")}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Most common customer intentions detected this month.
+                  {t("reports.topIntentionsSubtitle")}
                 </p>
 
                 {data.topIntentions.length > 0 ? (
@@ -358,10 +380,10 @@ export default function MonthlyReportsPage() {
                 ) : (
                   <div className="mt-6 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center">
                     <p className="text-sm font-medium text-gray-700">
-                      No intentions detected yet
+                      {t("reports.noIntentions")}
                     </p>
                     <p className="mt-1 text-sm text-gray-500">
-                      This will populate when sales intelligence records are available.
+                      {t("reports.noIntentionsSubtitle")}
                     </p>
                   </div>
                 )}
@@ -370,38 +392,28 @@ export default function MonthlyReportsPage() {
 
             <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <h3 className="text-lg font-bold text-gray-900">
-                Voice details
+                {t("reports.voiceDetails")}
               </h3>
 
-              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <StatCard
-                  title="Voice messages"
+                  title={t("reports.voiceMessages")}
                   value={data.voice.messages}
-                  subtitle="Voice conversation messages"
+                  subtitle={t("reports.voiceMessagesSubtitle")}
                 />
 
                 <StatCard
-                  title="Call records"
-                  value={data.voice.realCalls ?? data.voice.calls}
-                  subtitle="Rows found in voice_calls"
-                />
-
-                <StatCard
-                  title="Estimated calls"
-                  value={data.voice.estimatedCalls ?? 0}
-                  subtitle="Fallback from message history"
-                />
-
-                <StatCard
-                  title="Data source"
-                  value={
-                    data.voice.estimatedFromMessages
-                      ? "Estimated"
-                      : data.voice.partiallyEstimated
-                        ? "Mixed"
-                        : "Real"
-                  }
+                  title={t("reports.voiceCalls")}
+                  value={data.voice.calls}
                   subtitle={voiceEstimateLabel}
+                />
+
+                <StatCard
+                  title={t("reports.voiceMinutes")}
+                  value={data.voice.minutes}
+                  subtitle={tr("reports.secondsUsed", {
+                    seconds: data.voice.seconds,
+                  })}
                 />
               </div>
             </section>

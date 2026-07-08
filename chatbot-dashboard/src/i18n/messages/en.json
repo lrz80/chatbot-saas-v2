@@ -1547,5 +1547,53 @@
   "appointments.estimate.offHint": "On-site appointment automation is disabled.",
   "appointments.estimate.saving": "Saving...",
   "appointments.errors.estimateToggle": "Could not update the estimate flow.",
-  "appointments.gc.connectedAs": "Connected as:"
+  "appointments.gc.connectedAs": "Connected as:",
+
+  "sidebar.nav.reports": "Reports",
+
+  "reports.title": "Monthly Report",
+  "reports.subtitle": "Performance summary for Aamy conversations, voice calls, and bookings.",
+  "reports.selectMonth": "Select month",
+  "reports.reportPeriod": "Report period",
+
+  "reports.totalMessages": "Total messages",
+  "reports.totalMessagesSubtitle": "All recorded customer and assistant messages",
+  "reports.uniqueCustomers": "Unique customers",
+  "reports.uniqueCustomersSubtitle": "Unique contacts detected this month",
+
+  "reports.voiceCalls": "Voice calls",
+  "reports.voiceCallsReal": "Based on real voice call records",
+  "reports.voiceCallsEstimated": "Estimated from conversation history",
+  "reports.voiceCallsMixed": "Partially estimated from history",
+  "reports.voiceMinutes": "Voice minutes",
+  "reports.secondsUsed": "{{seconds}} seconds used",
+
+  "reports.bookings": "Bookings",
+  "reports.bookingsSubtitle": "Booking activity created by Aamy during this period.",
+  "reports.conversion": "{{rate}}% conversion",
+  "reports.started": "Started",
+  "reports.startedSubtitle": "Booking requests started",
+  "reports.created": "Created",
+  "reports.createdSubtitle": "Appointments created",
+  "reports.confirmed": "Confirmed",
+  "reports.confirmedSubtitle": "Successful appointments",
+
+  "reports.followUpNeeded": "Follow-up needed",
+  "reports.followUpSubtitle": "High-interest conversations that may need human attention.",
+  "reports.pendingFollowUps": "pending follow-ups",
+
+  "reports.conversationsByChannel": "Conversations by channel",
+  "reports.channelSubtitle": "Message volume grouped by channel.",
+
+  "reports.topIntentions": "Top intentions",
+  "reports.topIntentionsSubtitle": "Most common customer intentions detected this month.",
+  "reports.noIntentions": "No intentions detected yet",
+  "reports.noIntentionsSubtitle": "This will populate when sales intelligence records are available.",
+
+  "reports.voiceDetails": "Voice details",
+  "reports.voiceMessages": "Voice messages",
+  "reports.voiceMessagesSubtitle": "Voice conversation messages",
+
+  "reports.loading": "Loading report...",
+  "reports.errorLoading": "Error loading monthly report"
 }

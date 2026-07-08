@@ -1547,5 +1547,53 @@
   "appointments.estimate.offHint": "La automatización de citas en sitio está desactivada.",
   "appointments.estimate.saving": "Guardando...",
   "appointments.errors.estimateToggle": "No se pudo actualizar el flujo de estimados.",
-  "appointments.gc.connectedAs": "Conectado como:"
+  "appointments.gc.connectedAs": "Conectado como:",
+
+  "sidebar.nav.reports": "Reportes",
+
+  "reports.title": "Reporte mensual",
+  "reports.subtitle": "Resumen del rendimiento de Aamy en conversaciones, llamadas y reservas.",
+  "reports.selectMonth": "Seleccionar mes",
+  "reports.reportPeriod": "Período del reporte",
+
+  "reports.totalMessages": "Mensajes totales",
+  "reports.totalMessagesSubtitle": "Mensajes registrados entre clientes y asistente",
+  "reports.uniqueCustomers": "Clientes únicos",
+  "reports.uniqueCustomersSubtitle": "Contactos únicos detectados este mes",
+
+  "reports.voiceCalls": "Llamadas de voz",
+  "reports.voiceCallsReal": "Basado en registros reales de llamadas",
+  "reports.voiceCallsEstimated": "Estimado desde el historial de conversaciones",
+  "reports.voiceCallsMixed": "Parcialmente estimado desde el historial",
+  "reports.voiceMinutes": "Minutos de voz",
+  "reports.secondsUsed": "{{seconds}} segundos usados",
+
+  "reports.bookings": "Reservas",
+  "reports.bookingsSubtitle": "Actividad de reservas creada por Aamy durante este período.",
+  "reports.conversion": "{{rate}}% conversión",
+  "reports.started": "Iniciadas",
+  "reports.startedSubtitle": "Solicitudes de reserva iniciadas",
+  "reports.created": "Creadas",
+  "reports.createdSubtitle": "Citas creadas",
+  "reports.confirmed": "Confirmadas",
+  "reports.confirmedSubtitle": "Citas exitosas",
+
+  "reports.followUpNeeded": "Seguimiento requerido",
+  "reports.followUpSubtitle": "Conversaciones de alto interés que pueden requerir atención humana.",
+  "reports.pendingFollowUps": "seguimientos pendientes",
+
+  "reports.conversationsByChannel": "Conversaciones por canal",
+  "reports.channelSubtitle": "Volumen de mensajes agrupado por canal.",
+
+  "reports.topIntentions": "Intenciones principales",
+  "reports.topIntentionsSubtitle": "Intenciones más comunes detectadas este mes.",
+  "reports.noIntentions": "No hay intenciones detectadas todavía",
+  "reports.noIntentionsSubtitle": "Esto aparecerá cuando existan registros de inteligencia de ventas.",
+
+  "reports.voiceDetails": "Detalles de voz",
+  "reports.voiceMessages": "Mensajes de voz",
+  "reports.voiceMessagesSubtitle": "Mensajes de conversaciones por voz",
+
+  "reports.loading": "Cargando reporte...",
+  "reports.errorLoading": "Error cargando el reporte mensual"
 }
