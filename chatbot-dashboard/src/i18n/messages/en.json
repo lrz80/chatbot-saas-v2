@@ -1668,5 +1668,43 @@
 
   "appointments.errors.squareMissingTenantConnect": "The current business was not found to connect Square.",
   "appointments.errors.squareMissingTenantDisconnect": "The current business was not found to disconnect Square.",
-  "appointments.errors.squareDisconnect": "Square could not be disconnected."
+  "appointments.errors.squareDisconnect": "Square could not be disconnected.",
+
+  "bookingFlow.title": "Voice booking flow",
+  "bookingFlow.subtitle": "Edit the questions Aamy will ask when a customer wants to book by voice.",
+  "bookingFlow.save": "Save flow",
+  "bookingFlow.loading": "Loading flow...",
+
+  "bookingFlow.fields.order": "Order",
+  "bookingFlow.fields.stepKey": "Step key",
+  "bookingFlow.fields.expectedType": "Expected type",
+  "bookingFlow.fields.slot": "Appointment slot",
+  "bookingFlow.fields.required": "Required",
+  "bookingFlow.fields.enabled": "Enabled",
+
+  "bookingFlow.validation.title": "Validation rules",
+  "bookingFlow.validation.speechHints": "Speech hints",
+  "bookingFlow.validation.options": "Recognizable options",
+  "bookingFlow.validation.requiresDate": "Date",
+  "bookingFlow.validation.requiresTime": "Time",
+
+  "bookingFlow.phone.mode": "Phone mode",
+  "bookingFlow.phone.useInboundCaller": "Use inbound number as candidate",
+  "bookingFlow.phone.maskInPrompt": "Show masked number in the prompt",
+
+  "bookingFlow.help.confirmationVariables": "You can use variables like {service} and {datetime} in the confirmation step.",
+  "bookingFlow.help.speechHints": "Separate hints with commas. Aamy will send them to the voice recognizer for this step.",
+  "bookingFlow.help.options": "Useful for steps like salon/mobile. Each tenant defines its own variants without touching the backend.",
+  "bookingFlow.help.unavailableVariables": "You can use variables like {requested_service} and {available_times}.",
+  "bookingFlow.help.cancelMessage": "This message is used when the customer says no during final confirmation.",
+
+  "bookingFlow.actions.addAbove": "+ Add above",
+  "bookingFlow.actions.addBelow": "+ Add below",
+  "bookingFlow.actions.insertSmsBelow": "+ Insert SMS below",
+  "bookingFlow.actions.insertStaffBelow": "+ Insert staff below",
+  "bookingFlow.actions.deleteStep": "Delete step",
+  "bookingFlow.actions.addStep": "+ Add step",
+  "bookingFlow.actions.addOption": "+ Add option",
+
+  "common.reload": "Reload"
 }

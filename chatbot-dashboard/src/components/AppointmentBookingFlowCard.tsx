@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { BACKEND_URL } from "@/utils/api";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 type BookingStep = {
   id?: string;
@@ -436,6 +437,7 @@ function removeStepAt(
 }
 
 export default function AppointmentBookingFlowCard() {
+  const { t } = useI18n();
   const [steps, setSteps] = useState<BookingStep[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -662,10 +664,10 @@ export default function AppointmentBookingFlowCard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-bold text-white">
-            Voice booking flow
+            {t("bookingFlow.title")}
           </h2>
           <p className="text-xs text-white/60 mt-1">
-            Edita las preguntas que Aamy hará cuando un cliente quiera agendar por voz.
+            {t("bookingFlow.subtitle")}
           </p>
         </div>
 
@@ -676,7 +678,7 @@ export default function AppointmentBookingFlowCard() {
             disabled={loading || saving}
             className="px-3 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15 disabled:opacity-60"
           >
-            Recargar
+            {t("common.reload")}
           </button>
 
           <button
@@ -685,7 +687,7 @@ export default function AppointmentBookingFlowCard() {
             disabled={loading || saving}
             className="px-4 py-2 rounded-xl text-sm font-semibold bg-purple-600 hover:bg-purple-700 disabled:opacity-60"
           >
-            {saving ? "Guardando..." : "Guardar flujo"}
+            {saving ? t("common.saving") : t("bookingFlow.save")}
           </button>
         </div>
       </div>
@@ -703,7 +705,9 @@ export default function AppointmentBookingFlowCard() {
       )}
 
       {loading ? (
-        <div className="text-sm text-white/60 py-4">Cargando flujo...</div>
+        <div className="text-sm text-white/60 py-4">
+          {t("bookingFlow.loading")}
+        </div>
       ) : (
         <div className="space-y-4">
           {steps.map((step, index) => (
@@ -714,7 +718,7 @@ export default function AppointmentBookingFlowCard() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
                 <div className="lg:col-span-2">
                   <label className="block text-xs text-white/60 mb-1">
-                    Orden
+                    {t("bookingFlow.fields.order")}
                   </label>
                   <input
                     type="number"
@@ -726,7 +730,7 @@ export default function AppointmentBookingFlowCard() {
 
                 <div className="lg:col-span-3">
                   <label className="block text-xs text-white/60 mb-1">
-                    Step key
+                    {t("bookingFlow.fields.stepKey")}
                   </label>
                   <input
                     type="text"
@@ -740,7 +744,7 @@ export default function AppointmentBookingFlowCard() {
 
                 <div className="lg:col-span-3">
                   <label className="block text-xs text-white/60 mb-1">
-                    Tipo esperado
+                    {t("bookingFlow.fields.expectedType")}
                   </label>
                   <select
                     value={step.expected_type}
@@ -761,7 +765,7 @@ export default function AppointmentBookingFlowCard() {
 
                 <div className="lg:col-span-3">
                   <label className="block text-xs text-white/60 mb-1">
-                    Slot de cita
+                    {t("bookingFlow.fields.slot")}
                   </label>
                   <select
                     value={step.validation_config?.slot || "none"}
@@ -792,7 +796,7 @@ export default function AppointmentBookingFlowCard() {
                         updateStep(index, { required: e.target.checked })
                       }
                     />
-                    Requerido
+                    {t("bookingFlow.fields.required")}
                   </label>
                 </div>
 
@@ -805,7 +809,7 @@ export default function AppointmentBookingFlowCard() {
                         updateStep(index, { enabled: e.target.checked })
                       }
                     />
-                    Activo
+                    {t("bookingFlow.fields.enabled")}
                   </label>
                 </div>
               </div>
@@ -835,7 +839,7 @@ export default function AppointmentBookingFlowCard() {
                 </div>
 
                 <p className="text-[11px] text-white/40 mt-1">
-                  Puedes usar variables como {"{service}"} y {"{datetime}"} en el paso de confirmación.
+                  {t("bookingFlow.help.confirmationVariables")}
                 </p>
               </div>
 
@@ -866,12 +870,12 @@ export default function AppointmentBookingFlowCard() {
 
                 <div className="mt-3">
                   <label className="block text-xs text-white/60 mb-2">
-                      Reglas de validación
+                      {t("bookingFlow.validation.title")}
                   </label>
 
                 <div className="space-y-2 text-sm">
                   <label className="block text-xs text-white/60">
-                    Speech hints
+                    {t("bookingFlow.validation.speechHints")}
                   </label>
                   <textarea
                     value={getEditableSpeechHintsText(step.validation_config?.speech_hints)}
@@ -888,13 +892,13 @@ export default function AppointmentBookingFlowCard() {
                     className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white resize-y"
                   />
                   <p className="text-[11px] text-white/40">
-                    Separa los hints por coma. Aamy los enviará al recognizer de voz para este paso.
+                    {t("bookingFlow.help.speechHints")}
                   </p>
                 </div>
 
-                                <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-sm">
                   <label className="block text-xs text-white/60">
-                    Opciones reconocibles
+                    {t("bookingFlow.validation.options")}
                   </label>
 
                   {getEditableBookingOptions(step.validation_config?.options).map(
@@ -1009,11 +1013,11 @@ export default function AppointmentBookingFlowCard() {
                     }}
                     className="px-3 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
                   >
-                    + Agregar opción
+                    {t("bookingFlow.actions.addOption")}
                   </button>
 
                   <p className="text-[11px] text-white/40">
-                    Útil para pasos como salon/mobile. Cada tenant define sus propias variantes sin tocar backend.
+                    {t("bookingFlow.help.options")}
                   </p>
                 </div>
 
@@ -1033,7 +1037,7 @@ export default function AppointmentBookingFlowCard() {
                             })
                         }
                         />{" "}
-                        Fecha
+                        {t("bookingFlow.validation.requiresDate")}
                     </label>
 
                     <label>
@@ -1049,7 +1053,7 @@ export default function AppointmentBookingFlowCard() {
                             })
                         }
                         />{" "}
-                        Hora
+                        {t("bookingFlow.validation.requiresTime")}
                     </label>
                     </div>
 
@@ -1081,7 +1085,7 @@ export default function AppointmentBookingFlowCard() {
                       </div>
 
                       <p className="text-[11px] text-white/40 mt-1">
-                        Puedes usar variables como {"{requested_service}"} y {"{available_times}"}.
+                        {t("bookingFlow.help.unavailableVariables")}
                       </p>
                     </div>
                   </div>
@@ -1116,7 +1120,7 @@ export default function AppointmentBookingFlowCard() {
                     </div>
 
                     <p className="text-[11px] text-white/40 mt-1">
-                      Este mensaje se usa cuando el cliente responde que no en la confirmación final.
+                      {t("bookingFlow.help.cancelMessage")}
                     </p>
                   </div>
                 )}
@@ -1125,7 +1129,7 @@ export default function AppointmentBookingFlowCard() {
                 <div className="space-y-3 text-sm">
                     <div>
                     <label className="block text-xs text-white/60 mb-1">
-                        Modo de teléfono
+                        {t("bookingFlow.phone.mode")}
                     </label>
                     <select
                         value={step.validation_config?.mode || "free_input"}
@@ -1160,7 +1164,7 @@ export default function AppointmentBookingFlowCard() {
                         })
                         }
                     />
-                    Usar número entrante como candidato
+                    {t("bookingFlow.phone.useInboundCaller")}
                     </label>
 
                     <label className="inline-flex items-center gap-2 text-sm text-white/80">
@@ -1176,7 +1180,7 @@ export default function AppointmentBookingFlowCard() {
                         })
                         }
                     />
-                    Mostrar número enmascarado en el prompt
+                    {t("bookingFlow.phone.maskInPrompt")}
                     </label>
                 </div>
                 )}
@@ -1188,7 +1192,7 @@ export default function AppointmentBookingFlowCard() {
                   onClick={() => addStepAbove(index)}
                   className="px-3 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
                 >
-                  + Agregar arriba
+                  {t("bookingFlow.actions.addAbove")}
                 </button>
 
                 <button
@@ -1196,7 +1200,7 @@ export default function AppointmentBookingFlowCard() {
                   onClick={() => addStepBelow(index)}
                   className="px-3 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
                 >
-                  + Agregar debajo
+                  {t("bookingFlow.actions.addBelow")}
                 </button>
 
                 <button
@@ -1204,7 +1208,7 @@ export default function AppointmentBookingFlowCard() {
                   onClick={() => addOfferBookingSmsBelow(index)}
                   className="px-3 py-2 rounded-xl text-sm font-semibold bg-blue-600/70 hover:bg-blue-600"
                 >
-                  + Insertar SMS debajo
+                  {t("bookingFlow.actions.insertSmsBelow")}
                 </button>
 
                 <button
@@ -1212,7 +1216,7 @@ export default function AppointmentBookingFlowCard() {
                   onClick={() => addStaffStepBelow(index)}
                   className="px-3 py-2 rounded-xl text-sm font-semibold bg-emerald-600/70 hover:bg-emerald-600"
                 >
-                  + Insertar staff debajo
+                  {t("bookingFlow.actions.insertStaffBelow")}
                 </button>
 
                 <button
@@ -1220,7 +1224,7 @@ export default function AppointmentBookingFlowCard() {
                   onClick={() => removeStep(index)}
                   className="px-3 py-2 rounded-xl text-sm font-semibold bg-red-600/70 hover:bg-red-600"
                 >
-                  Eliminar paso
+                  {t("bookingFlow.actions.deleteStep")}
                 </button>
               </div>
             </div>
@@ -1231,7 +1235,7 @@ export default function AppointmentBookingFlowCard() {
             onClick={addStep}
             className="px-4 py-2 rounded-xl text-sm font-semibold border border-white/10 bg-white/10 hover:bg-white/15"
           >
-            + Agregar paso
+            {t("bookingFlow.actions.addStep")}
           </button>
         </div>
       )}
