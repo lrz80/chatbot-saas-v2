@@ -1706,5 +1706,21 @@
   "bookingFlow.actions.addStep": "+ Add step",
   "bookingFlow.actions.addOption": "+ Add option",
 
-  "common.reload": "Reload"
+  "common.reload": "Reload",
+
+  "serviceBookingRules.title": "Booking rules by service",
+  "serviceBookingRules.subtitle": "Define duration, booking mode, and capacity per service.",
+  "serviceBookingRules.addService": "Add service",
+  "serviceBookingRules.loading": "Loading rules...",
+  "serviceBookingRules.save": "Save rules",
+  "serviceBookingRules.errors.load": "Service booking rules could not be loaded.",
+  "serviceBookingRules.errors.save": "Service booking rules could not be saved.",
+  "serviceBookingRules.table.service": "Service",
+  "serviceBookingRules.table.duration": "Duration (min)",
+  "serviceBookingRules.table.mode": "Mode",
+  "serviceBookingRules.table.capacity": "Capacity",
+  "serviceBookingRules.table.actions": "Actions",
+  "serviceBookingRules.placeholders.service": "Example: Indoor Cycling",
+  "serviceBookingRules.modes.exclusive": "Exclusive",
+  "serviceBookingRules.modes.shared": "Shared"
 }

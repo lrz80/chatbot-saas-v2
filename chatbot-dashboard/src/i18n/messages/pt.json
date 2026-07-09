@@ -1374,5 +1374,21 @@
 "bookingFlow.actions.addStep": "+ Adicionar passo",
 "bookingFlow.actions.addOption": "+ Adicionar opção",
 
-"common.reload": "Recarregar"
+"common.reload": "Recarregar",
+
+"serviceBookingRules.title": "Regras de reserva por serviço",
+"serviceBookingRules.subtitle": "Defina duração, modo de reserva e capacidade por serviço.",
+"serviceBookingRules.addService": "Adicionar serviço",
+"serviceBookingRules.loading": "Carregando regras...",
+"serviceBookingRules.save": "Salvar regras",
+"serviceBookingRules.errors.load": "Não foi possível carregar as regras por serviço.",
+"serviceBookingRules.errors.save": "Não foi possível salvar as regras por serviço.",
+"serviceBookingRules.table.service": "Serviço",
+"serviceBookingRules.table.duration": "Duração (min)",
+"serviceBookingRules.table.mode": "Modo",
+"serviceBookingRules.table.capacity": "Capacidade",
+"serviceBookingRules.table.actions": "Ações",
+"serviceBookingRules.placeholders.service": "Ex.: Indoor Cycling",
+"serviceBookingRules.modes.exclusive": "Exclusivo",
+"serviceBookingRules.modes.shared": "Compartilhado"
 }
