@@ -1611,5 +1611,32 @@
   "reports.intentions.slot_unavailable": "Time slot unavailable",
   "reports.intentions.requires_customer_action": "Customer action required",
   "reports.intentions.booking_failed": "Booking failed",
-  "reports.intentions.unknown": "Unclassified"
+  "reports.intentions.unknown": "Unclassified",
+
+  "voice.twilio.title": "Twilio voice connection",
+  "voice.twilio.subtitle": "Activate the voice number so Aamy can receive calls for this business.",
+  "voice.twilio.status": "Status:",
+  "voice.twilio.active": "Active",
+  "voice.twilio.notActivated": "Not activated",
+  "voice.twilio.voiceNumber": "Voice number:",
+  "voice.twilio.activating": "Activating voice...",
+  "voice.twilio.reconfigure": "Reconfigure voice",
+  "voice.twilio.activate": "Activate voice",
+
+  "voice.bookingServices.title": "Bookable voice services",
+  "voice.bookingServices.help": "One service per line. Format: Canonical name | alias1, alias2, alias3",
+
+  "voice.schedules.title": "Service schedules (voice)",
+  "voice.schedules.subtitle": "Configure the valid schedules per service for voice booking.",
+  "voice.schedules.add": "Add schedule",
+  "voice.schedules.loading": "Loading schedules...",
+  "voice.schedules.empty": "No schedules configured yet.",
+  "voice.schedules.service": "Service",
+  "voice.schedules.day": "Day",
+  "voice.schedules.times": "Times (HH:mm separated by commas)",
+  "voice.schedules.help": "Configure the valid schedules per service. Aamy should only book times that exist here.",
+
+  "voice.mainMenu.label": "Main menu prompt",
+  "voice.mainMenu.placeholder": "You can tell me you want to book, or press 1 for prices, 2 for hours, or 3 for location.",
+  "voice.mainMenu.help": "This message is used in the initial voice menu after the welcome message."
 }

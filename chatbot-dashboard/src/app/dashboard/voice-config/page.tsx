@@ -87,13 +87,13 @@ export default function VoiceConfigPage() {
   ];
 
   const dayOptions = [
-    { value: 0, label: "Domingo" },
-    { value: 1, label: "Lunes" },
-    { value: 2, label: "Martes" },
-    { value: 3, label: "Miércoles" },
-    { value: 4, label: "Jueves" },
-    { value: 5, label: "Viernes" },
-    { value: 6, label: "Sábado" },
+    { value: 0, label: t("profile.days.sun") },
+    { value: 1, label: t("profile.days.mon") },
+    { value: 2, label: t("profile.days.tue") },
+    { value: 3, label: t("profile.days.wed") },
+    { value: 4, label: t("profile.days.thu") },
+    { value: 5, label: t("profile.days.fri") },
+    { value: 6, label: t("profile.days.sat") },
   ];
 
   const fetchServiceSchedules = async () => {
@@ -851,19 +851,20 @@ export default function VoiceConfigPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="text-white font-semibold">
-              Conexión de voz Twilio
+              {t("voice.twilio.title")}
             </div>
 
             <div className="text-sm text-white/70 mt-1">
-              Activa el número de voz para que Aamy pueda recibir llamadas de este negocio.
+              {t("voice.twilio.subtitle")}
             </div>
 
             <div className="mt-3 text-sm">
               {twilioVoiceNumber ? (
                 <div className="text-green-300">
-                  Estado: <span className="font-semibold">Activo</span>
+                  {t("voice.twilio.status")}{" "}
+                  <span className="font-semibold">{t("voice.twilio.active")}</span>
                   <div className="mt-1 text-white/80">
-                    Número de voz:{" "}
+                    {t("voice.twilio.voiceNumber")}{" "}
                     <span className="font-mono font-semibold">
                       {twilioVoiceNumber}
                     </span>
@@ -871,7 +872,8 @@ export default function VoiceConfigPage() {
                 </div>
               ) : (
                 <div className="text-yellow-300">
-                  Estado: <span className="font-semibold">No activado</span>
+                  {t("voice.twilio.status")}{" "}
+                  <span className="font-semibold">{t("voice.twilio.notActivated")}</span>
                 </div>
               )}
 
@@ -894,10 +896,10 @@ export default function VoiceConfigPage() {
             }`}
           >
             {voiceSetupLoading
-              ? "Activando voz..."
+              ? t("voice.twilio.activating")
               : twilioVoiceNumber
-                ? "Reconfigurar voz"
-                : "Activar voz"}
+                ? t("voice.twilio.reconfigure")
+                : t("voice.twilio.activate")}
           </button>
         </div>
       </div>
@@ -967,7 +969,7 @@ export default function VoiceConfigPage() {
           </div>
           <div>
             <label className="block text-white font-semibold mb-1">
-              Servicios agendables por voz
+              {t("voice.bookingServices.title")}
             </label>
             <textarea
               name="booking_services_text"
@@ -979,7 +981,7 @@ export default function VoiceConfigPage() {
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white"
             />
             <p className="text-xs text-white/70 mt-1">
-              Una línea por servicio. Formato: Nombre canónico | alias1, alias2, alias3
+              {t("voice.bookingServices.help")}
             </p>
           </div>
           <div className="mt-6 rounded-xl border border-white/10 bg-white/5 overflow-hidden">
@@ -990,10 +992,10 @@ export default function VoiceConfigPage() {
             >
               <div>
                 <div className="text-white font-semibold">
-                  Horarios por servicio (voz)
+                  {t("voice.schedules.title")}
                 </div>
                 <div className="text-xs text-white/60 mt-1">
-                  Configura los horarios válidos por servicio para el agendado por voz.
+                  {t("voice.schedules.subtitle")}
                 </div>
               </div>
 
@@ -1013,15 +1015,15 @@ export default function VoiceConfigPage() {
                     className="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
                     disabled={disabledAll}
                   >
-                    Agregar horario
+                    {t("voice.schedules.add")}
                   </button>
                 </div>
 
                 {loadingSchedules ? (
-                  <div className="text-white/70 text-sm">Cargando horarios...</div>
+                  <div className="text-white/70 text-sm">{t("voice.schedules.loading")}</div>
                 ) : serviceSchedules.length === 0 ? (
                   <div className="text-white/70 text-sm mb-3">
-                    No hay horarios configurados todavía.
+                    {t("voice.schedules.empty")}
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -1031,7 +1033,7 @@ export default function VoiceConfigPage() {
                         className="grid grid-cols-1 md:grid-cols-12 gap-3 bg-white/5 border border-white/10 rounded p-3"
                       >
                         <div className="md:col-span-4">
-                          <label className="block text-xs text-white/70 mb-1">Servicio</label>
+                          <label className="block text-xs text-white/70 mb-1">{t("voice.schedules.service")}</label>
                           <input
                             type="text"
                             value={row.service_name}
@@ -1044,7 +1046,7 @@ export default function VoiceConfigPage() {
                         </div>
 
                         <div className="md:col-span-3">
-                          <label className="block text-xs text-white/70 mb-1">Día</label>
+                          <label className="block text-xs text-white/70 mb-1">{t("voice.schedules.day")}</label>
                           <select
                             value={row.day_of_week}
                             onChange={(e) =>
@@ -1064,7 +1066,7 @@ export default function VoiceConfigPage() {
 
                         <div className="md:col-span-4">
                           <label className="block text-xs text-white/70 mb-1">
-                            Horas (HH:mm separadas por coma)
+                            {t("voice.schedules.times")}
                           </label>
                           <input
                             type="text"
@@ -1091,7 +1093,7 @@ export default function VoiceConfigPage() {
                 )}
 
                 <p className="text-xs text-white/70 mt-2">
-                  Configura los horarios válidos por servicio. Aamy solo debe agendar horas que existan aquí.
+                  {t("voice.schedules.help")}
                 </p>
               </div>
             )}
@@ -1135,18 +1137,18 @@ export default function VoiceConfigPage() {
             />
 
             <label className="block text-white font-semibold mt-4 mb-1">
-              Prompt del menú principal
+              {t("voice.mainMenu.label")}
             </label>
             <textarea
               name="main_menu_prompt"
               value={mainMenuPrompt}
               onChange={(e) => setMainMenuPrompt(e.target.value)}
               rows={3}
-              placeholder="Puedes decirme que quieres reservar, o marcar 1 para precios, 2 para horarios o 3 para ubicación."
+              placeholder={t("voice.mainMenu.placeholder")}
               className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-white resize-y"
             />
             <p className="text-xs text-white/70 mt-1">
-              Este mensaje se usa en el menú inicial de voz después de la bienvenida.
+              {t("voice.mainMenu.help")}
             </p>
 
             <input type="hidden" name="voice_name" value={voiceName || "alice"} />

@@ -1279,5 +1279,32 @@
   "reports.intentions.booking_failed": "Agendamento falhou",
   "reports.intentions.unknown": "Sem classificação",
   "common.lang.pt": "Português",
-  "onboarding.lang.pt": "Português"
+  "onboarding.lang.pt": "Português",
+
+  "voice.twilio.title": "Conexão de voz Twilio",
+  "voice.twilio.subtitle": "Ative o número de voz para que a Aamy possa receber chamadas deste negócio.",
+  "voice.twilio.status": "Status:",
+  "voice.twilio.active": "Ativo",
+  "voice.twilio.notActivated": "Não ativado",
+  "voice.twilio.voiceNumber": "Número de voz:",
+  "voice.twilio.activating": "Ativando voz...",
+  "voice.twilio.reconfigure": "Reconfigurar voz",
+  "voice.twilio.activate": "Ativar voz",
+
+  "voice.bookingServices.title": "Serviços agendáveis por voz",
+  "voice.bookingServices.help": "Uma linha por serviço. Formato: Nome canônico | alias1, alias2, alias3",
+
+  "voice.schedules.title": "Horários por serviço (voz)",
+  "voice.schedules.subtitle": "Configure os horários válidos por serviço para o agendamento por voz.",
+  "voice.schedules.add": "Adicionar horário",
+  "voice.schedules.loading": "Carregando horários...",
+  "voice.schedules.empty": "Ainda não há horários configurados.",
+  "voice.schedules.service": "Serviço",
+  "voice.schedules.day": "Dia",
+  "voice.schedules.times": "Horários (HH:mm separados por vírgula)",
+  "voice.schedules.help": "Configure os horários válidos por serviço. Aamy só deve agendar horários que existam aqui.",
+
+  "voice.mainMenu.label": "Prompt do menu principal",
+  "voice.mainMenu.placeholder": "Você pode dizer que quer agendar, ou pressionar 1 para preços, 2 para horários ou 3 para localização.",
+  "voice.mainMenu.help": "Esta mensagem é usada no menu inicial de voz depois da mensagem de boas-vindas."
 }
