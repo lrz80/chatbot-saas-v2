@@ -141,6 +141,20 @@ export default function MonthlyReportsPage() {
     return channel;
   }
 
+  function getIntentionLabel(intention: string): string {
+    const key = intention?.trim() || "unknown";
+    const translationKey = `reports.intentions.${key}`;
+    const translated = t(translationKey);
+
+    if (translated && translated !== translationKey) {
+        return translated;
+    }
+
+    return key
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
   const maxChannelValue = useMemo(() => {
     if (!data) return 0;
 
@@ -407,7 +421,7 @@ export default function MonthlyReportsPage() {
                         className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3"
                       >
                         <p className="text-sm font-medium text-gray-800">
-                          {item.intention}
+                          {getIntentionLabel(item.intention)}
                         </p>
                         <p className="text-sm font-bold text-gray-900">
                           {item.total}

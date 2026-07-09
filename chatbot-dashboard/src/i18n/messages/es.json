@@ -1603,5 +1603,13 @@
   "reports.estimatedTimeSavedHours": "{{hours}} horas estimadas",
   "reports.afterHoursCalls": "Llamadas fuera de horario",
   "reports.afterHoursSubtitle": "Llamadas recibidas fuera del horario del negocio",
-  "reports.afterHoursUnavailable": "Horario del negocio no configurado"
+  "reports.afterHoursUnavailable": "Horario del negocio no configurado",
+
+  "reports.intentions.booking_confirmed": "Reserva confirmada",
+  "reports.intentions.voice_call": "Llamada recibida",
+  "reports.intentions.booking_requires_deposit": "Depósito requerido",
+  "reports.intentions.slot_unavailable": "Horario no disponible",
+  "reports.intentions.requires_customer_action": "Acción del cliente requerida",
+  "reports.intentions.booking_failed": "Reserva fallida",
+  "reports.intentions.unknown": "Sin clasificar"
 }

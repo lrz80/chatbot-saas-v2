@@ -1603,5 +1603,13 @@
   "reports.estimatedTimeSavedHours": "{{hours}} hours estimated",
   "reports.afterHoursCalls": "After-hours calls",
   "reports.afterHoursSubtitle": "Calls received outside business hours",
-  "reports.afterHoursUnavailable": "Business hours not configured"
+  "reports.afterHoursUnavailable": "Business hours not configured",
+
+  "reports.intentions.booking_confirmed": "Confirmed booking",
+  "reports.intentions.voice_call": "Received call",
+  "reports.intentions.booking_requires_deposit": "Deposit required",
+  "reports.intentions.slot_unavailable": "Time slot unavailable",
+  "reports.intentions.requires_customer_action": "Customer action required",
+  "reports.intentions.booking_failed": "Booking failed",
+  "reports.intentions.unknown": "Unclassified"
 }
