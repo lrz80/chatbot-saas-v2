@@ -1596,5 +1596,12 @@
   "reports.loading": "Loading report...",
   "reports.errorLoading": "Error loading monthly report",
 
-  "reports.downloadPdf": "Download PDF"
+  "reports.downloadPdf": "Download PDF",
+
+  "reports.estimatedTimeSaved": "Estimated time saved",
+  "reports.estimatedTimeSavedSubtitle": "Based on messages, calls, and bookings",
+  "reports.estimatedTimeSavedHours": "{{hours}} hours estimated",
+  "reports.afterHoursCalls": "After-hours calls",
+  "reports.afterHoursSubtitle": "Calls received outside business hours",
+  "reports.afterHoursUnavailable": "Business hours not configured"
 }

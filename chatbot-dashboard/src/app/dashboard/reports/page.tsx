@@ -8,6 +8,8 @@ type MonthlySummary = {
   month: string;
   totalMessages: number;
   uniqueCustomers: number;
+  estimatedTimeSavedMinutes?: number;
+  estimatedTimeSavedHours?: number;
   conversationsByChannel: {
     voice?: number;
     whatsapp?: number;
@@ -25,6 +27,8 @@ type MonthlySummary = {
     minutes: number;
     estimatedFromMessages: boolean;
     partiallyEstimated?: boolean;
+    afterHoursCalls?: number;
+    afterHoursAvailable?: boolean;
   };
   bookings: {
     started: number;
@@ -55,6 +59,14 @@ function formatMonthLabel(month: string, lang: string): string {
     month: "long",
     year: "numeric",
   });
+}
+
+function calculateFrontendFallbackTimeSavedMinutes(data: MonthlySummary): number {
+  const messageMinutes = data.totalMessages * 0.75;
+  const voiceMinutes = data.voice.calls * 3;
+  const bookingMinutes = data.bookings.confirmed * 4;
+
+  return Math.round((messageMinutes + voiceMinutes + bookingMinutes) * 10) / 10;
 }
 
 function StatCard({
@@ -98,10 +110,7 @@ export default function MonthlyReportsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  function tr(
-    key: string,
-    vars?: Record<string, string | number>
-  ): string {
+  function tr(key: string, vars?: Record<string, string | number>): string {
     let text = t(key);
 
     if (!vars) return text;
@@ -164,9 +173,7 @@ export default function MonthlyReportsPage() {
 
       setData(json);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t("reports.errorLoading")
-      );
+      setError(err instanceof Error ? err.message : t("reports.errorLoading"));
       setData(null);
     } finally {
       setLoading(false);
@@ -184,6 +191,15 @@ export default function MonthlyReportsPage() {
       ? t("reports.voiceCallsMixed")
       : t("reports.voiceCallsReal");
 
+  const estimatedTimeSavedMinutes = data
+    ? data.estimatedTimeSavedMinutes ??
+      calculateFrontendFallbackTimeSavedMinutes(data)
+    : 0;
+
+  const estimatedTimeSavedHours =
+    data?.estimatedTimeSavedHours ??
+    Math.round((estimatedTimeSavedMinutes / 60) * 10) / 10;
+
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -199,24 +215,24 @@ export default function MonthlyReportsPage() {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700">
                 {t("reports.selectMonth")}
-                </label>
-                <input
+              </label>
+              <input
                 type="month"
                 value={month}
                 onChange={(event) => setMonth(event.target.value)}
                 className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-gray-900 shadow-sm outline-none focus:border-gray-900"
-                />
+              />
             </div>
 
             <button
-                type="button"
-                onClick={downloadPdf}
-                disabled={!data || loading}
-                className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+              type="button"
+              onClick={downloadPdf}
+              disabled={!data || loading}
+              className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-                {t("reports.downloadPdf")}
+              {t("reports.downloadPdf")}
             </button>
           </div>
         </div>
@@ -272,11 +288,15 @@ export default function MonthlyReportsPage() {
               />
 
               <StatCard
-                title={t("reports.voiceMinutes")}
-                value={data.voice.minutes}
-                subtitle={tr("reports.secondsUsed", {
-                  seconds: data.voice.seconds,
-                })}
+                title={t("reports.estimatedTimeSaved")}
+                value={`${estimatedTimeSavedMinutes} min`}
+                subtitle={
+                  estimatedTimeSavedHours >= 1
+                    ? tr("reports.estimatedTimeSavedHours", {
+                        hours: estimatedTimeSavedHours,
+                      })
+                    : t("reports.estimatedTimeSavedSubtitle")
+                }
               />
             </section>
 
@@ -413,7 +433,7 @@ export default function MonthlyReportsPage() {
                 {t("reports.voiceDetails")}
               </h3>
 
-              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                   title={t("reports.voiceMessages")}
                   value={data.voice.messages}
@@ -432,6 +452,20 @@ export default function MonthlyReportsPage() {
                   subtitle={tr("reports.secondsUsed", {
                     seconds: data.voice.seconds,
                   })}
+                />
+
+                <StatCard
+                  title={t("reports.afterHoursCalls")}
+                  value={
+                    data.voice.afterHoursAvailable === false
+                      ? "-"
+                      : data.voice.afterHoursCalls ?? 0
+                  }
+                  subtitle={
+                    data.voice.afterHoursAvailable === false
+                      ? t("reports.afterHoursUnavailable")
+                      : t("reports.afterHoursSubtitle")
+                  }
                 />
               </div>
             </section>

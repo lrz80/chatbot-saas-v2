@@ -1596,5 +1596,12 @@
   "reports.loading": "Cargando reporte...",
   "reports.errorLoading": "Error cargando el reporte mensual",
 
-  "reports.downloadPdf": "Descargar PDF"
+  "reports.downloadPdf": "Descargar PDF",
+
+  "reports.estimatedTimeSaved": "Tiempo estimado ahorrado",
+  "reports.estimatedTimeSavedSubtitle": "Basado en mensajes, llamadas y reservas",
+  "reports.estimatedTimeSavedHours": "{{hours}} horas estimadas",
+  "reports.afterHoursCalls": "Llamadas fuera de horario",
+  "reports.afterHoursSubtitle": "Llamadas recibidas fuera del horario del negocio",
+  "reports.afterHoursUnavailable": "Horario del negocio no configurado"
 }
