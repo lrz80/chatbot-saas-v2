@@ -1577,9 +1577,9 @@
   "reports.confirmed": "Confirmed",
   "reports.confirmedSubtitle": "Successful appointments",
 
-  "reports.followUpNeeded": "Follow-up needed",
-  "reports.followUpSubtitle": "High-interest conversations that may need human attention.",
-  "reports.pendingFollowUps": "pending follow-ups",
+  "reports.followUpNeeded": "Captured leads",
+  "reports.followUpSubtitle": "New contacts identified by Aamy during this period.",
+  "reports.pendingFollowUps": "leads generated this month",
 
   "reports.conversationsByChannel": "Conversations by channel",
   "reports.channelSubtitle": "Message volume grouped by channel.",
