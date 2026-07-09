@@ -1,19 +1,20 @@
 // src/i18n/index.ts
 import es from "./messages/es.json";
 import en from "./messages/en.json";
+import pt from "./messages/pt.json";
 
-export type UiLang = string;
-
+export type UiLang = "es" | "en" | "pt";
 
 interface Dict {
   [key: string]: string | Dict;
 }
 
-const DEFAULT_UI_LANG = "es";
+const DEFAULT_UI_LANG: UiLang = "es";
 
-const DICTS: Record<string, Dict> = {
+const DICTS: Record<UiLang, Dict> = {
   es,
   en,
+  pt,
 };
 
 function normalizeLang(value: string | null | undefined): string {
@@ -24,7 +25,10 @@ function normalizeLang(value: string | null | undefined): string {
   return normalized || DEFAULT_UI_LANG;
 }
 
-function parseCookieValue(cookieName: string, cookieHeader: string): string | null {
+function parseCookieValue(
+  cookieName: string,
+  cookieHeader: string
+): string | null {
   const parts = String(cookieHeader || "")
     .split(";")
     .map((part) => part.trim())
@@ -45,10 +49,10 @@ function parseCookieValue(cookieName: string, cookieHeader: string): string | nu
   return null;
 }
 
-function resolveUiLang(candidate: string | null | undefined): string {
+function resolveUiLang(candidate: string | null | undefined): UiLang {
   const normalized = normalizeLang(candidate);
 
-  if (DICTS[normalized]) {
+  if (normalized === "es" || normalized === "en" || normalized === "pt") {
     return normalized;
   }
 
@@ -66,6 +70,7 @@ export function getLangFromCookieClient(): UiLang {
 
 export function setLangCookieClient(lang: UiLang) {
   const resolved = resolveUiLang(lang);
+
   document.cookie = `lang=${encodeURIComponent(
     resolved
   )}; Path=/; Max-Age=31536000; SameSite=Lax`;

@@ -16,6 +16,7 @@ export default function LangToggle() {
       >
         ES
       </button>
+
       <button
         type="button"
         onClick={() => setLang("en")}
@@ -24,6 +25,16 @@ export default function LangToggle() {
         }`}
       >
         EN
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setLang("pt")}
+        className={`px-2 py-1 rounded border border-white/20 hover:border-white/50 transition ${
+          lang === "pt" ? "opacity-100" : "opacity-60"
+        }`}
+      >
+        PT
       </button>
     </div>
   );
