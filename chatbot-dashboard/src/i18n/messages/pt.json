@@ -201,7 +201,7 @@
   "demoWa.msg.4": "Claro. O preço depende do serviço em que você tem interesse. Posso explicar as opções disponíveis.",
   "demoWa.msg.5": "Diga o que você está procurando e eu te dou a informação correta.",
   "waDemo.initialText": "Oi, quero ver como funciona",
-  "waDemo.tooltip": "Ver como funciona",
+  "waDemo.tooltip": "Veja como funciona",
   "cap.1.title": "Conversations with context",
   "cap.1.desc": "Aamy keeps the thread of each conversation and uses the informações do negócio to communicate consistently.",
   "cap.2.title": "Comunicação contínua",
