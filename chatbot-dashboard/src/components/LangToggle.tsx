@@ -2,40 +2,37 @@
 
 import { useI18n } from "../i18n/LanguageProvider";
 
+const LANG_OPTIONS = [
+  { value: "es", label: "Español" },
+  { value: "en", label: "English" },
+  { value: "pt", label: "Português" },
+] as const;
+
 export default function LangToggle() {
   const { lang, setLang } = useI18n();
 
   return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => setLang("es")}
-        className={`px-2 py-1 rounded border border-white/20 hover:border-white/50 transition ${
-          lang === "es" ? "opacity-100" : "opacity-60"
-        }`}
-      >
-        ES
-      </button>
+    <div className="relative">
+      <label htmlFor="language-select" className="sr-only">
+        Select language
+      </label>
 
-      <button
-        type="button"
-        onClick={() => setLang("en")}
-        className={`px-2 py-1 rounded border border-white/20 hover:border-white/50 transition ${
-          lang === "en" ? "opacity-100" : "opacity-60"
-        }`}
+      <select
+        id="language-select"
+        value={lang}
+        onChange={(event) => setLang(event.target.value as typeof lang)}
+        className="cursor-pointer rounded-xl border border-white/20 bg-black/40 px-3 py-2 pr-8 text-sm font-semibold text-white outline-none transition hover:border-white/50 focus:border-purple-400"
       >
-        EN
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setLang("pt")}
-        className={`px-2 py-1 rounded border border-white/20 hover:border-white/50 transition ${
-          lang === "pt" ? "opacity-100" : "opacity-60"
-        }`}
-      >
-        PT
-      </button>
+        {LANG_OPTIONS.map((option) => (
+          <option
+            key={option.value}
+            value={option.value}
+            className="bg-[#0f0a1e] text-white"
+          >
+            {option.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
