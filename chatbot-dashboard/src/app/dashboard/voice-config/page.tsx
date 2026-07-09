@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTenant } from "@/context/TenantContext";
 import { toast } from "react-toastify";
-import { Brain, User, Bot, Link, ChevronDown } from "lucide-react";
+import { Link, ChevronDown } from "lucide-react";
 import TrainingHelp from "@/components/TrainingHelp";
 import { BACKEND_URL } from "@/utils/api";
 import VoicePromptGenerator from "@/components/VoicePromptGenerator";
@@ -220,9 +220,6 @@ export default function VoiceConfigPage() {
     }
   };
 
-  const [voiceOptions, setVoiceOptions] = useState<{ label: string; value: string }[]>([]);
-  const [voiceMessages, setVoiceMessages] = useState<any[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(true);
   const [linksUtiles, setLinksUtiles] = useState<any[]>([]);
   const [nuevoLink, setNuevoLink] = useState({ tipo: "", nombre: "", url: "" });
   const [audioDemoUrl, setAudioDemoUrl] = useState<string>("");
@@ -380,24 +377,6 @@ export default function VoiceConfigPage() {
     console.log("[VOICE_SCHEDULES][USE_EFFECT]", { tenantId });
     fetchServiceSchedules();
   }, [tenantId]);
-
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/messages?canal=${CHANNEL_KEY}`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        setVoiceMessages(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Error al cargar historial de voz:", err);
-      } finally {
-        setLoadingHistory(false);
-      }
-    };
-
-    fetchMessages();
-  }, []);
 
   // Links útiles
   useEffect(() => {
@@ -1316,46 +1295,6 @@ export default function VoiceConfigPage() {
         </div>
       </form>
 
-      <hr className="my-8 border-white/20" />
-      <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
-        <Brain className="text-purple-300" />
-        {t("voice.history.title")}
-      </h2>
-
-      {loadingHistory ? (
-        <div className="text-gray-400 animate-pulse">{t("common.loading")}</div>
-      ) : !Array.isArray(voiceMessages) || voiceMessages.length === 0 ? (
-        <div className="text-gray-400">{t("voice.history.empty")}</div>
-      ) : (
-        <div className="space-y-4 max-h-[300px] overflow-y-auto">
-          {voiceMessages
-            .slice()
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-            .map((msg, idx) => (
-              <div key={idx} className="bg-white/10 border border-white/20 p-4 rounded-xl backdrop-blur-sm mb-4">
-                <div className="text-sm text-white/70 mb-1">
-                  {new Date(msg.timestamp).toLocaleString()} — {msg.from_number || t("common.anonymous")}
-                </div>
-                <div className="font-semibold text-white">
-                  {msg.role === "user" ? (
-                    <>
-                      <User className="inline-block w-4 h-4 mr-1 text-white/70" /> {t("voice.history.customer")}: {msg.content}
-                    </>
-                  ) : (
-                    <>
-                      <Bot className="inline-block w-4 h-4 mr-1 text-white/70" /> {t("voice.history.bot")}: {msg.content}
-                    </>
-                  )}
-                </div>
-                {msg.role === "user" && msg.emotion && (
-                  <div className="text-sm mt-1 text-purple-300">
-                    {t("voice.history.emotionDetected")}: <span className="font-medium">{msg.emotion}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-        </div>
-      )}
       <Footer />
     </div>
   );
