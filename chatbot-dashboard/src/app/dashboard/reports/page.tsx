@@ -113,6 +113,13 @@ export default function MonthlyReportsPage() {
     return text;
   }
 
+  function downloadPdf() {
+    window.open(
+      `${BACKEND_URL}/api/reports/monthly-summary.pdf?month=${month}`,
+      "_blank"
+    );
+  }
+
   function getChannelLabel(channel: string): string {
     const normalized = channel.toLowerCase();
 
@@ -190,16 +197,27 @@ export default function MonthlyReportsPage() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">
-              {t("reports.selectMonth")}
-            </label>
-            <input
-              type="month"
-              value={month}
-              onChange={(event) => setMonth(event.target.value)}
-              className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-gray-900 shadow-sm outline-none focus:border-gray-900"
-            />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">
+                {t("reports.selectMonth")}
+                </label>
+                <input
+                type="month"
+                value={month}
+                onChange={(event) => setMonth(event.target.value)}
+                className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-gray-900 shadow-sm outline-none focus:border-gray-900"
+                />
+            </div>
+
+            <button
+                type="button"
+                onClick={downloadPdf}
+                disabled={!data || loading}
+                className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+                {t("reports.downloadPdf")}
+            </button>
           </div>
         </div>
 

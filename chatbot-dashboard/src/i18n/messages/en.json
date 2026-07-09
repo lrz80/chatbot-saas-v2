@@ -1594,5 +1594,7 @@
   "reports.voiceMessagesSubtitle": "Voice conversation messages",
 
   "reports.loading": "Loading report...",
-  "reports.errorLoading": "Error loading monthly report"
+  "reports.errorLoading": "Error loading monthly report",
+
+  "reports.downloadPdf": "Download PDF"
 }
