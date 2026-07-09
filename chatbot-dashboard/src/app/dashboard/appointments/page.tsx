@@ -43,6 +43,18 @@ const STATUS_OPTIONS: AppointmentStatus[] = [
 export default function AppointmentsPage() {
   const { t, lang } = useI18n();
 
+  function tr(key: string, vars?: Record<string, string | number>): string {
+    let text = t(key);
+
+    if (!vars) return text;
+
+    for (const [name, value] of Object.entries(vars)) {
+      text = text.replaceAll(`{{${name}}}`, String(value));
+    }
+
+    return text;
+  }
+
   function getChannelBadge(channel: string) {
     const ch = (channel || '').toLowerCase();
 
@@ -476,7 +488,7 @@ export default function AppointmentsPage() {
     if (squareConnecting) return;
 
     if (!tenantId) {
-      setError("No se encontró el tenant actual para conectar Square.");
+      setError(t("appointments.errors.squareMissingTenantConnect"));
       return;
     }
 
@@ -498,7 +510,7 @@ export default function AppointmentsPage() {
   const handleDisconnectSquare = async () => {
     try {
       if (!tenantId) {
-        setError("No se encontró el tenant actual para desconectar Square.");
+        setError(t("appointments.errors.squareMissingTenantDisconnect"));
         return;
       }
 
@@ -529,7 +541,7 @@ export default function AppointmentsPage() {
       });
     } catch (err) {
       console.error("❌ Error desconectando Square:", err);
-      setError("No se pudo desconectar Square.");
+      setError(t("appointments.errors.squareDisconnect"));
     } finally {
       setSquareLoading(false);
     }
@@ -788,7 +800,7 @@ export default function AppointmentsPage() {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-white">
-                    Appointment automation
+                    {t("appointments.automation.title")}
                   </div>
                   <div className="mt-1 text-xs text-white/60">
                     {selectedAutomationMode === 'automatic_scheduling'
@@ -804,7 +816,7 @@ export default function AppointmentsPage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                   <div className="flex flex-col">
                     <label className="mb-1 text-xs text-white/60">
-                      Automation type
+                      {t("appointments.automation.typeLabel")}
                     </label>
                     <select
                       value={selectedAutomationMode}
@@ -815,8 +827,12 @@ export default function AppointmentsPage() {
                       }
                       className="min-w-[240px] rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none"
                     >
-                      <option value="automatic_scheduling">Automatic Scheduling</option>
-                      <option value="on_site_appointment">On-site appointment</option>
+                      <option value="automatic_scheduling">
+                        {t("appointments.automation.automaticScheduling")}
+                      </option>
+                      <option value="on_site_appointment">
+                        {t("appointments.automation.onSiteAppointment")}
+                      </option>
                     </select>
                   </div>
 
@@ -884,7 +900,7 @@ export default function AppointmentsPage() {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-white">
-                    Calendar provider
+                    {t("appointments.provider.title")}
                   </div>
 
                   <div className="mt-1 text-xs text-white/60">
@@ -894,7 +910,11 @@ export default function AppointmentsPage() {
                             ? t("appointments.gc.connected")
                             : t("appointments.gc.disconnected")
                         }`
-                      : `Estado: ${squareStatus.connected ? "Conectado" : "Desconectado"}`}
+                      : `${t("appointments.provider.status")} ${
+                          squareStatus.connected
+                            ? t("appointments.provider.connected")
+                            : t("appointments.provider.disconnected")
+                        }`}
                   </div>
 
                   {selectedCalendarProvider === 'google_calendar' &&
@@ -912,7 +932,7 @@ export default function AppointmentsPage() {
                     squareStatus.connected &&
                     squareStatus.merchant_id && (
                       <div className="mt-1 text-xs text-white/60">
-                        Merchant ID:{" "}
+                        {t("appointments.provider.merchantId")}{" "}
                         <span className="font-medium text-white/90">
                           {squareStatus.merchant_id}
                         </span>
@@ -923,7 +943,7 @@ export default function AppointmentsPage() {
                     squareStatus.connected &&
                     squareStatus.location_id && (
                       <div className="mt-1 text-xs text-white/60">
-                        Location ID:{" "}
+                        {t("appointments.provider.locationId")}{" "}
                         <span className="font-medium text-white/90">
                           {squareStatus.location_id}
                         </span>
@@ -934,7 +954,7 @@ export default function AppointmentsPage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                   <div className="flex flex-col">
                     <label className="mb-1 text-xs text-white/60">
-                      Provider
+                      {t("appointments.provider.label")}
                     </label>
                     <select
                       value={selectedCalendarProvider}
@@ -966,15 +986,15 @@ export default function AppointmentsPage() {
                           ? t("appointments.gc.disconnect")
                           : t("appointments.gc.connecting")
                         : squareStatus.connected
-                          ? "Desconectando..."
-                          : "Conectando..."
+                          ? t("appointments.provider.disconnecting")
+                          : t("appointments.provider.connecting")
                       : selectedProviderConnected
                         ? selectedCalendarProvider === 'google_calendar'
                           ? t("appointments.gc.disconnect")
-                          : "Desconectar Square"
+                          : t("appointments.provider.disconnectSquare")
                         : selectedCalendarProvider === 'google_calendar'
                           ? t("appointments.gc.connect")
-                          : "Conectar Square"}
+                          : t("appointments.provider.connectSquare")}
                   </button>
                 </div>
               </div>
@@ -982,27 +1002,27 @@ export default function AppointmentsPage() {
           </div>
 
           <CollapsibleCard
-            title="Appointment settings"
-            subtitle="Duración, buffer, anticipación mínima y zona horaria."
+            title={t("appointments.cards.settings.title")}
+            subtitle={t("appointments.cards.settings.subtitle")}
             defaultOpen={true}
           >
-            <AppointmentSettingsCard />
+          <AppointmentSettingsCard />
           </CollapsibleCard>
 
           <CollapsibleCard
-            title="Booking rules by service"
-            subtitle="Configura capacidad, duración y modo por servicio."
+            title={t("appointments.cards.rules.title")}
+            subtitle={t("appointments.cards.rules.subtitle")}
             defaultOpen={false}
           >
-            <ServiceBookingRulesCard />
+          <ServiceBookingRulesCard />
           </CollapsibleCard>
 
           <CollapsibleCard
-            title="Voice booking flow"
-            subtitle="Define los pasos del flujo de agendado por voz."
+            title={t("appointments.cards.voiceFlow.title")}
+            subtitle={t("appointments.cards.voiceFlow.subtitle")}
             defaultOpen={false}
           >
-            <AppointmentBookingFlowCard />
+          <AppointmentBookingFlowCard />
           </CollapsibleCard>
 
         </header>
@@ -1131,8 +1151,10 @@ export default function AppointmentsPage() {
 
         <div className="rounded-2xl border border.white/10 bg.white/5 backdrop-blur-sm shadow-xl">
           <CollapsibleCard
-            title="Appointments history"
-            subtitle={`${safeAppointments.length} citas encontradas`}
+            title={t("appointments.cards.history.title")}
+            subtitle={tr("appointments.cards.history.subtitle", {
+              count: safeAppointments.length,
+            })}
             defaultOpen={true}
           >
             {/* Cabecera (solo desktop) */}

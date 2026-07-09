@@ -1306,5 +1306,35 @@
 
   "voice.mainMenu.label": "Prompt do menu principal",
   "voice.mainMenu.placeholder": "Você pode dizer que quer agendar, ou pressionar 1 para preços, 2 para horários ou 3 para localização.",
-  "voice.mainMenu.help": "Esta mensagem é usada no menu inicial de voz depois da mensagem de boas-vindas."
+  "voice.mainMenu.help": "Esta mensagem é usada no menu inicial de voz depois da mensagem de boas-vindas.",
+
+  "appointments.automation.title": "Automação de agendamentos",
+"appointments.automation.typeLabel": "Tipo de automação",
+"appointments.automation.automaticScheduling": "Agendamento automático",
+"appointments.automation.onSiteAppointment": "Agendamento no local",
+
+"appointments.provider.title": "Provedor de calendário",
+"appointments.provider.label": "Provedor",
+"appointments.provider.status": "Status:",
+"appointments.provider.connected": "Conectado",
+"appointments.provider.disconnected": "Desconectado",
+"appointments.provider.merchantId": "Merchant ID:",
+"appointments.provider.locationId": "Location ID:",
+"appointments.provider.connecting": "Conectando...",
+"appointments.provider.disconnecting": "Desconectando...",
+"appointments.provider.connectSquare": "Conectar Square",
+"appointments.provider.disconnectSquare": "Desconectar Square",
+
+"appointments.cards.settings.title": "Configuração de agendamentos",
+"appointments.cards.settings.subtitle": "Duração, intervalo, antecedência mínima e fuso horário.",
+"appointments.cards.rules.title": "Regras de reserva por serviço",
+"appointments.cards.rules.subtitle": "Configure capacidade, duração e modo por serviço.",
+"appointments.cards.voiceFlow.title": "Fluxo de agendamento por voz",
+"appointments.cards.voiceFlow.subtitle": "Defina os passos do fluxo de agendamento por voz.",
+"appointments.cards.history.title": "Histórico de agendamentos",
+"appointments.cards.history.subtitle": "{{count}} agendamentos encontrados",
+
+"appointments.errors.squareMissingTenantConnect": "O negócio atual não foi encontrado para conectar o Square.",
+"appointments.errors.squareMissingTenantDisconnect": "O negócio atual não foi encontrado para desconectar o Square.",
+"appointments.errors.squareDisconnect": "Não foi possível desconectar o Square."
 }

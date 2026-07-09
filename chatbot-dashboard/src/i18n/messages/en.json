@@ -1638,5 +1638,35 @@
 
   "voice.mainMenu.label": "Main menu prompt",
   "voice.mainMenu.placeholder": "You can tell me you want to book, or press 1 for prices, 2 for hours, or 3 for location.",
-  "voice.mainMenu.help": "This message is used in the initial voice menu after the welcome message."
+  "voice.mainMenu.help": "This message is used in the initial voice menu after the welcome message.",
+
+  "appointments.automation.title": "Appointment automation",
+  "appointments.automation.typeLabel": "Automation type",
+  "appointments.automation.automaticScheduling": "Automatic scheduling",
+  "appointments.automation.onSiteAppointment": "On-site appointment",
+
+  "appointments.provider.title": "Calendar provider",
+  "appointments.provider.label": "Provider",
+  "appointments.provider.status": "Status:",
+  "appointments.provider.connected": "Connected",
+  "appointments.provider.disconnected": "Disconnected",
+  "appointments.provider.merchantId": "Merchant ID:",
+  "appointments.provider.locationId": "Location ID:",
+  "appointments.provider.connecting": "Connecting...",
+  "appointments.provider.disconnecting": "Disconnecting...",
+  "appointments.provider.connectSquare": "Connect Square",
+  "appointments.provider.disconnectSquare": "Disconnect Square",
+
+  "appointments.cards.settings.title": "Appointment settings",
+  "appointments.cards.settings.subtitle": "Duration, buffer, minimum lead time, and time zone.",
+  "appointments.cards.rules.title": "Booking rules by service",
+  "appointments.cards.rules.subtitle": "Configure capacity, duration, and mode per service.",
+  "appointments.cards.voiceFlow.title": "Voice booking flow",
+  "appointments.cards.voiceFlow.subtitle": "Define the steps of the voice booking flow.",
+  "appointments.cards.history.title": "Appointments history",
+  "appointments.cards.history.subtitle": "{{count}} appointments found",
+
+  "appointments.errors.squareMissingTenantConnect": "The current business was not found to connect Square.",
+  "appointments.errors.squareMissingTenantDisconnect": "The current business was not found to disconnect Square.",
+  "appointments.errors.squareDisconnect": "Square could not be disconnected."
 }
