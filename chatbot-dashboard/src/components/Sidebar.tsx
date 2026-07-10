@@ -11,6 +11,7 @@ import {
   FiMessageSquare,
   FiList,
   FiBarChart2,
+  FiDatabase,
 } from 'react-icons/fi';
 import { FaWhatsapp, FaFacebookMessenger } from 'react-icons/fa';
 import ClientOnly from './ClientOnly';
@@ -129,6 +130,7 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
               { href: "/dashboard/history", icon: <FiClock />, labelKey: "sidebar.nav.messageHistory" },
               { href: "/dashboard/reports", icon: <FiBarChart2 />, labelKey: "sidebar.nav.reports" },
               { href: "/dashboard/appointments", icon: <FiCalendar />, labelKey: "sidebar.nav.calendar" },
+              { href: "/dashboard/contacts", icon: <FiDatabase />, labelKey: "sidebar.nav.contacts" },
               { href: "/dashboard/follow-up", icon: <FiUsers />, labelKey: "sidebar.nav.leadFollowUp" },
               { href: "/dashboard/campaigns/sms", icon: <FiMessageSquare />, labelKey: "sidebar.nav.smsCampaigns" },
               { href: "/dashboard/campaigns/email", icon: <FiMail />, labelKey: "sidebar.nav.emailCampaigns" },

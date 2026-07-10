@@ -1722,5 +1722,7 @@
   "serviceBookingRules.table.actions": "Acciones",
   "serviceBookingRules.placeholders.service": "Ej. Indoor Cycling",
   "serviceBookingRules.modes.exclusive": "Exclusivo",
-  "serviceBookingRules.modes.shared": "Compartido"
+  "serviceBookingRules.modes.shared": "Compartido",
+
+  "contacts": "Contactos"
 }
