@@ -19,6 +19,7 @@ import {
 } from "react-icons/fi";
 import { BACKEND_URL } from "@/utils/api";
 import { useI18n } from "@/i18n/LanguageProvider";
+import { useRouter } from "next/navigation";
 
 type Contact = {
   id: number;
@@ -206,6 +207,8 @@ function StatCard({
 
 export default function ContactsPage() {
   const { t, lang } = useI18n();
+
+  const router = useRouter();
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [filters, setFilters] = useState<Filters>(INITIAL_FILTERS);
@@ -658,7 +661,16 @@ export default function ContactsPage() {
                     {contacts.map((contact) => (
                       <tr
                         key={contact.id}
-                        className="transition-colors hover:bg-gray-50"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => router.push(`/dashboard/contacts/${contact.id}`)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            router.push(`/dashboard/contacts/${contact.id}`);
+                          }
+                        }}
+                        className="cursor-pointer transition-colors hover:bg-purple-50 focus:bg-purple-50 focus:outline-none"
                       >
                         <td className="px-5 py-4">
                           <p className="font-semibold text-gray-900">
