@@ -22,6 +22,7 @@ import Link from "next/link";
 import { useI18n } from "../i18n/LanguageProvider";
 
 type SidebarProps = {
+  tenant?: any;
   onLogout?: () => void;
   isOpen: boolean;
   onClose: () => void;
@@ -138,15 +139,24 @@ function CollapsibleMenu({
 }
 
 export default function Sidebar({
+  tenant: tenantFromLayout,
+  onLogout,
   isOpen,
   onClose,
 }: SidebarProps) {
-  const [tenant, setTenant] = useState<any>(null);
+  const [loadedTenant, setLoadedTenant] = useState<any>(null);
+
+  const tenant = tenantFromLayout ?? loadedTenant;
 
   const pathname = usePathname();
   const { t } = useI18n();
 
   const handleLogout = async () => {
+    if (onLogout) {
+      onLogout();
+      return;
+    }
+
     try {
       await fetch(`${BACKEND_URL}/auth/logout`, {
         method: "POST",
@@ -173,8 +183,8 @@ export default function Sidebar({
 
         const data = await response.json();
 
-        if (!cancelled) {
-          setTenant(data);
+        if (!cancelled && !tenantFromLayout) {
+          setLoadedTenant(data);
         }
       } catch (error) {
         console.error("❌ Error al cargar tenant:", error);
@@ -186,7 +196,7 @@ export default function Sidebar({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tenantFromLayout]);
 
   const handleNavigation = () => {
     if (window.innerWidth < 1024) {
