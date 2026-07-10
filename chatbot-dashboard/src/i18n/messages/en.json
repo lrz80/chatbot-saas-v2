@@ -417,6 +417,10 @@
 "sidebar.nav.leadFollowUp": "Lead Follow-up",
 "sidebar.nav.smsCampaigns": "SMS Campaigns",
 "sidebar.nav.emailCampaigns": "Email Campaigns",
+"sidebar.groups.channels": "Channels",
+"sidebar.groups.crm": "CRM",
+"sidebar.groups.campaigns": "Campaigns",
+"sidebar.nav.contacts": "Contacts",
 
 "dashboard.loading": "Loading...",
 "dashboard.membershipActivated": "✅ Your membership was activated successfully!",

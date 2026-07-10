@@ -334,6 +334,11 @@
   "sidebar.nav.leadFollowUp": "Acompanhamento de leads",
   "sidebar.nav.smsCampaigns": "Campanhas de SMS",
   "sidebar.nav.emailCampaigns": "Campanhas de e-mail",
+  "sidebar.groups.channels": "Canais",
+  "sidebar.groups.crm": "CRM",
+  "sidebar.groups.campaigns": "Campanhas",
+  "sidebar.nav.contacts": "Contatos",
+
   "dashboard.loading": "Carregando...",
   "dashboard.membershipActivated": "✅ Your assinatura was activated successfully!",
   "dashboard.avatarAlt": "Amy avatar",

@@ -1,31 +1,149 @@
-'use client';
+"use client";
 
 import {
-  FiHome,
-  FiUser,
-  FiCalendar,
-  FiMic,
-  FiClock,
-  FiMail,
-  FiUsers,
-  FiMessageSquare,
-  FiList,
   FiBarChart2,
-  FiDatabase,
-} from 'react-icons/fi';
-import { FaWhatsapp, FaFacebookMessenger } from 'react-icons/fa';
-import ClientOnly from './ClientOnly';
-import { useEffect, useState } from 'react';
-import { BACKEND_URL } from '@/utils/api';
-import { useRouter } from "next/navigation";
+  FiCalendar,
+  FiChevronDown,
+  FiClock,
+  FiHome,
+  FiList,
+  FiMail,
+  FiMessageSquare,
+  FiMic,
+  FiUser,
+  FiUsers,
+} from "react-icons/fi";
+import { FaFacebookMessenger, FaWhatsapp } from "react-icons/fa";
+import ClientOnly from "./ClientOnly";
+import { useEffect, useMemo, useState } from "react";
+import { BACKEND_URL } from "@/utils/api";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { useI18n } from "../i18n/LanguageProvider";
 
+type SidebarProps = {
+  onLogout?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+};
 
-export default function Sidebar({ onLogout, isOpen, onClose }: any) {
+type MenuItem = {
+  href: string;
+  labelKey: string;
+  icon: React.ReactNode;
+};
+
+type CollapsibleMenuProps = {
+  title: string;
+  icon: React.ReactNode;
+  items: MenuItem[];
+  pathname: string;
+  defaultOpen?: boolean;
+  onNavigate: () => void;
+};
+
+function isRouteActive(pathname: string, href: string): boolean {
+  if (href === "/dashboard") {
+    return pathname === "/dashboard";
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function CollapsibleMenu({
+  title,
+  icon,
+  items,
+  pathname,
+  defaultOpen = false,
+  onNavigate,
+}: CollapsibleMenuProps) {
+  const hasActiveItem = useMemo(
+    () => items.some((item) => isRouteActive(pathname, item.href)),
+    [items, pathname]
+  );
+
+  const [open, setOpen] = useState(defaultOpen || hasActiveItem);
+
+  useEffect(() => {
+    if (hasActiveItem) {
+      setOpen(true);
+    }
+  }, [hasActiveItem]);
+
+  return (
+    <div className="space-y-1">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        className={[
+          "flex w-full items-center justify-between rounded-lg p-3 transition-all",
+          hasActiveItem
+            ? "bg-white/15 text-white"
+            : "bg-white/5 text-white hover:bg-white/10",
+        ].join(" ")}
+      >
+        <span className="flex items-center gap-3">
+          <span className="text-lg">{icon}</span>
+          <span>{title}</span>
+        </span>
+
+        <FiChevronDown
+          className={[
+            "transition-transform duration-200",
+            open ? "rotate-180" : "rotate-0",
+          ].join(" ")}
+        />
+      </button>
+
+      <div
+        className={[
+          "grid overflow-hidden transition-all duration-200",
+          open
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0",
+        ].join(" ")}
+      >
+        <div className="min-h-0">
+          <div className="ml-4 mt-1 space-y-1 border-l border-white/15 pl-3">
+            {items.map((item) => {
+              const active = isRouteActive(pathname, item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={[
+                    "group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all",
+                    active
+                      ? "bg-white/20 font-semibold text-white"
+                      : "text-white/80 hover:bg-white/10 hover:pl-4 hover:text-white",
+                  ].join(" ")}
+                >
+                  <span className="transition-transform group-hover:scale-110">
+                    {item.icon}
+                  </span>
+
+                  <span>{item.labelKey}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Sidebar({
+  isOpen,
+  onClose,
+}: SidebarProps) {
   const [tenant, setTenant] = useState<any>(null);
 
-  const router = useRouter();
-
+  const pathname = usePathname();
   const { t } = useI18n();
 
   const handleLogout = async () => {
@@ -35,7 +153,6 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
         credentials: "include",
       });
     } finally {
-      // ⛔ mata cualquier estado React / Next / cache
       window.location.replace("/login");
     }
   };
@@ -43,119 +160,303 @@ export default function Sidebar({ onLogout, isOpen, onClose }: any) {
   useEffect(() => {
     let cancelled = false;
 
-    (async () => {
+    const loadTenant = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/settings`, {
+        const response = await fetch(`${BACKEND_URL}/api/settings`, {
           credentials: "include",
           cache: "no-store",
         });
 
-        if (!res.ok) return; // 👈 CLAVE
+        if (!response.ok) {
+          return;
+        }
 
-        const data = await res.json();
-        if (!cancelled) setTenant(data);
-      } catch (err) {
-        console.error("❌ Error al cargar tenant:", err);
+        const data = await response.json();
+
+        if (!cancelled) {
+          setTenant(data);
+        }
+      } catch (error) {
+        console.error("❌ Error al cargar tenant:", error);
       }
-    })();
+    };
+
+    void loadTenant();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
+  const handleNavigation = () => {
+    if (window.innerWidth < 1024) {
+      onClose();
+    }
+  };
+
+  const channelsItems: MenuItem[] = [
+    {
+      href: "/dashboard/training",
+      icon: <FaWhatsapp />,
+      labelKey: t("sidebar.nav.whatsappAssistant"),
+    },
+    {
+      href: "/dashboard/meta-config",
+      icon: <FaFacebookMessenger />,
+      labelKey: t("sidebar.nav.metaAssistant"),
+    },
+    {
+      href: "/dashboard/voice-config",
+      icon: <FiMic />,
+      labelKey: t("sidebar.nav.voiceAssistant"),
+    },
+  ];
+
+  const crmItems: MenuItem[] = [
+    {
+      href: "/dashboard/contacts",
+      icon: <FiUsers />,
+      labelKey: t("sidebar.nav.contacts"),
+    },
+    {
+      href: "/dashboard/history",
+      icon: <FiClock />,
+      labelKey: t("sidebar.nav.messageHistory"),
+    },
+    {
+      href: "/dashboard/follow-up",
+      icon: <FiUsers />,
+      labelKey: t("sidebar.nav.leadFollowUp"),
+    },
+  ];
+
+  const campaignsItems: MenuItem[] = [
+    {
+      href: "/dashboard/campaigns/sms",
+      icon: <FiMessageSquare />,
+      labelKey: t("sidebar.nav.smsCampaigns"),
+    },
+    {
+      href: "/dashboard/campaigns/email",
+      icon: <FiMail />,
+      labelKey: t("sidebar.nav.emailCampaigns"),
+    },
+  ];
+
+  const mainItems: MenuItem[] = [
+    {
+      href: "/dashboard",
+      icon: <FiHome />,
+      labelKey: t("sidebar.nav.home"),
+    },
+    {
+      href: "/dashboard/profile",
+      icon: <FiUser />,
+      labelKey: t("sidebar.nav.businessProfile"),
+    },
+    {
+      href: "/dashboard/services",
+      icon: <FiList />,
+      labelKey: t("sidebar.nav.services"),
+    },
+  ];
+
+  const bottomItems: MenuItem[] = [
+    {
+      href: "/dashboard/appointments",
+      icon: <FiCalendar />,
+      labelKey: t("sidebar.nav.calendar"),
+    },
+    {
+      href: "/dashboard/reports",
+      icon: <FiBarChart2 />,
+      labelKey: t("sidebar.nav.reports"),
+    },
+  ];
+
   return (
     <>
-      {isOpen && (
+      {isOpen ? (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
           aria-label={t("sidebar.closeMenuAria")}
         />
-      )}
+      ) : null}
 
       <aside
         className={[
-          // posicionamiento del drawer
-          'fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw]',
-          // alto móvil real (dvh); fallback a 100dvh
-          'h-[100dvh]',
-          // estilo
-          'bg-gradient-to-b from-[#5b21b6]/40 to-[#9333ea]/30 backdrop-blur-xl',
-          'border-r border-white/10 shadow-[0_0_20px_2px_rgba(147,51,234,0.3)]',
-          'text-white',
-          // layout
-          'flex flex-col',
-          // animación
-          'transform transition-transform duration-300 ease-in-out',
-          isOpen ? 'translate-x-0' : '-translate-x-full',
-          'lg:translate-x-0',
-        ].join(' ')}
+          "fixed inset-y-0 left-0 z-50 h-[100dvh] w-72 max-w-[85vw]",
+          "flex flex-col text-white",
+          "border-r border-white/10",
+          "bg-gradient-to-b from-[#5b21b6]/40 to-[#9333ea]/30",
+          "shadow-[0_0_20px_2px_rgba(147,51,234,0.3)] backdrop-blur-xl",
+          "transform transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+          "lg:translate-x-0",
+        ].join(" ")}
       >
-        {/* Contenido scrollable */}
         <div
-          className="flex-1 overflow-y-auto px-6 pt-6 pb-28"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)' }}
+          className="flex-1 overflow-y-auto px-6 pb-28 pt-6"
+          style={{
+            paddingBottom:
+              "calc(env(safe-area-inset-bottom, 0px) + 96px)",
+          }}
         >
-          <div className="flex items-center gap-4 mb-10">
+          <div className="mb-8 flex items-center gap-4">
             {tenant?.logo_url ? (
-              <div className="w-12 h-12 rounded-full bg-white p-[2px] shadow-inner">
-                <img src={tenant.logo_url} alt={t("sidebar.logoAlt")} className="w-full h-full rounded-full object-cover" />
+              <div className="h-12 w-12 rounded-full bg-white p-[2px] shadow-inner">
+                <img
+                  src={tenant.logo_url}
+                  alt={t("sidebar.logoAlt")}
+                  className="h-full w-full rounded-full object-cover"
+                />
               </div>
             ) : (
-              <div className="w-12 h-12 bg-white/20 text-white font-bold flex items-center justify-center rounded-full text-xl shadow-inner">
-                {(tenant?.owner_name || tenant?.email || t("sidebar.fallbackUserLetter")).charAt(0).toUpperCase()}
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-xl font-bold text-white shadow-inner">
+                {(
+                  tenant?.owner_name ||
+                  tenant?.email ||
+                  t("sidebar.fallbackUserLetter")
+                )
+                  .charAt(0)
+                  .toUpperCase()}
               </div>
             )}
-            <div>
-              <p className="text-sm text-white/70">{t("sidebar.welcome")}</p>
-              <p className="font-semibold text-lg leading-tight truncate max-w-[160px]">
+
+            <div className="min-w-0">
+              <p className="text-sm text-white/70">
+                {t("sidebar.welcome")}
+              </p>
+
+              <p className="max-w-[160px] truncate text-lg font-semibold leading-tight">
                 {tenant?.name || t("sidebar.fallbackBusiness")}
               </p>
             </div>
           </div>
 
-          <h2 className="text-xl font-bold mb-6 text-purple-300 hidden lg:block">
+          <h2 className="mb-5 hidden text-xl font-bold text-purple-300 lg:block">
             {t("sidebar.title")}
           </h2>
 
           <nav className="space-y-2 text-sm font-medium">
-            {[
-              { href: "/dashboard", icon: <FiHome />, labelKey: "sidebar.nav.home" },
-              { href: "/dashboard/profile", icon: <FiUser />, labelKey: "sidebar.nav.businessProfile" },
-              { href: "/dashboard/services", icon: <FiList />, labelKey: "sidebar.nav.services" },
-              { href: "/dashboard/training", icon: <FaWhatsapp className="text-white" />, labelKey: "sidebar.nav.whatsappAssistant" },
-              { href: "/dashboard/meta-config", icon: <FaFacebookMessenger className="text-white" />, labelKey: "sidebar.nav.metaAssistant" },
-              { href: "/dashboard/voice-config", icon: <FiMic />, labelKey: "sidebar.nav.voiceAssistant" },
-              { href: "/dashboard/history", icon: <FiClock />, labelKey: "sidebar.nav.messageHistory" },
-              { href: "/dashboard/reports", icon: <FiBarChart2 />, labelKey: "sidebar.nav.reports" },
-              { href: "/dashboard/appointments", icon: <FiCalendar />, labelKey: "sidebar.nav.calendar" },
-              { href: "/dashboard/contacts", icon: <FiDatabase />, labelKey: "sidebar.nav.contacts" },
-              { href: "/dashboard/follow-up", icon: <FiUsers />, labelKey: "sidebar.nav.leadFollowUp" },
-              { href: "/dashboard/campaigns/sms", icon: <FiMessageSquare />, labelKey: "sidebar.nav.smsCampaigns" },
-              { href: "/dashboard/campaigns/email", icon: <FiMail />, labelKey: "sidebar.nav.emailCampaigns" },
-            ].map((item, index) => (
-              <a
-                key={index}
-                href={item.href}
-                className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 hover:pl-5 transition-all rounded-lg group"
-              >
-                <span className="group-hover:scale-110 transition-transform">{item.icon}</span>
-                {t(item.labelKey)}
-              </a>
-            ))}
+            {mainItems.map((item) => {
+              const active = isRouteActive(pathname, item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={handleNavigation}
+                  className={[
+                    "group flex items-center gap-3 rounded-lg p-3 transition-all",
+                    active
+                      ? "bg-white/20 font-semibold text-white"
+                      : "bg-white/5 text-white hover:bg-white/10 hover:pl-5",
+                  ].join(" ")}
+                >
+                  <span className="transition-transform group-hover:scale-110">
+                    {item.icon}
+                  </span>
+
+                  <span>{item.labelKey}</span>
+                </Link>
+              );
+            })}
+
+            <CollapsibleMenu
+              title={t("sidebar.groups.channels")}
+              icon={<FiMessageSquare />}
+              items={channelsItems}
+              pathname={pathname}
+              defaultOpen
+              onNavigate={handleNavigation}
+            />
+
+            <CollapsibleMenu
+              title={t("sidebar.groups.crm")}
+              icon={<FiUsers />}
+              items={crmItems}
+              pathname={pathname}
+              defaultOpen
+              onNavigate={handleNavigation}
+            />
+
+            {bottomItems
+              .filter(
+                (item) => item.href === "/dashboard/appointments"
+              )
+              .map((item) => {
+                const active = isRouteActive(pathname, item.href);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={handleNavigation}
+                    className={[
+                      "group flex items-center gap-3 rounded-lg p-3 transition-all",
+                      active
+                        ? "bg-white/20 font-semibold text-white"
+                        : "bg-white/5 text-white hover:bg-white/10 hover:pl-5",
+                    ].join(" ")}
+                  >
+                    <span className="transition-transform group-hover:scale-110">
+                      {item.icon}
+                    </span>
+
+                    <span>{item.labelKey}</span>
+                  </Link>
+                );
+              })}
+
+            <CollapsibleMenu
+              title={t("sidebar.groups.campaigns")}
+              icon={<FiMail />}
+              items={campaignsItems}
+              pathname={pathname}
+              onNavigate={handleNavigation}
+            />
+
+            {bottomItems
+              .filter((item) => item.href === "/dashboard/reports")
+              .map((item) => {
+                const active = isRouteActive(pathname, item.href);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={handleNavigation}
+                    className={[
+                      "group flex items-center gap-3 rounded-lg p-3 transition-all",
+                      active
+                        ? "bg-white/20 font-semibold text-white"
+                        : "bg-white/5 text-white hover:bg-white/10 hover:pl-5",
+                    ].join(" ")}
+                  >
+                    <span className="transition-transform group-hover:scale-110">
+                      {item.icon}
+                    </span>
+
+                    <span>{item.labelKey}</span>
+                  </Link>
+                );
+              })}
           </nav>
         </div>
 
-        {/* Footer sticky con safe-area: botón siempre visible y pulsable */}
         <div
-          className="sticky left-0 right-0 px-6 pb-4 pt-3 bg-gradient-to-t from-[#1D0A2B] to-transparent"
-          style={{ bottom: 'env(safe-area-inset-bottom, 0px)' }}
+          className="sticky left-0 right-0 bg-gradient-to-t from-[#1D0A2B] to-transparent px-6 pb-4 pt-3"
+          style={{
+            bottom: "env(safe-area-inset-bottom, 0px)",
+          }}
         >
           <ClientOnly>
             <button
+              type="button"
               onClick={handleLogout}
-              className="w-full rounded-2xl py-3 font-medium shadow bg-red-600 hover:bg-red-700 text-white"
+              className="w-full rounded-2xl bg-red-600 py-3 font-medium text-white shadow hover:bg-red-700"
             >
               {t("sidebar.logout")}
             </button>
