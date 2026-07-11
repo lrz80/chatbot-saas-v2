@@ -13,6 +13,7 @@ import {
   FiMessageSquare,
   FiPhone,
   FiUser,
+  FiRefreshCw,
 } from "react-icons/fi";
 import { BACKEND_URL } from "@/utils/api";
 import { useI18n } from "@/i18n/LanguageProvider";
@@ -88,6 +89,13 @@ type ContactDetailResponse = {
   appointments: Appointment[];
   messages: Message[];
   bookingHistory: BookingHistoryItem[];
+  error?: string;
+};
+
+type GenerateSummaryResponse = {
+  ok: boolean;
+  summary?: string;
+  generatedAt?: string;
   error?: string;
 };
 
@@ -215,6 +223,9 @@ export default function ContactDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [summaryError, setSummaryError] = useState("");
+
   const contactId = String(params?.id || "").trim();
 
   const translate = useCallback(
@@ -325,6 +336,71 @@ export default function ContactDetailPage() {
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
   }, [data, translate]);
+
+  async function generateSummary() {
+  if (!contactId || generatingSummary) {
+    return;
+  }
+
+  setGeneratingSummary(true);
+  setSummaryError("");
+
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/api/contactos/crm/${encodeURIComponent(
+        contactId
+      )}/summary`,
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          language: lang === "en" ? "en" : "es",
+        }),
+      }
+    );
+
+    const json = (await response.json()) as GenerateSummaryResponse;
+
+    if (!response.ok || !json.ok || !json.summary) {
+      throw new Error(
+        json.error ||
+          translate(
+            "contactDetail.summaryError",
+            "No se pudo generar el resumen."
+          )
+      );
+    }
+
+    setData((current) => {
+      if (!current) return current;
+
+      return {
+        ...current,
+        contact: {
+          ...current.contact,
+          resumen_ia: json.summary || null,
+          resumen_ia_actualizado_at:
+            json.generatedAt || new Date().toISOString(),
+        },
+      };
+    });
+  } catch (err) {
+    setSummaryError(
+      err instanceof Error
+        ? err.message
+        : translate(
+            "contactDetail.summaryError",
+            "No se pudo generar el resumen."
+          )
+    );
+  } finally {
+    setGeneratingSummary(false);
+  }
+}
 
   if (loading) {
     return (
@@ -475,34 +551,83 @@ export default function ContactDetailPage() {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <div className="space-y-6 xl:col-span-2">
             <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-gray-900">
-                {translate(
-                  "contactDetail.aiSummary",
-                  "Resumen inteligente"
-                )}
-              </h2>
-
-              {contact.resumen_ia ? (
-                <p className="mt-4 whitespace-pre-wrap leading-7 text-gray-700">
-                  {contact.resumen_ia}
-                </p>
-              ) : (
-                <div className="mt-4 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-5">
-                  <p className="font-medium text-gray-700">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                <h2 className="text-xl font-bold text-gray-900">
                     {translate(
-                      "contactDetail.noAiSummary",
-                      "Todavía no hay un resumen generado."
+                    "contactDetail.aiSummary",
+                    "Resumen inteligente"
                     )}
-                  </p>
+                </h2>
 
-                  <p className="mt-1 text-sm text-gray-500">
+                {contact.resumen_ia_actualizado_at ? (
+                    <p className="mt-1 text-xs text-gray-500">
                     {translate(
-                      "contactDetail.noAiSummaryHint",
-                      "El resumen aparecerá cuando se implemente el análisis automático del historial."
+                        "contactDetail.summaryUpdated",
+                        "Actualizado"
+                    )}{" "}
+                    {formatDateTime(
+                        contact.resumen_ia_actualizado_at,
+                        lang
                     )}
-                  </p>
+                    </p>
+                ) : null}
                 </div>
-              )}
+
+                <button
+                type="button"
+                onClick={generateSummary}
+                disabled={generatingSummary}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                <FiRefreshCw
+                    className={generatingSummary ? "animate-spin" : ""}
+                />
+
+                {generatingSummary
+                    ? translate(
+                        "contactDetail.generatingSummary",
+                        "Generando..."
+                    )
+                    : contact.resumen_ia
+                    ? translate(
+                        "contactDetail.regenerateSummary",
+                        "Regenerar resumen"
+                        )
+                    : translate(
+                        "contactDetail.generateSummary",
+                        "Generar resumen"
+                        )}
+                </button>
+            </div>
+
+            {summaryError ? (
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {summaryError}
+                </div>
+            ) : null}
+
+            {contact.resumen_ia ? (
+                <div className="mt-5 whitespace-pre-wrap rounded-xl border border-purple-100 bg-purple-50/50 p-5 leading-7 text-gray-700">
+                {contact.resumen_ia}
+                </div>
+            ) : (
+                <div className="mt-5 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-5">
+                <p className="font-medium text-gray-700">
+                    {translate(
+                    "contactDetail.noAiSummary",
+                    "Todavía no hay un resumen generado."
+                    )}
+                </p>
+
+                <p className="mt-1 text-sm text-gray-500">
+                    {translate(
+                    "contactDetail.noAiSummaryHint",
+                    "Presiona Generar resumen para analizar el historial disponible."
+                    )}
+                </p>
+                </div>
+            )}
             </section>
 
             <section className="rounded-2xl border border-gray-200 bg-white shadow-sm">
