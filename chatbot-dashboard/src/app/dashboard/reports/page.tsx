@@ -51,14 +51,21 @@ function getCurrentMonth(): string {
   return `${year}-${month}`;
 }
 
-function formatMonthLabel(month: string, lang: string): string {
+function formatMonthLabel(month: string, locale: string): string {
   const [year, monthNumber] = month.split("-");
   const date = new Date(Number(year), Number(monthNumber) - 1, 1);
 
-  return date.toLocaleDateString(lang === "en" ? "en-US" : "es-ES", {
-    month: "long",
-    year: "numeric",
-  });
+  try {
+    return date.toLocaleDateString(locale || "en", {
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return date.toLocaleDateString("en", {
+      month: "long",
+      year: "numeric",
+    });
+  }
 }
 
 function calculateFrontendFallbackTimeSavedMinutes(data: MonthlySummary): number {
@@ -123,8 +130,12 @@ export default function MonthlyReportsPage() {
   }
 
   function downloadPdf() {
+    const reportLanguage = lang || "en";
+
     window.open(
-      `${BACKEND_URL}/api/reports/monthly-summary.pdf?month=${month}`,
+      `${BACKEND_URL}/api/reports/monthly-summary.pdf?month=${encodeURIComponent(
+        month
+      )}&lang=${encodeURIComponent(reportLanguage)}`,
       "_blank"
     );
   }
@@ -171,8 +182,12 @@ export default function MonthlyReportsPage() {
     setError("");
 
     try {
+      const reportLanguage = lang || "en";
+
       const response = await fetch(
-        `${BACKEND_URL}/api/reports/monthly-summary?month=${selectedMonth}`,
+        `${BACKEND_URL}/api/reports/monthly-summary?month=${encodeURIComponent(
+          selectedMonth
+        )}&lang=${encodeURIComponent(reportLanguage)}`,
         {
           credentials: "include",
           cache: "no-store",
@@ -197,7 +212,7 @@ export default function MonthlyReportsPage() {
   useEffect(() => {
     loadReport(month);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [month]);
+  }, [month, lang]);
 
   const voiceEstimateLabel = data?.voice.estimatedFromMessages
     ? t("reports.voiceCallsEstimated")
