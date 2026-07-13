@@ -254,6 +254,25 @@
   "landing.testimonials.items.2.quote": "The team has more context before continuing a conversation with a client.",
   "landing.testimonials.items.2.name": "Andrea",
   "landing.testimonials.items.2.biz": "Beauty Studio",
+
+  "landing.reports.eyebrow": "Relatório Mensal com IA",
+  "landing.reports.title": "Entenda como o seu negócio evolui todos os meses",
+  "landing.reports.subtitle": "Aamy analisa automaticamente chamadas, mensagens, agendamentos e clientes para gerar um relatório mensal com indicadores, tendências e recomendações.",
+
+  "landing.reports.cards.1.title": "Desempenho do negócio",
+  "landing.reports.cards.1.desc": "Chamadas atendidas, mensagens respondidas, agendamentos iniciados, reservas confirmadas e taxa de conversão.",
+
+  "landing.reports.cards.2.title": "Análise de clientes",
+  "landing.reports.cards.2.desc": "Novos e recorrentes clientes, serviços mais procurados, idiomas utilizados e horários de maior movimento.",
+
+  "landing.reports.cards.3.title": "Tempo economizado",
+  "landing.reports.cards.3.desc": "Veja quanto tempo a Aamy economizou para sua equipe, chamadas fora do horário comercial e oportunidades de acompanhamento.",
+
+  "landing.reports.cards.4.title": "Resumo com IA",
+  "landing.reports.cards.4.desc": "Receba um resumo executivo gerado por IA com tendências, insights e recomendações para o próximo mês.",
+
+  "landing.reports.footer": "Um relatório claro para entender o desempenho do seu negócio sem precisar revisar centenas de conversas.",
+
   "login.title": "Entrar",
   "login.nodes.attention.title": "24/7 Support",
   "login.nodes.attention.desc": "Always online for your business.",

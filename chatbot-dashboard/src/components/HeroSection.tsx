@@ -1,4 +1,3 @@
-// src/components/HeroSection.tsx
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -11,7 +10,9 @@ import {
   FaFacebookF,
   FaCalendarAlt,
   FaPhoneAlt,
-  FaClipboardList,
+  FaUserCheck,
+  FaCheckCircle,
+  FaChartLine,
 } from 'react-icons/fa';
 import { useI18n } from '../i18n/LanguageProvider';
 
@@ -20,15 +21,20 @@ export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!videoRef.current) return;
+    const video = videoRef.current;
 
-    videoRef.current.play().catch((error) => {
-      console.error('Video no se puede reproducir automáticamente:', error);
+    if (!video) return;
+
+    video.play().catch((error: unknown) => {
+      console.error(
+        'Video no se puede reproducir automáticamente:',
+        error
+      );
     });
   }, []);
 
   return (
-    <section className="relative bg-black min-h-[100dvh] md:min-h-screen text-white overflow-hidden flex items-start md:items-center justify-center px-6 font-sans pt-24 md:pt-0 pb-28 md:pb-0">
+    <section className="relative min-h-[100dvh] overflow-hidden bg-black px-6 pb-20 pt-24 font-sans text-white md:flex md:min-h-screen md:items-center md:justify-center md:py-20">
       <video
         ref={videoRef}
         src="/video-assistant.mp4"
@@ -36,43 +42,53 @@ export default function HeroSection() {
         muted
         loop
         playsInline
-        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+        preload="metadata"
+        aria-hidden="true"
+        className="absolute inset-0 z-0 h-full w-full object-cover"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-br from-black/90 via-black/70 to-[#170f2f]/70 z-0" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-black/95 via-black/75 to-[#170f2f]/75" />
 
       <motion.div
-        className="z-10 text-center max-w-5xl w-full px-1"
-        initial={{ opacity: 0, y: 60 }}
+        className="relative z-10 mx-auto w-full max-w-7xl text-center"
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
       >
-        <div className="mx-auto mb-5 inline-flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md px-4 py-2 rounded-full text-xs text-white/85">
-          <FaClipboardList className="text-purple-300" />
+        <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs text-white/85 backdrop-blur-md">
+          <FaCheckCircle
+            aria-hidden="true"
+            className="text-violet-300"
+          />
+
           {t('hero.tag')}
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-5 tracking-tight leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.65)]">
+        <h1 className="mx-auto mb-5 max-w-5xl text-4xl font-extrabold leading-[1.08] tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.65)] md:text-6xl lg:text-7xl">
           {t('hero.title.line1')}
+
           <br className="hidden md:block" />
-          <span className="text-violet-400">{t('hero.title.line2')}</span>
+
+          <span className="text-violet-400">
+            {t('hero.title.line2')}
+          </span>
         </h1>
 
-        <p className="text-lg md:text-xl text-white/88 mb-7 leading-relaxed drop-shadow max-w-3xl mx-auto">
+        <p className="mx-auto mb-8 max-w-3xl text-lg leading-relaxed text-white/80 drop-shadow md:text-xl">
           {t('hero.subtitle')}
         </p>
 
-        <div className="mx-auto mb-7 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl">
+        <div className="mx-auto mb-8 grid max-w-6xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <HeroBullet
+            icon={<FaPhoneAlt className="text-violet-300" />}
+            title={t('hero.bullets.calls.title')}
+            desc={t('hero.bullets.calls.desc')}
+          />
+
           <HeroBullet
             icon={<FaWhatsapp className="text-green-300" />}
             title={t('hero.bullets.messages.title')}
             desc={t('hero.bullets.messages.desc')}
-          />
-
-          <HeroBullet
-            icon={<FaPhoneAlt className="text-purple-300" />}
-            title={t('hero.bullets.calls.title')}
-            desc={t('hero.bullets.calls.desc')}
           />
 
           <HeroBullet
@@ -82,62 +98,81 @@ export default function HeroSection() {
           />
 
           <HeroBullet
-            icon={<FaClipboardList className="text-yellow-300" />}
-            title={t('hero.bullets.rules.title')}
-            desc={t('hero.bullets.rules.desc')}
+            icon={<FaUserCheck className="text-yellow-300" />}
+            title={t('hero.bullets.memory.title')}
+            desc={t('hero.bullets.memory.desc')}
+          />
+
+          <HeroBullet
+            icon={<FaChartLine className="text-cyan-300" />}
+            title={t('hero.bullets.reports.title')}
+            desc={t('hero.bullets.reports.desc')}
           />
         </div>
 
-        <div className="mx-auto mb-6 max-w-3xl bg-white/5 border border-white/10 rounded-2xl px-5 py-4 backdrop-blur-md">
-          <p className="text-sm md:text-base text-white/80 leading-relaxed">
-            {t('hero.micro')}
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a
             href="/login"
-            onClick={() =>
+            onClick={() => {
               track('Lead', {
                 content_name: 'CTA Request Demo Aamy Hero',
-              })
-            }
-            className="bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-[1.03]"
+              });
+            }}
+            className="w-full rounded-full bg-purple-600 px-10 py-4 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:scale-[1.03] hover:bg-purple-700 sm:w-auto"
           >
             {t('hero.cta.primary')}
           </a>
 
           <a
             href="#how-aamy-works"
-            className="bg-white/10 hover:bg-white/15 border border-white/15 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all duration-300"
+            className="w-full rounded-full border border-white/15 bg-white/10 px-10 py-4 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:bg-white/15 sm:w-auto"
           >
             {t('hero.cta.secondary')}
           </a>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-white/55 text-xs md:text-sm">
+        <p className="mt-5 text-sm text-white/60">
+          {t('hero.trust')}
+        </p>
+
+        <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-xs text-white/55 md:text-sm">
           <span className="inline-flex items-center gap-2">
-            <FaWhatsapp className="text-green-300" />
+            <FaWhatsapp
+              aria-hidden="true"
+              className="text-green-300"
+            />
             WhatsApp
           </span>
 
           <span className="inline-flex items-center gap-2">
-            <FaInstagram className="text-pink-300" />
+            <FaInstagram
+              aria-hidden="true"
+              className="text-pink-300"
+            />
             Instagram
           </span>
 
           <span className="inline-flex items-center gap-2">
-            <FaFacebookF className="text-blue-300" />
+            <FaFacebookF
+              aria-hidden="true"
+              className="text-blue-300"
+            />
             Facebook
           </span>
 
           <span className="inline-flex items-center gap-2">
-            <FaPhoneAlt className="text-purple-300" />
+            <FaPhoneAlt
+              aria-hidden="true"
+              className="text-violet-300"
+            />
             {t('hero.channels.voice')}
           </span>
 
           <span className="inline-flex items-center gap-2">
-            <FaCalendarAlt className="text-blue-300" />
+            <FaCalendarAlt
+              aria-hidden="true"
+              className="text-blue-300"
+            />
             {t('hero.channels.calendar')}
           </span>
         </div>
@@ -156,12 +191,22 @@ function HeroBullet({
   desc: string;
 }) {
   return (
-    <div className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-md text-left">
-      <div className="mt-0.5 shrink-0">{icon}</div>
+    <div className="flex h-full items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-left backdrop-blur-md transition-colors duration-300 hover:bg-white/10">
+      <div
+        aria-hidden="true"
+        className="mt-0.5 shrink-0 text-lg"
+      >
+        {icon}
+      </div>
 
       <div>
-        <p className="text-sm font-semibold text-white">{title}</p>
-        <p className="text-xs text-white/70 mt-1 leading-relaxed">{desc}</p>
+        <p className="text-sm font-semibold text-white">
+          {title}
+        </p>
+
+        <p className="mt-1 text-xs leading-relaxed text-white/65">
+          {desc}
+        </p>
       </div>
     </div>
   );

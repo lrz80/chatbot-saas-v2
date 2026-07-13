@@ -323,6 +323,24 @@
   "landing.testimonials.items.2.name": "Andrea",
   "landing.testimonials.items.2.biz": "Beauty Studio",
 
+  "landing.reports.eyebrow": "AI Monthly Report",
+  "landing.reports.title": "Understand how your business is performing every month",
+  "landing.reports.subtitle": "Aamy automatically analyzes calls, messages, appointments, and customer activity to generate a monthly report with insights and recommendations.",
+
+  "landing.reports.cards.1.title": "Business Performance",
+  "landing.reports.cards.1.desc": "Answered calls, messages, appointments booked, confirmed bookings, and overall conversion rate.",
+
+  "landing.reports.cards.2.title": "Customer Insights",
+  "landing.reports.cards.2.desc": "New vs. returning customers, most requested services, spoken languages, and busiest business hours.",
+
+  "landing.reports.cards.3.title": "Time Saved",
+  "landing.reports.cards.3.desc": "See how much time Aamy saved your team, after-hours calls handled, and follow-up opportunities.",
+
+  "landing.reports.cards.4.title": "AI Executive Summary",
+  "landing.reports.cards.4.desc": "Receive an AI-generated executive summary with trends, insights, and recommendations for next month.",
+
+  "landing.reports.footer": "A clear monthly report that helps you understand your business without reviewing hundreds of conversations.",
+
   "login.title": "Sign in",
 
   "login.nodes.attention.title": "24/7 Support",
