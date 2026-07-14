@@ -7,7 +7,14 @@ import HeroSection from '@/components/HeroSection';
 import DashboardPreviewSection from '@/components/DashboardPreviewSection';
 import WhatsAppDemoButton from '@/components/WhatsAppDemoButton';
 import { useI18n } from '../i18n/LanguageProvider';
-import { FaWhatsapp } from 'react-icons/fa';
+import {
+  FaWhatsapp,
+  FaInstagram,
+  FaFacebookF,
+  FaPhoneAlt,
+  FaGoogle,
+} from 'react-icons/fa';
+import { SiSquare } from 'react-icons/si';
 
 export default function LandingPage() {
   const { t } = useI18n();
@@ -41,10 +48,17 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-end">
+              <ChannelPill
+                label={t('hero.channels.voice')}
+                variant="voice"
+              />
+
               <ChannelPill label="WhatsApp" variant="wa" />
               <ChannelPill label="Instagram" variant="ig" />
               <ChannelPill label="Facebook" variant="fb" />
+              <ChannelPill label="Google Calendar" variant="googleCalendar" />
+              <ChannelPill label="Square Appointments" variant="square" />
             </div>
           </div>
         </div>
@@ -370,40 +384,96 @@ function ControlSection() {
   );
 }
 
+type ChannelPillVariant =
+  | 'voice'
+  | 'wa'
+  | 'ig'
+  | 'fb'
+  | 'googleCalendar'
+  | 'square';
+
 function ChannelPill({
   label,
   variant,
 }: {
   label: string;
-  variant: 'wa' | 'ig' | 'fb';
+  variant: ChannelPillVariant;
 }) {
   const base =
-    'flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-3 py-1';
+    'inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1.5';
 
-  if (variant === 'wa') {
-    return (
-      <div className={base}>
-        <FaWhatsapp className="text-green-400" />
-        <span className="text-xs text-white/80">{label}</span>
-      </div>
-    );
+  const labelClassName = 'text-xs text-white/80';
+
+  switch (variant) {
+    case 'voice':
+      return (
+        <div className={base}>
+          <FaPhoneAlt
+            aria-hidden="true"
+            className="text-violet-300"
+          />
+          <span className={labelClassName}>{label}</span>
+        </div>
+      );
+
+    case 'wa':
+      return (
+        <div className={base}>
+          <FaWhatsapp
+            aria-hidden="true"
+            className="text-green-400"
+          />
+          <span className={labelClassName}>{label}</span>
+        </div>
+      );
+
+    case 'ig':
+      return (
+        <div className={base}>
+          <FaInstagram
+            aria-hidden="true"
+            className="text-pink-300"
+          />
+          <span className={labelClassName}>{label}</span>
+        </div>
+      );
+
+    case 'fb':
+      return (
+        <div className={base}>
+          <FaFacebookF
+            aria-hidden="true"
+            className="text-blue-400"
+          />
+          <span className={labelClassName}>{label}</span>
+        </div>
+      );
+
+    case 'googleCalendar':
+      return (
+        <div className={base}>
+          <FaGoogle
+            aria-hidden="true"
+            className="text-blue-300"
+          />
+          <span className={labelClassName}>{label}</span>
+        </div>
+      );
+
+    case 'square':
+      return (
+        <div className={base}>
+          <SiSquare
+            aria-hidden="true"
+            className="text-white/80"
+          />
+          <span className={labelClassName}>{label}</span>
+        </div>
+      );
+
+    default:
+      return null;
   }
-
-  if (variant === 'ig') {
-    return (
-      <div className={base}>
-        <span className="text-xs font-semibold text-white/80">IG</span>
-        <span className="text-xs text-white/80">{label}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className={base}>
-      <span className="text-xs font-semibold text-white/80">FB</span>
-      <span className="text-xs text-white/80">{label}</span>
-    </div>
-  );
 }
 
 function SystemCard({ title, desc }: { title: string; desc: string }) {
