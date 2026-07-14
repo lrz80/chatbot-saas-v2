@@ -55,7 +55,7 @@ export default function BenefitsSection() {
         transition={{ duration: 0.8 }}
         className="text-3xl md:text-5xl font-bold text-center mb-6 text-white"
       >
-        {t("benefits.title")} <span className="text-purple-400">Aamy</span>?
+        {t("benefits.title")}
       </motion.h2>
 
       <motion.p

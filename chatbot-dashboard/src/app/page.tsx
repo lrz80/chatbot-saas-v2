@@ -15,6 +15,7 @@ import {
   FaGoogle,
 } from 'react-icons/fa';
 import { SiSquare } from 'react-icons/si';
+import BenefitsSection from '@/components/BenefitsSection';
 
 export default function LandingPage() {
   const { t } = useI18n();
@@ -64,6 +65,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <BenefitsSection />
       <OperatingSystemSection />
       <div id="how-aamy-works">
         <HowAamyWorksSection />
