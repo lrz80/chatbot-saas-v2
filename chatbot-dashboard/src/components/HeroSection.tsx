@@ -8,12 +8,13 @@ import {
   FaWhatsapp,
   FaInstagram,
   FaFacebookF,
-  FaCalendarAlt,
   FaPhoneAlt,
   FaUserCheck,
   FaCheckCircle,
   FaChartLine,
+  FaGoogle,
 } from 'react-icons/fa';
+import { SiSquare } from 'react-icons/si';
 import { useI18n } from '../i18n/LanguageProvider';
 
 export default function HeroSection() {
@@ -92,7 +93,7 @@ export default function HeroSection() {
           />
 
           <HeroBullet
-            icon={<FaCalendarAlt className="text-blue-300" />}
+            icon={<FaGoogle className="text-blue-300" />}
             title={t('hero.bullets.bookings.title')}
             desc={t('hero.bullets.bookings.desc')}
           />
@@ -137,6 +138,14 @@ export default function HeroSection() {
 
         <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-xs text-white/55 md:text-sm">
           <span className="inline-flex items-center gap-2">
+            <FaPhoneAlt
+              aria-hidden="true"
+              className="text-violet-300"
+            />
+            {t('hero.channels.voice')}
+          </span>
+
+          <span className="inline-flex items-center gap-2">
             <FaWhatsapp
               aria-hidden="true"
               className="text-green-300"
@@ -161,19 +170,19 @@ export default function HeroSection() {
           </span>
 
           <span className="inline-flex items-center gap-2">
-            <FaPhoneAlt
-              aria-hidden="true"
-              className="text-violet-300"
-            />
-            {t('hero.channels.voice')}
-          </span>
-
-          <span className="inline-flex items-center gap-2">
-            <FaCalendarAlt
+            <FaGoogle
               aria-hidden="true"
               className="text-blue-300"
             />
-            {t('hero.channels.calendar')}
+            Google Calendar
+          </span>
+
+          <span className="inline-flex items-center gap-2">
+            <SiSquare
+              aria-hidden="true"
+              className="text-white/80"
+            />
+            Square Appointments
           </span>
         </div>
       </motion.div>
