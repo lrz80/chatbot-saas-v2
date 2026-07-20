@@ -10,6 +10,10 @@ type Settings = {
   min_lead_minutes: number;
   timezone: string;
   enabled: boolean;
+
+  field_service_area_enabled: boolean;
+  field_service_base_address: string;
+  field_service_radius_miles: number | "";
 };
 
 export default function AppointmentSettingsCard() {
@@ -26,6 +30,10 @@ export default function AppointmentSettingsCard() {
     min_lead_minutes: 60,
     timezone: "America/New_York",
     enabled: true,
+
+    field_service_area_enabled: false,
+    field_service_base_address: "",
+    field_service_radius_miles: "",
   });
 
   const leadDays = Math.floor(Number(form.min_lead_minutes || 0) / 1440);
@@ -69,7 +77,43 @@ export default function AppointmentSettingsCard() {
         return;
       }
 
-      if (data?.settings) setForm(data.settings);
+      if (data?.settings) {
+        setForm({
+          default_duration_min:
+            Number(data.settings.default_duration_min ?? 30),
+
+          buffer_min:
+            Number(data.settings.buffer_min ?? 10),
+
+          min_lead_minutes:
+            Number(data.settings.min_lead_minutes ?? 60),
+
+          timezone:
+            String(
+              data.settings.timezone ||
+                "America/New_York"
+            ),
+
+          enabled:
+            data.settings.enabled !== false,
+
+          field_service_area_enabled:
+            data.settings.field_service_area_enabled === true,
+
+          field_service_base_address:
+            String(
+              data.settings.field_service_base_address || ""
+            ),
+
+          field_service_radius_miles:
+            data.settings.field_service_radius_miles === null ||
+            data.settings.field_service_radius_miles === undefined
+              ? ""
+              : Number(
+                  data.settings.field_service_radius_miles
+                ),
+        });
+      }
     } catch (e: any) {
       setError(e?.message || "Error cargando configuración");
     } finally {
@@ -87,29 +131,130 @@ export default function AppointmentSettingsCard() {
     setSaving(true);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/appointment-settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          default_duration_min: Number(form.default_duration_min),
-          buffer_min: Number(form.buffer_min),
-          min_lead_minutes: Number(form.min_lead_minutes),
-          timezone: form.timezone,
-          enabled: Boolean(form.enabled),
-        }),
-      });
+      if (form.field_service_area_enabled) {
+        const baseAddress =
+          form.field_service_base_address.trim();
+
+        const radiusMiles =
+          Number(form.field_service_radius_miles);
+
+        if (!baseAddress) {
+          throw new Error(
+            "Debes ingresar una dirección base para la zona de servicio."
+          );
+        }
+
+        if (
+          !Number.isFinite(radiusMiles) ||
+          radiusMiles <= 0
+        ) {
+          throw new Error(
+            "El radio de trabajo debe ser mayor que 0."
+          );
+        }
+      }
+
+      const res = await fetch(
+        `${BACKEND_URL}/api/appointment-settings`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            default_duration_min:
+              Number(form.default_duration_min),
+
+            buffer_min:
+              Number(form.buffer_min),
+
+            min_lead_minutes:
+              Number(form.min_lead_minutes),
+
+            timezone:
+              form.timezone,
+
+            enabled:
+              Boolean(form.enabled),
+
+            field_service_area_enabled:
+              Boolean(
+                form.field_service_area_enabled
+              ),
+
+            field_service_base_address:
+              form.field_service_base_address.trim(),
+
+            field_service_radius_miles:
+              form.field_service_area_enabled
+                ? Number(
+                    form.field_service_radius_miles
+                  )
+                : null,
+          }),
+        }
+      );
 
       const data = await res.json();
+
       if (!res.ok || !data?.ok) {
-        setError(data?.error || `Error HTTP: ${res.status}`);
+        setError(
+          data?.error ||
+            `Error HTTP: ${res.status}`
+        );
+
         return;
       }
 
-      setForm(data.settings);
+      setForm({
+        default_duration_min:
+          Number(
+            data.settings.default_duration_min
+          ),
+
+        buffer_min:
+          Number(data.settings.buffer_min),
+
+        min_lead_minutes:
+          Number(
+            data.settings.min_lead_minutes
+          ),
+
+        timezone:
+          String(data.settings.timezone),
+
+        enabled:
+          data.settings.enabled !== false,
+
+        field_service_area_enabled:
+          data.settings
+            .field_service_area_enabled === true,
+
+        field_service_base_address:
+          String(
+            data.settings
+              .field_service_base_address || ""
+          ),
+
+        field_service_radius_miles:
+          data.settings
+            .field_service_radius_miles === null ||
+          data.settings
+            .field_service_radius_miles === undefined
+            ? ""
+            : Number(
+                data.settings
+                  .field_service_radius_miles
+              ),
+      });
+
       setOkMsg(t("apptSettings.savedOk"));
     } catch (e: any) {
-      setError(e?.message || "Error guardando configuración");
+      setError(
+        e?.message ||
+          "Error guardando configuración"
+      );
     } finally {
       setSaving(false);
     }
@@ -237,6 +382,101 @@ export default function AppointmentSettingsCard() {
               <p className="text-xs text-white/50 mt-1">
                 {t("apptSettings.timezoneHelp")}
               </p>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">
+                    Zona de servicio para citas con ruta
+                  </h3>
+
+                  <p className="mt-1 text-xs text-white/50">
+                    Esta configuración solo se aplica a citas que requieren desplazamiento.
+                    Las citas normales no se verán afectadas.
+                  </p>
+                </div>
+
+                <label className="relative inline-flex cursor-pointer items-center">
+                  <input
+                    type="checkbox"
+                    checked={form.field_service_area_enabled}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        field_service_area_enabled:
+                          e.target.checked,
+                      }))
+                    }
+                    className="peer sr-only"
+                  />
+
+                  <div className="h-6 w-11 rounded-full bg-white/20 transition peer-checked:bg-purple-600 peer-focus:ring-2 peer-focus:ring-purple-400">
+                    <div className="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-5" />
+                  </div>
+                </label>
+              </div>
+
+              {form.field_service_area_enabled && (
+                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm text-white/80">
+                      Dirección base
+                    </label>
+
+                    <input
+                      type="text"
+                      value={form.field_service_base_address}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          field_service_base_address:
+                            e.target.value,
+                        }))
+                      }
+                      placeholder="260 Hampton Loop, Davenport, FL 33837"
+                      className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    />
+
+                    <p className="mt-1 text-xs text-white/50">
+                      Esta dirección será el centro del radio de trabajo.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm text-white/80">
+                      Radio de trabajo
+                    </label>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={0.1}
+                        step={0.1}
+                        value={form.field_service_radius_miles}
+                        onChange={(e) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            field_service_radius_miles:
+                              e.target.value === ""
+                                ? ""
+                                : Number(e.target.value),
+                          }))
+                        }
+                        className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      />
+
+                      <span className="text-sm text-white/60">
+                        millas
+                      </span>
+                    </div>
+
+                    <p className="mt-1 text-xs text-white/50">
+                      Solo se incluirán en las rutas las citas ubicadas dentro de este radio.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
