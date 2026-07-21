@@ -11,6 +11,7 @@ import { useI18n } from "@/i18n/LanguageProvider";
 import AppointmentBookingFlowCard from "@/components/AppointmentBookingFlowCard";
 import ServiceBookingRulesCard from "@/components/ServiceBookingRulesCard";
 import CollapsibleCard from "@/components/CollapsibleCard";
+import AppointmentStaffCard from '@/components/AppointmentStaffCard';
 
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended';
 
@@ -1007,6 +1008,17 @@ export default function AppointmentsPage() {
             defaultOpen={true}
           >
           <AppointmentSettingsCard />
+          </CollapsibleCard>
+
+          <CollapsibleCard
+            title={t('appointments.cards.staff.title')}
+            subtitle={t('appointments.cards.staff.subtitle')}
+            defaultOpen={false}
+          >
+            <AppointmentStaffCard
+              squareConnected={squareStatus.connected}
+              tenantId={tenantId}
+            />
           </CollapsibleCard>
 
           <CollapsibleCard
