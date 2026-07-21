@@ -948,13 +948,17 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
         const longitude =
           Number(stop.longitude);
 
-        const order =
-          Number(
-            stop.order ??
-              stop.stopOrder ??
-              stop.stop_order ??
-              index + 1
-          );
+        const rawOrder = Number(
+          stop.order ??
+            stop.stopOrder ??
+            stop.stop_order ??
+            index
+        );
+
+        const displayOrder =
+          Number.isFinite(rawOrder)
+            ? rawOrder + 1
+            : index + 1;
 
         const position = {
           lat: latitude,
@@ -968,12 +972,10 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
             title:
               stop.formattedAddress ??
               stop.formatted_address ??
-              `${copy.stop} ${index + 1}`,
+              `${copy.stop} ${displayOrder}`,
 
-            label: String(
-              order || index + 1
-            ),
-          });
+            label: String(displayOrder),
+        });
 
         overlaysRef.current.push(
           marker
@@ -1470,12 +1472,17 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
                 </div>
               )}
               {normalizedStops.map((stop, index) => {
-                const order = Number(
+                const rawOrder = Number(
                   stop.order ??
                     stop.stopOrder ??
                     stop.stop_order ??
-                    index + 1
+                    index
                 );
+
+                const displayOrder =
+                  Number.isFinite(rawOrder)
+                    ? rawOrder + 1
+                    : index + 1;
                 const customer = stop.customerName ?? stop.customer_name ?? (stop.metadata?.customerName as string | undefined) ?? (stop.metadata?.customer_name as string | undefined);
                 const service = stop.serviceName ?? stop.service_name ?? (stop.metadata?.serviceName as string | undefined) ?? (stop.metadata?.service_name as string | undefined);
                 const address = stop.formattedAddress ?? stop.formatted_address ?? (stop.metadata?.formattedAddress as string | undefined) ?? (stop.metadata?.formatted_address as string | undefined) ?? copy.unknownAddress;
@@ -1493,9 +1500,13 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
                     className="rounded-xl border border-white/10 bg-white/5 p-3"
                   >
                     <div className="flex items-start gap-3">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-black">{order || index + 1}</span>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-black">
+                        {displayOrder}
+                      </span>
                       <div className="min-w-0">
-                        <div className="text-sm font-medium text-white">{customer || `${copy.appointment} ${order || index + 1}`}</div>
+                        <div className="text-sm font-medium text-white">
+                          {customer || `${copy.appointment} ${displayOrder}`}
+                        </div>
                         {service && <div className="mt-0.5 text-xs text-purple-200">{service}</div>}
                         <div className="mt-1 text-xs text-white/50">{address}</div>
                         {scheduled && <div className="mt-1 text-xs text-white/45">{new Date(scheduled).toLocaleString()}</div>}
