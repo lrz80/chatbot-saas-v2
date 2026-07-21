@@ -18,6 +18,15 @@ type FieldResource = {
   start_latitude?: number | string | null;
   startLongitude?: number | string | null;
   start_longitude?: number | string | null;
+
+  endAddress?: string | null;
+  end_address?: string | null;
+
+  endLatitude?: number | string | null;
+  end_latitude?: number | string | null;
+
+  endLongitude?: number | string | null;
+  end_longitude?: number | string | null;
 };
 
 type RoutePlan = {
@@ -129,6 +138,11 @@ const COPY = {
   },
 } as const;
 
+const ROUTE_COLORS = {
+  outbound: '#8B5CF6',
+  return: '#C4B5FD',
+} as const;
+
 function todayLocal(): string {
   const now = new Date();
   const offset = now.getTimezoneOffset();
@@ -147,6 +161,45 @@ function resourceStart(resource: FieldResource | null) {
   const lng = numberOrNull(resource.startLongitude ?? resource.start_longitude);
   if (lat === null || lng === null) return null;
   return { lat, lng, address: resource.startAddress ?? resource.start_address ?? null };
+}
+
+function resourceEnd(
+  resource: FieldResource | null
+): {
+  lat: number;
+  lng: number;
+  address: string | null;
+} | null {
+  if (!resource) {
+    return null;
+  }
+
+  const latitude = numberOrNull(
+    resource.endLatitude ??
+      resource.end_latitude
+  );
+
+  const longitude = numberOrNull(
+    resource.endLongitude ??
+      resource.end_longitude
+  );
+
+  if (
+    latitude === null ||
+    longitude === null
+  ) {
+    return null;
+  }
+
+  return {
+    lat: latitude,
+    lng: longitude,
+
+    address:
+      resource.endAddress ??
+      resource.end_address ??
+      null,
+  };
 }
 
 function asObject(value: unknown): Record<string, unknown> | null {
@@ -820,6 +873,10 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
         selectedResource
       );
 
+    const end =
+      resourceEnd(selectedResource) ??
+      start;
+
     clearMap();
 
     try {
@@ -938,25 +995,32 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
 
       if (start) {
         const position = {
-          lat: start.lat,
-          lng: start.lng,
+            lat: start.lat,
+            lng: start.lng,
         };
 
         const marker =
-          createMarker({
+            createMarker({
             position,
             title:
-              `${copy.start}: ` +
-              `${selectedResource?.name ?? ''}`,
+                `${copy.start}: ` +
+                `${selectedResource?.name ?? ''}`,
             label: 'T',
-          });
+            });
 
         overlaysRef.current.push(
-          marker
+            marker
         );
 
         bounds.extend(position);
-      }
+        }
+
+        if (end) {
+        bounds.extend({
+            lat: end.lat,
+            lng: end.lng,
+        });
+        }
 
       for (
         const [index, stop] of
@@ -1004,8 +1068,16 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
         bounds.extend(position);
       }
 
-    const routePoints = [
-      ...(start
+    const stopPoints =
+    orderedStopsForRoute.map(
+        (stop) => ({
+        lat: Number(stop.latitude),
+        lng: Number(stop.longitude),
+        })
+    );
+
+    const outboundPoints = [
+    ...(start
         ? [
             {
             lat: start.lat,
@@ -1014,84 +1086,171 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
         ]
         : []),
 
-    ...orderedStopsForRoute.map(
-        (stop) => ({
-        lat: Number(stop.latitude),
-        lng: Number(stop.longitude),
-        })
-    ),
+    ...stopPoints,
     ];
 
-      if (
-        routePoints.length >= 2 &&
-        maps.DirectionsService &&
-        maps.DirectionsRenderer
-      ) {
-        try {
-          const directionsService =
-            new maps.DirectionsService();
+    async function drawRoadRoute(input: {
+    points: Array<{
+        lat: number;
+        lng: number;
+    }>;
 
-          const directionsRenderer =
-            new maps.DirectionsRenderer({
-              map,
-              suppressMarkers: true,
+    strokeColor: string;
+    strokeOpacity: number;
+    }): Promise<void> {
+    if (input.points.length < 2) {
+        return;
+    }
 
-              polylineOptions: {
-                strokeOpacity: 0.9,
-                strokeWeight: 6,
-              },
-            });
+    const directionsService =
+        new maps.DirectionsService();
 
-          overlaysRef.current.push(
-            directionsRenderer
-          );
+    const directionsRenderer =
+        new maps.DirectionsRenderer({
+        map,
+        suppressMarkers: true,
+        preserveViewport: true,
 
-          const result =
-            await directionsService.route({
-              origin: routePoints[0],
+        polylineOptions: {
+            strokeColor:
+            input.strokeColor,
 
-              destination:
-                routePoints[
-                  routePoints.length - 1
-                ],
+            strokeOpacity:
+            input.strokeOpacity,
 
-              waypoints:
-                routePoints
-                  .slice(1, -1)
-                  .map((location) => ({
-                    location,
-                    stopover: true,
-                  })),
+            strokeWeight: 6,
 
-              travelMode:
-                maps.TravelMode.DRIVING,
+            zIndex: 10,
+        },
+        });
 
-              optimizeWaypoints: false,
-            });
+    overlaysRef.current.push(
+        directionsRenderer
+    );
 
-          directionsRenderer.setDirections(
-            result
-          );
-        } catch (routeError) {
-          console.error(
-            '[FIELD_OPERATIONS_MAP][ROUTE_ERROR]',
-            routeError
-          );
+    const result =
+        await directionsService.route({
+        origin: input.points[0],
 
-          const fallbackPolyline =
-            new maps.Polyline({
-              map,
-              path: routePoints,
-              geodesic: true,
-              strokeOpacity: 0.75,
-              strokeWeight: 4,
-            });
+        destination:
+            input.points[
+            input.points.length - 1
+            ],
 
-          overlaysRef.current.push(
-            fallbackPolyline
-          );
+        waypoints:
+            input.points
+            .slice(1, -1)
+            .map((location) => ({
+                location,
+                stopover: true,
+            })),
+
+        travelMode:
+            maps.TravelMode.DRIVING,
+
+        optimizeWaypoints: false,
+        });
+
+    directionsRenderer.setDirections(
+        result
+    );
+    }
+
+    if (
+    maps.DirectionsService &&
+    maps.DirectionsRenderer
+    ) {
+    try {
+        /*
+        * Ida:
+        * inicio del técnico -> citas.
+        */
+        await drawRoadRoute({
+        points: outboundPoints,
+        strokeColor: ROUTE_COLORS.outbound,
+        strokeOpacity: 0.95,
+        });
+
+        /*
+        * Regreso:
+        * última cita -> destino final.
+        *
+        * Solo se muestra cuando el recurso tiene
+        * endLatitude y endLongitude configurados.
+        */
+        const lastStop =
+        stopPoints[
+            stopPoints.length - 1
+        ];
+
+        if (lastStop && end) {
+        await drawRoadRoute({
+            points: [
+            lastStop,
+            {
+                lat: end.lat,
+                lng: end.lng,
+            },
+            ],
+
+            strokeColor: ROUTE_COLORS.return,
+            strokeOpacity: 0.8,
+        });
         }
-      }
+    } catch (routeError) {
+        console.error(
+        '[FIELD_OPERATIONS_MAP][ROUTE_ERROR]',
+        routeError
+        );
+
+        if (outboundPoints.length >= 2) {
+        const fallbackOutbound =
+            new maps.Polyline({
+            map,
+            path: outboundPoints,
+            geodesic: true,
+
+            strokeColor: ROUTE_COLORS.outbound,
+            strokeOpacity: 0.9,
+            strokeWeight: 5,
+            });
+
+        overlaysRef.current.push(
+            fallbackOutbound
+        );
+        }
+
+        const lastStop =
+        stopPoints[
+            stopPoints.length - 1
+        ];
+
+        if (lastStop && end) {
+        const fallbackReturn =
+            new maps.Polyline({
+            map,
+
+            path: [
+                lastStop,
+                {
+                lat: end.lat,
+                lng: end.lng,
+                },
+            ],
+
+            geodesic: true,
+
+            strokeColor: ROUTE_COLORS.return,
+            strokeOpacity: 0.75,
+            strokeWeight: 5,
+            });
+
+        overlaysRef.current.push(
+            fallbackReturn
+        );
+        }
+    }
+    }
 
       if (!bounds.isEmpty()) {
         map.fitBounds(bounds, 56);
