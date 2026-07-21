@@ -76,22 +76,6 @@ type RouteStop = {
   metadata?: Record<string, unknown> | null;
 };
 
-type RoutePlanResponse = {
-  ok: boolean;
-
-  routePlan?: RoutePlan;
-  route_plan?: RoutePlan;
-
-  stops?: unknown[];
-  routeStops?: unknown[];
-  route_stops?: unknown[];
-
-  skippedAppointments?: Array<Record<string, unknown>>;
-  skipped_appointments?: Array<Record<string, unknown>>;
-
-  error?: string;
-};
-
 declare global {
   interface Window {
     google?: any;
@@ -180,6 +164,65 @@ function asObject(value: unknown): Record<string, unknown> | null {
 function optionalText(value: unknown): string | null {
   const result = String(value ?? '').trim();
   return result || null;
+}
+
+function resolveRoutePayload(
+  responseData: unknown
+): Record<string, unknown> {
+  const root = asObject(responseData);
+
+  if (!root) {
+    return {};
+  }
+
+  return (
+    asObject(root.result) ??
+    asObject(root.data) ??
+    asObject(root.payload) ??
+    root
+  );
+}
+
+function extractRoutePlan(
+  responseData: unknown
+): RoutePlan | null {
+  const root = asObject(responseData);
+  const payload = resolveRoutePayload(responseData);
+
+  const routePlan =
+    asObject(payload.routePlan) ??
+    asObject(payload.route_plan) ??
+    asObject(root?.routePlan) ??
+    asObject(root?.route_plan);
+
+  return routePlan as RoutePlan | null;
+}
+
+function extractSkippedAppointments(
+  responseData: unknown
+): Array<Record<string, unknown>> {
+  const root = asObject(responseData);
+  const payload = resolveRoutePayload(responseData);
+
+  const candidates = [
+    payload.skippedAppointments,
+    payload.skipped_appointments,
+    root?.skippedAppointments,
+    root?.skipped_appointments,
+  ];
+
+  const skipped = candidates.find(
+    (candidate) => Array.isArray(candidate)
+  );
+
+  if (!Array.isArray(skipped)) {
+    return [];
+  }
+
+  return skipped.filter(
+    (item): item is Record<string, unknown> =>
+      asObject(item) !== null
+  );
 }
 
 function normalizeRouteStop(
@@ -315,110 +358,172 @@ function normalizeRouteStop(
 }
 
 function extractRouteStops(
-  payload: unknown
+  responseData: unknown
 ): RouteStop[] {
-  const data = asObject(payload);
+  const root = asObject(responseData);
 
-  if (!data) {
+  if (!root) {
     return [];
   }
 
+  const payload =
+    resolveRoutePayload(responseData);
+
   const routePlan =
-    asObject(data.routePlan) ??
-    asObject(data.route_plan) ??
-    data;
+    extractRoutePlan(responseData);
+
+  const routePlanObject =
+    asObject(routePlan);
 
   const optimizationResult =
-    asObject(routePlan.optimizationResult) ??
-    asObject(routePlan.optimization_result);
+    asObject(
+      routePlanObject?.optimizationResult ??
+      routePlanObject?.optimization_result
+    ) ??
+    asObject(
+      payload.optimizationResult ??
+      payload.optimization_result
+    ) ??
+    asObject(
+      root.optimizationResult ??
+      root.optimization_result
+    );
+
+  const directStopCandidates: unknown[][] = [
+    Array.isArray(payload.stops)
+      ? payload.stops
+      : [],
+
+    Array.isArray(payload.routeStops)
+      ? payload.routeStops
+      : [],
+
+    Array.isArray(payload.route_stops)
+      ? payload.route_stops
+      : [],
+
+    Array.isArray(root.stops)
+      ? root.stops
+      : [],
+
+    Array.isArray(root.routeStops)
+      ? root.routeStops
+      : [],
+
+    Array.isArray(root.route_stops)
+      ? root.route_stops
+      : [],
+  ];
 
   const directStops =
-    Array.isArray(data.stops)
-      ? data.stops
-      : Array.isArray(data.routeStops)
-        ? data.routeStops
-        : Array.isArray(data.route_stops)
-          ? data.route_stops
-          : [];
+    directStopCandidates.find(
+      (candidate) =>
+        candidate.length > 0
+    ) ?? [];
 
   const orderedStops =
     optimizationResult &&
-    Array.isArray(optimizationResult.orderedStops)
+    Array.isArray(
+      optimizationResult.orderedStops
+    )
       ? optimizationResult.orderedStops
       : optimizationResult &&
-          Array.isArray(optimizationResult.ordered_stops)
+          Array.isArray(
+            optimizationResult.ordered_stops
+          )
         ? optimizationResult.ordered_stops
         : [];
 
-  /*
-   * Las paradas directas normalmente tienen las coordenadas.
-   * orderedStops normalmente tiene el orden optimizado.
-   *
-   * Cuando existen ambas, conservamos las coordenadas de directStops
-   * y aplicamos el orden del resultado optimizado.
-   */
-  const normalizedDirectStops = directStops
-    .map(normalizeRouteStop)
-    .filter(
-      (stop): stop is RouteStop =>
-        stop !== null
-    );
+  const normalizedDirectStops =
+    directStops
+      .map((value, index) =>
+        normalizeRouteStop(
+          value,
+          index
+        )
+      )
+      .filter(
+        (stop): stop is RouteStop =>
+          stop !== null
+      );
 
-  const normalizedOrderedStops = orderedStops
-    .map(normalizeRouteStop)
-    .filter(
-      (stop): stop is RouteStop =>
-        stop !== null
-    );
+  const normalizedOrderedStops =
+    orderedStops
+      .map((value, index) =>
+        normalizeRouteStop(
+          value,
+          index
+        )
+      )
+      .filter(
+        (stop): stop is RouteStop =>
+          stop !== null
+      );
 
-  if (normalizedOrderedStops.length === 0) {
+  if (
+    normalizedOrderedStops.length === 0
+  ) {
     return normalizedDirectStops;
   }
 
-  if (normalizedDirectStops.length === 0) {
+  if (
+    normalizedDirectStops.length === 0
+  ) {
     return normalizedOrderedStops;
   }
 
-  const directByReference = new Map<
-    string,
-    RouteStop
-  >();
+  const directStopsByReference =
+    new Map<string, RouteStop>();
 
-  for (const stop of normalizedDirectStops) {
+  for (
+    const directStop of
+    normalizedDirectStops
+  ) {
     const references = [
-      stop.appointmentId,
-      stop.appointment_id,
-      stop.locationId,
-      stop.location_id,
-      stop.id,
+      directStop.id,
+      directStop.appointmentId,
+      directStop.appointment_id,
+      directStop.locationId,
+      directStop.location_id,
     ].filter(
       (reference): reference is string =>
         Boolean(reference)
     );
 
     for (const reference of references) {
-      directByReference.set(reference, stop);
+      directStopsByReference.set(
+        reference,
+        directStop
+      );
     }
   }
 
   return normalizedOrderedStops.map(
     (orderedStop, index) => {
       const references = [
+        orderedStop.id,
         orderedStop.appointmentId,
         orderedStop.appointment_id,
         orderedStop.locationId,
         orderedStop.location_id,
-        orderedStop.id,
       ].filter(
         (reference): reference is string =>
           Boolean(reference)
       );
 
-      const directStop = references
-        .map((reference) =>
-          directByReference.get(reference)
-        )
-        .find(Boolean);
+      const directStop =
+        references
+          .map((reference) =>
+            directStopsByReference.get(
+              reference
+            )
+          )
+          .find(
+            (
+              stop
+            ): stop is RouteStop =>
+              Boolean(stop)
+          ) ?? null;
 
       return {
         ...directStop,
@@ -684,95 +789,260 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
 
   const loadExistingRoute = useCallback(async () => {
     if (!resourceId || !serviceDate) {
-      setRoutePlan(null); setStops([]); return;
+        setRoutePlan(null);
+        setStops([]);
+        setSkippedCount(0);
+        return;
     }
+
     try {
-      setLoadingRoute(true); setError(null);
-      const response = await fetch(`${BACKEND_URL}/api/field-operations/route-plans/by-resource/${encodeURIComponent(resourceId)}/${encodeURIComponent(serviceDate)}`, { credentials: 'include' });
-      if (response.status === 404) {
-        setRoutePlan(null); setStops([]); setSkippedCount(0); return;
-      }
-      const data = await response.json();
-      if (!response.ok || !data?.ok || !data.routePlan?.id) throw new Error(data?.error || copy.routeError);
-      const detailResponse = await fetch(`${BACKEND_URL}/api/field-operations/route-plans/${encodeURIComponent(data.routePlan.id)}`, { credentials: 'include' });
-      const detail = await detailResponse.json();
-      if (!detailResponse.ok || !detail?.ok) throw new Error(detail?.error || copy.routeError);
-      const resolvedRoutePlan =
-        detail.routePlan ??
-        detail.route_plan ??
-        data.routePlan ??
-        data.route_plan ??
-        null;
+        setLoadingRoute(true);
+        setError(null);
 
-      const resolvedStops = extractRouteStops({
-        ...detail,
-        routePlan: resolvedRoutePlan,
-      });
+        const response = await fetch(
+        `${BACKEND_URL}/api/field-operations/route-plans/by-resource/${encodeURIComponent(
+            resourceId
+        )}/${encodeURIComponent(serviceDate)}`,
+        {
+            credentials: 'include',
+        }
+        );
 
-      setRoutePlan(resolvedRoutePlan);
-      setStops(resolvedStops);
+        if (response.status === 404) {
+        setRoutePlan(null);
+        setStops([]);
+        setSkippedCount(0);
+        return;
+        }
 
-      const skippedAppointments =
-        Array.isArray(detail.skippedAppointments)
-          ? detail.skippedAppointments
-          : Array.isArray(detail.skipped_appointments)
-            ? detail.skipped_appointments
-            : [];
+        const data: unknown =
+        await response.json();
 
-      setSkippedCount(
+        const dataObject =
+        asObject(data);
+
+        if (
+        !response.ok ||
+        dataObject?.ok !== true
+        ) {
+        throw new Error(
+            optionalText(
+            dataObject?.error
+            ) ??
+            copy.routeError
+        );
+        }
+
+        const preliminaryRoutePlan =
+        extractRoutePlan(data);
+
+        if (!preliminaryRoutePlan?.id) {
+        throw new Error(
+            copy.routeError
+        );
+        }
+
+        const detailResponse = await fetch(
+        `${BACKEND_URL}/api/field-operations/route-plans/${encodeURIComponent(
+            preliminaryRoutePlan.id
+        )}`,
+        {
+            credentials: 'include',
+        }
+        );
+
+        const detail: unknown =
+        await detailResponse.json();
+
+        const detailObject =
+        asObject(detail);
+
+        if (
+        !detailResponse.ok ||
+        detailObject?.ok !== true
+        ) {
+        throw new Error(
+            optionalText(
+            detailObject?.error
+            ) ??
+            copy.routeError
+        );
+        }
+
+        const resolvedRoutePlan =
+        extractRoutePlan(detail) ??
+        preliminaryRoutePlan;
+
+        const resolvedStops =
+        extractRouteStops(detail);
+
+        const skippedAppointments =
+        extractSkippedAppointments(
+            detail
+        );
+
+        console.log(
+        '[FIELD_OPERATIONS_MAP][EXISTING_ROUTE_RESOLVED]',
+        {
+            routePlanId:
+            resolvedRoutePlan.id,
+
+            stopsFound:
+            resolvedStops.length,
+
+            skippedFound:
+            skippedAppointments.length,
+
+            detail,
+        }
+        );
+
+        setRoutePlan(
+        resolvedRoutePlan
+        );
+
+        setStops(
+        resolvedStops
+        );
+
+        setSkippedCount(
         skippedAppointments.length
-      );
+        );
     } catch (loadError) {
-      console.error('[FIELD_OPERATIONS_MAP][LOAD_ROUTE_ERROR]', loadError);
-      setError(loadError instanceof Error ? loadError.message : copy.routeError);
+        console.error(
+        '[FIELD_OPERATIONS_MAP][LOAD_ROUTE_ERROR]',
+        loadError
+        );
+
+        setError(
+        loadError instanceof Error
+            ? loadError.message
+            : copy.routeError
+        );
     } finally {
-      setLoadingRoute(false);
+        setLoadingRoute(false);
     }
-  }, [copy.routeError, resourceId, serviceDate]);
+    }, [
+    copy.routeError,
+    resourceId,
+    serviceDate,
+    ]);
 
   const buildRoute = useCallback(async () => {
-    if (!resourceId || !serviceDate) return;
-    try {
-      setBuildingRoute(true); setError(null);
-      const response = await fetch(`${BACKEND_URL}/api/field-operations/route-plans/build`, {
-        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+  if (!resourceId || !serviceDate) {
+    return;
+  }
+
+  try {
+    setBuildingRoute(true);
+    setError(null);
+
+    const response = await fetch(
+      `${BACKEND_URL}/api/field-operations/route-plans/build`,
+      {
+        method: 'POST',
+        credentials: 'include',
+
+        headers: {
+          'Content-Type':
+            'application/json',
+        },
+
         body: JSON.stringify({
-          resourceId, serviceDate, mode: 'view_only', optimize: true,
-          geocodeMissingLocations: true, geocodingLanguage: selectedLanguage, geocodingRegion: 'us',
+          resourceId,
+          serviceDate,
+
+          mode: 'view_only',
+          optimize: true,
+
+          geocodeMissingLocations:
+            true,
+
+          geocodingLanguage:
+            selectedLanguage,
+
+          geocodingRegion: 'us',
         }),
-      });
-      const data: RoutePlanResponse = await response.json();
-      if (!response.ok || !data?.ok) throw new Error(data?.error || copy.routeError);
-      const resolvedRoutePlan =
-        data.routePlan ??
-        data.route_plan ??
-        null;
+      }
+    );
 
-      const resolvedStops =
-        extractRouteStops({
-          ...data,
-          routePlan: resolvedRoutePlan,
-      });
+    const data: unknown =
+      await response.json();
 
-      const skippedAppointments =
-        Array.isArray(data.skippedAppointments)
-          ? data.skippedAppointments
-          : Array.isArray(data.skipped_appointments)
-            ? data.skipped_appointments
-            : [];
+    const dataObject =
+      asObject(data);
 
-      setRoutePlan(resolvedRoutePlan);
-      setStops(resolvedStops);
-      setSkippedCount(
-        skippedAppointments.length
+    if (
+      !response.ok ||
+      dataObject?.ok !== true
+    ) {
+      throw new Error(
+        optionalText(
+          dataObject?.error
+        ) ??
+        copy.routeError
       );
-    } catch (buildError) {
-      console.error('[FIELD_OPERATIONS_MAP][BUILD_ROUTE_ERROR]', buildError);
-      setError(buildError instanceof Error ? buildError.message : copy.routeError);
-    } finally {
-      setBuildingRoute(false);
     }
-  }, [copy.routeError, resourceId, selectedLanguage, serviceDate]);
+
+    const resolvedRoutePlan =
+      extractRoutePlan(data);
+
+    const resolvedStops =
+      extractRouteStops(data);
+
+    const skippedAppointments =
+      extractSkippedAppointments(
+        data
+      );
+
+    console.log(
+      '[FIELD_OPERATIONS_MAP][BUILD_ROUTE_RESOLVED]',
+      {
+        routePlanId:
+          resolvedRoutePlan?.id ??
+          null,
+
+        stopsFound:
+          resolvedStops.length,
+
+        skippedFound:
+          skippedAppointments.length,
+
+        data,
+      }
+    );
+
+    setRoutePlan(
+      resolvedRoutePlan
+    );
+
+    setStops(
+      resolvedStops
+    );
+
+    setSkippedCount(
+      skippedAppointments.length
+    );
+  } catch (buildError) {
+    console.error(
+      '[FIELD_OPERATIONS_MAP][BUILD_ROUTE_ERROR]',
+      buildError
+    );
+
+    setError(
+      buildError instanceof Error
+        ? buildError.message
+        : copy.routeError
+    );
+  } finally {
+    setBuildingRoute(false);
+  }
+}, [
+  copy.routeError,
+  resourceId,
+  selectedLanguage,
+  serviceDate,
+]);
 
   useEffect(() => { void loadResources(); }, [loadResources]);
   useEffect(() => { void loadExistingRoute(); }, [loadExistingRoute]);
