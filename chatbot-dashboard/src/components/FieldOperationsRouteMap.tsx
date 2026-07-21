@@ -107,6 +107,8 @@ const COPY = {
     stops: 'paradas', skipped: 'omitidas', start: 'Inicio', stop: 'Parada',
     appointment: 'Cita', unknownAddress: 'Dirección no disponible',
     roadRoute: 'Ruta por carretera', routePlan: 'Plan de ruta',
+    startNavigation: 'Iniciar ruta',
+    navigationUnavailable: 'No hay suficientes paradas para iniciar la ruta.',
   },
   en: {
     title: 'Technician routes', subtitle: 'View the road route and assigned stops.',
@@ -121,6 +123,8 @@ const COPY = {
     stops: 'stops', skipped: 'skipped', start: 'Start', stop: 'Stop',
     appointment: 'Appointment', unknownAddress: 'Address unavailable',
     roadRoute: 'Road route', routePlan: 'Route plan',
+    startNavigation: 'Start route',
+    navigationUnavailable: 'There are not enough stops to start the route.',
   },
   pt: {
     title: 'Rotas dos técnicos', subtitle: 'Visualize o trajeto por estrada e as paradas atribuídas.',
@@ -135,6 +139,8 @@ const COPY = {
     stops: 'paradas', skipped: 'ignoradas', start: 'Início', stop: 'Parada',
     appointment: 'Agendamento', unknownAddress: 'Endereço indisponível',
     roadRoute: 'Rota por estrada', routePlan: 'Plano de rota',
+    startNavigation: 'Iniciar rota',
+    navigationUnavailable: 'Não há paradas suficientes para iniciar a rota.',
   },
 } as const;
 
@@ -820,6 +826,86 @@ function loadGoogleMaps(
   return window.__aamyGoogleMapsPromise;
 }
 
+function buildGoogleMapsNavigationUrl(input: {
+  end: {
+    lat: number;
+    lng: number;
+  } | null;
+
+  stops: RouteStop[];
+}): string | null {
+  const orderedStops =
+    normalizeStops(input.stops);
+
+  if (orderedStops.length === 0) {
+    return null;
+  }
+
+  const stopCoordinates =
+    orderedStops.map((stop) => ({
+      lat: Number(stop.latitude),
+      lng: Number(stop.longitude),
+    }));
+
+  const lastStop =
+    stopCoordinates[
+      stopCoordinates.length - 1
+    ];
+
+  if (!lastStop) {
+    return null;
+  }
+
+  /*
+   * Si existe destino final, todas las citas son waypoints
+   * y el destino es la base/destino final.
+   *
+   * Si no existe destino final, la última cita es el destino
+   * y las anteriores son waypoints.
+   */
+  const destination =
+    input.end ?? lastStop;
+
+  const intermediateStops =
+    input.end
+      ? stopCoordinates
+      : stopCoordinates.slice(0, -1);
+
+  const params =
+    new URLSearchParams({
+      api: '1',
+
+      destination:
+        `${destination.lat},${destination.lng}`,
+
+      travelmode: 'driving',
+
+      dir_action: 'navigate',
+    });
+
+  /*
+   * No enviamos origin.
+   * Google Maps usará la ubicación actual del teléfono.
+   */
+  if (intermediateStops.length > 0) {
+    params.set(
+      'waypoints',
+
+      intermediateStops
+        .map(
+          (point) =>
+            `${point.lat},${point.lng}`
+        )
+        .join('|')
+    );
+  }
+
+  return (
+    `https://www.google.com/maps/dir/?` +
+    params.toString()
+  );
+}
+
 export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
   const selectedLanguage: SupportedLanguage = lang === 'en' || lang === 'pt' ? lang : 'es';
   const copy = COPY[selectedLanguage];
@@ -845,6 +931,56 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
     () => resources.find((resource) => resource.id === resourceId) ?? null,
     [resourceId, resources]
   );
+
+  const startNavigation =
+  useCallback(() => {
+    /*
+     * El regreso solo se agrega cuando existe un
+     * destino final configurado explícitamente.
+     *
+     * No usamos el inicio como fallback aquí,
+     * porque el técnico puede no querer regresar
+     * automáticamente a la base.
+     */
+    const end =
+      resourceEnd(selectedResource);
+
+    const navigationUrl =
+      buildGoogleMapsNavigationUrl({
+        end,
+        stops,
+      });
+
+    if (!navigationUrl) {
+      setError(
+        copy.navigationUnavailable
+      );
+
+      return;
+    }
+
+    const navigationWindow =
+      window.open(
+        navigationUrl,
+        '_blank',
+        'noopener,noreferrer'
+      );
+
+    /*
+     * Algunos navegadores móviles bloquean
+     * window.open. En ese caso navegamos
+     * directamente en la misma pestaña.
+     */
+    if (!navigationWindow) {
+      window.location.assign(
+        navigationUrl
+      );
+    }
+  }, [
+    copy.navigationUnavailable,
+    selectedResource,
+    stops,
+  ]);
 
   const clearMap = useCallback(() => {
     for (const overlay of overlaysRef.current) {
@@ -1586,7 +1722,7 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
             <h2 className="text-lg font-semibold text-white">{copy.title}</h2>
             <p className="mt-1 text-sm text-white/55">{copy.subtitle}</p>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[160px_minmax(220px,1fr)_auto_auto]">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[160px_minmax(220px,1fr)_auto_auto_auto]">
             <label className="block">
               <span className="mb-1 block text-xs text-white/60">{copy.date}</span>
               <input type="date" value={serviceDate} onChange={(e) => setServiceDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none" />
@@ -1600,6 +1736,17 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
             </label>
             <button type="button" onClick={() => void buildRoute()} disabled={!resourceId || busy} className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50">
               {buildingRoute ? copy.loading : copy.build}
+            </button>
+            <button
+            type="button"
+            onClick={startNavigation}
+            disabled={
+                normalizedStops.length === 0 ||
+                busy
+            }
+            className="rounded-xl border border-purple-400/30 bg-purple-500/15 px-4 py-2 text-sm font-semibold text-purple-100 transition hover:bg-purple-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+            {copy.startNavigation}
             </button>
             <button type="button" onClick={() => void loadExistingRoute()} disabled={!resourceId || busy} className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50">
               {loadingRoute ? copy.loading : copy.refresh}
