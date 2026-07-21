@@ -875,6 +875,26 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
       const bounds =
         new maps.LatLngBounds();
 
+      const orderedStopsForRoute = [...normalizedStops].sort(
+        (a, b) => {
+            const orderA = Number(
+            a.order ??
+                a.stopOrder ??
+                a.stop_order ??
+                0
+            );
+
+            const orderB = Number(
+            b.order ??
+                b.stopOrder ??
+                b.stop_order ??
+                0
+            );
+
+            return orderA - orderB;
+        }
+        );
+
       function createMarker(input: {
         position: {
           lat: number;
@@ -940,7 +960,7 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
 
       for (
         const [index, stop] of
-        normalizedStops.entries()
+        orderedStopsForRoute.entries()
       ) {
         const latitude =
           Number(stop.latitude);
@@ -984,28 +1004,23 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
         bounds.extend(position);
       }
 
-      const routePoints = [
-        ...(start
-          ? [
-              {
-                lat: start.lat,
-                lng: start.lng,
-              },
-            ]
-          : []),
+    const routePoints = [
+      ...(start
+        ? [
+            {
+            lat: start.lat,
+            lng: start.lng,
+            },
+        ]
+        : []),
 
-        ...normalizedStops.map(
-          (stop) => ({
-            lat: Number(
-              stop.latitude
-            ),
-
-            lng: Number(
-              stop.longitude
-            ),
-          })
-        ),
-      ];
+    ...orderedStopsForRoute.map(
+        (stop) => ({
+        lat: Number(stop.latitude),
+        lng: Number(stop.longitude),
+        })
+    ),
+    ];
 
       if (
         routePoints.length >= 2 &&
