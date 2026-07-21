@@ -12,6 +12,7 @@ import AppointmentBookingFlowCard from "@/components/AppointmentBookingFlowCard"
 import ServiceBookingRulesCard from "@/components/ServiceBookingRulesCard";
 import CollapsibleCard from "@/components/CollapsibleCard";
 import AppointmentStaffCard from '@/components/AppointmentStaffCard';
+import FieldOperationsRouteMap from '@/components/FieldOperationsRouteMap';
 
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'attended';
 
@@ -1045,6 +1046,8 @@ export default function AppointmentsPage() {
           </div>
         )}
 
+        <FieldOperationsRouteMap lang={lang} />
+        
         {/* Filtros */}
         <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
