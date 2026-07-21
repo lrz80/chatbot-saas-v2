@@ -166,6 +166,67 @@ function optionalText(value: unknown): string | null {
   return result || null;
 }
 
+function findCoordinates(
+  value: unknown,
+  depth = 0
+): {
+  latitude: number;
+  longitude: number;
+} | null {
+  if (depth > 5) {
+    return null;
+  }
+
+  const item = asObject(value);
+
+  if (!item) {
+    return null;
+  }
+
+  const latitude = numberOrNull(
+    item.latitude ??
+      item.lat
+  );
+
+  const longitude = numberOrNull(
+    item.longitude ??
+      item.lng
+  );
+
+  if (
+    latitude !== null &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude !== null &&
+    longitude >= -180 &&
+    longitude <= 180
+  ) {
+    return {
+      latitude,
+      longitude,
+    };
+  }
+
+  for (const nestedValue of Object.values(item)) {
+    if (
+      nestedValue &&
+      typeof nestedValue === 'object'
+    ) {
+      const nestedCoordinates =
+        findCoordinates(
+          nestedValue,
+          depth + 1
+        );
+
+      if (nestedCoordinates) {
+        return nestedCoordinates;
+      }
+    }
+  }
+
+  return null;
+}
+
 function resolveRoutePayload(
   responseData: unknown
 ): Record<string, unknown> {
@@ -238,19 +299,14 @@ function normalizeRouteStop(
   const metadata =
     asObject(item.metadata) ?? {};
 
-  const latitude = numberOrNull(
-    item.latitude ??
-      item.lat ??
-      metadata.latitude ??
-      metadata.lat
-  );
+  const coordinates =
+    findCoordinates(item);
 
-  const longitude = numberOrNull(
-    item.longitude ??
-      item.lng ??
-      metadata.longitude ??
-      metadata.lng
-  );
+  const latitude =
+    coordinates?.latitude ?? null;
+
+  const longitude =
+    coordinates?.longitude ?? null;
 
   const appointmentId = optionalText(
     item.appointmentId ??
@@ -609,27 +665,104 @@ function normalizeStops(
     });
 }
 
-function loadGoogleMaps(apiKey: string): Promise<void> {
-  if (typeof window === 'undefined') return Promise.reject(new Error('WINDOW_UNAVAILABLE'));
-  if (window.google?.maps?.importLibrary) return Promise.resolve();
-  if (window.__aamyGoogleMapsPromise) return window.__aamyGoogleMapsPromise;
+function loadGoogleMaps(
+  apiKey: string
+): Promise<void> {
+  if (typeof window === 'undefined') {
+    return Promise.reject(
+      new Error('WINDOW_UNAVAILABLE')
+    );
+  }
 
-  window.__aamyGoogleMapsPromise = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>('script[data-aamy-google-maps="true"]');
-    if (existing) {
-      existing.addEventListener('load', () => resolve(), { once: true });
-      existing.addEventListener('error', () => reject(new Error('GOOGLE_MAPS_SCRIPT_LOAD_FAILED')), { once: true });
-      return;
-    }
+  if (window.google?.maps?.Map) {
+    return Promise.resolve();
+  }
 
-    const script = document.createElement('script');
-    script.dataset.aamyGoogleMaps = 'true';
-    script.async = true;
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&v=weekly&loading=async&libraries=marker,routes`;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('GOOGLE_MAPS_SCRIPT_LOAD_FAILED'));
-    document.head.appendChild(script);
-  });
+  if (window.__aamyGoogleMapsPromise) {
+    return window.__aamyGoogleMapsPromise;
+  }
+
+  window.__aamyGoogleMapsPromise =
+    new Promise<void>(
+      (resolve, reject) => {
+        const existing =
+          document.querySelector<HTMLScriptElement>(
+            'script[data-aamy-google-maps="true"]'
+          );
+
+        if (existing) {
+          if (window.google?.maps?.Map) {
+            resolve();
+            return;
+          }
+
+          existing.addEventListener(
+            'load',
+            () => resolve(),
+            { once: true }
+          );
+
+          existing.addEventListener(
+            'error',
+            () =>
+              reject(
+                new Error(
+                  'GOOGLE_MAPS_SCRIPT_LOAD_FAILED'
+                )
+              ),
+            { once: true }
+          );
+
+          return;
+        }
+
+        const callbackName =
+          '__aamyGoogleMapsReady';
+
+        (
+          window as unknown as Record<
+            string,
+            unknown
+          >
+        )[callbackName] = () => {
+          resolve();
+
+          delete (
+            window as unknown as Record<
+              string,
+              unknown
+            >
+          )[callbackName];
+        };
+
+        const script =
+          document.createElement('script');
+
+        script.dataset.aamyGoogleMaps =
+          'true';
+
+        script.async = true;
+        script.defer = true;
+
+        script.src =
+          `https://maps.googleapis.com/maps/api/js` +
+          `?key=${encodeURIComponent(apiKey)}` +
+          `&v=weekly` +
+          `&libraries=marker` +
+          `&callback=${callbackName}`;
+
+        script.onerror = () =>
+          reject(
+            new Error(
+              'GOOGLE_MAPS_SCRIPT_LOAD_FAILED'
+            )
+          );
+
+        document.head.appendChild(
+          script
+        );
+      }
+    );
 
   return window.__aamyGoogleMapsPromise;
 }
@@ -670,104 +803,306 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
     overlaysRef.current = [];
   }, []);
 
-  const renderMap = useCallback(async () => {
-    if (!mapElementRef.current || !apiKey) return;
-    const normalizedStops = normalizeStops(stops);
-    const start = resourceStart(selectedResource);
-    clearMap();
-    
-    await loadGoogleMaps(apiKey);
-    const { Map } = await window.google.maps.importLibrary('maps');
-    const { AdvancedMarkerElement, PinElement } = await window.google.maps.importLibrary('marker');
-    const firstStop = normalizedStops[0];
+  const renderMap = useCallback(
+  async () => {
+    if (
+      !mapElementRef.current ||
+      !apiKey
+    ) {
+      return;
+    }
 
-    const firstPoint = start
-    ? {
-        lat: start.lat,
-        lng: start.lng,
-        }
-    : firstStop
+    const normalizedStops =
+      normalizeStops(stops);
+
+    const start =
+      resourceStart(
+        selectedResource
+      );
+
+    clearMap();
+
+    try {
+      await loadGoogleMaps(apiKey);
+
+      const maps =
+        window.google?.maps;
+
+      if (!maps?.Map) {
+        throw new Error(
+          'GOOGLE_MAPS_NOT_AVAILABLE'
+        );
+      }
+
+      const firstStop =
+        normalizedStops[0];
+
+      const firstPoint = start
         ? {
-            lat: Number(firstStop.latitude),
-            lng: Number(firstStop.longitude),
+            lat: start.lat,
+            lng: start.lng,
+          }
+        : firstStop
+          ? {
+              lat: Number(
+                firstStop.latitude
+              ),
+              lng: Number(
+                firstStop.longitude
+              ),
+            }
+          : {
+              lat: 28.3,
+              lng: -81.6,
+            };
+
+      const map =
+        mapRef.current ??
+        new maps.Map(
+          mapElementRef.current,
+          {
+            center: firstPoint,
+            zoom: 11,
+            mapId,
+            streetViewControl: false,
+            mapTypeControl: false,
+            fullscreenControl: true,
+          }
+        );
+
+      mapRef.current = map;
+
+      const bounds =
+        new maps.LatLngBounds();
+
+      function createMarker(input: {
+        position: {
+          lat: number;
+          lng: number;
+        };
+        title: string;
+        label: string;
+      }): unknown {
+        const AdvancedMarkerElement =
+          maps.marker
+            ?.AdvancedMarkerElement;
+
+        const PinElement =
+          maps.marker?.PinElement;
+
+        if (
+          AdvancedMarkerElement &&
+          PinElement
+        ) {
+          const pin =
+            new PinElement({
+              glyph: input.label,
+              scale: 1.1,
+            });
+
+          return new AdvancedMarkerElement({
+            map,
+            position: input.position,
+            title: input.title,
+            content: pin.element,
+          });
         }
-        : {
-            // Centro aproximado de Florida cuando todavía no hay paradas.
-            lat: 28.3,
-            lng: -81.6,
+
+        return new maps.Marker({
+          map,
+          position: input.position,
+          title: input.title,
+          label: input.label,
+        });
+      }
+
+      if (start) {
+        const position = {
+          lat: start.lat,
+          lng: start.lng,
         };
 
-    const map = mapRef.current ?? new Map(mapElementRef.current, {
-      center: firstPoint, zoom: 11, mapId,
-      streetViewControl: false, mapTypeControl: false, fullscreenControl: true,
-    });
-    mapRef.current = map;
-    const bounds = new window.google.maps.LatLngBounds();
+        const marker =
+          createMarker({
+            position,
+            title:
+              `${copy.start}: ` +
+              `${selectedResource?.name ?? ''}`,
+            label: 'T',
+          });
 
-    if (start) {
-      const pin = new PinElement({ glyph: 'T', scale: 1.15 });
-      const marker = new AdvancedMarkerElement({
-        map, position: { lat: start.lat, lng: start.lng },
-        title: `${copy.start}: ${selectedResource?.name ?? ''}`, content: pin.element,
-      });
-      overlaysRef.current.push(marker);
-      bounds.extend({ lat: start.lat, lng: start.lng });
-    }
+        overlaysRef.current.push(
+          marker
+        );
 
-    for (const [index, stop] of normalizedStops.entries()) {
-      const lat = Number(stop.latitude);
-      const lng = Number(stop.longitude);
-      const order = Number(
-        stop.order ??
-          stop.stopOrder ??
-          stop.stop_order ??
-          index + 1
-      );
-      const pin = new PinElement({ glyph: String(order || index + 1), scale: 1.05 });
-      const marker = new AdvancedMarkerElement({
-        map, position: { lat, lng },
-        title: stop.formattedAddress ?? stop.formatted_address ?? `${copy.stop} ${index + 1}`,
-        content: pin.element,
-      });
-      overlaysRef.current.push(marker);
-      bounds.extend({ lat, lng });
-    }
-
-    const routePoints = [
-      ...(start ? [{ lat: start.lat, lng: start.lng }] : []),
-      ...normalizedStops.map((stop) => ({ lat: Number(stop.latitude), lng: Number(stop.longitude) })),
-    ];
-
-    if (routePoints.length >= 2) {
-      try {
-        const { Route } = await window.google.maps.importLibrary('routes');
-        const response = await Route.computeRoutes({
-          origin: routePoints[0],
-          destination: routePoints[routePoints.length - 1],
-          intermediates: routePoints.slice(1, -1).map((location) => ({ location })),
-          travelMode: 'DRIVING',
-          routingPreference: 'TRAFFIC_AWARE',
-          fields: ['path', 'viewport', 'distanceMeters', 'durationMillis'],
-        });
-        const firstRoute = response?.routes?.[0];
-        if (firstRoute) {
-          const polylines = firstRoute.createPolylines({ polylineOptions: { strokeOpacity: 0.9, strokeWeight: 6 } });
-          for (const polyline of polylines) {
-            polyline.setMap(map);
-            overlaysRef.current.push(polyline);
-          }
-        }
-      } catch (routeError) {
-        console.error('[FIELD_OPERATIONS_MAP][ROUTE_ERROR]', routeError);
-        const fallbackPolyline = new window.google.maps.Polyline({
-          map, path: routePoints, geodesic: true, strokeOpacity: 0.75, strokeWeight: 4,
-        });
-        overlaysRef.current.push(fallbackPolyline);
+        bounds.extend(position);
       }
-    }
 
-    if (!bounds.isEmpty()) map.fitBounds(bounds, 56);
-  }, [apiKey, clearMap, copy.start, copy.stop, mapId, selectedResource, stops]);
+      for (
+        const [index, stop] of
+        normalizedStops.entries()
+      ) {
+        const latitude =
+          Number(stop.latitude);
+
+        const longitude =
+          Number(stop.longitude);
+
+        const order =
+          Number(
+            stop.order ??
+              stop.stopOrder ??
+              stop.stop_order ??
+              index + 1
+          );
+
+        const position = {
+          lat: latitude,
+          lng: longitude,
+        };
+
+        const marker =
+          createMarker({
+            position,
+
+            title:
+              stop.formattedAddress ??
+              stop.formatted_address ??
+              `${copy.stop} ${index + 1}`,
+
+            label: String(
+              order || index + 1
+            ),
+          });
+
+        overlaysRef.current.push(
+          marker
+        );
+
+        bounds.extend(position);
+      }
+
+      const routePoints = [
+        ...(start
+          ? [
+              {
+                lat: start.lat,
+                lng: start.lng,
+              },
+            ]
+          : []),
+
+        ...normalizedStops.map(
+          (stop) => ({
+            lat: Number(
+              stop.latitude
+            ),
+
+            lng: Number(
+              stop.longitude
+            ),
+          })
+        ),
+      ];
+
+      if (
+        routePoints.length >= 2 &&
+        maps.DirectionsService &&
+        maps.DirectionsRenderer
+      ) {
+        try {
+          const directionsService =
+            new maps.DirectionsService();
+
+          const directionsRenderer =
+            new maps.DirectionsRenderer({
+              map,
+              suppressMarkers: true,
+
+              polylineOptions: {
+                strokeOpacity: 0.9,
+                strokeWeight: 6,
+              },
+            });
+
+          overlaysRef.current.push(
+            directionsRenderer
+          );
+
+          const result =
+            await directionsService.route({
+              origin: routePoints[0],
+
+              destination:
+                routePoints[
+                  routePoints.length - 1
+                ],
+
+              waypoints:
+                routePoints
+                  .slice(1, -1)
+                  .map((location) => ({
+                    location,
+                    stopover: true,
+                  })),
+
+              travelMode:
+                maps.TravelMode.DRIVING,
+
+              optimizeWaypoints: false,
+            });
+
+          directionsRenderer.setDirections(
+            result
+          );
+        } catch (routeError) {
+          console.error(
+            '[FIELD_OPERATIONS_MAP][ROUTE_ERROR]',
+            routeError
+          );
+
+          const fallbackPolyline =
+            new maps.Polyline({
+              map,
+              path: routePoints,
+              geodesic: true,
+              strokeOpacity: 0.75,
+              strokeWeight: 4,
+            });
+
+          overlaysRef.current.push(
+            fallbackPolyline
+          );
+        }
+      }
+
+      if (!bounds.isEmpty()) {
+        map.fitBounds(bounds, 56);
+      }
+    } catch (mapError) {
+      console.error(
+        '[FIELD_OPERATIONS_MAP][MAP_RENDER_ERROR]',
+        mapError
+      );
+
+      setError(
+        mapError instanceof Error
+          ? mapError.message
+          : copy.routeError
+      );
+    }
+  },
+  [
+    apiKey,
+    clearMap,
+    copy.routeError,
+    copy.start,
+    copy.stop,
+    mapId,
+    selectedResource,
+    stops,
+  ]
+);
 
   const loadResources = useCallback(async () => {
     try {
@@ -1049,6 +1384,22 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
   useEffect(() => { void renderMap(); }, [renderMap]);
 
   const normalizedStops = useMemo(() => normalizeStops(stops), [stops]);
+
+  useEffect(() => {
+    console.log(
+        '[FIELD_OPERATIONS_MAP][STOPS_NORMALIZED]',
+        {
+        rawStops: stops.length,
+        normalizedStops:
+            normalizedStops.length,
+        stops,
+        }
+    );
+    }, [
+    normalizedStops,
+    stops,
+    ]);
+
   const busy = loadingResources || loadingRoute || buildingRoute;
 
   return (
