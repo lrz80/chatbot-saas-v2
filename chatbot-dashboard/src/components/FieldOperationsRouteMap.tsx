@@ -22,40 +22,73 @@ type FieldResource = {
 
 type RoutePlan = {
   id: string;
+
   resourceId?: string;
   resource_id?: string;
+
   serviceDate?: string;
   service_date?: string;
+
   status?: string;
   mode?: string;
+
+  optimizationResult?: Record<string, unknown> | null;
+  optimization_result?: Record<string, unknown> | null;
 };
 
 type RouteStop = {
-  id: string;
+  id?: string;
+
   appointmentId?: string | null;
   appointment_id?: string | null;
+
+  locationId?: string | null;
+  location_id?: string | null;
+
+  order?: number;
   stopOrder?: number;
   stop_order?: number;
-  latitude: number | string;
-  longitude: number | string;
+
+  latitude?: number | string | null;
+  longitude?: number | string | null;
+
   scheduledStartAt?: string | null;
   scheduled_start_at?: string | null;
+
   scheduledEndAt?: string | null;
   scheduled_end_at?: string | null;
+
+  plannedArrivalAt?: string | null;
+  planned_arrival_at?: string | null;
+
+  plannedDepartureAt?: string | null;
+  planned_departure_at?: string | null;
+
   formattedAddress?: string | null;
   formatted_address?: string | null;
+
   customerName?: string | null;
   customer_name?: string | null;
+
   serviceName?: string | null;
   service_name?: string | null;
+
   metadata?: Record<string, unknown> | null;
 };
 
 type RoutePlanResponse = {
   ok: boolean;
+
   routePlan?: RoutePlan;
-  stops?: RouteStop[];
+  route_plan?: RoutePlan;
+
+  stops?: unknown[];
+  routeStops?: unknown[];
+  route_stops?: unknown[];
+
   skippedAppointments?: Array<Record<string, unknown>>;
+  skipped_appointments?: Array<Record<string, unknown>>;
+
   error?: string;
 };
 
@@ -132,10 +165,343 @@ function resourceStart(resource: FieldResource | null) {
   return { lat, lng, address: resource.startAddress ?? resource.start_address ?? null };
 }
 
-function normalizeStops(stops: RouteStop[]): RouteStop[] {
+function asObject(value: unknown): Record<string, unknown> | null {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    Array.isArray(value)
+  ) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function optionalText(value: unknown): string | null {
+  const result = String(value ?? '').trim();
+  return result || null;
+}
+
+function normalizeRouteStop(
+  value: unknown,
+  fallbackIndex: number
+): RouteStop | null {
+  const item = asObject(value);
+
+  if (!item) {
+    return null;
+  }
+
+  const metadata =
+    asObject(item.metadata) ?? {};
+
+  const latitude = numberOrNull(
+    item.latitude ??
+      item.lat ??
+      metadata.latitude ??
+      metadata.lat
+  );
+
+  const longitude = numberOrNull(
+    item.longitude ??
+      item.lng ??
+      metadata.longitude ??
+      metadata.lng
+  );
+
+  const appointmentId = optionalText(
+    item.appointmentId ??
+      item.appointment_id ??
+      metadata.appointmentId ??
+      metadata.appointment_id
+  );
+
+  const locationId = optionalText(
+    item.locationId ??
+      item.location_id ??
+      metadata.locationId ??
+      metadata.location_id
+  );
+
+  const order = Number(
+    item.order ??
+      item.stopOrder ??
+      item.stop_order ??
+      fallbackIndex + 1
+  );
+
+  return {
+    id:
+      optionalText(item.id) ??
+      locationId ??
+      appointmentId ??
+      `route-stop-${fallbackIndex}`,
+
+    appointmentId,
+    appointment_id: appointmentId,
+
+    locationId,
+    location_id: locationId,
+
+    order:
+      Number.isFinite(order)
+        ? order
+        : fallbackIndex + 1,
+
+    stopOrder:
+      Number.isFinite(order)
+        ? order
+        : fallbackIndex + 1,
+
+    stop_order:
+      Number.isFinite(order)
+        ? order
+        : fallbackIndex + 1,
+
+    latitude,
+    longitude,
+
+    scheduledStartAt: optionalText(
+      item.scheduledStartAt ??
+        item.scheduled_start_at ??
+        item.plannedArrivalAt ??
+        item.planned_arrival_at ??
+        metadata.scheduledStartAt ??
+        metadata.scheduled_start_at
+    ),
+
+    scheduledEndAt: optionalText(
+      item.scheduledEndAt ??
+        item.scheduled_end_at ??
+        item.plannedDepartureAt ??
+        item.planned_departure_at ??
+        metadata.scheduledEndAt ??
+        metadata.scheduled_end_at
+    ),
+
+    plannedArrivalAt: optionalText(
+      item.plannedArrivalAt ??
+        item.planned_arrival_at
+    ),
+
+    plannedDepartureAt: optionalText(
+      item.plannedDepartureAt ??
+        item.planned_departure_at
+    ),
+
+    formattedAddress: optionalText(
+      item.formattedAddress ??
+        item.formatted_address ??
+        metadata.formattedAddress ??
+        metadata.formatted_address
+    ),
+
+    customerName: optionalText(
+      item.customerName ??
+        item.customer_name ??
+        metadata.customerName ??
+        metadata.customer_name
+    ),
+
+    serviceName: optionalText(
+      item.serviceName ??
+        item.service_name ??
+        metadata.serviceName ??
+        metadata.service_name
+    ),
+
+    metadata,
+  };
+}
+
+function extractRouteStops(
+  payload: unknown
+): RouteStop[] {
+  const data = asObject(payload);
+
+  if (!data) {
+    return [];
+  }
+
+  const routePlan =
+    asObject(data.routePlan) ??
+    asObject(data.route_plan) ??
+    data;
+
+  const optimizationResult =
+    asObject(routePlan.optimizationResult) ??
+    asObject(routePlan.optimization_result);
+
+  const directStops =
+    Array.isArray(data.stops)
+      ? data.stops
+      : Array.isArray(data.routeStops)
+        ? data.routeStops
+        : Array.isArray(data.route_stops)
+          ? data.route_stops
+          : [];
+
+  const orderedStops =
+    optimizationResult &&
+    Array.isArray(optimizationResult.orderedStops)
+      ? optimizationResult.orderedStops
+      : optimizationResult &&
+          Array.isArray(optimizationResult.ordered_stops)
+        ? optimizationResult.ordered_stops
+        : [];
+
+  /*
+   * Las paradas directas normalmente tienen las coordenadas.
+   * orderedStops normalmente tiene el orden optimizado.
+   *
+   * Cuando existen ambas, conservamos las coordenadas de directStops
+   * y aplicamos el orden del resultado optimizado.
+   */
+  const normalizedDirectStops = directStops
+    .map(normalizeRouteStop)
+    .filter(
+      (stop): stop is RouteStop =>
+        stop !== null
+    );
+
+  const normalizedOrderedStops = orderedStops
+    .map(normalizeRouteStop)
+    .filter(
+      (stop): stop is RouteStop =>
+        stop !== null
+    );
+
+  if (normalizedOrderedStops.length === 0) {
+    return normalizedDirectStops;
+  }
+
+  if (normalizedDirectStops.length === 0) {
+    return normalizedOrderedStops;
+  }
+
+  const directByReference = new Map<
+    string,
+    RouteStop
+  >();
+
+  for (const stop of normalizedDirectStops) {
+    const references = [
+      stop.appointmentId,
+      stop.appointment_id,
+      stop.locationId,
+      stop.location_id,
+      stop.id,
+    ].filter(
+      (reference): reference is string =>
+        Boolean(reference)
+    );
+
+    for (const reference of references) {
+      directByReference.set(reference, stop);
+    }
+  }
+
+  return normalizedOrderedStops.map(
+    (orderedStop, index) => {
+      const references = [
+        orderedStop.appointmentId,
+        orderedStop.appointment_id,
+        orderedStop.locationId,
+        orderedStop.location_id,
+        orderedStop.id,
+      ].filter(
+        (reference): reference is string =>
+          Boolean(reference)
+      );
+
+      const directStop = references
+        .map((reference) =>
+          directByReference.get(reference)
+        )
+        .find(Boolean);
+
+      return {
+        ...directStop,
+        ...orderedStop,
+
+        id:
+          orderedStop.id ??
+          directStop?.id ??
+          `route-stop-${index}`,
+
+        latitude:
+          orderedStop.latitude ??
+          directStop?.latitude ??
+          null,
+
+        longitude:
+          orderedStop.longitude ??
+          directStop?.longitude ??
+          null,
+
+        formattedAddress:
+          orderedStop.formattedAddress ??
+          directStop?.formattedAddress ??
+          null,
+
+        customerName:
+          orderedStop.customerName ??
+          directStop?.customerName ??
+          null,
+
+        serviceName:
+          orderedStop.serviceName ??
+          directStop?.serviceName ??
+          null,
+
+        metadata: {
+          ...(directStop?.metadata ?? {}),
+          ...(orderedStop.metadata ?? {}),
+        },
+      };
+    }
+  );
+}
+
+function normalizeStops(
+  stops: RouteStop[]
+): RouteStop[] {
   return [...stops]
-    .filter((stop) => numberOrNull(stop.latitude) !== null && numberOrNull(stop.longitude) !== null)
-    .sort((a, b) => Number(a.stopOrder ?? a.stop_order ?? 0) - Number(b.stopOrder ?? b.stop_order ?? 0));
+    .filter((stop) => {
+      const latitude = numberOrNull(
+        stop.latitude
+      );
+
+      const longitude = numberOrNull(
+        stop.longitude
+      );
+
+      return (
+        latitude !== null &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude !== null &&
+        longitude >= -180 &&
+        longitude <= 180
+      );
+    })
+    .sort((a, b) => {
+      const orderA = Number(
+        a.order ??
+          a.stopOrder ??
+          a.stop_order ??
+          0
+      );
+
+      const orderB = Number(
+        b.order ??
+          b.stopOrder ??
+          b.stop_order ??
+          0
+      );
+
+      return orderA - orderB;
+    });
 }
 
 function loadGoogleMaps(apiKey: string): Promise<void> {
@@ -246,7 +612,12 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
     for (const [index, stop] of normalizedStops.entries()) {
       const lat = Number(stop.latitude);
       const lng = Number(stop.longitude);
-      const order = Number(stop.stopOrder ?? stop.stop_order ?? index + 1);
+      const order = Number(
+        stop.order ??
+          stop.stopOrder ??
+          stop.stop_order ??
+          index + 1
+      );
       const pin = new PinElement({ glyph: String(order || index + 1), scale: 1.05 });
       const marker = new AdvancedMarkerElement({
         map, position: { lat, lng },
@@ -326,9 +697,31 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
       const detailResponse = await fetch(`${BACKEND_URL}/api/field-operations/route-plans/${encodeURIComponent(data.routePlan.id)}`, { credentials: 'include' });
       const detail = await detailResponse.json();
       if (!detailResponse.ok || !detail?.ok) throw new Error(detail?.error || copy.routeError);
-      setRoutePlan(detail.routePlan ?? data.routePlan);
-      setStops(Array.isArray(detail.stops) ? detail.stops : []);
-      setSkippedCount(0);
+      const resolvedRoutePlan =
+        detail.routePlan ??
+        detail.route_plan ??
+        data.routePlan ??
+        data.route_plan ??
+        null;
+
+      const resolvedStops = extractRouteStops({
+        ...detail,
+        routePlan: resolvedRoutePlan,
+      });
+
+      setRoutePlan(resolvedRoutePlan);
+      setStops(resolvedStops);
+
+      const skippedAppointments =
+        Array.isArray(detail.skippedAppointments)
+          ? detail.skippedAppointments
+          : Array.isArray(detail.skipped_appointments)
+            ? detail.skipped_appointments
+            : [];
+
+      setSkippedCount(
+        skippedAppointments.length
+      );
     } catch (loadError) {
       console.error('[FIELD_OPERATIONS_MAP][LOAD_ROUTE_ERROR]', loadError);
       setError(loadError instanceof Error ? loadError.message : copy.routeError);
@@ -350,9 +743,29 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
       });
       const data: RoutePlanResponse = await response.json();
       if (!response.ok || !data?.ok) throw new Error(data?.error || copy.routeError);
-      setRoutePlan(data.routePlan ?? null);
-      setStops(Array.isArray(data.stops) ? data.stops : []);
-      setSkippedCount(Array.isArray(data.skippedAppointments) ? data.skippedAppointments.length : 0);
+      const resolvedRoutePlan =
+        data.routePlan ??
+        data.route_plan ??
+        null;
+
+      const resolvedStops =
+        extractRouteStops({
+          ...data,
+          routePlan: resolvedRoutePlan,
+      });
+
+      const skippedAppointments =
+        Array.isArray(data.skippedAppointments)
+          ? data.skippedAppointments
+          : Array.isArray(data.skipped_appointments)
+            ? data.skipped_appointments
+            : [];
+
+      setRoutePlan(resolvedRoutePlan);
+      setStops(resolvedStops);
+      setSkippedCount(
+        skippedAppointments.length
+      );
     } catch (buildError) {
       console.error('[FIELD_OPERATIONS_MAP][BUILD_ROUTE_ERROR]', buildError);
       setError(buildError instanceof Error ? buildError.message : copy.routeError);
@@ -436,13 +849,28 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
                 </div>
               )}
               {normalizedStops.map((stop, index) => {
-                const order = Number(stop.stopOrder ?? stop.stop_order ?? index + 1);
+                const order = Number(
+                  stop.order ??
+                    stop.stopOrder ??
+                    stop.stop_order ??
+                    index + 1
+                );
                 const customer = stop.customerName ?? stop.customer_name ?? (stop.metadata?.customerName as string | undefined) ?? (stop.metadata?.customer_name as string | undefined);
                 const service = stop.serviceName ?? stop.service_name ?? (stop.metadata?.serviceName as string | undefined) ?? (stop.metadata?.service_name as string | undefined);
                 const address = stop.formattedAddress ?? stop.formatted_address ?? (stop.metadata?.formattedAddress as string | undefined) ?? (stop.metadata?.formatted_address as string | undefined) ?? copy.unknownAddress;
                 const scheduled = stop.scheduledStartAt ?? stop.scheduled_start_at ?? null;
                 return (
-                  <div key={stop.id || `${order}-${stop.appointmentId ?? stop.appointment_id}`} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <div
+                    key={
+                      stop.id ??
+                      stop.appointmentId ??
+                      stop.appointment_id ??
+                      stop.locationId ??
+                      stop.location_id ??
+                      `route-stop-${index}`
+                    }
+                    className="rounded-xl border border-white/10 bg-white/5 p-3"
+                  >
                     <div className="flex items-start gap-3">
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-black">{order || index + 1}</span>
                       <div className="min-w-0">
