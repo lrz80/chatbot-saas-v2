@@ -204,15 +204,28 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
     const normalizedStops = normalizeStops(stops);
     const start = resourceStart(selectedResource);
     clearMap();
-    if (normalizedStops.length === 0 && !start) {
-      mapRef.current = null;
-      return;
-    }
-
+    
     await loadGoogleMaps(apiKey);
     const { Map } = await window.google.maps.importLibrary('maps');
     const { AdvancedMarkerElement, PinElement } = await window.google.maps.importLibrary('marker');
-    const firstPoint = start ?? { lat: Number(normalizedStops[0].latitude), lng: Number(normalizedStops[0].longitude) };
+    const firstStop = normalizedStops[0];
+
+    const firstPoint = start
+    ? {
+        lat: start.lat,
+        lng: start.lng,
+        }
+    : firstStop
+        ? {
+            lat: Number(firstStop.latitude),
+            lng: Number(firstStop.longitude),
+        }
+        : {
+            // Centro aproximado de Florida cuando todavía no hay paradas.
+            lat: 28.3,
+            lng: -81.6,
+        };
+
     const map = mapRef.current ?? new Map(mapElementRef.current, {
       center: firstPoint, zoom: 11, mapId,
       streetViewControl: false, mapTypeControl: false, fullscreenControl: true,
@@ -403,7 +416,9 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
           <div className="relative min-h-[420px] bg-black/20">
             <div ref={mapElementRef} className="absolute inset-0" />
             {!loadingRoute && !buildingRoute && normalizedStops.length === 0 && (
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35 px-6 text-center text-sm text-white/75">{routePlan ? copy.noStops : copy.noRoute}</div>
+              <div className="pointer-events-none absolute left-4 right-4 top-4 z-10 rounded-xl border border-white/10 bg-black/75 px-4 py-3 text-center text-sm text-white/80 backdrop-blur-sm">
+                {routePlan ? copy.noStops : copy.noRoute}
+              </div>
             )}
           </div>
           <aside className="border-t border-white/10 bg-black/20 lg:border-l lg:border-t-0">
