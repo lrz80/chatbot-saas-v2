@@ -274,16 +274,6 @@ export default function Sidebar({
     },
   ];
 
-  const adminItems: MenuItem[] = [
-    {
-      href: "/dashboard/admin/businesses/new",
-      icon: <FiPlusCircle />,
-      labelKey: t(
-        "sidebar.nav.createBusiness"
-      ),
-    },
-  ];
-
   const bottomItems: MenuItem[] = [
     {
       href: "/dashboard/appointments",
@@ -394,17 +384,6 @@ export default function Sidebar({
                 </Link>
               );
             })}
-
-            {tenant?.is_admin ? (
-              <CollapsibleMenu
-                title={t("sidebar.groups.administration")}
-                icon={<FiBriefcase />}
-                items={adminItems}
-                pathname={pathname}
-                defaultOpen
-                onNavigate={handleNavigation}
-              />
-            ) : null}
 
             <CollapsibleMenu
               title={t("sidebar.groups.channels")}
