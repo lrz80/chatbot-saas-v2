@@ -140,6 +140,15 @@ type PortalMessage = {
   from_number?: string;
 };
 
+type VoiceUsage = {
+  cycle_start: string;
+  included: number;
+  bought: number;
+  used: number;
+  total: number;
+  available: number;
+};
+
 type ChannelKey =
   | "voice"
   | "whatsapp"
@@ -292,6 +301,15 @@ export default function PortalHomePage() {
   const [messages, setMessages] =
     useState<PortalMessage[]>([]);
 
+  const [voiceUsage, setVoiceUsage] = useState<VoiceUsage>({
+    cycle_start: "",
+    included: 0,
+    bought: 0,
+    used: 0,
+    total: 0,
+    available: 0,
+  });
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -406,7 +424,8 @@ export default function PortalHomePage() {
         appointmentsResult,
         contactsResult,
         messagesResult,
-      ] = await Promise.allSettled([
+        voiceMinutesResult,
+        ] = await Promise.allSettled([
         fetch(
           `${BACKEND_URL}/api/reports/monthly-summary?month=${encodeURIComponent(
             month
@@ -423,6 +442,10 @@ export default function PortalHomePage() {
         ),
         fetch(
           `${BACKEND_URL}/api/messages?page=1&limit=8`,
+          requestOptions
+        ),
+        fetch(
+          `${BACKEND_URL}/api/stats/voice/minutes`,
           requestOptions
         ),
         
@@ -517,11 +540,37 @@ export default function PortalHomePage() {
         setMessages([]);
       }
 
+      if (
+        voiceMinutesResult.status === "fulfilled" &&
+        voiceMinutesResult.value.ok
+      ) {
+        const data = await voiceMinutesResult.value.json();
+
+        setVoiceUsage({
+          cycle_start: String(data?.cycle_start || ""),
+          included: finiteNumber(data?.included),
+          bought: finiteNumber(data?.bought),
+          used: finiteNumber(data?.used),
+          total: finiteNumber(data?.total),
+          available: finiteNumber(data?.available),
+        });
+      } else {
+        setVoiceUsage({
+          cycle_start: "",
+          included: 0,
+          bought: 0,
+          used: 0,
+          total: 0,
+          available: 0,
+        });
+      }
+
       const successfulRequests = [
         reportResult,
         appointmentsResult,
         contactsResult,
         messagesResult,
+        voiceMinutesResult,
       ].filter(
         (result) =>
           result.status === "fulfilled" &&
@@ -572,61 +621,43 @@ export default function PortalHomePage() {
       .slice(0, 5);
   }, [appointments]);
 
-  const voiceUsage = useMemo(() => {
-    const voiceLimits = tenant?.limites?.voz ?? {};
-
-    const included = finiteNumber(
-        voiceLimits.limite_base
-    );
-
-    const extras = finiteNumber(
-        voiceLimits.creditos_extras
-    );
-
-    const used = finiteNumber(
-        voiceLimits.usados
-    );
-
-    const total = included + extras;
-
-    const available = Math.max(
-        0,
-        finiteNumber(
-        voiceLimits.total_disponible,
-        total - used
-        )
-    );
-
-    return {
-        included,
-        extras,
-        used,
-        total,
-        available,
-    };
-    }, [tenant]);
-
   const activeChannels = useMemo(() => {
     const flags = tenant?.channel_flags ?? {};
     const metaFlags = tenant?.meta_subchannel_flags ?? {};
+
+    const voiceConnected =
+        Boolean(tenant?.twilio_voice_number);
+
+    const whatsappConnected =
+        tenant?.whatsapp_cloud_connected === true ||
+        tenant?.whatsapp_twilio_connected === true;
+
+    const facebookConnected =
+        Boolean(tenant?.facebook_page_id);
+
+    const instagramConnected =
+        Boolean(
+        tenant?.instagram_business_account_id ||
+        tenant?.instagram_page_id
+        );
+
+    const smsConnected =
+        Boolean(tenant?.twilio_sms_number);
 
     return [
         {
         key: "voice" as const,
         enabled:
-            flags.voice === true ||
-            Boolean(tenant?.twilio_voice_number),
+            flags.voice === true &&
+            voiceConnected,
         label: t("dashboard.channels.voice"),
         icon: <FiPhone />,
         },
         {
         key: "whatsapp" as const,
         enabled:
-            flags.whatsapp === true ||
-            Boolean(
-            tenant?.whatsapp_cloud_connected ||
-            tenant?.whatsapp_twilio_connected
-            ),
+            flags.whatsapp === true &&
+            whatsappConnected,
         label: t("dashboard.channels.whatsapp"),
         icon: <FaWhatsapp />,
         },
@@ -634,7 +665,8 @@ export default function PortalHomePage() {
         key: "facebook" as const,
         enabled:
             flags.meta === true &&
-            metaFlags.facebook !== false,
+            metaFlags.facebook === true &&
+            facebookConnected,
         label: t("dashboard.channels.facebook"),
         icon: <FaFacebookMessenger />,
         },
@@ -642,13 +674,16 @@ export default function PortalHomePage() {
         key: "instagram" as const,
         enabled:
             flags.meta === true &&
-            metaFlags.instagram !== false,
+            metaFlags.instagram === true &&
+            instagramConnected,
         label: t("dashboard.channels.instagram"),
         icon: <FaInstagram />,
         },
         {
         key: "sms" as const,
-        enabled: flags.sms === true,
+        enabled:
+            flags.sms === true &&
+            smsConnected,
         label: t("channel.label.sms"),
         icon: <FiMessageSquare />,
         },
@@ -664,9 +699,8 @@ export default function PortalHomePage() {
   const estimatedTimeSaved =
     calculateTimeSaved(report);
 
-  const voiceTotal =
-    voiceUsage.total || voiceUsage.included;
-
+  const voiceTotal = voiceUsage.total;
+  
   const voicePercentage =
     voiceTotal > 0
       ? Math.min(
