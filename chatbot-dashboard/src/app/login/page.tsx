@@ -253,12 +253,6 @@ export default function LoginPage() {
           </a>
         </p>
 
-        <p className="mt-6 text-sm text-center text-white/60">
-          {t('login.links.noAccount')}{' '}
-          <a href="/register" className="text-purple-400 underline hover:text-purple-300 transition">
-            {t('login.links.register')}
-          </a>
-        </p>
       </div>
     </div>
   );
