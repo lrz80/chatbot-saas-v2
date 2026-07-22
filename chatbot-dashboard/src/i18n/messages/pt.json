@@ -1542,6 +1542,8 @@
 "portal.appointments.address": "Endereço",
 "portal.appointments.pagination.perPage": "Agendamentos por página",
 "portal.appointments.pagination.previous": "Anterior",
-"portal.appointments.pagination.next": "Próxima"
+"portal.appointments.pagination.next": "Próxima",
+
+"portal.business.assignedPhone": "Número de telefone atribuído"
 
 }

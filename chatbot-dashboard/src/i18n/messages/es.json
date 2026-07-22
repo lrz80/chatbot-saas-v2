@@ -1804,5 +1804,7 @@
   "portal.appointments.address": "Dirección",
   "portal.appointments.pagination.perPage": "Citas por página",
   "portal.appointments.pagination.previous": "Anterior",
-  "portal.appointments.pagination.next": "Siguiente"
+  "portal.appointments.pagination.next": "Siguiente",
+
+  "portal.business.assignedPhone": "Número de teléfono asignado"
 }

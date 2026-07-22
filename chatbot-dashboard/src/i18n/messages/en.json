@@ -1787,5 +1787,7 @@
   "portal.appointments.address": "Address",
   "portal.appointments.pagination.perPage": "Appointments per page",
   "portal.appointments.pagination.previous": "Previous",
-  "portal.appointments.pagination.next": "Next"
+  "portal.appointments.pagination.next": "Next",
+
+  "portal.business.assignedPhone": "Assigned phone number"
 }
