@@ -1945,5 +1945,57 @@
 
   "portal.channels.help.title": "Need to configure a channel?",
   "portal.channels.help.description": "Contact our team to connect a phone number, Facebook, Instagram, or add a channel to your account.",
-  "portal.channels.help.action": "Contact support"
+  "portal.channels.help.action": "Contact support",
+
+  "portal.support.title": "Support",
+  "portal.support.description": "Contact our team for technical assistance, billing questions, or account changes.",
+
+  "portal.support.contact.emailTitle": "Email support",
+  "portal.support.contact.whatsappTitle": "WhatsApp support",
+  "portal.support.contact.hoursTitle": "Support hours",
+  "portal.support.contact.whatsappNotConfigured": "Not available",
+
+  "portal.support.form.reasonTitle": "What do you need help with?",
+  "portal.support.form.reasonDescription": "Select the option that best describes your request.",
+  "portal.support.form.contactTitle": "Describe your request",
+  "portal.support.form.contactDescription": "We will prepare the message so you can send it to our team.",
+  "portal.support.form.subject": "Subject",
+  "portal.support.form.subjectPlaceholder": "Brief summary of the request",
+  "portal.support.form.description": "Description",
+  "portal.support.form.descriptionPlaceholder": "Explain what you need, what happened, and any details that may help us.",
+  "portal.support.form.descriptionHelp": "Do not include passwords, tokens, or confidential information.",
+
+  "portal.support.reasons.technical.title": "Technical support",
+  "portal.support.reasons.technical.description": "Errors, operational issues, or unexpected behavior.",
+  "portal.support.reasons.billing.title": "Billing",
+  "portal.support.reasons.billing.description": "Payments, charges, invoices, or usage questions.",
+  "portal.support.reasons.planChange.title": "Change plan",
+  "portal.support.reasons.planChange.description": "Add services, modify limits, or update the membership.",
+  "portal.support.reasons.cancellation.title": "Request cancellation",
+  "portal.support.reasons.cancellation.description": "Contact our team to review and process a cancellation.",
+  "portal.support.reasons.channels.title": "Channel configuration",
+  "portal.support.reasons.channels.description": "Help with Voice, WhatsApp, Facebook, or Instagram.",
+  "portal.support.reasons.other.title": "Other request",
+  "portal.support.reasons.other.description": "Any request that does not match the previous options.",
+
+  "portal.support.cancellation.noticeTitle": "Cancellation requires review",
+  "portal.support.cancellation.noticeDescription": "Submitting this request does not automatically cancel the membership. Our team will review the account terms and provide the next steps.",
+
+  "portal.support.actions.email": "Send by email",
+  "portal.support.actions.whatsapp": "Send by WhatsApp",
+  "portal.support.actions.copy": "Copy message",
+  "portal.support.actions.copied": "Message copied",
+
+  "portal.support.message.greeting": "Hello, Aamy team:",
+  "portal.support.message.reason": "Reason",
+  "portal.support.message.subject": "Subject",
+  "portal.support.message.noDescription": "No description was provided.",
+  "portal.support.message.footer": "Sent from the Aamy client portal.",
+
+  "portal.support.response.title": "Response time",
+  "portal.support.response.description": "Our team will review your request during support hours and reply through the same contact channel.",
+
+  "portal.support.errors.descriptionRequired": "Enter a description before sending the request.",
+  "portal.support.errors.whatsappUnavailable": "The WhatsApp support number has not been configured yet.",
+  "portal.support.errors.copy": "The message could not be copied."
 }

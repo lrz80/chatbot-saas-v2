@@ -1963,5 +1963,57 @@
 
   "portal.channels.help.title": "¿Necesitas configurar un canal?",
   "portal.channels.help.description": "Comunícate con nuestro equipo si necesitas conectar un número, Facebook, Instagram o agregar un canal a tu cuenta.",
-  "portal.channels.help.action": "Contactar soporte"
+  "portal.channels.help.action": "Contactar soporte",
+
+  "portal.support.title": "Soporte",
+  "portal.support.description": "Comunícate con nuestro equipo para recibir ayuda técnica, resolver dudas de facturación o solicitar cambios en tu cuenta.",
+
+  "portal.support.contact.emailTitle": "Soporte por email",
+  "portal.support.contact.whatsappTitle": "Soporte por WhatsApp",
+  "portal.support.contact.hoursTitle": "Horario de atención",
+  "portal.support.contact.whatsappNotConfigured": "No disponible",
+
+  "portal.support.form.reasonTitle": "¿Con qué necesitas ayuda?",
+  "portal.support.form.reasonDescription": "Selecciona la opción que mejor describa tu solicitud.",
+  "portal.support.form.contactTitle": "Describe tu solicitud",
+  "portal.support.form.contactDescription": "Prepararemos el mensaje para que puedas enviarlo a nuestro equipo.",
+  "portal.support.form.subject": "Asunto",
+  "portal.support.form.subjectPlaceholder": "Resumen breve de la solicitud",
+  "portal.support.form.description": "Descripción",
+  "portal.support.form.descriptionPlaceholder": "Explícanos qué necesitas, qué ocurrió y cualquier detalle que pueda ayudarnos.",
+  "portal.support.form.descriptionHelp": "No incluyas contraseñas, tokens ni información confidencial.",
+
+  "portal.support.reasons.technical.title": "Soporte técnico",
+  "portal.support.reasons.technical.description": "Errores, problemas de funcionamiento o comportamiento inesperado.",
+  "portal.support.reasons.billing.title": "Facturación",
+  "portal.support.reasons.billing.description": "Pagos, cargos, facturas o dudas sobre el consumo.",
+  "portal.support.reasons.planChange.title": "Cambiar el plan",
+  "portal.support.reasons.planChange.description": "Agregar servicios, modificar límites o actualizar la membresía.",
+  "portal.support.reasons.cancellation.title": "Solicitar cancelación",
+  "portal.support.reasons.cancellation.description": "Comunicarte con nuestro equipo para revisar y procesar una cancelación.",
+  "portal.support.reasons.channels.title": "Configuración de canales",
+  "portal.support.reasons.channels.description": "Ayuda con Voice, WhatsApp, Facebook o Instagram.",
+  "portal.support.reasons.other.title": "Otra solicitud",
+  "portal.support.reasons.other.description": "Cualquier consulta que no corresponda a las opciones anteriores.",
+
+  "portal.support.cancellation.noticeTitle": "La cancelación requiere revisión",
+  "portal.support.cancellation.noticeDescription": "Enviar esta solicitud no cancela automáticamente la membresía. Nuestro equipo revisará las condiciones de la cuenta y te indicará los próximos pasos.",
+
+  "portal.support.actions.email": "Enviar por email",
+  "portal.support.actions.whatsapp": "Enviar por WhatsApp",
+  "portal.support.actions.copy": "Copiar mensaje",
+  "portal.support.actions.copied": "Mensaje copiado",
+
+  "portal.support.message.greeting": "Hola, equipo de Aamy:",
+  "portal.support.message.reason": "Motivo",
+  "portal.support.message.subject": "Asunto",
+  "portal.support.message.noDescription": "No se proporcionó una descripción.",
+  "portal.support.message.footer": "Enviado desde el portal del cliente de Aamy.",
+
+  "portal.support.response.title": "Tiempo de respuesta",
+  "portal.support.response.description": "Nuestro equipo revisará tu solicitud durante el horario de atención y responderá por el mismo canal de contacto.",
+
+  "portal.support.errors.descriptionRequired": "Escribe una descripción antes de enviar la solicitud.",
+  "portal.support.errors.whatsappUnavailable": "El número de soporte por WhatsApp todavía no está configurado.",
+  "portal.support.errors.copy": "No fue posible copiar el mensaje."
 }
