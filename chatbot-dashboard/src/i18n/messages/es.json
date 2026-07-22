@@ -1912,5 +1912,56 @@
   "portal.plan.actions.refresh": "Actualizar",
   "portal.plan.actions.refreshing": "Actualizando...",
 
-  "portal.plan.errors.load": "No fue posible cargar la información del plan."
+  "portal.plan.errors.load": "No fue posible cargar la información del plan.",
+
+  "portal.navigation.channels": "Canales",
+
+  "portal.channels.title": "Canales",
+  "portal.channels.description": "Consulta el estado de tus canales y controla cuáles están atendiendo clientes.",
+
+  "portal.channels.summary.available": "Incluidos en tu cuenta",
+  "portal.channels.summary.active": "Canales activos",
+  "portal.channels.summary.pending": "Configuración pendiente",
+
+  "portal.channels.voice.title": "Llamadas",
+  "portal.channels.voice.description": "Permite que Aamy atienda llamadas telefónicas.",
+  "portal.channels.voice.toggle": "Activar o desactivar llamadas",
+
+  "portal.channels.whatsapp.description": "Permite que Aamy responda mensajes de WhatsApp.",
+  "portal.channels.whatsapp.toggle": "Activar o desactivar WhatsApp",
+
+  "portal.channels.meta.description": "Controla la atención de Facebook e Instagram.",
+  "portal.channels.meta.toggle": "Activar o desactivar Meta",
+
+  "portal.channels.status.included": "Incluido",
+  "portal.channels.status.notIncluded": "No incluido",
+  "portal.channels.status.configured": "Configurado",
+  "portal.channels.status.notConfigured": "No configurado",
+  "portal.channels.status.connected": "Conectado",
+  "portal.channels.status.notConnected": "No conectado",
+  "portal.channels.status.active": "Activo",
+  "portal.channels.status.off": "Apagado",
+  "portal.channels.status.maintenance": "Mantenimiento",
+
+  "portal.channels.fields.assignedNumber": "Número de teléfono asignado",
+  "portal.channels.values.notAssigned": "No asignado",
+
+  "portal.channels.reasons.maintenance": "Este canal está temporalmente en mantenimiento.",
+  "portal.channels.reasons.notIncluded": "Este canal no está incluido en tu cuenta.",
+  "portal.channels.reasons.notConfigured": "Este canal debe ser configurado antes de poder activarlo.",
+  "portal.channels.reasons.metaOff": "Primero debes activar el canal Meta.",
+  "portal.channels.reasons.accountNotConnected": "Esta cuenta todavía no está conectada.",
+
+  "portal.channels.actions.refresh": "Actualizar",
+  "portal.channels.actions.refreshing": "Actualizando...",
+
+  "portal.channels.success.activated": "{{channel}} fue activado correctamente.",
+  "portal.channels.success.deactivated": "{{channel}} fue desactivado correctamente.",
+
+  "portal.channels.errors.load": "No fue posible cargar el estado de los canales.",
+  "portal.channels.errors.toggle": "No fue posible actualizar el canal.",
+
+  "portal.channels.help.title": "¿Necesitas configurar un canal?",
+  "portal.channels.help.description": "Comunícate con nuestro equipo si necesitas conectar un número, Facebook, Instagram o agregar un canal a tu cuenta.",
+  "portal.channels.help.action": "Contactar soporte"
 }

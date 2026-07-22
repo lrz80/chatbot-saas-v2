@@ -11,6 +11,7 @@ import {
   FiHome,
   FiMap,
   FiMessageSquare,
+  FiToggleRight,
   FiUser,
   FiUsers,
   FiX,
@@ -127,6 +128,12 @@ export default function PortalSidebar({
       translationKey: "portal.navigation.conversations",
       icon: <FiMessageSquare />,
       visible: hasConversationChannel(tenant),
+    },
+    {
+      href: "/portal/channels",
+      translationKey: "portal.navigation.channels",
+      icon: <FiToggleRight />,
+      visible: true,
     },
     {
       href: "/portal/follow-up",
