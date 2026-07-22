@@ -1752,6 +1752,13 @@
 
 "portal.support.errors.descriptionRequired": "Escreva uma descrição antes de enviar a solicitação.",
 "portal.support.errors.whatsappUnavailable": "O número de suporte do WhatsApp ainda não foi configurado.",
-"portal.support.errors.copy": "Não foi possível copiar a mensagem."
+"portal.support.errors.copy": "Não foi possível copiar a mensagem.",
+"portal.conversations.total": "conversas",
+"portal.conversations.refresh": "Atualizar",
+"portal.conversations.search": "Buscar por nome ou telefone",
+"portal.conversations.searchAction": "Buscar",
+"portal.conversations.clear": "Limpar",
+"portal.conversations.messages": "mensagens",
+"history.errors.load": "Não foi possível carregar as conversas."
 
 }

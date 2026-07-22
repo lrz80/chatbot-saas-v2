@@ -1,473 +1,672 @@
 //src/app/portal/conversations/page.tsx
-
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { format } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import {
+  FiChevronDown,
+  FiChevronUp,
+  FiClock,
+  FiGlobe,
+  FiPhoneCall,
+  FiRefreshCw,
+  FiSearch,
+  FiUser,
+} from "react-icons/fi";
+import {
+  SiFacebook,
+  SiInstagram,
+  SiWhatsapp,
+} from "react-icons/si";
+
 import { BACKEND_URL } from "@/utils/api";
-import { SiWhatsapp, SiFacebook, SiInstagram } from "react-icons/si";
-import { FiGlobe, FiPhoneCall } from "react-icons/fi";
-import type { ReactNode } from "react";
-import { io, Socket } from 'socket.io-client';
 import { useI18n } from "@/i18n/LanguageProvider";
+
+type ConversationMessage = {
+  id: string;
+  message_id?: string | null;
+  role?: string | null;
+  content: string;
+  timestamp: string;
+  emotion?: string | null;
+  intent?: string | null;
+  interest_level?: number | null;
+};
+
+type Conversation = {
+  conversation_id: string;
+  channel: string;
+  from_number: string | null;
+  customer_name: string | null;
+  started_at: string;
+  ended_at: string;
+  message_count: number;
+  last_message: string | null;
+  duration_sec?: number | null;
+  messages: ConversationMessage[];
+};
+
+type Pagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
 
 const PAGE_SIZE = 10;
 
-type Msg = {
-  id: string | number;
-  timestamp: string;
-  role?: string;
-  content: string;
-  canal?: string;
-  channel?: string;
-  source?: string;
-  nombre_cliente?: string;
-  from_number?: string;
-  emotion?: string;
-  intencion?: string;
-  nivel_interes?: string | number;
-};
+function normalizeChannel(value: unknown): string {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
+}
 
-const canonicalCanal = (c?: string) => {
-  const s = (c || "").toString().trim().toLowerCase();
+export default function PortalConversationsPage() {
+  const { t, lang } = useI18n();
 
-  if (!s) return "";
+  const [conversations, setConversations] =
+    useState<Conversation[]>([]);
 
-  // WhatsApp: whatsapp, whatsapp_in, whatsapp_out, twilio_whatsapp, etc.
-  if (s.includes("whatsapp")) return "whatsapp";
+  const [pagination, setPagination] =
+    useState<Pagination>({
+      page: 1,
+      limit: PAGE_SIZE,
+      total: 0,
+      totalPages: 1,
+    });
 
-  // Meta
-  if (s.includes("facebook")) return "facebook";
-  if (s.includes("instagram")) return "instagram";
+  const [channel, setChannel] = useState("");
+  const [searchInput, setSearchInput] =
+    useState("");
+  const [search, setSearch] = useState("");
 
-  // Voice: voice, voz, call, twilio_voice, etc.
-  if (s === "voz" || s.includes("voice") || s.includes("call")) return "voice";
+  const [expandedId, setExpandedId] =
+    useState<string | null>(null);
 
-  return s; // fallback
-};
-
-const resolveCanal = (m: Partial<Msg> | any): string => {
-  return canonicalCanal(m.canal ?? m.channel ?? m.source);
-};
-
-const normalizeCanal = canonicalCanal;
-
-export default function MessageHistory() {
-  const { t } = useI18n();
-
-  const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [canal, setCanal] = useState(""); // filtro seleccionado
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [refreshing, setRefreshing] =
+    useState(false);
 
-  const lastIdRef = useRef<string | number | null>(null);
-  const lastTsRef = useRef<string | null>(null);
-  const mensajesGlobalesRef = useRef<Msg[]>([]);
-  const socketRef = useRef<Socket | null>(null);
+  const [error, setError] = useState("");
 
-  // 👉 1) Calcula los contadores SOLO a partir de los mensajes cargados
-  const conteo = messages.reduce(
-    (acc, msg) => {
-      const c = normalizeCanal(msg.canal);
+  const locale = useMemo(() => {
+    if (lang === "pt") return "pt-BR";
+    if (lang === "es") return "es-US";
 
-      // Contamos todos los mensajes por canal, sin filtrar por role
-      if (c === "whatsapp") acc.whatsapp += 1;
-      if (c === "facebook") acc.facebook += 1;
-      if (c === "instagram") acc.instagram += 1;
-      if (c === "voice" || c === "voz") acc.voice += 1;
+    return "en-US";
+  }, [lang]);
 
-      return acc;
-    },
-    { whatsapp: 0, facebook: 0, instagram: 0, voice: 0 }
-  );
+  function formatDate(value: string): string {
+    const date = new Date(value);
 
-  const fetchMessages = async (reset = false) => {
-    try {
-      if (reset) setLoading(true);
-      else setLoadingMore(true);
-
-      const pageToFetch = reset ? 1 : page;
-
-      const res = await fetch(
-        `${BACKEND_URL}/api/messages?canal=${canal}&page=${pageToFetch}&limit=${PAGE_SIZE}`,
-        { credentials: "include" }
-      );
-      if (!res.ok) throw new Error("Error al obtener mensajes");
-
-      const data = await res.json();
-      const nuevosMensajes: Msg[] = (data.mensajes || [])
-        .sort(
-          (a: Msg, b: Msg) =>
-            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        )
-        .map((m: Msg) => ({ ...m, canal: resolveCanal(m) }));
-
-      // merge + dedupe por id
-      const base = reset ? [] : mensajesGlobalesRef.current;
-      const merged = [...base, ...nuevosMensajes];
-      const mensajesUnicos = Array.from(
-        new Map(merged.map((m) => [m.id, m])).values()
-      );
-
-      mensajesGlobalesRef.current = mensajesUnicos;
-
-      // avanzar paginación de forma segura
-      setPage((p) => (reset ? 2 : p + 1));
-      setHasMore(nuevosMensajes.length === PAGE_SIZE);
-
-      if (nuevosMensajes.length > 0) {
-        const masReciente = nuevosMensajes.reduce((latest, msg) => {
-          return new Date(msg.timestamp).getTime() > new Date(latest.timestamp).getTime()
-            ? msg
-            : latest;
-        }, nuevosMensajes[0]);
-
-        lastIdRef.current = masReciente.id;
-        lastTsRef.current = masReciente.timestamp;
-      }
-
-      // aplicar filtro activo (por si acaso, aunque el backend ya filtra)
-      const filtrados = canal
-        ? mensajesUnicos.filter((m) => m.canal === canal)
-        : mensajesUnicos;
-
-      const ordenadosDesc = filtrados.sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-
-      setMessages(ordenadosDesc);
-    } catch (error) {
-      console.error("❌ Error al obtener mensajes:", error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+    if (Number.isNaN(date.getTime())) {
+      return "—";
     }
-  };
 
-  const fetchMensajesNuevos = async () => {
+    return date.toLocaleDateString(locale, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  function formatTime(value: string): string {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "—";
+    }
+
+    return date.toLocaleTimeString(locale, {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+
+  function formatDuration(
+    seconds?: number | null
+  ): string {
+    const total = Number(seconds || 0);
+
+    if (!total) {
+      return "—";
+    }
+
+    const minutes = Math.floor(total / 60);
+    const remainingSeconds = total % 60;
+
+    if (minutes === 0) {
+      return `${remainingSeconds}s`;
+    }
+
+    return `${minutes}m ${remainingSeconds}s`;
+  }
+
+  function getChannelIcon(channelName: string) {
+    const normalized =
+      normalizeChannel(channelName);
+
+    if (normalized === "whatsapp") {
+      return (
+        <SiWhatsapp className="text-emerald-300" />
+      );
+    }
+
+    if (normalized === "facebook") {
+      return (
+        <SiFacebook className="text-blue-300" />
+      );
+    }
+
+    if (normalized === "instagram") {
+      return (
+        <SiInstagram className="text-pink-300" />
+      );
+    }
+
+    if (normalized === "voice") {
+      return (
+        <FiPhoneCall className="text-purple-300" />
+      );
+    }
+
+    return <FiGlobe className="text-white/50" />;
+  }
+
+  function getChannelLabel(
+    channelName: string
+  ): string {
+    const normalized =
+      normalizeChannel(channelName);
+
+    if (normalized === "voice") {
+      return t("history.channels.voice");
+    }
+
+    if (normalized === "whatsapp") {
+      return "WhatsApp";
+    }
+
+    if (normalized === "facebook") {
+      return "Facebook";
+    }
+
+    if (normalized === "instagram") {
+      return "Instagram";
+    }
+
+    return channelName || "Other";
+  }
+
+  async function loadConversations(
+    page = 1,
+    refresh = false
+  ) {
+    if (refresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
+    setError("");
+
     try {
-      if (!lastTsRef.current) return;
-
       const params = new URLSearchParams();
 
-      if (canal) {
-        params.set("canal", canal);
+      params.set("page", String(page));
+      params.set("limit", String(PAGE_SIZE));
+
+      if (channel) {
+        params.set("canal", channel);
       }
 
-      params.set("lastTs", lastTsRef.current);
-
-      if (lastIdRef.current) {
-        params.set("lastId", String(lastIdRef.current));
+      if (search) {
+        params.set("search", search);
       }
 
-      const res = await fetch(
-        `${BACKEND_URL}/api/messages/nuevos?${params.toString()}`,
-        { credentials: "include" }
-      );
-      if (!res.ok) return;
-
-      const data = await res.json();
-      const nuevos: Msg[] = (data.mensajes || []).map((m: Msg) => ({
-        ...m,
-        canal: resolveCanal(m),
-      }));
-
-      if (nuevos.length > 0) {
-        const todos = [...mensajesGlobalesRef.current, ...nuevos];
-        const mensajesUnicos = Array.from(
-          new Map(todos.map((m) => [m.id, m])).values()
-        );
-
-        mensajesGlobalesRef.current = mensajesUnicos;
-
-        const filtrados = canal
-          ? mensajesUnicos.filter((m) => m.canal === canal)
-          : mensajesUnicos;
-
-        const ordenadosDesc = filtrados.sort(
-          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-        setMessages(ordenadosDesc);
-
-        const masReciente = nuevos.reduce((latest, msg) => {
-          return new Date(msg.timestamp).getTime() > new Date(latest.timestamp).getTime()
-            ? msg
-            : latest;
-        }, nuevos[0]);
-
-        lastIdRef.current = masReciente.id;
-        lastTsRef.current = masReciente.timestamp;
-      }
-    } catch (err) {
-      console.error("❌ Error en polling de nuevos mensajes:", err);
-    }
-  };
-
-  // Carga inicial + cuando cambia el canal
-  useEffect(() => {
-    setMessages([]);
-    mensajesGlobalesRef.current = [];
-    lastIdRef.current = null;
-    lastTsRef.current = null;
-    setPage(1);
-    setHasMore(true);
-    fetchMessages(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canal]);
-
-  // Polling cada 5s
-  useEffect(() => {
-    const interval = setInterval(fetchMensajesNuevos, 5000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canal]);
-
-  const canalIcons: Record<string, ReactNode> = {
-    whatsapp: <SiWhatsapp className="inline text-green-400" />,
-    facebook: <SiFacebook className="inline text-blue-400" />,
-    instagram: <SiInstagram className="inline text-pink-400" />,
-    voice: <FiPhoneCall className="inline text-purple-400" />,
-    "": <FiGlobe className="inline text-white/70" />,
-  };
-
-  const currentIcon = canalIcons[canal as keyof typeof canalIcons] ?? canalIcons[""];
-
-  // 🔌 Conexión en tiempo real con Socket.IO
-  useEffect(() => {
-    // Conecta al backend (BACKEND_URL debe ser algo como https://api.aamy.ai)
-    const socket = io(BACKEND_URL, {
-      withCredentials: true,
-      transports: ['websocket'],
-    });
-
-    socketRef.current = socket;
-
-    socket.on('connect', () => {
-      console.log('🟢 Socket conectado:', socket.id);
-    });
-
-    socket.on('message:new', (data) => {
-      console.log('📩 Evento message:new recibido EN TIEMPO REAL:', data);
-
-      const nuevo: Msg = {
-        id: data.id ?? Date.now(), // fallback si no viene id
-        timestamp: data.created_at ?? new Date().toISOString(),
-        role: data.role,
-        content: data.content,
-        canal: resolveCanal(data),
-        from_number: data.from_number,
-      };
-
-      // 🧠 1. Insertar en memoria global evitando duplicados
-      const existe = mensajesGlobalesRef.current.some((m) => m.id === nuevo.id);
-      if (!existe) {
-        mensajesGlobalesRef.current = [
-          nuevo,
-          ...mensajesGlobalesRef.current,
-        ];
-      }
-
-      // 🧩 2. Aplicar filtro activo
-      const filtrados = canal
-        ? mensajesGlobalesRef.current.filter((m) => m.canal === canal)
-        : mensajesGlobalesRef.current;
-
-      // 🕒 3. Ordenar por fecha descendente
-      const ordenadosDesc = filtrados.sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-
-      // 🎯 4. Render inmediato
-      setMessages([...ordenadosDesc]);
-    });
-
-    socket.on("message:update", (data) => {
-      console.log("✏️ Evento message:update recibido EN TIEMPO REAL:", data);
-
-      const updated: Msg = {
-        id: data.id,
-        timestamp: data.timestamp ?? data.created_at ?? new Date().toISOString(),
-        role: data.role,
-        content: data.content,
-        canal: resolveCanal(data),
-        from_number: data.from_number,
-        nombre_cliente: data.nombre_cliente,
-        emotion: data.emotion,
-        intencion: data.intencion,
-        nivel_interes: data.nivel_interes,
-      };
-
-      mensajesGlobalesRef.current = mensajesGlobalesRef.current.map((m) => {
-        if (m.id === updated.id) {
-          return {
-            ...m,
-            ...updated,
-          };
+      const response = await fetch(
+        `${BACKEND_URL}/api/conversations?${params.toString()}`,
+        {
+          credentials: "include",
+          cache: "no-store",
         }
+      );
 
-        return m;
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        throw new Error(
+          data?.error ||
+            t("history.errors.load")
+        );
+      }
+
+      setConversations(
+        Array.isArray(data?.conversations)
+          ? data.conversations
+          : []
+      );
+
+      setPagination({
+        page: Number(
+          data?.pagination?.page || page
+        ),
+        limit: Number(
+          data?.pagination?.limit ||
+            PAGE_SIZE
+        ),
+        total: Number(
+          data?.pagination?.total || 0
+        ),
+        totalPages: Math.max(
+          1,
+          Number(
+            data?.pagination?.totalPages || 1
+          )
+        ),
       });
 
-      const filtrados = canal
-        ? mensajesGlobalesRef.current.filter((m) => m.canal === canal)
-        : mensajesGlobalesRef.current;
-
-      const ordenadosDesc = filtrados.sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      setExpandedId(null);
+    } catch (loadError) {
+      console.error(
+        "[PORTAL_CONVERSATIONS][LOAD_FAILED]",
+        loadError
       );
 
-      setMessages([...ordenadosDesc]);
-    });
+      setConversations([]);
 
-    socket.on('disconnect', () => {
-      console.log('🔴 Socket desconectado');
-    });
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : t("history.errors.load")
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }
 
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  function applySearch() {
+    setSearch(searchInput.trim());
+  }
+
+  function clearSearch() {
+    setSearchInput("");
+    setSearch("");
+  }
+
+  useEffect(() => {
+    void loadConversations(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [channel, search]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-4 py-6 sm:px-6 md:px-8">
-      <div className="w-full max-w-6xl mx-auto bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-md px-4 py-6 sm:p-8">
-
-        {/* Título principal */}
-        <h2 className="text-2xl md:text-3xl font-extrabold mb-6 text-indigo-300 flex items-center gap-2">
-          {currentIcon} {t("history.title")}
-        </h2>
-
-        {/* Resumen por canal */}
-        <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-lg text-xs sm:text-sm flex flex-wrap gap-4">
-          <span>{canalIcons.whatsapp} {t("history.channels.whatsapp")} ({conteo.whatsapp})</span>
-          <span>{canalIcons.facebook} {t("history.channels.facebook")} ({conteo.facebook})</span>
-          <span>{canalIcons.instagram} {t("history.channels.instagram")} ({conteo.instagram})</span>
-          <span>{canalIcons.voice} {t("history.channels.voice")} ({conteo.voice})</span>
-        </div>
-
-        {/* Filtro por canal */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
-          <label className="text-sm font-medium text-white sm:mr-2">
-            {t("history.filter.label")}
-          </label>
-          <select
-            value={canal}
-            onChange={(e) => setCanal(e.target.value)}
-            className="bg-white/10 border border-white/30 text-white px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          >
-            <option value="">{t("history.filter.all")}</option>
-            <option value="whatsapp">{t("history.filter.whatsapp")}</option>
-            <option value="facebook">{t("history.filter.facebook")}</option>
-            <option value="instagram">{t("history.filter.instagram")}</option>
-            <option value="voice">{t("history.filter.voice")}</option>
-          </select>
-        </div>
-
-        {/* Contenido principal */}
-        {loading ? (
-          <p className="text-center text-white/60 text-sm">{t("history.loading")}</p>
-        ) : messages.length === 0 ? (
-          <p className="text-center text-white/50 text-sm">
-            {t("history.empty")}
+    <div className="mx-auto max-w-6xl space-y-6">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-purple-300">
+            {t(
+              "portal.navigation.conversations"
+            )}
           </p>
-        ) : (
-          <>
-            {/* Lista de mensajes con altura fija y scroll, similar a la vista previa de Meta */}
-            <div className="space-y-3 sm:space-y-4 h-[60vh] sm:h-[65vh] md:h-[70vh] overflow-y-auto pr-1">
-              {messages.map((msg) => {
-                const isUser = msg.role?.toLowerCase() === "user";
-                const isBot = msg.role?.toLowerCase() === "assistant";
-                const icono = isUser ? "👤" : isBot ? "🤖" : "❓";
-                const remitente = isUser
-                  ? msg.nombre_cliente || t("history.sender.client")
-                  : isBot
-                  ? t("history.sender.assistant")
-                  : t("history.sender.unknown");
 
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex ${isUser ? "justify-start" : "justify-end"}`}
+          <h1 className="mt-2 text-3xl font-bold">
+            {t("history.title")}
+          </h1>
+
+          <p className="mt-2 text-sm text-white/50">
+            {pagination.total}{" "}
+            {t(
+              "portal.conversations.total"
+            )}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            void loadConversations(
+              pagination.page,
+              true
+            )
+          }
+          disabled={refreshing}
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold hover:bg-white/10 disabled:opacity-40"
+        >
+          <FiRefreshCw
+            className={
+              refreshing
+                ? "animate-spin"
+                : ""
+            }
+          />
+
+          {t("portal.conversations.refresh")}
+        </button>
+      </header>
+
+      {error ? (
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
+          {error}
+        </div>
+      ) : null}
+
+      <section className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+        <div className="grid gap-3 md:grid-cols-[1fr_220px_auto_auto]">
+          <div className="relative">
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-white/35" />
+
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(event) =>
+                setSearchInput(
+                  event.target.value
+                )
+              }
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  applySearch();
+                }
+              }}
+              placeholder={t(
+                "portal.conversations.search"
+              )}
+              className="w-full rounded-xl border border-white/10 bg-black/25 py-3 pl-11 pr-4 text-sm text-white outline-none focus:border-purple-500"
+            />
+          </div>
+
+          <select
+            value={channel}
+            onChange={(event) =>
+              setChannel(event.target.value)
+            }
+            className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-purple-500"
+          >
+            <option value="">
+              {t("history.filter.all")}
+            </option>
+            <option value="voice">
+              {t("history.channels.voice")}
+            </option>
+            <option value="whatsapp">
+              WhatsApp
+            </option>
+            <option value="facebook">
+              Facebook
+            </option>
+            <option value="instagram">
+              Instagram
+            </option>
+          </select>
+
+          <button
+            type="button"
+            onClick={applySearch}
+            className="rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold hover:bg-purple-500"
+          >
+            {t(
+              "portal.conversations.searchAction"
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={clearSearch}
+            className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10"
+          >
+            {t(
+              "portal.conversations.clear"
+            )}
+          </button>
+        </div>
+      </section>
+
+      {loading ? (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-12 text-center text-white/50">
+          {t("history.loading")}
+        </div>
+      ) : null}
+
+      {!loading &&
+      conversations.length === 0 ? (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-12 text-center text-white/50">
+          {t("history.empty")}
+        </div>
+      ) : null}
+
+      {!loading &&
+      conversations.length > 0 ? (
+        <section className="space-y-4">
+          {conversations.map(
+            (conversation) => {
+              const expanded =
+                expandedId ===
+                conversation.conversation_id;
+
+              return (
+                <article
+                  key={
+                    conversation.conversation_id
+                  }
+                  className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045]"
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExpandedId(
+                        expanded
+                          ? null
+                          : conversation.conversation_id
+                      )
+                    }
+                    className="flex w-full flex-col gap-4 p-5 text-left transition hover:bg-white/[0.025] sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div
-                      className={`
-                        max-w-[85%] sm:max-w-[70%]
-                        px-3 py-2 sm:p-3
-                        rounded-lg
-                        text-xs sm:text-sm
-                        flex-shrink-0
-                        border border-white/15
-                        ${
-                          isUser
-                            ? "bg-indigo-400/20 self-start text-left"
-                            : "bg-green-400/20 self-end text-left"
-                        }
-                      `}
-                    >
-                      {/* Fecha y número */}
-                      <div className="flex justify-between items-center text-[10px] sm:text-[11px] text-white/60 mb-1 gap-2">
-                        <span>
-                          {format(
-                            new Date(msg.timestamp),
-                            "dd/MM/yyyy, HH:mm:ss"
+                    <div className="flex min-w-0 items-start gap-4">
+                      <div className="rounded-xl bg-white/5 p-3 text-xl">
+                        {getChannelIcon(
+                          conversation.channel
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="font-bold">
+                            {conversation.customer_name ||
+                              conversation.from_number ||
+                              t(
+                                "history.sender.anonymous"
+                              )}
+                          </h2>
+
+                          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/50">
+                            {getChannelLabel(
+                              conversation.channel
+                            )}
+                          </span>
+                        </div>
+
+                        {conversation.customer_name &&
+                        conversation.from_number ? (
+                          <p className="mt-1 text-xs text-white/35">
+                            {
+                              conversation.from_number
+                            }
+                          </p>
+                        ) : null}
+
+                        <p className="mt-3 line-clamp-2 text-sm text-white/60">
+                          {conversation.last_message ||
+                            "—"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center justify-between gap-5 sm:justify-end">
+                      <div className="text-right">
+                        <p className="text-sm font-medium">
+                          {formatDate(
+                            conversation.ended_at
+                          )}
+                        </p>
+
+                        <p className="mt-1 text-xs text-white/40">
+                          {formatTime(
+                            conversation.ended_at
+                          )}
+                        </p>
+
+                        <p className="mt-1 text-xs text-white/40">
+                          {
+                            conversation.message_count
+                          }{" "}
+                          {t(
+                            "portal.conversations.messages"
+                          )}
+                        </p>
+                      </div>
+
+                      {expanded ? (
+                        <FiChevronUp />
+                      ) : (
+                        <FiChevronDown />
+                      )}
+                    </div>
+                  </button>
+
+                  {expanded ? (
+                    <div className="border-t border-white/10 p-4 sm:p-5">
+                      <div className="mb-5 flex flex-wrap gap-3 text-xs text-white/45">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5">
+                          <FiClock />
+                          {formatDate(
+                            conversation.started_at
+                          )}{" "}
+                          {formatTime(
+                            conversation.started_at
                           )}
                         </span>
-                        <span className="truncate">
-                          {!msg.nombre_cliente ? msg.from_number || t("history.sender.anonymous") : ""}
-                        </span>
+
+                        {conversation.channel ===
+                          "voice" &&
+                        conversation.duration_sec ? (
+                          <span className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5">
+                            <FiPhoneCall />
+                            {formatDuration(
+                              conversation.duration_sec
+                            )}
+                          </span>
+                        ) : null}
                       </div>
 
-                      {/* Contenido del mensaje */}
-                      <div className="font-medium text-white break-words whitespace-pre-wrap">
-                        {icono} {remitente}: {msg.content}
-                      </div>
+                      <div className="max-h-[65vh] space-y-3 overflow-y-auto pr-1">
+                        {conversation.messages.map(
+                          (message) => {
+                            const isUser =
+                              normalizeChannel(
+                                message.role
+                              ) === "user";
 
-                      {/* Emoción */}
-                      {msg.emotion && (
-                        <div className="text-purple-300 text-[11px] mt-1">
-                          {t("history.emotion.label")}
-                          <span className="font-semibold">{msg.emotion}</span>
-                        </div>
-                      )}
+                            return (
+                              <div
+                                key={message.id}
+                                className={[
+                                  "flex",
+                                  isUser
+                                    ? "justify-start"
+                                    : "justify-end",
+                                ].join(" ")}
+                              >
+                                <div
+                                  className={[
+                                    "max-w-[88%] rounded-2xl border px-4 py-3 text-sm sm:max-w-[72%]",
+                                    isUser
+                                      ? "border-purple-500/20 bg-purple-500/10"
+                                      : "border-emerald-500/20 bg-emerald-500/10",
+                                  ].join(" ")}
+                                >
+                                  <div className="mb-2 flex items-center gap-2 text-xs text-white/40">
+                                    <FiUser />
 
-                      {/* Intención / nivel de interés */}
-                      {msg.nivel_interes !== undefined &&
-                        msg.nivel_interes !== null && (
-                          <div className="text-green-300 text-[11px] mt-1">
-                            {t("history.intent.label")}{" "}
-                            <span className="font-semibold">
-                              {t("history.intent.levelPrefix")} {msg.nivel_interes}
-                            </span>
-                          </div>
+                                    <span>
+                                      {isUser
+                                        ? conversation.customer_name ||
+                                          t(
+                                            "history.sender.client"
+                                          )
+                                        : t(
+                                            "history.sender.assistant"
+                                          )}
+                                    </span>
+
+                                    <span>·</span>
+
+                                    <span>
+                                      {formatTime(
+                                        message.timestamp
+                                      )}
+                                    </span>
+                                  </div>
+
+                                  <p className="whitespace-pre-wrap leading-6 text-white/85">
+                                    {message.content}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          }
                         )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  ) : null}
+                </article>
+              );
+            }
+          )}
+        </section>
+      ) : null}
 
-            {/* Botón "Ver más" */}
-            {hasMore && (
-              <div className="text-center mt-6">
-                <button
-                  onClick={() => fetchMessages(false)}
-                  disabled={loadingMore}
-                  className={`px-4 py-2.5 rounded-xl text-sm font-semibold ${
-                    loadingMore
-                      ? "bg-indigo-400/40 cursor-not-allowed text-white"
-                      : "bg-indigo-500 hover:bg-indigo-600 text-white"
-                  }`}
-                >
-                  {loadingMore ? t("history.more.loading") : t("history.more.cta")}
-                </button>
-              </div>
+      {!loading &&
+      pagination.totalPages > 1 ? (
+        <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+          <button
+            type="button"
+            disabled={pagination.page <= 1}
+            onClick={() =>
+              void loadConversations(
+                pagination.page - 1
+              )
+            }
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            {t(
+              "portal.appointments.pagination.previous"
             )}
-          </>
-        )}
-      </div>
+          </button>
+
+          <span className="text-sm text-white/50">
+            {pagination.page} /{" "}
+            {pagination.totalPages}
+          </span>
+
+          <button
+            type="button"
+            disabled={
+              pagination.page >=
+              pagination.totalPages
+            }
+            onClick={() =>
+              void loadConversations(
+                pagination.page + 1
+              )
+            }
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            {t(
+              "portal.appointments.pagination.next"
+            )}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
