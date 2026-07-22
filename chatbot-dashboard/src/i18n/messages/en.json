@@ -1759,5 +1759,23 @@
   "portal.home.actions.conversations.description": "Review the calls and messages handled by Aamy across every channel.",
 
   "portal.home.actions.reports.title": "View reports",
-  "portal.home.actions.reports.description": "Analyze results, trends, conversions and improvement opportunities."
+  "portal.home.actions.reports.description": "Analyze results, trends, conversions and improvement opportunities.",
+
+  "portal.errors.data": "The portal information could not be loaded at this time.",
+  "portal.home.refresh": "Refresh",
+  "portal.home.refreshing": "Refreshing...",
+  "portal.home.viewAll": "View all",
+  "portal.home.voiceUsage.title": "Voice minutes",
+  "portal.home.voiceUsage.description": "Usage during the current billing period.",
+  "portal.home.voiceUsage.included": "Included",
+  "portal.home.voiceUsage.used": "Used",
+  "portal.home.voiceUsage.available": "Available",
+  "portal.home.channels.title": "Channels",
+  "portal.home.channels.description": "Channels included and active for your business.",
+  "portal.home.appointments.title": "Upcoming appointments",
+  "portal.home.appointments.description": "Upcoming bookings created or managed by Aamy.",
+  "portal.home.appointments.empty": "There are no upcoming appointments.",
+  "portal.home.conversion": "Booking conversion",
+  "portal.home.customers.description": "Summary of the customers and leads captured by Aamy.",
+  "portal.home.conversations.description": "Recent activity handled by Aamy."
 }

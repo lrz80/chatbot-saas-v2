@@ -1514,6 +1514,24 @@
 "portal.home.actions.conversations.description": "Revise as chamadas e mensagens atendidas pela Aamy em todos os canais.",
 
 "portal.home.actions.reports.title": "Ver relatórios",
-"portal.home.actions.reports.description": "Analise resultados, tendências, conversões e oportunidades de melhoria."
+"portal.home.actions.reports.description": "Analise resultados, tendências, conversões e oportunidades de melhoria.",
+
+"portal.errors.data": "Não foi possível carregar as informações do portal neste momento.",
+"portal.home.refresh": "Atualizar",
+"portal.home.refreshing": "Atualizando...",
+"portal.home.viewAll": "Ver tudo",
+"portal.home.voiceUsage.title": "Minutos de voz",
+"portal.home.voiceUsage.description": "Consumo do período atual de faturamento.",
+"portal.home.voiceUsage.included": "Incluídos",
+"portal.home.voiceUsage.used": "Utilizados",
+"portal.home.voiceUsage.available": "Disponíveis",
+"portal.home.channels.title": "Canais",
+"portal.home.channels.description": "Canais incluídos e ativos para o seu negócio.",
+"portal.home.appointments.title": "Próximos agendamentos",
+"portal.home.appointments.description": "Próximas reservas criadas ou gerenciadas pela Aamy.",
+"portal.home.appointments.empty": "Não há próximos agendamentos.",
+"portal.home.conversion": "Conversão de reservas",
+"portal.home.customers.description": "Resumo dos clientes e leads capturados pela Aamy.",
+"portal.home.conversations.description": "Atividade recente atendida pela Aamy."
 
 }
