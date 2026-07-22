@@ -35,11 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         console.log('✅ Datos recibidos desde /api/settings:', data);
 
         // Guardar estado del negocio + membresía
-        setTenant({
-          ...data.negocio,
-          membresia_activa: data.membresia_activa,
-          membresia_vigencia: data.membresia_vigencia,
-        });
+        setTenant(data);
 
         setLoading(false);
       } catch (err) {
@@ -51,9 +47,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     checkAuth();
   }, []);
 
-  const handleLogout = () => {
-    document.cookie = 'token=; Max-Age=0; path=/';
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      await fetch(`${BACKEND_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Error cerrando sesión:", error);
+    } finally {
+      document.cookie =
+        "token=; Max-Age=0; path=/";
+
+      router.replace("/login");
+    }
   };
 
   if (loading) return null;
