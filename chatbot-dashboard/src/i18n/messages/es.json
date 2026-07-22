@@ -1732,5 +1732,49 @@
   "appointments.staff.errors.activate": "No se pudo activar el Staff.",
   "appointments.staff.errors.deactivate": "No se pudo desactivar el Staff.",
   "appointments.staff.errors.nameRequired": "El nombre es obligatorio.",
-  "appointments.staff.errors.squareStaffRequired": "Selecciona una persona del Staff de Square."
+  "appointments.staff.errors.squareStaffRequired": "Selecciona una persona del Staff de Square.",
+
+  "portal.sidebar.account": "Portal del cliente",
+  "portal.sidebar.open": "Abrir menú",
+  "portal.sidebar.close": "Cerrar menú",
+  "portal.sidebar.logout": "Cerrar sesión",
+
+  "portal.navigation.home": "Inicio",
+  "portal.navigation.appointments": "Citas",
+  "portal.navigation.customers": "Clientes",
+  "portal.navigation.conversations": "Conversaciones",
+  "portal.navigation.followUp": "Seguimiento",
+  "portal.navigation.routes": "Equipo y rutas",
+  "portal.navigation.reports": "Reportes",
+  "portal.navigation.plan": "Mi plan",
+  "portal.navigation.support": "Soporte",
+
+  "portal.errors.session": "No fue posible cargar el portal. Intenta nuevamente.",
+  "portal.actions.retry": "Intentar nuevamente",
+
+  "portal.home.eyebrow": "Resumen de tu negocio",
+  "portal.home.title": "Todo lo que Aamy está haciendo por tu negocio",
+  "portal.home.description": "Consulta las llamadas, conversaciones, clientes, citas y oportunidades gestionadas por Aamy.",
+
+  "portal.home.metrics.interactions": "Interacciones atendidas",
+  "portal.home.metrics.calls": "Llamadas recibidas",
+  "portal.home.metrics.appointments": "Citas creadas",
+  "portal.home.metrics.newCustomers": "Clientes nuevos",
+  "portal.home.metrics.afterHours": "Atenciones fuera de horario",
+  "portal.home.metrics.minutesUsed": "Minutos utilizados",
+
+  "portal.home.actions.title": "Accesos rápidos",
+  "portal.home.actions.description": "Consulta y administra la actividad más importante de tu negocio.",
+
+  "portal.home.actions.appointments.title": "Ver citas",
+  "portal.home.actions.appointments.description": "Consulta las próximas citas, sus estados y los datos de cada cliente.",
+
+  "portal.home.actions.customers.title": "Ver clientes",
+  "portal.home.actions.customers.description": "Consulta contactos, historial, servicios solicitados y oportunidades de seguimiento.",
+
+  "portal.home.actions.conversations.title": "Ver conversaciones",
+  "portal.home.actions.conversations.description": "Revisa las llamadas y mensajes atendidos por Aamy en todos los canales.",
+
+  "portal.home.actions.reports.title": "Ver reportes",
+  "portal.home.actions.reports.description": "Analiza resultados, tendencias, conversiones y oportunidades de mejora."
 }
