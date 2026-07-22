@@ -314,44 +314,39 @@ export default function Sidebar({
               "calc(env(safe-area-inset-bottom, 0px) + 96px)",
           }}
         >
-          <div className="mb-8 flex items-center gap-4">
-            {tenant?.logo_url ? (
-              <div className="h-12 w-12 rounded-full bg-white p-[2px] shadow-inner">
-                <img
-                  src={tenant.logo_url}
-                  alt={t("sidebar.logoAlt")}
-                  className="h-full w-full rounded-full object-cover"
-                />
-              </div>
-            ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-xl font-bold text-white shadow-inner">
-                {(
-                  tenant?.owner_name ||
-                  tenant?.email ||
-                  t("sidebar.fallbackUserLetter")
-                )
-                  .charAt(0)
-                  .toUpperCase()}
-              </div>
-            )}
+          {!tenant?.is_admin ? (
+            <div className="mb-8 flex items-center gap-4">
+              {tenant?.logo_url ? (
+                <div className="h-12 w-12 rounded-full bg-white p-[2px] shadow-inner">
+                  <img
+                    src={tenant.logo_url}
+                    alt={t("sidebar.logoAlt")}
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-xl font-bold text-white shadow-inner">
+                  {(
+                    tenant?.owner_name ||
+                    tenant?.email ||
+                    t("sidebar.fallbackUserLetter")
+                  )
+                    .charAt(0)
+                    .toUpperCase()}
+                </div>
+              )}
 
-            {tenant?.is_admin ? (
-              <div className="mb-6">
-                <TenantSwitcher
-                  currentTenantId={tenant?.tenant_id}
-                />
-              </div>
-            ) : null}
-            <div className="min-w-0">
-              <p className="text-sm text-white/70">
-                {t("sidebar.welcome")}
-              </p>
+              <div className="min-w-0">
+                <p className="text-sm text-white/70">
+                  {t("sidebar.welcome")}
+                </p>
 
-              <p className="max-w-[160px] truncate text-lg font-semibold leading-tight">
-                {tenant?.name || t("sidebar.fallbackBusiness")}
-              </p>
+                <p className="max-w-[160px] truncate text-lg font-semibold leading-tight">
+                  {tenant?.name || t("sidebar.fallbackBusiness")}
+                </p>
+              </div>
             </div>
-          </div>
+          ) : null}
 
           <h2 className="mb-5 hidden text-xl font-bold text-purple-300 lg:block">
             {t("sidebar.title")}
