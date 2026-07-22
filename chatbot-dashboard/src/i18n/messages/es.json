@@ -1854,5 +1854,63 @@
   "portal.business.errors.readOnly": "Necesitas una membresía activa para modificar esta información.",
 
   "portal.business.success.saved": "La información del negocio se guardó correctamente.",
-  "portal.business.success.logo": "El logo se actualizó correctamente."
+  "portal.business.success.logo": "El logo se actualizó correctamente.",
+
+  "portal.plan.title": "Mi plan",
+  "portal.plan.description": "Consulta el estado de tu membresía y el consumo de los canales incluidos.",
+
+  "portal.plan.current.title": "Información de la membresía",
+  "portal.plan.current.description": "Estado y vigencia actual de tu cuenta.",
+  "portal.plan.current.planName": "Plan actual",
+  "portal.plan.current.activeUntil": "Membresía vigente hasta",
+  "portal.plan.current.trialUntil": "Período de prueba vigente hasta",
+  "portal.plan.current.notAvailable": "No disponible",
+
+  "portal.plan.membership.active": "Membresía activa",
+  "portal.plan.membership.trial": "Período de prueba",
+  "portal.plan.membership.inactive": "Membresía inactiva",
+
+  "portal.plan.channel.active": "Activo",
+  "portal.plan.channel.off": "Apagado",
+  "portal.plan.channel.maintenance": "Mantenimiento",
+
+  "portal.plan.voice.title": "Uso de llamadas",
+  "portal.plan.voice.description": "Minutos consumidos durante el ciclo actual de facturación.",
+  "portal.plan.voice.included": "Incluidos",
+  "portal.plan.voice.bought": "Adicionales",
+  "portal.plan.voice.used": "Utilizados",
+  "portal.plan.voice.total": "Total",
+  "portal.plan.voice.available": "Restantes",
+  "portal.plan.voice.unit": "El consumo de voz se calcula en minutos.",
+  "portal.plan.voice.cycleStarted": "El ciclo actual comenzó el",
+
+  "portal.plan.whatsapp.title": "Uso de WhatsApp",
+  "portal.plan.whatsapp.description": "Mensajes consumidos durante el ciclo actual de facturación.",
+
+  "portal.plan.meta.title": "Uso de Meta",
+  "portal.plan.meta.description": "Mensajes consumidos entre Facebook e Instagram durante el ciclo actual.",
+  "portal.plan.meta.unit": "Meta utiliza un solo límite compartido para los mensajes de Facebook e Instagram.",
+
+  "portal.plan.messages.included": "Incluidos",
+  "portal.plan.messages.bought": "Adicionales",
+  "portal.plan.messages.used": "Utilizados",
+  "portal.plan.messages.total": "Total",
+  "portal.plan.messages.available": "Restantes",
+  "portal.plan.messages.unit": "El consumo de este canal se calcula en mensajes.",
+
+  "portal.plan.support.title": "¿Necesitas ayuda?",
+  "portal.plan.support.description": "Comunícate con el equipo de Aamy para resolver dudas sobre facturación, consumo o cambios en tu cuenta.",
+  "portal.plan.support.action": "Contactar soporte",
+
+  "portal.plan.changes.title": "Cambios o cancelación del plan",
+  "portal.plan.changes.description": "Para cambiar, actualizar o cancelar tu membresía debes comunicarte con nuestro equipo de soporte.",
+  "portal.plan.changes.action": "Ir a soporte",
+
+  "portal.plan.usage.emptyTitle": "No hay canales con consumo asignado",
+  "portal.plan.usage.emptyDescription": "Cuando un canal esté incluido en tu cuenta, su consumo aparecerá aquí.",
+
+  "portal.plan.actions.refresh": "Actualizar",
+  "portal.plan.actions.refreshing": "Actualizando...",
+
+  "portal.plan.errors.load": "No fue posible cargar la información del plan."
 }

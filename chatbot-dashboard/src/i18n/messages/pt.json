@@ -1591,6 +1591,64 @@
 "portal.business.errors.readOnly": "É necessário ter uma assinatura ativa para modificar estas informações.",
 
 "portal.business.success.saved": "As informações do negócio foram salvas com sucesso.",
-"portal.business.success.logo": "O logo foi atualizado com sucesso."
+"portal.business.success.logo": "O logo foi atualizado com sucesso.",
+
+"portal.plan.title": "Meu plano",
+"portal.plan.description": "Consulte o estado da sua assinatura e o consumo dos canais incluídos.",
+
+"portal.plan.current.title": "Informações da assinatura",
+"portal.plan.current.description": "Estado e validade atual da conta.",
+"portal.plan.current.planName": "Plano atual",
+"portal.plan.current.activeUntil": "Assinatura ativa até",
+"portal.plan.current.trialUntil": "Período de teste ativo até",
+"portal.plan.current.notAvailable": "Não disponível",
+
+"portal.plan.membership.active": "Assinatura ativa",
+"portal.plan.membership.trial": "Período de teste",
+"portal.plan.membership.inactive": "Assinatura inativa",
+
+"portal.plan.channel.active": "Ativo",
+"portal.plan.channel.off": "Desativado",
+"portal.plan.channel.maintenance": "Manutenção",
+
+"portal.plan.voice.title": "Uso de chamadas",
+"portal.plan.voice.description": "Minutos utilizados durante o ciclo atual de cobrança.",
+"portal.plan.voice.included": "Incluídos",
+"portal.plan.voice.bought": "Adicionais",
+"portal.plan.voice.used": "Utilizados",
+"portal.plan.voice.total": "Total",
+"portal.plan.voice.available": "Restantes",
+"portal.plan.voice.unit": "O consumo de voz é calculado em minutos.",
+"portal.plan.voice.cycleStarted": "O ciclo atual começou em",
+
+"portal.plan.whatsapp.title": "Uso do WhatsApp",
+"portal.plan.whatsapp.description": "Mensagens utilizadas durante o ciclo atual de cobrança.",
+
+"portal.plan.meta.title": "Uso da Meta",
+"portal.plan.meta.description": "Mensagens utilizadas entre Facebook e Instagram durante o ciclo atual.",
+"portal.plan.meta.unit": "A Meta utiliza um único limite compartilhado para as mensagens do Facebook e Instagram.",
+
+"portal.plan.messages.included": "Incluídas",
+"portal.plan.messages.bought": "Adicionais",
+"portal.plan.messages.used": "Utilizadas",
+"portal.plan.messages.total": "Total",
+"portal.plan.messages.available": "Restantes",
+"portal.plan.messages.unit": "O consumo deste canal é calculado em mensagens.",
+
+"portal.plan.support.title": "Precisa de ajuda?",
+"portal.plan.support.description": "Entre em contato com a equipe da Aamy para esclarecer dúvidas sobre cobrança, consumo ou alterações na conta.",
+"portal.plan.support.action": "Contatar suporte",
+
+"portal.plan.changes.title": "Alterações ou cancelamento do plano",
+"portal.plan.changes.description": "Para alterar, atualizar ou cancelar sua assinatura, entre em contato com nossa equipe de suporte.",
+"portal.plan.changes.action": "Ir para suporte",
+
+"portal.plan.usage.emptyTitle": "Nenhum canal possui consumo atribuído",
+"portal.plan.usage.emptyDescription": "Quando um canal estiver incluído na sua conta, o consumo aparecerá aqui.",
+
+"portal.plan.actions.refresh": "Atualizar",
+"portal.plan.actions.refreshing": "Atualizando...",
+
+"portal.plan.errors.load": "Não foi possível carregar as informações do plano."
 
 }

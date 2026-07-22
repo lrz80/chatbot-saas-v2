@@ -1836,5 +1836,63 @@
   "portal.business.errors.readOnly": "An active membership is required to modify this information.",
 
   "portal.business.success.saved": "The business information was saved successfully.",
-  "portal.business.success.logo": "The logo was updated successfully."
+  "portal.business.success.logo": "The logo was updated successfully.",
+
+  "portal.plan.title": "My plan",
+  "portal.plan.description": "Review your membership status and usage for the included channels.",
+
+  "portal.plan.current.title": "Membership information",
+  "portal.plan.current.description": "Current account status and validity.",
+  "portal.plan.current.planName": "Current plan",
+  "portal.plan.current.activeUntil": "Membership active until",
+  "portal.plan.current.trialUntil": "Trial active until",
+  "portal.plan.current.notAvailable": "Not available",
+
+  "portal.plan.membership.active": "Active membership",
+  "portal.plan.membership.trial": "Trial period",
+  "portal.plan.membership.inactive": "Inactive membership",
+
+  "portal.plan.channel.active": "Active",
+  "portal.plan.channel.off": "Off",
+  "portal.plan.channel.maintenance": "Maintenance",
+
+  "portal.plan.voice.title": "Call usage",
+  "portal.plan.voice.description": "Minutes used during the current billing cycle.",
+  "portal.plan.voice.included": "Included",
+  "portal.plan.voice.bought": "Additional",
+  "portal.plan.voice.used": "Used",
+  "portal.plan.voice.total": "Total",
+  "portal.plan.voice.available": "Remaining",
+  "portal.plan.voice.unit": "Voice usage is measured in minutes.",
+  "portal.plan.voice.cycleStarted": "The current cycle started on",
+
+  "portal.plan.whatsapp.title": "WhatsApp usage",
+  "portal.plan.whatsapp.description": "Messages used during the current billing cycle.",
+
+  "portal.plan.meta.title": "Meta usage",
+  "portal.plan.meta.description": "Messages used across Facebook and Instagram during the current cycle.",
+  "portal.plan.meta.unit": "Meta uses one shared message allowance for Facebook and Instagram.",
+
+  "portal.plan.messages.included": "Included",
+  "portal.plan.messages.bought": "Additional",
+  "portal.plan.messages.used": "Used",
+  "portal.plan.messages.total": "Total",
+  "portal.plan.messages.available": "Remaining",
+  "portal.plan.messages.unit": "Usage for this channel is measured in messages.",
+
+  "portal.plan.support.title": "Need help?",
+  "portal.plan.support.description": "Contact the Aamy team for questions about billing, usage, or account changes.",
+  "portal.plan.support.action": "Contact support",
+
+  "portal.plan.changes.title": "Plan changes or cancellation",
+  "portal.plan.changes.description": "To change, update, or cancel your membership, contact our support team.",
+  "portal.plan.changes.action": "Go to support",
+
+  "portal.plan.usage.emptyTitle": "No channels have usage assigned",
+  "portal.plan.usage.emptyDescription": "When a channel is included in your account, its usage will appear here.",
+
+  "portal.plan.actions.refresh": "Refresh",
+  "portal.plan.actions.refreshing": "Refreshing...",
+
+  "portal.plan.errors.load": "The plan information could not be loaded."
 }
