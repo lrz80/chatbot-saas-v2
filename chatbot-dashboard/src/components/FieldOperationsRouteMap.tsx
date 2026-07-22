@@ -913,6 +913,7 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
   const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || 'DEMO_MAP_ID';
 
   const mapElementRef = useRef<HTMLDivElement | null>(null);
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
   const mapRef = useRef<any>(null);
   const overlaysRef = useRef<any[]>([]);
 
@@ -1724,8 +1725,64 @@ export default function FieldOperationsRouteMap({ lang }: { lang?: string }) {
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-[160px_minmax(220px,1fr)_auto_auto_auto]">
             <label className="block">
-              <span className="mb-1 block text-xs text-white/60">{copy.date}</span>
-              <input type="date" value={serviceDate} onChange={(e) => setServiceDate(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none" />
+              <span className="mb-1 block text-xs text-white/60">
+                {copy.date}
+              </span>
+
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                const input = dateInputRef.current;
+
+                if (!input) return;
+
+                if (typeof input.showPicker === "function") {
+                    input.showPicker();
+                } else {
+                    input.focus();
+                    input.click();
+                }
+                }}
+                onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const input = dateInputRef.current;
+
+                if (!input) return;
+
+                if (typeof input.showPicker === "function") {
+                    input.showPicker();
+                } else {
+                    input.focus();
+                    input.click();
+                }
+                }}
+                className="relative cursor-pointer"
+            >
+                <input
+                ref={dateInputRef}
+                type="date"
+                value={serviceDate}
+                onChange={(event) =>
+                    setServiceDate(event.target.value)
+                }
+                onClick={(event) => {
+                    event.stopPropagation();
+
+                    const input = event.currentTarget;
+
+                    if (typeof input.showPicker === "function") {
+                    input.showPicker();
+                    }
+                }}
+                className="w-full cursor-pointer rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none focus:border-purple-500"
+                />
+            </div>
             </label>
             <label className="block">
               <span className="mb-1 block text-xs text-white/60">{copy.technician}</span>

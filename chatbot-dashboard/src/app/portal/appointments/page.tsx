@@ -132,6 +132,9 @@ export default function PortalAppointmentsPage() {
   const [error, setError] =
     useState<string | null>(null);
 
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const socketRef = useRef<Socket | null>(null);
 
   const locale = useMemo(() => {
@@ -156,6 +159,28 @@ export default function PortalAppointmentsPage() {
         )
       : [];
   }, [appointments]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(safeAppointments.length / pageSize)
+    );
+
+    const paginatedAppointments = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+
+    return safeAppointments.slice(start, end);
+    }, [page, pageSize, safeAppointments]);
+
+    const paginationStart =
+    safeAppointments.length === 0
+        ? 0
+        : (page - 1) * pageSize + 1;
+
+    const paginationEnd = Math.min(
+    page * pageSize,
+    safeAppointments.length
+    );
 
   const statusMeta = useMemo(() => {
     return {
@@ -442,10 +467,12 @@ export default function PortalAppointmentsPage() {
   }
 
   function applyFilters() {
+    setPage(1);
     setAppliedFilters(filters);
   }
 
   function clearFilters() {
+    setPage(1);
     setFilters(EMPTY_FILTERS);
     setAppliedFilters(EMPTY_FILTERS);
   }
@@ -458,6 +485,12 @@ export default function PortalAppointmentsPage() {
     void loadAppointments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appliedFilters]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -748,7 +781,7 @@ export default function PortalAppointmentsPage() {
         {!loading && safeAppointments.length > 0 ? (
           <>
             <div className="space-y-3 p-3 sm:hidden">
-              {safeAppointments.map((appointment) => {
+              {paginatedAppointments.map((appointment) => {
                 const meta =
                   statusMeta[appointment.status] ||
                   statusMeta.pending;
@@ -914,7 +947,7 @@ export default function PortalAppointmentsPage() {
                 </thead>
 
                 <tbody className="divide-y divide-white/10">
-                  {safeAppointments.map(
+                  {paginatedAppointments.map(
                     (appointment) => {
                       const meta =
                         statusMeta[
@@ -1043,6 +1076,76 @@ export default function PortalAppointmentsPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+                        <div className="flex flex-col gap-4 border-t border-white/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm text-white/50">
+                {paginationStart}-{paginationEnd} /{" "}
+                {safeAppointments.length}
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <label className="flex items-center gap-2 text-sm text-white/50">
+                  <span>
+                    {t(
+                      "portal.appointments.pagination.perPage"
+                    )}
+                  </span>
+
+                  <select
+                    value={pageSize}
+                    onChange={(event) => {
+                      setPageSize(
+                        Number(event.target.value)
+                      );
+                      setPage(1);
+                    }}
+                    className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-white outline-none focus:border-purple-500"
+                  >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                  </select>
+                </label>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPage((current) =>
+                        Math.max(1, current - 1)
+                      )
+                    }
+                    disabled={page <= 1}
+                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+                  >
+                    {t(
+                      "portal.appointments.pagination.previous"
+                    )}
+                  </button>
+
+                  <span className="min-w-[80px] text-center text-sm text-white/60">
+                    {page} / {totalPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPage((current) =>
+                        Math.min(
+                          totalPages,
+                          current + 1
+                        )
+                      )
+                    }
+                    disabled={page >= totalPages}
+                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+                  >
+                    {t(
+                      "portal.appointments.pagination.next"
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </>
         ) : null}

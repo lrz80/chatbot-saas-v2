@@ -1779,5 +1779,13 @@
   "portal.home.customers.description": "Summary of the customers and leads captured by Aamy.",
   "portal.home.conversations.description": "Recent activity handled by Aamy.",
 
-  "portal.navigation.business": "My business"
+  "portal.navigation.business": "My business",
+
+  "portal.appointments.description": "Review and manage the appointments handled by Aamy.",
+  "portal.appointments.routes.title": "Route map",
+  "portal.appointments.routes.description": "View the stops and routes for appointments that require an address.",
+  "portal.appointments.address": "Address",
+  "portal.appointments.pagination.perPage": "Appointments per page",
+  "portal.appointments.pagination.previous": "Previous",
+  "portal.appointments.pagination.next": "Next"
 }

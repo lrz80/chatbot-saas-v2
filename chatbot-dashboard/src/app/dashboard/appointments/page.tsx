@@ -142,6 +142,9 @@ export default function AppointmentsPage() {
   const [openStatusId, setOpenStatusId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const [bookingEnabled, setBookingEnabled] = useState<boolean>(true);
   const [bookingSaving, setBookingSaving] = useState<boolean>(false);
 

@@ -1796,5 +1796,13 @@
   "portal.home.customers.description": "Resumen de los clientes y leads capturados por Aamy.",
   "portal.home.conversations.description": "Actividad reciente atendida por Aamy.",
 
-  "portal.navigation.business": "Mi negocio"
+  "portal.navigation.business": "Mi negocio",
+
+  "portal.appointments.description": "Consulta y administra las citas gestionadas por Aamy.",
+  "portal.appointments.routes.title": "Mapa de rutas",
+  "portal.appointments.routes.description": "Visualiza las paradas y rutas de las citas que requieren una dirección.",
+  "portal.appointments.address": "Dirección",
+  "portal.appointments.pagination.perPage": "Citas por página",
+  "portal.appointments.pagination.previous": "Anterior",
+  "portal.appointments.pagination.next": "Siguiente"
 }
