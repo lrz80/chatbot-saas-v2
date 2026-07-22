@@ -1544,6 +1544,53 @@
 "portal.appointments.pagination.previous": "Anterior",
 "portal.appointments.pagination.next": "Próxima",
 
-"portal.business.assignedPhone": "Número de telefone atribuído"
+"portal.business.assignedPhone": "Número de telefone atribuído",
+"portal.business.title": "Meu negócio",
+"portal.business.description": "Consulte e atualize as informações públicas e os horários do seu negócio.",
+
+"portal.business.sections.information": "Informações do negócio",
+"portal.business.sections.informationDescription": "Dados de contato e informações públicas do seu negócio.",
+"portal.business.sections.hours": "Horário de atendimento",
+"portal.business.sections.hoursDescription": "Configure os dias e horários em que o seu negócio atende os clientes.",
+"portal.business.sections.account": "Informações da conta",
+"portal.business.sections.accountDescription": "Informações atribuídas e o estado atual da sua conta.",
+
+"portal.business.fields.businessName": "Nome do negócio",
+"portal.business.fields.businessNameHelp": "Entre em contato com o suporte da Aamy para alterar o nome do negócio.",
+"portal.business.fields.address": "Endereço",
+"portal.business.fields.businessEmail": "Email do negócio",
+"portal.business.fields.businessPhone": "Telefone do negócio",
+"portal.business.fields.assignedPhone": "Número de telefone atribuído",
+"portal.business.fields.registeredAt": "Data de registro",
+"portal.business.fields.membershipStatus": "Estado da assinatura",
+
+"portal.business.placeholders.address": "Endereço principal do negócio",
+"portal.business.placeholders.businessEmail": "Email de contato",
+"portal.business.placeholders.businessPhone": "Telefone de contato",
+
+"portal.business.hours.open": "Aberto",
+"portal.business.hours.closed": "Fechado",
+
+"portal.business.logo.change": "Alterar logo",
+"portal.business.logo.uploading": "Enviando...",
+
+"portal.business.membership.active": "Assinatura ativa",
+"portal.business.membership.activeUntil": "Assinatura ativa até {{date}}",
+"portal.business.membership.trial": "Período de teste ativo",
+"portal.business.membership.trialUntil": "Período de teste ativo até {{date}}",
+"portal.business.membership.inactive": "Assinatura inativa",
+
+"portal.business.actions.save": "Salvar alterações",
+"portal.business.actions.saving": "Salvando...",
+
+"portal.business.readOnly": "Estas informações estão em modo somente leitura porque a assinatura não está ativa.",
+
+"portal.business.errors.load": "Não foi possível carregar as informações do negócio.",
+"portal.business.errors.save": "Não foi possível salvar as alterações.",
+"portal.business.errors.logo": "Não foi possível enviar o logo.",
+"portal.business.errors.readOnly": "É necessário ter uma assinatura ativa para modificar estas informações.",
+
+"portal.business.success.saved": "As informações do negócio foram salvas com sucesso.",
+"portal.business.success.logo": "O logo foi atualizado com sucesso."
 
 }

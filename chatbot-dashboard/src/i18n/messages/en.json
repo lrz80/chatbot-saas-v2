@@ -1789,5 +1789,52 @@
   "portal.appointments.pagination.previous": "Previous",
   "portal.appointments.pagination.next": "Next",
 
-  "portal.business.assignedPhone": "Assigned phone number"
+  "portal.business.assignedPhone": "Assigned phone number",
+  "portal.business.title": "My business",
+  "portal.business.description": "Review and update your business's public information and operating hours.",
+
+  "portal.business.sections.information": "Business information",
+  "portal.business.sections.informationDescription": "Contact details and public information for your business.",
+  "portal.business.sections.hours": "Business hours",
+  "portal.business.sections.hoursDescription": "Set the days and hours when your business serves customers.",
+  "portal.business.sections.account": "Account information",
+  "portal.business.sections.accountDescription": "Assigned information and the current status of your account.",
+
+  "portal.business.fields.businessName": "Business name",
+  "portal.business.fields.businessNameHelp": "Contact the Aamy support team to change the business name.",
+  "portal.business.fields.address": "Address",
+  "portal.business.fields.businessEmail": "Business email",
+  "portal.business.fields.businessPhone": "Business phone",
+  "portal.business.fields.assignedPhone": "Assigned phone number",
+  "portal.business.fields.registeredAt": "Registration date",
+  "portal.business.fields.membershipStatus": "Membership status",
+
+  "portal.business.placeholders.address": "Primary business address",
+  "portal.business.placeholders.businessEmail": "Contact email",
+  "portal.business.placeholders.businessPhone": "Contact phone number",
+
+  "portal.business.hours.open": "Open",
+  "portal.business.hours.closed": "Closed",
+
+  "portal.business.logo.change": "Change logo",
+  "portal.business.logo.uploading": "Uploading...",
+
+  "portal.business.membership.active": "Active membership",
+  "portal.business.membership.activeUntil": "Membership active until {{date}}",
+  "portal.business.membership.trial": "Active trial",
+  "portal.business.membership.trialUntil": "Trial active until {{date}}",
+  "portal.business.membership.inactive": "Inactive membership",
+
+  "portal.business.actions.save": "Save changes",
+  "portal.business.actions.saving": "Saving...",
+
+  "portal.business.readOnly": "This information is read-only because the membership is not active.",
+
+  "portal.business.errors.load": "The business information could not be loaded.",
+  "portal.business.errors.save": "The changes could not be saved.",
+  "portal.business.errors.logo": "The logo could not be uploaded.",
+  "portal.business.errors.readOnly": "An active membership is required to modify this information.",
+
+  "portal.business.success.saved": "The business information was saved successfully.",
+  "portal.business.success.logo": "The logo was updated successfully."
 }

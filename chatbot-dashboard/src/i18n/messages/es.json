@@ -1806,5 +1806,53 @@
   "portal.appointments.pagination.previous": "Anterior",
   "portal.appointments.pagination.next": "Siguiente",
 
-  "portal.business.assignedPhone": "Número de teléfono asignado"
+  "portal.business.assignedPhone": "Número de teléfono asignado",
+
+  "portal.business.title": "Mi negocio",
+  "portal.business.description": "Consulta y actualiza la información pública y los horarios de tu negocio.",
+
+  "portal.business.sections.information": "Información del negocio",
+  "portal.business.sections.informationDescription": "Datos de contacto e información pública de tu negocio.",
+  "portal.business.sections.hours": "Horario de atención",
+  "portal.business.sections.hoursDescription": "Configura los días y horas en que tu negocio atiende a sus clientes.",
+  "portal.business.sections.account": "Información de la cuenta",
+  "portal.business.sections.accountDescription": "Información asignada y estado actual de tu cuenta.",
+
+  "portal.business.fields.businessName": "Nombre del negocio",
+  "portal.business.fields.businessNameHelp": "Para cambiar el nombre del negocio, contacta al equipo de soporte de Aamy.",
+  "portal.business.fields.address": "Dirección",
+  "portal.business.fields.businessEmail": "Email del negocio",
+  "portal.business.fields.businessPhone": "Teléfono del negocio",
+  "portal.business.fields.assignedPhone": "Número de teléfono asignado",
+  "portal.business.fields.registeredAt": "Fecha de registro",
+  "portal.business.fields.membershipStatus": "Estado de la membresía",
+
+  "portal.business.placeholders.address": "Dirección principal del negocio",
+  "portal.business.placeholders.businessEmail": "Email de contacto",
+  "portal.business.placeholders.businessPhone": "Teléfono de contacto",
+
+  "portal.business.hours.open": "Abierto",
+  "portal.business.hours.closed": "Cerrado",
+
+  "portal.business.logo.change": "Cambiar logo",
+  "portal.business.logo.uploading": "Subiendo...",
+
+  "portal.business.membership.active": "Membresía activa",
+  "portal.business.membership.activeUntil": "Membresía activa hasta {{date}}",
+  "portal.business.membership.trial": "Período de prueba activo",
+  "portal.business.membership.trialUntil": "Período de prueba activo hasta {{date}}",
+  "portal.business.membership.inactive": "Membresía inactiva",
+
+  "portal.business.actions.save": "Guardar cambios",
+  "portal.business.actions.saving": "Guardando...",
+
+  "portal.business.readOnly": "Esta información está en modo de solo lectura porque la membresía no está activa.",
+
+  "portal.business.errors.load": "No fue posible cargar la información del negocio.",
+  "portal.business.errors.save": "No fue posible guardar los cambios.",
+  "portal.business.errors.logo": "No fue posible subir el logo.",
+  "portal.business.errors.readOnly": "Necesitas una membresía activa para modificar esta información.",
+
+  "portal.business.success.saved": "La información del negocio se guardó correctamente.",
+  "portal.business.success.logo": "El logo se actualizó correctamente."
 }
