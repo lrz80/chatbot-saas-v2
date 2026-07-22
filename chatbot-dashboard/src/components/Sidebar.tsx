@@ -358,10 +358,6 @@ export default function Sidebar({
             {t("sidebar.title")}
           </h2>
 
-          <h2 className="mb-5 hidden text-xl font-bold text-purple-300 lg:block">
-            {t("sidebar.title")}
-          </h2>
-
           <nav className="space-y-2 text-sm font-medium">
             {mainItems.map((item) => {
               const active = isRouteActive(pathname, item.href);
