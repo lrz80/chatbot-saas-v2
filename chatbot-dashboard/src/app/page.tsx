@@ -87,9 +87,9 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="/register">
+            <a href="/login">
               <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg transition">
-                {t('landing.final.cta')}
+                {t('login.signIn')}
               </button>
             </a>
           </div>
