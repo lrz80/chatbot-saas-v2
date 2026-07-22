@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FiChevronDown, FiLoader } from "react-icons/fi";
+import {
+  FiChevronDown,
+  FiLoader,
+} from "react-icons/fi";
+import { useRouter } from "next/navigation";
 import { BACKEND_URL } from "@/utils/api";
 
 type TenantOption = {
@@ -15,14 +19,27 @@ type TenantSwitcherProps = {
   currentTenantId?: string;
 };
 
+const CREATE_TENANT_VALUE = "__create_tenant__";
+
 export default function TenantSwitcher({
   currentTenantId,
 }: TenantSwitcherProps) {
-  const [tenants, setTenants] = useState<TenantOption[]>([]);
-  const [selectedTenantId, setSelectedTenantId] =
-    useState(currentTenantId || "");
-  const [loading, setLoading] = useState(true);
-  const [changing, setChanging] = useState(false);
+  const router = useRouter();
+
+  const [tenants, setTenants] = useState<
+    TenantOption[]
+  >([]);
+
+  const [
+    selectedTenantId,
+    setSelectedTenantId,
+  ] = useState(currentTenantId || "");
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [changing, setChanging] =
+    useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,8 +75,8 @@ export default function TenantSwitcher({
 
         setSelectedTenantId(
           data.selected_tenant_id ||
-          currentTenantId ||
-          ""
+            currentTenantId ||
+            ""
         );
       } catch (error) {
         console.error(
@@ -83,6 +100,11 @@ export default function TenantSwitcher({
   const selectTenant = async (
     tenantId: string
   ) => {
+    if (tenantId === CREATE_TENANT_VALUE) {
+      router.push("/dashboard/register");
+      return;
+    }
+
     if (
       !tenantId ||
       tenantId === selectedTenantId ||
@@ -100,7 +122,8 @@ export default function TenantSwitcher({
           method: "POST",
           credentials: "include",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
           body: JSON.stringify({
             tenant_id: tenantId,
@@ -115,18 +138,13 @@ export default function TenantSwitcher({
 
         throw new Error(
           body?.error ||
-          `Error seleccionando tenant: ${response.status}`
+            `Error seleccionando tenant: ${response.status}`
         );
       }
 
       setSelectedTenantId(tenantId);
 
-      /**
-       * Recarga todo el dashboard.
-       * Así todas las páginas y consultas existentes
-       * vuelven a ejecutarse usando la nueva cookie.
-       */
-      window.location.reload();
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error(
         "❌ Error seleccionando tenant:",
@@ -157,7 +175,9 @@ export default function TenantSwitcher({
           value={selectedTenantId}
           disabled={changing}
           onChange={(event) => {
-            void selectTenant(event.target.value);
+            void selectTenant(
+              event.target.value
+            );
           }}
           className="w-full appearance-none rounded-xl border border-purple-400/20 bg-black/30 px-3 py-3 pr-10 text-sm font-medium text-white outline-none transition focus:border-purple-400/60 disabled:cursor-wait disabled:opacity-60"
         >
@@ -172,6 +192,20 @@ export default function TenantSwitcher({
                 tenant.id}
             </option>
           ))}
+
+          <option
+            disabled
+            className="bg-[#1D0A2B] text-white/40"
+          >
+            ─────────────────
+          </option>
+
+          <option
+            value={CREATE_TENANT_VALUE}
+            className="bg-[#1D0A2B] font-semibold text-purple-300"
+          >
+            ＋ Crear nuevo negocio
+          </option>
         </select>
 
         <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
