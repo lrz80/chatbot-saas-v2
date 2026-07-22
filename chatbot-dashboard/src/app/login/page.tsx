@@ -91,8 +91,26 @@ export default function LoginPage() {
         return;
       }
 
-      await new Promise((r) => setTimeout(r, 100));
-      router.push('/dashboard');
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const settingsResponse = await fetch(`${BACKEND_URL}/api/settings`, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store',
+      });
+
+      if (!settingsResponse.ok) {
+        setError(t('login.errors.http', { status: settingsResponse.status }));
+        return;
+      }
+
+      const settings = await settingsResponse.json();
+
+      const destination = settings?.is_admin === true
+        ? '/dashboard'
+        : '/portal';
+
+      router.replace(destination);
 
     } catch (err: any) {
       setError(err?.message || t('login.errors.unknownLogin'));
