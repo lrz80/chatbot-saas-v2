@@ -348,6 +348,16 @@ export default function Sidebar({
             </div>
           ) : null}
 
+          {tenant?.is_admin ? (
+            <div className="mb-6">
+              <TenantSwitcher currentTenantId={tenant?.tenant_id} />
+            </div>
+          ) : null}
+
+          <h2 className="mb-5 hidden text-xl font-bold text-purple-300 lg:block">
+            {t("sidebar.title")}
+          </h2>
+
           <h2 className="mb-5 hidden text-xl font-bold text-purple-300 lg:block">
             {t("sidebar.title")}
           </h2>
