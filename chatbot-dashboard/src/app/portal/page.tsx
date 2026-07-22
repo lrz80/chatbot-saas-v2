@@ -140,13 +140,6 @@ type PortalMessage = {
   from_number?: string;
 };
 
-type VoiceUsage = {
-  included: number;
-  used: number;
-  available: number;
-  total: number;
-};
-
 type ChannelKey =
   | "voice"
   | "whatsapp"
@@ -180,49 +173,6 @@ function finiteNumber(...values: unknown[]): number {
   }
 
   return 0;
-}
-
-function normalizeVoiceUsage(data: any): VoiceUsage {
-  const included = finiteNumber(
-    data?.included_minutes,
-    data?.included,
-    data?.base_minutes,
-    data?.limit,
-    data?.limite,
-    data?.total_included,
-    800
-  );
-
-  const used = finiteNumber(
-    data?.used_minutes,
-    data?.minutes_used,
-    data?.used,
-    data?.usados,
-    data?.consumed_minutes
-  );
-
-  const total = finiteNumber(
-    data?.total_minutes,
-    data?.total,
-    data?.limit_with_extras,
-    data?.total_available,
-    included
-  );
-
-  const availableValue = finiteNumber(
-    data?.available_minutes,
-    data?.remaining_minutes,
-    data?.available,
-    data?.disponibles,
-    Math.max(0, total - used)
-  );
-
-  return {
-    included,
-    used,
-    total: total || included,
-    available: Math.max(0, availableValue),
-  };
 }
 
 function canonicalChannel(value?: string): string {
@@ -342,13 +292,6 @@ export default function PortalHomePage() {
   const [messages, setMessages] =
     useState<PortalMessage[]>([]);
 
-  const [voiceUsage, setVoiceUsage] = useState<VoiceUsage>({
-    included: 0,
-    used: 0,
-    available: 0,
-    total: 0,
-  });
-
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -463,7 +406,6 @@ export default function PortalHomePage() {
         appointmentsResult,
         contactsResult,
         messagesResult,
-        voiceMinutesResult,
       ] = await Promise.allSettled([
         fetch(
           `${BACKEND_URL}/api/reports/monthly-summary?month=${encodeURIComponent(
@@ -483,10 +425,7 @@ export default function PortalHomePage() {
           `${BACKEND_URL}/api/messages?page=1&limit=8`,
           requestOptions
         ),
-        fetch(
-          `${BACKEND_URL}/api/voice/minutes`,
-          requestOptions
-        ),
+        
       ]);
 
       if (
@@ -578,29 +517,11 @@ export default function PortalHomePage() {
         setMessages([]);
       }
 
-      if (
-        voiceMinutesResult.status === "fulfilled" &&
-        voiceMinutesResult.value.ok
-      ) {
-        const data =
-          await voiceMinutesResult.value.json();
-
-        setVoiceUsage(normalizeVoiceUsage(data));
-      } else {
-        setVoiceUsage({
-          included: 0,
-          used: 0,
-          available: 0,
-          total: 0,
-        });
-      }
-
       const successfulRequests = [
         reportResult,
         appointmentsResult,
         contactsResult,
         messagesResult,
-        voiceMinutesResult,
       ].filter(
         (result) =>
           result.status === "fulfilled" &&
@@ -651,61 +572,94 @@ export default function PortalHomePage() {
       .slice(0, 5);
   }, [appointments]);
 
-  const activeChannels = useMemo(() => {
-    const flags = tenant?.channel_flags || {};
-    const metaFlags =
-      tenant?.meta_subchannel_flags || {};
+  const voiceUsage = useMemo(() => {
+    const voiceLimits = tenant?.limites?.voz ?? {};
 
-    const channels: Array<{
-      key: ChannelKey;
-      enabled: boolean;
-      label: string;
-      icon: React.ReactNode;
-    }> = [
-      {
-        key: "voice",
-        enabled: Boolean(flags.voice),
+    const included = finiteNumber(
+        voiceLimits.limite_base
+    );
+
+    const extras = finiteNumber(
+        voiceLimits.creditos_extras
+    );
+
+    const used = finiteNumber(
+        voiceLimits.usados
+    );
+
+    const total = included + extras;
+
+    const available = Math.max(
+        0,
+        finiteNumber(
+        voiceLimits.total_disponible,
+        total - used
+        )
+    );
+
+    return {
+        included,
+        extras,
+        used,
+        total,
+        available,
+    };
+    }, [tenant]);
+
+  const activeChannels = useMemo(() => {
+    const flags = tenant?.channel_flags ?? {};
+    const metaFlags = tenant?.meta_subchannel_flags ?? {};
+
+    return [
+        {
+        key: "voice" as const,
+        enabled:
+            flags.voice === true ||
+            Boolean(tenant?.twilio_voice_number),
         label: t("dashboard.channels.voice"),
         icon: <FiPhone />,
-      },
-      {
-        key: "whatsapp",
-        enabled: Boolean(flags.whatsapp),
+        },
+        {
+        key: "whatsapp" as const,
+        enabled:
+            flags.whatsapp === true ||
+            Boolean(
+            tenant?.whatsapp_cloud_connected ||
+            tenant?.whatsapp_twilio_connected
+            ),
         label: t("dashboard.channels.whatsapp"),
         icon: <FaWhatsapp />,
-      },
-      {
-        key: "facebook",
+        },
+        {
+        key: "facebook" as const,
         enabled:
-          Boolean(flags.meta) &&
-          metaFlags.facebook !== false,
+            flags.meta === true &&
+            metaFlags.facebook !== false,
         label: t("dashboard.channels.facebook"),
         icon: <FaFacebookMessenger />,
-      },
-      {
-        key: "instagram",
+        },
+        {
+        key: "instagram" as const,
         enabled:
-          Boolean(flags.meta) &&
-          metaFlags.instagram !== false,
+            flags.meta === true &&
+            metaFlags.instagram !== false,
         label: t("dashboard.channels.instagram"),
         icon: <FaInstagram />,
-      },
-      {
-        key: "sms",
-        enabled: Boolean(flags.sms),
+        },
+        {
+        key: "sms" as const,
+        enabled: flags.sms === true,
         label: t("channel.label.sms"),
         icon: <FiMessageSquare />,
-      },
-      {
-        key: "email",
-        enabled: Boolean(flags.email),
+        },
+        {
+        key: "email" as const,
+        enabled: flags.email === true,
         label: t("channel.label.email"),
         icon: <FiMessageSquare />,
-      },
+        },
     ];
-
-    return channels;
-  }, [tenant, t]);
+    }, [tenant, t]);
 
   const estimatedTimeSaved =
     calculateTimeSaved(report);

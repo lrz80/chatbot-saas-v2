@@ -1794,5 +1794,7 @@
   "portal.home.appointments.empty": "No hay próximas citas programadas.",
   "portal.home.conversion": "Conversión de reservas",
   "portal.home.customers.description": "Resumen de los clientes y leads capturados por Aamy.",
-  "portal.home.conversations.description": "Actividad reciente atendida por Aamy."
+  "portal.home.conversations.description": "Actividad reciente atendida por Aamy.",
+
+  "portal.navigation.business": "Mi negocio"
 }

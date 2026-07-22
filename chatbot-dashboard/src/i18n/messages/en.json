@@ -1777,5 +1777,7 @@
   "portal.home.appointments.empty": "There are no upcoming appointments.",
   "portal.home.conversion": "Booking conversion",
   "portal.home.customers.description": "Summary of the customers and leads captured by Aamy.",
-  "portal.home.conversations.description": "Recent activity handled by Aamy."
+  "portal.home.conversations.description": "Recent activity handled by Aamy.",
+
+  "portal.navigation.business": "My business"
 }
