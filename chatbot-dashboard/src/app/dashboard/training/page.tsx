@@ -17,7 +17,6 @@ import ChannelStatus from "@/components/ChannelStatus";
 import ConnectWhatsAppTwilioEmbeddedSignupButton from "@/components/ConnectWhatsAppTwilioEmbeddedSignupButton";
 import { useI18n } from "../../../i18n/LanguageProvider";
 
-
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
 
 type SettingsState = {

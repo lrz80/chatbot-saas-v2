@@ -16,8 +16,7 @@ import ChannelStatus from "@/components/ChannelStatus";
 import { MetaPageSelector } from '@/components/MetaPageSelector';
 import { useI18n } from "../../../i18n/LanguageProvider";
 
-
-const canal = 'meta'; // o 'facebook', 'instagram', 'voz'
+const canal = 'meta';
 
 const META_CONNECT_URL = `${BACKEND_URL}/api/facebook/oauth-start`;
 
