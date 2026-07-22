@@ -20,6 +20,7 @@ import { BACKEND_URL } from "@/utils/api";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useI18n } from "../i18n/LanguageProvider";
+import TenantSwitcher from "./admin/TenantSwitcher";
 
 type SidebarProps = {
   tenant?: any;
@@ -334,6 +335,13 @@ export default function Sidebar({
               </div>
             )}
 
+            {tenant?.is_admin ? (
+              <div className="mb-6">
+                <TenantSwitcher
+                  currentTenantId={tenant?.tenant_id}
+                />
+              </div>
+            ) : null}
             <div className="min-w-0">
               <p className="text-sm text-white/70">
                 {t("sidebar.welcome")}
