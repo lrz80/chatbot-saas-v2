@@ -9,7 +9,7 @@ import ClientWrapper from "./ClientWrapper";
 import ConditionalNavbar from "@/components/ConditionalNavbar";
 import Script from "next/script"; // ✅ AÑADIR
 import I18nProvider from "./I18nProvider";
-
+import NativeBackButton from "./NativeBackButton";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -119,6 +119,7 @@ export default function RootLayout({
         </noscript>
 
         <I18nProvider>
+          <NativeBackButton />
           <ConditionalNavbar />
           <ClientWrapper>{children}</ClientWrapper>
           <ToastContainer position="top-right" autoClose={3000} />
