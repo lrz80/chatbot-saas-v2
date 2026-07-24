@@ -422,8 +422,6 @@ function normalizeRouteStop(
     scheduledStartAt: optionalText(
       item.scheduledStartAt ??
         item.scheduled_start_at ??
-        item.plannedArrivalAt ??
-        item.planned_arrival_at ??
         metadata.scheduledStartAt ??
         metadata.scheduled_start_at
     ),
@@ -431,20 +429,24 @@ function normalizeRouteStop(
     scheduledEndAt: optionalText(
       item.scheduledEndAt ??
         item.scheduled_end_at ??
-        item.plannedDepartureAt ??
-        item.planned_departure_at ??
         metadata.scheduledEndAt ??
         metadata.scheduled_end_at
     ),
 
     plannedArrivalAt: optionalText(
       item.plannedArrivalAt ??
-        item.planned_arrival_at
+        item.planned_arrival_at ??
+        metadata.plannedArrivalAt ??
+        metadata.planned_arrival_at ??
+        metadata.physicalArrivalAt ??
+        metadata.physical_arrival_at
     ),
 
     plannedDepartureAt: optionalText(
       item.plannedDepartureAt ??
-        item.planned_departure_at
+        item.planned_departure_at ??
+        metadata.plannedDepartureAt ??
+        metadata.planned_departure_at
     ),
 
     formattedAddress: optionalText(
