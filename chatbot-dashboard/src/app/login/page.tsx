@@ -28,6 +28,7 @@ export default function LoginPage() {
   const { t } = useI18n();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -36,8 +37,54 @@ export default function LoginPage() {
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    let active = true;
+
+    const restoreSession = async () => {
+      setMounted(true);
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/settings`, {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        });
+
+        if (!active) return;
+
+        if (!response.ok) {
+          setCheckingSession(false);
+          return;
+        }
+
+        const settings = await response.json();
+
+        if (!active) return;
+
+        const role = String(settings?.role ?? '')
+          .trim()
+          .toLowerCase();
+
+        const destination =
+          settings?.is_admin === true ||
+          role === 'admin' ||
+          role === 'business_owner'
+            ? '/dashboard'
+            : '/portal';
+
+        router.replace(destination);
+      } catch {
+        if (active) {
+          setCheckingSession(false);
+        }
+      }
+    };
+
+    void restoreSession();
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   useEffect(() => {
     if (cooldown > 0) {
@@ -148,7 +195,7 @@ export default function LoginPage() {
     }
   };
 
-  if (!mounted) return null;
+  if (!mounted || checkingSession) return null;
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-black text-white px-4 overflow-y-auto md:overflow-hidden">
