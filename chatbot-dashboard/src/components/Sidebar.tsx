@@ -161,7 +161,7 @@ export default function Sidebar({
     }
 
     try {
-      await fetch(`${BACKEND_URL}/auth/logout`, {
+      await fetch(`${BACKEND_URL}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
