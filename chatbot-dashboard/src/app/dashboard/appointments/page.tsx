@@ -408,9 +408,12 @@ export default function AppointmentsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
-  // Socket para nuevas citas
+  // Socket para nuevas citas y actualizaciones de Field Operations.
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // No conectar hasta conocer exactamente el tenant activo.
+    if (!tenantId) return;
 
     const socket: Socket = io(BACKEND_URL, {
       transports: ["websocket"],
@@ -420,37 +423,117 @@ export default function AppointmentsPage() {
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("🔌 [SOCKET] Conectado en appointments:", socket.id);
+      console.log(
+        "🔌 [SOCKET] Conectado en appointments:",
+        socket.id
+      );
+
+      socket.emit(
+        "tenant:subscribe",
+        {
+          tenantId,
+        }
+      );
+
+      console.log(
+        "🔌 [SOCKET] Suscrito al tenant:",
+        tenantId
+      );
     });
 
     socket.on("connect_error", (err) => {
-      console.error("❌ [SOCKET] Error de conexión en appointments:", err.message);
+      console.error(
+        "❌ [SOCKET] Error de conexión en appointments:",
+        err.message
+      );
     });
 
     socket.on("appointment:new", (payload: any) => {
-      console.log("📥 [SOCKET] appointment:new recibido:", payload);
+      console.log(
+        "📥 [SOCKET] appointment:new recibido:",
+        payload
+      );
 
-      const appt = payload?.appointment ?? payload;
+      const appt =
+        payload?.appointment ?? payload;
 
-      if (!appt || typeof appt !== "object" || !appt.id) {
-        console.warn("⚠️ [SOCKET] appointment:new inválido, se ignora:", payload);
+      if (
+        !appt ||
+        typeof appt !== "object" ||
+        !appt.id
+      ) {
+        console.warn(
+          "⚠️ [SOCKET] appointment:new inválido, se ignora:",
+          payload
+        );
+
+        return;
+      }
+
+      const appointmentTenantId =
+        String(
+          appt.tenant_id ??
+          appt.tenantId ??
+          payload?.tenantId ??
+          ""
+        ).trim();
+
+      // Defensa adicional en frontend.
+      if (
+        !appointmentTenantId ||
+        appointmentTenantId !== tenantId
+      ) {
+        console.warn(
+          "⚠️ [SOCKET] appointment:new pertenece a otro tenant o no tiene tenantId",
+          {
+            currentTenantId: tenantId,
+            appointmentTenantId,
+          }
+        );
+
         return;
       }
 
       setAppointments((prev) => {
         const safePrev = Array.isArray(prev)
-          ? prev.filter((x) => x && typeof x === "object" && (x as any).id)
+          ? prev.filter(
+              (x) =>
+                x &&
+                typeof x === "object" &&
+                (x as any).id
+            )
           : [];
 
-        if (safePrev.some((a) => a.id === appt.id)) return safePrev;
+        if (
+          safePrev.some(
+            (appointment) =>
+              appointment.id === appt.id
+          )
+        ) {
+          return safePrev;
+        }
 
-        return [appt as Appointment, ...safePrev].sort((a, b) => {
-          const an = new Date(a.start_time).getTime();
-          const bn = new Date(b.start_time).getTime();
-          const aPast = an < Date.now();
-          const bPast = bn < Date.now();
-          if (aPast !== bPast) return aPast ? 1 : -1;
-          return an - bn;
+        return [
+          appt as Appointment,
+          ...safePrev,
+        ].sort((a, b) => {
+          const aTime =
+            new Date(a.start_time).getTime();
+
+          const bTime =
+            new Date(b.start_time).getTime();
+
+          const aPast =
+            aTime < Date.now();
+
+          const bPast =
+            bTime < Date.now();
+
+          if (aPast !== bPast) {
+            return aPast ? 1 : -1;
+          }
+
+          return aTime - bTime;
         });
       });
     });
@@ -464,17 +547,29 @@ export default function AppointmentsPage() {
         );
 
         const eventTenantId =
-          String(payload?.tenantId || "").trim();
+          String(
+            payload?.tenantId ?? ""
+          ).trim();
 
+        // Solo aceptar eventos del tenant activo.
         if (
-          tenantId &&
-          eventTenantId &&
+          !eventTenantId ||
           eventTenantId !== tenantId
         ) {
+          console.warn(
+            "⚠️ [SOCKET] route_updated ignorado por tenant",
+            {
+              currentTenantId: tenantId,
+              eventTenantId,
+            }
+          );
+
           return;
         }
 
-        setRouteMapRevision((current) => current + 1);
+        setRouteMapRevision(
+          (current) => current + 1
+        );
       }
     );
 
