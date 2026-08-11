@@ -135,6 +135,12 @@ export default function PortalAppointmentsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  const [tenantId, setTenantId] =
+  useState<string>("");
+
+  const [routeMapRevision, setRouteMapRevision] =
+    useState(0);
+
   const socketRef = useRef<Socket | null>(null);
 
   const locale = useMemo(() => {
@@ -478,6 +484,58 @@ export default function PortalAppointmentsPage() {
   }
 
   useEffect(() => {
+    const loadTenantId = async () => {
+      try {
+        const response = await fetch(
+          `${BACKEND_URL}/api/settings`,
+          {
+            credentials: "include",
+            cache: "no-store",
+          }
+        );
+
+        if (!response.ok) {
+          console.warn(
+            "[PORTAL_APPOINTMENTS][TENANT_LOAD_FAILED]",
+            {
+              status: response.status,
+            }
+          );
+
+          return;
+        }
+
+        const data = await response.json();
+
+        const resolvedTenantId =
+          String(
+            data?.tenant_id ?? ""
+          ).trim();
+
+        if (!resolvedTenantId) {
+          console.warn(
+            "[PORTAL_APPOINTMENTS][TENANT_LOAD_FAILED]",
+            {
+              reason: "TENANT_ID_NOT_AVAILABLE",
+            }
+          );
+
+          return;
+        }
+
+        setTenantId(resolvedTenantId);
+      } catch (loadError) {
+        console.error(
+          "[PORTAL_APPOINTMENTS][TENANT_LOAD_FAILED]",
+          loadError
+        );
+      }
+    };
+
+    void loadTenantId();
+  }, []);
+
+  useEffect(() => {
     void loadBookingFlow();
   }, []);
 
@@ -497,48 +555,218 @@ export default function PortalAppointmentsPage() {
       return;
     }
 
-    const socket = io(BACKEND_URL, {
+    /*
+    * No conectar hasta conocer el tenant activo.
+    * Evita conexiones temporales sin room.
+    */
+    if (!tenantId) {
+      return;
+    }
+
+    const socket: Socket = io(BACKEND_URL, {
       transports: ["websocket"],
       withCredentials: true,
     });
 
     socketRef.current = socket;
 
-    socket.on("appointment:new", (payload: unknown) => {
-      const candidate =
-        (payload as any)?.appointment ?? payload;
-
-      if (
-        !candidate ||
-        typeof candidate !== "object" ||
-        !(candidate as any).id
-      ) {
-        return;
-      }
-
-      const newAppointment =
-        candidate as Appointment;
-
-      setAppointments((current) => {
-        if (
-          current.some(
-            (appointment) =>
-              appointment.id === newAppointment.id
-          )
-        ) {
-          return current;
+    socket.on("connect", () => {
+      console.log(
+        "[PORTAL_APPOINTMENTS][SOCKET_CONNECTED]",
+        {
+          socketId: socket.id,
+          tenantId,
         }
+      );
 
-        return [newAppointment, ...current];
-      });
+      socket.emit(
+        "tenant:subscribe",
+        {
+          tenantId,
+        }
+      );
+
+      console.log(
+        "[PORTAL_APPOINTMENTS][TENANT_SUBSCRIBED]",
+        {
+          socketId: socket.id,
+          tenantId,
+        }
+      );
     });
 
+    socket.on(
+      "connect_error",
+      (socketError) => {
+        console.error(
+          "[PORTAL_APPOINTMENTS][SOCKET_CONNECTION_FAILED]",
+          {
+            tenantId,
+            error: socketError.message,
+          }
+        );
+      }
+    );
+
+    socket.on(
+      "appointment:new",
+      (payload: unknown) => {
+        const payloadObject =
+          payload &&
+          typeof payload === "object"
+            ? (payload as Record<string, unknown>)
+            : null;
+
+        const candidate =
+          payloadObject?.appointment ??
+          payload;
+
+        if (
+          !candidate ||
+          typeof candidate !== "object" ||
+          !(candidate as any).id
+        ) {
+          console.warn(
+            "[PORTAL_APPOINTMENTS][APPOINTMENT_SOCKET_INVALID]",
+            payload
+          );
+
+          return;
+        }
+
+        const newAppointment =
+          candidate as Appointment;
+
+        const appointmentTenantId =
+          String(
+            newAppointment.tenant_id ??
+            (newAppointment as any).tenantId ??
+            payloadObject?.tenantId ??
+            ""
+          ).trim();
+
+        /*
+        * Defensa adicional.
+        * Aunque el backend ya usa rooms,
+        * el frontend tampoco acepta eventos
+        * correspondientes a otro tenant.
+        */
+        if (
+          !appointmentTenantId ||
+          appointmentTenantId !== tenantId
+        ) {
+          console.warn(
+            "[PORTAL_APPOINTMENTS][APPOINTMENT_SOCKET_TENANT_REJECTED]",
+            {
+              currentTenantId: tenantId,
+              appointmentTenantId,
+            }
+          );
+
+          return;
+        }
+
+        setAppointments((current) => {
+          if (
+            current.some(
+              (appointment) =>
+                appointment.id ===
+                newAppointment.id
+            )
+          ) {
+            return current;
+          }
+
+          return [
+            newAppointment,
+            ...current,
+          ];
+        });
+      }
+    );
+
+    socket.on(
+      "field_operations:route_updated",
+      (payload: unknown) => {
+        const payloadObject =
+          payload &&
+          typeof payload === "object"
+            ? (payload as Record<
+                string,
+                unknown
+              >)
+            : null;
+
+        const eventTenantId =
+          String(
+            payloadObject?.tenantId ?? ""
+          ).trim();
+
+        if (
+          !eventTenantId ||
+          eventTenantId !== tenantId
+        ) {
+          console.warn(
+            "[PORTAL_APPOINTMENTS][ROUTE_SOCKET_TENANT_REJECTED]",
+            {
+              currentTenantId: tenantId,
+              eventTenantId,
+            }
+          );
+
+          return;
+        }
+
+        console.log(
+          "[PORTAL_APPOINTMENTS][ROUTE_UPDATED]",
+          {
+            tenantId: eventTenantId,
+            resourceId:
+              payloadObject?.resourceId ??
+              null,
+            serviceDate:
+              payloadObject?.serviceDate ??
+              null,
+            routePlanId:
+              payloadObject?.routePlanId ??
+              null,
+          }
+        );
+
+        /*
+        * Remonta únicamente el componente
+        * del mapa. No recarga todo el portal.
+        */
+        setRouteMapRevision(
+          (current) => current + 1
+        );
+      }
+    );
+
     return () => {
-      socket.off("appointment:new");
+      console.log(
+        "[PORTAL_APPOINTMENTS][SOCKET_DISCONNECTING]",
+        {
+          tenantId,
+        }
+      );
+
+      socket.off("connect");
+      socket.off("connect_error");
+
+      socket.off(
+        "appointment:new"
+      );
+
+      socket.off(
+        "field_operations:route_updated"
+      );
+
       socket.disconnect();
+
       socketRef.current = null;
     };
-  }, []);
+  }, [tenantId]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -580,7 +808,10 @@ export default function PortalAppointmentsPage() {
             </div>
           </div>
 
-          <FieldOperationsRouteMap lang={lang} />
+          <FieldOperationsRouteMap
+            key={`portal-field-route-map-${routeMapRevision}`}
+            lang={lang}
+          />
         </section>
       ) : null}
 
