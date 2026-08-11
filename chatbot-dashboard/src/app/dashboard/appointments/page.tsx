@@ -186,6 +186,7 @@ export default function AppointmentsPage() {
   });
 
   const [tenantId, setTenantId] = useState<string>("");
+  const [routeMapRevision, setRouteMapRevision] = useState(0);
   const [squareLoading, setSquareLoading] = useState(false);
   const [squareConnecting, setSquareConnecting] = useState(false);
 
@@ -454,13 +455,45 @@ export default function AppointmentsPage() {
       });
     });
 
+    socket.on(
+      "field_operations:route_updated",
+      (payload: any) => {
+        console.log(
+          "🗺️ [SOCKET] field_operations:route_updated recibido:",
+          payload
+        );
+
+        const eventTenantId =
+          String(payload?.tenantId || "").trim();
+
+        if (
+          tenantId &&
+          eventTenantId &&
+          eventTenantId !== tenantId
+        ) {
+          return;
+        }
+
+        setRouteMapRevision((current) => current + 1);
+      }
+    );
+
     return () => {
-      console.log("🔌 [SOCKET] Desconectando en appointments...");
+      console.log(
+        "🔌 [SOCKET] Desconectando en appointments..."
+      );
+
       socket.off("appointment:new");
+
+      socket.off(
+        "field_operations:route_updated"
+      );
+
       socket.disconnect();
+
       socketRef.current = null;
     };
-  }, []);
+  }, [tenantId]);
 
   const handleConnectGoogle = () => {
     if (gcConnecting) return;
@@ -1049,7 +1082,10 @@ export default function AppointmentsPage() {
           </div>
         )}
 
-        <FieldOperationsRouteMap lang={lang} />
+        <FieldOperationsRouteMap
+          key={`field-route-map-${routeMapRevision}`}
+          lang={lang}
+        />
         
         {/* Filtros */}
         <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4">
