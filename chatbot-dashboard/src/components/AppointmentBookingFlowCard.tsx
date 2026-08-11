@@ -85,6 +85,14 @@ const BOOKING_FLOW_LOCALES = [
 
 const PRIMARY_BOOKING_FLOW_LOCALE = "es-ES";
 
+const DEFAULT_DATETIME_UNAVAILABLE_PROMPTS = {
+  "es-ES":
+    "Ese horario no está disponible para {requested_service}. Las opciones más cercanas son {suggested_times}. ¿Qué día y hora te gustaría?",
+
+  "en-US":
+    "That time is not available for {requested_service}. The closest available options are {suggested_times}. What day and time would you like?",
+} as const;
+
 function normalizeLocalizedMap(value: unknown): Record<string, string> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return {};
@@ -95,6 +103,59 @@ function normalizeLocalizedMap(value: unknown): Record<string, string> {
       .map(([key, rawValue]) => [String(key).trim(), String(rawValue ?? "").trim()])
       .filter(([key, text]) => key && text)
   );
+}
+
+function applyDatetimeUnavailableDefaults(
+  step: BookingStep
+): BookingStep {
+  const isDatetimeStep =
+    step.expected_type === "datetime" ||
+    step.validation_config?.slot === "datetime";
+
+  if (!isDatetimeStep) {
+    return step;
+  }
+
+  const validationConfig =
+    step.validation_config || {};
+
+  const existingTranslations =
+    normalizeLocalizedMap(
+      validationConfig.unavailable_prompt_translations
+    );
+
+  const existingFallback =
+    String(
+      validationConfig.unavailable_prompt ?? ""
+    ).trim();
+
+  const spanishPrompt =
+    existingTranslations["es-ES"] ||
+    existingFallback ||
+    DEFAULT_DATETIME_UNAVAILABLE_PROMPTS["es-ES"];
+
+  const englishPrompt =
+    existingTranslations["en-US"] ||
+    DEFAULT_DATETIME_UNAVAILABLE_PROMPTS["en-US"];
+
+  return {
+    ...step,
+
+    validation_config: {
+      ...validationConfig,
+
+      unavailable_prompt:
+        existingFallback || spanishPrompt,
+
+      unavailable_prompt_translations: {
+        ...existingTranslations,
+
+        "es-ES": spanishPrompt,
+
+        "en-US": englishPrompt,
+      },
+    },
+  };
 }
 
 function buildLocalizedMapFromStep(params: {
@@ -215,6 +276,17 @@ const DEFAULT_STEPS: BookingStep[] = [
       slot: "datetime",
       requires_date: true,
       requires_time: true,
+
+      unavailable_prompt:
+        DEFAULT_DATETIME_UNAVAILABLE_PROMPTS["es-ES"],
+
+      unavailable_prompt_translations: {
+        "es-ES":
+          DEFAULT_DATETIME_UNAVAILABLE_PROMPTS["es-ES"],
+
+        "en-US":
+          DEFAULT_DATETIME_UNAVAILABLE_PROMPTS["en-US"],
+      },
     },
   },
   {
@@ -387,28 +459,57 @@ function buildStaffStep(nextVisualOrder: number): BookingStep {
   };
 }
 
-function normalizeLoadedStep(step: BookingStep): BookingStep {
-  if (step.expected_type !== "staff" && step.step_key !== "staff") {
-    return step;
+function normalizeLoadedStep(
+  step: BookingStep
+): BookingStep {
+  let normalizedStep: BookingStep = step;
+
+  const isStaffStep =
+    step.expected_type === "staff" ||
+    step.step_key === "staff";
+
+  if (isStaffStep) {
+    normalizedStep = {
+      ...step,
+
+      step_key:
+        step.step_key || "staff",
+
+      expected_type:
+        "staff",
+
+      validation_config: {
+        ...(step.validation_config || {}),
+
+        slot:
+          step.validation_config?.slot ||
+          "staff_member",
+
+        mode:
+          step.validation_config?.mode ||
+          "provider_staff",
+
+        allow_any:
+          typeof step.validation_config?.allow_any ===
+          "boolean"
+            ? step.validation_config.allow_any
+            : true,
+
+        any_option_value:
+          step.validation_config?.any_option_value ||
+          "any_available",
+
+        options:
+          normalizeBookingOptions(
+            step.validation_config?.options
+          ),
+      },
+    };
   }
 
-  return {
-    ...step,
-    step_key: step.step_key || "staff",
-    expected_type: "staff",
-    validation_config: {
-      ...(step.validation_config || {}),
-      slot: step.validation_config?.slot || "staff_member",
-      mode: step.validation_config?.mode || "provider_staff",
-      allow_any:
-        typeof step.validation_config?.allow_any === "boolean"
-          ? step.validation_config.allow_any
-          : true,
-      any_option_value:
-        step.validation_config?.any_option_value || "any_available",
-      options: normalizeBookingOptions(step.validation_config?.options),
-    },
-  };
+  return applyDatetimeUnavailableDefaults(
+    normalizedStep
+  );
 }
 
 function normalizeLoadedSteps(inputSteps: BookingStep[]): BookingStep[] {
@@ -475,9 +576,25 @@ export default function AppointmentBookingFlowCard() {
     loadFlow();
   }, []);
 
-  const updateStep = (index: number, patch: Partial<BookingStep>) => {
+  const updateStep = (
+    index: number,
+    patch: Partial<BookingStep>
+  ) => {
     setSteps((prev) =>
-      prev.map((step, i) => (i === index ? { ...step, ...patch } : step))
+      prev.map((step, i) => {
+        if (i !== index) {
+          return step;
+        }
+
+        const updatedStep: BookingStep = {
+          ...step,
+          ...patch,
+        };
+
+        return applyDatetimeUnavailableDefaults(
+          updatedStep
+        );
+      })
     );
   };
 
@@ -748,11 +865,32 @@ export default function AppointmentBookingFlowCard() {
                   </label>
                   <select
                     value={step.expected_type}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const expectedType =
+                        e.target.value as BookingStep["expected_type"];
+
+                      if (expectedType === "datetime") {
+                        updateStep(index, {
+                          expected_type: "datetime",
+
+                          validation_config: {
+                            ...(step.validation_config || {}),
+
+                            slot: "datetime",
+
+                            requires_date: true,
+
+                            requires_time: true,
+                          },
+                        });
+
+                        return;
+                      }
+
                       updateStep(index, {
-                        expected_type: e.target.value as BookingStep["expected_type"],
-                      })
-                    }
+                        expected_type: expectedType,
+                      });
+                    }}
                     className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white"
                   >
                     {EXPECTED_TYPES.map((type) => (
