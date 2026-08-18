@@ -548,7 +548,7 @@ export default function ConnectWhatsAppMetaEmbeddedSignupButton({
       });
 
       FB.login(
-        async (response: any) => {
+        (response: any) => {
           console.log(
             '[WA META ESU] FB.login response:',
             response
@@ -573,17 +573,9 @@ export default function ConnectWhatsAppMetaEmbeddedSignupButton({
             return;
           }
 
-          /**
-           * Guardamos el code aunque FINISH todavía
-           * no haya llegado.
-           */
           oauthCodeRef.current = code;
 
-          /**
-           * Si sessionInfo ya llegó, termina ahora.
-           * Si no, espera postMessage.
-           */
-          await tryFinalize();
+          void tryFinalize();
         },
         options
       );
