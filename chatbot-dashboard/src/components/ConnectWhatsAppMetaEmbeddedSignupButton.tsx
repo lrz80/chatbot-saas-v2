@@ -547,6 +547,11 @@ export default function ConnectWhatsAppMetaEmbeddedSignupButton({
           prepareJson?.embedded_signup_version ?? null,
       });
 
+      console.log(
+        '[WA META ESU] OPTIONS COMPLETAS:',
+        JSON.stringify(options, null, 2)
+      );
+
       FB.login(
         (response: any) => {
           console.log(
