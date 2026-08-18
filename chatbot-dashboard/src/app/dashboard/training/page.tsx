@@ -14,7 +14,7 @@ import type { FaqSugerida } from "@/components/FaqSection";
 import IntentSection, { Intent } from "@/components/IntentSection";
 import CTASection from "@/components/CTASection";
 import ChannelStatus from "@/components/ChannelStatus";
-import ConnectWhatsAppTwilioEmbeddedSignupButton from "@/components/ConnectWhatsAppTwilioEmbeddedSignupButton";
+import ConnectWhatsAppMetaEmbeddedSignupButton from "@/components/ConnectWhatsAppMetaEmbeddedSignupButton";
 import { useI18n } from "../../../i18n/LanguageProvider";
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
@@ -157,8 +157,6 @@ export default function TrainingPage() {
   const membershipInactive =
   !settings.membresia_activa && !settings.trial_activo;
 
-  const waMode: "twilio" = "twilio";
-  
   useEffect(() => {
     if (!chatContainerRef.current) return;
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -287,27 +285,61 @@ export default function TrainingPage() {
   const disconnectWhatsApp = async () => {
     if (!verificarPermiso()) return;
 
-    const ok = window.confirm(t("training.twilio.confirmDisconnect"));
+    const ok = window.confirm(
+      t("training.twilio.confirmDisconnect")
+    );
 
     if (!ok) return;
 
     setIsDisconnecting(true);
+
     try {
-      const r = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/disconnect`, {
-        method: "POST",
+      const isTwilio =
+        settings.whatsapp_mode === "twilio";
+
+      const endpoint = isTwilio
+        ? `${BACKEND_URL}/api/twilio/whatsapp/disconnect`
+        : `${BACKEND_URL}/api/meta/whatsapp/connection`;
+
+      const method = isTwilio ? "POST" : "DELETE";
+
+      const r = await fetch(endpoint, {
+        method,
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}), // por si luego agregas flags
+        headers: {
+          "Content-Type": "application/json",
+        },
+        ...(isTwilio
+          ? {
+              body: JSON.stringify({}),
+            }
+          : {}),
       });
 
       const j = await r.json().catch(() => ({} as any));
-      if (!r.ok) throw new Error(j?.error || t("training.twilio.disconnectFail"));
 
-      alert(t("training.twilio.disconnectedOk"));
+      if (!r.ok) {
+        throw new Error(
+          j?.error ||
+            t("training.twilio.disconnectFail")
+        );
+      }
+
+      alert(
+        t("training.twilio.disconnectedOk")
+      );
+
       await reloadSettings();
     } catch (e: any) {
-      console.error("❌ disconnect error:", e);
-      alert(e?.message || t("training.twilio.disconnectError"));
+      console.error(
+        "❌ WhatsApp disconnect error:",
+        e
+      );
+
+      alert(
+        e?.message ||
+          t("training.twilio.disconnectError")
+      );
     } finally {
       setIsDisconnecting(false);
     }
@@ -696,11 +728,13 @@ export default function TrainingPage() {
     !!settings.can_edit &&
     channelState?.enabled !== false &&
     channelState?.maintenance !== true &&
-    // permitir desconectar si hay algo conectado/persistido
-    (settings.whatsapp_status === "connected" ||
+    (
+      settings.whatsapp_status === "connected" ||
       settings.whatsapp_status === "pending" ||
-      !!settings.twilio_number ||
-      !!settings.twilio_subaccount_sid);
+      settings.whatsapp_status === "pending_complete" ||
+      settings.whatsapp_mode === "twilio" ||
+      settings.whatsapp_mode === "cloudapi"
+    );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0e0e2c] to-[#1e1e3f] text-white px-3 py-4 sm:px-6 md:px-8">
@@ -780,21 +814,10 @@ export default function TrainingPage() {
 
             {/* Botones: móvil apilados / desktop en fila */}
             <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end">
-              <ConnectWhatsAppTwilioEmbeddedSignupButton
+              <ConnectWhatsAppMetaEmbeddedSignupButton
                 disabled={!canConnectWhatsApp}
                 onComplete={async () => {
                   await reloadSettings();
-                  setTimeout(async () => {
-                    try {
-                      await fetch(`${BACKEND_URL}/api/twilio/whatsapp/sync-sender`, {
-                        method: "POST",
-                        credentials: "include",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({}),
-                      });
-                      await reloadSettings();
-                    } catch {}
-                  }, 20000);
                 }}
               />
 
@@ -823,7 +846,11 @@ export default function TrainingPage() {
                 <div className="mt-1 text-white/80">
                   {t("training.twilio.numberLabel")}{" "}
                   <span className="ml-2 font-mono font-semibold">
-                    {settings.twilio_number || t("common.notAvailable")}
+                    {(
+                      settings.whatsapp_mode === "cloudapi"
+                        ? settings.whatsapp_phone_number
+                        : settings.twilio_number
+                    ) || t("common.notAvailable")}
                   </span>
                 </div>
               </div>
