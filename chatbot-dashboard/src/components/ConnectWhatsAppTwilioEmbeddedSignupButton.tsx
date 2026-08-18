@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { BACKEND_URL } from '@/utils/api';
 import { useI18n } from '../i18n/LanguageProvider';
 
@@ -9,28 +9,9 @@ type Props = {
   onComplete?: () => void;
 };
 
-type EmbeddedSignupPrepareResponse = {
-  ok: boolean;
-  app_id: string;
-  config_id: string;
-  state: string;
-  embedded_signup_version?: string;
-  error?: string;
-};
-
-type EmbeddedSignupSessionData = {
-  waba_id?: string;
-  whatsapp_business_account_id?: string;
-  wabaId?: string;
-
-  business_id?: string;
-  business_manager_id?: string;
-  businessId?: string;
-
-  phone_number_id?: string;
-  whatsapp_phone_number_id?: string;
-  phoneNumberId?: string;
-};
+const META_APP_ID = '672113805196816';
+const CONFIG_ID = '859575230051675';
+const SOLUTION_ID = process.env.NEXT_PUBLIC_TWILIO_PARTNER_SOLUTION_ID;
 
 export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
   disabled,
@@ -40,452 +21,207 @@ export default function ConnectWhatsAppTwilioEmbeddedSignupButton({
 
   const [loading, setLoading] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
-
   const finishOnceRef = useRef(false);
-  const oauthCodeRef = useRef<string | null>(null);
-  const stateRef = useRef<string | null>(null);
 
   const buttonLabel = useMemo(() => {
-    if (loading) {
-      return t('waConnectTwilio.button.connecting');
-    }
-
+    if (loading) return t('waConnectTwilio.button.connecting');
     return t('waConnectTwilio.button.connect');
   }, [loading, t]);
 
-  /**
-   * 1) Cargar Facebook JavaScript SDK.
-   */
+  // 1) Load FB SDK
   useEffect(() => {
-    const initializeFacebookSdk = () => {
-      const FB = (window as any).FB;
-
-      if (!FB) {
-        return;
-      }
-
-      FB.init({
-        appId: process.env.NEXT_PUBLIC_META_APP_ID || '672113805196816',
-        cookie: true,
-        xfbml: false,
-        version: 'v26.0',
-      });
-
-      setSdkReady(true);
-    };
-
-    if ((window as any).FB) {
-      initializeFacebookSdk();
-      return;
-    }
-
     if (document.getElementById('facebook-jssdk')) {
-      const existingInit = (window as any).fbAsyncInit;
-
-      (window as any).fbAsyncInit = function () {
-        if (typeof existingInit === 'function') {
-          existingInit();
-        }
-
-        initializeFacebookSdk();
-      };
-
+      setSdkReady(true);
       return;
     }
 
     (window as any).fbAsyncInit = function () {
-      initializeFacebookSdk();
+      (window as any).FB.init({
+        appId: META_APP_ID,
+        cookie: true,
+        xfbml: false,
+        version: 'v21.0',
+      });
+      setSdkReady(true);
     };
 
     const js = document.createElement('script');
-
     js.id = 'facebook-jssdk';
     js.src = 'https://connect.facebook.net/en_US/sdk.js';
     js.async = true;
-    js.defer = true;
-
     document.body.appendChild(js);
   }, []);
 
-  /**
-   * Finaliza el onboarding cuando ya tenemos:
-   *
-   * - OAuth code
-   * - WABA ID
-   * - Phone Number ID
-   */
-  const finalizeEmbeddedSignup = async (params: {
-    code: string;
-    state: string;
-    wabaId: string;
-    phoneNumberId: string;
-    businessId?: string | null;
-    raw?: unknown;
-  }) => {
-    if (finishOnceRef.current) {
-      return;
-    }
-
-    finishOnceRef.current = true;
-
-    try {
-      /**
-       * 1) Intercambiar el code por token Meta
-       */
-      const exchangeResponse = await fetch(
-        `${BACKEND_URL}/api/meta/whatsapp/exchange-code`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            code: params.code,
-            state: params.state,
-          }),
-        }
-      );
-
-      const exchangeJson = await exchangeResponse
-        .json()
-        .catch(() => ({} as any));
-
-      if (!exchangeResponse.ok) {
-        throw new Error(
-          exchangeJson?.error ||
-            'No se pudo autorizar WhatsApp con Meta.'
-        );
-      }
-
-      /**
-       * 2) Guardar WABA + Phone Number ID y suscribir webhook.
-       */
-      const completeResponse = await fetch(
-        `${BACKEND_URL}/api/meta/whatsapp/onboard-complete`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            waba_id: params.wabaId,
-            phone_number_id: params.phoneNumberId,
-            business_id: params.businessId || null,
-            raw: params.raw || null,
-          }),
-        }
-      );
-
-      const completeJson = await completeResponse
-        .json()
-        .catch(() => ({} as any));
-
-      if (!completeResponse.ok) {
-        throw new Error(
-          completeJson?.error ||
-            'No se pudo finalizar la conexión de WhatsApp.'
-        );
-      }
-
-      alert(t('waConnectTwilio.alert.completeOk'));
-
-      onComplete?.();
-    } finally {
-      setLoading(false);
-      finishOnceRef.current = false;
-      oauthCodeRef.current = null;
-      stateRef.current = null;
-    }
-  };
-
-  /**
-   * 2) Capturar session info enviada por Meta Embedded Signup.
-   */
+  // 2) Capture postMessage from Embedded Signup
   useEffect(() => {
     const handler = async (event: MessageEvent) => {
-      const allowedOrigins = new Set([
+      const allowedOrigins = [
         'https://www.facebook.com',
         'https://web.facebook.com',
         'https://business.facebook.com',
-      ]);
+      ];
 
-      if (!allowedOrigins.has(event.origin)) {
-        return;
-      }
+      if (!allowedOrigins.includes(event.origin)) return;
 
       let payload: any = event.data;
-
       try {
-        if (typeof payload === 'string') {
-          payload = JSON.parse(payload);
-        }
+        if (typeof payload === 'string') payload = JSON.parse(payload);
       } catch {
-        return;
+        // can arrive as object, ignore JSON parsing errors
       }
 
       const root = payload?.payload ?? payload;
-      const metaData: EmbeddedSignupSessionData =
-        root?.data ?? root;
+      const metaData = root?.data ?? root;
 
-      const eventType = String(
-        root?.type ??
-          payload?.type ??
-          ''
-      ).toLowerCase();
+      const rawType = root?.type ?? payload?.type ?? metaData?.type;
+      const rawEvent = root?.event ?? payload?.event ?? metaData?.event;
 
-      const eventName = String(
-        root?.event ??
-          payload?.event ??
-          ''
-      ).toLowerCase();
+      const eventType = String(rawType || '').toLowerCase();
+      const eventName = String(rawEvent || '').toLowerCase();
 
-      const isEmbeddedSignupEvent =
-        eventType === 'wa_embedded_signup';
-
-      const isFinishEvent =
-        eventName === 'finish' ||
-        eventName === 'complete' ||
-        eventName === 'finish_only_waba' ||
-        eventName === 'embedded_signup_finish' ||
-        eventName === 'embedded_signup_complete' ||
-        eventName.startsWith('finish');
-
-      if (!isEmbeddedSignupEvent || !isFinishEvent) {
-        return;
-      }
+      const isFinish =
+        eventType === 'wa_embedded_signup' &&
+        (eventName === 'finish' ||
+          eventName === 'complete' ||
+          eventName === 'finish_only_waba' ||
+          eventName === 'embedded_signup_finish' ||
+          eventName === 'embedded_signup_complete' ||
+          eventName.startsWith('finish'));
 
       const wabaId =
         metaData?.waba_id ||
         metaData?.whatsapp_business_account_id ||
-        metaData?.wabaId ||
-        null;
-
-      const phoneNumberId =
-        metaData?.phone_number_id ||
-        metaData?.whatsapp_phone_number_id ||
-        metaData?.phoneNumberId ||
-        null;
+        metaData?.wabaId;
 
       const businessId =
         metaData?.business_id ||
         metaData?.business_manager_id ||
-        metaData?.businessId ||
-        null;
+        metaData?.businessId;
 
-      console.log('[WA META ESU] FINISH:', {
+      const phoneNumberId =
+        metaData?.phone_number_id ||
+        metaData?.whatsapp_phone_number_id ||
+        metaData?.phoneNumberId;
+
+      console.log('✅ [WA ESU] postMessage:', {
+        eventType,
+        eventName,
         wabaId,
-        phoneNumberId,
         businessId,
+        phoneNumberId,
         raw: payload,
       });
 
-      /**
-       * En Cloud API necesitamos WABA + phone_number_id.
-       */
-      if (!wabaId || !phoneNumberId) {
-        console.warn(
-          '[WA META ESU] FINISH sin wabaId o phoneNumberId.',
-          payload
-        );
+      if (!isFinish) return;
 
+      // If finish came but IDs missing, release UI (avoid stuck state)
+      if (!wabaId || !businessId) {
+        console.warn('⚠️ FINISH received but missing IDs. Releasing UI.');
         setLoading(false);
+        finishOnceRef.current = false;
         return;
       }
 
-      const code = oauthCodeRef.current;
-      const state = stateRef.current;
-
-      /**
-       * FB.login y postMessage pueden llegar en cualquier orden.
-       * Si todavía no llegó OAuth code, esperamos.
-       */
-      if (!code || !state) {
-        console.log(
-          '[WA META ESU] Esperando OAuth code antes de finalizar.'
-        );
-
-        return;
-      }
+      if (finishOnceRef.current) return;
+      finishOnceRef.current = true;
 
       try {
-        await finalizeEmbeddedSignup({
-          code,
-          state,
-          wabaId,
-          phoneNumberId,
-          businessId,
-          raw: payload,
-        });
-      } catch (error: any) {
-        console.error(
-          '[WA META ESU] Error finalizando onboarding:',
-          error
+        setLoading(true);
+
+        const r = await fetch(
+          `${BACKEND_URL}/api/twilio/whatsapp/embedded-signup/complete`,
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              waba_id: wabaId,
+              business_id: businessId,
+              phone_number_id: phoneNumberId || null,
+              raw: payload,
+            }),
+          }
         );
 
-        alert(
-          error?.message ||
-            t('waConnectTwilio.error.finalize')
-        );
+        const j = await r.json().catch(() => ({} as any));
+        if (!r.ok) throw new Error(j?.error || t('waConnectTwilio.error.complete'));
 
+        alert(t('waConnectTwilio.alert.completeOk'));
+        onComplete?.();
+      } catch (e: any) {
+        console.error('❌ ESU complete error:', e);
+        alert(e?.message || t('waConnectTwilio.error.finalize'));
+      } finally {
         setLoading(false);
         finishOnceRef.current = false;
       }
     };
 
     window.addEventListener('message', handler);
-
-    return () => {
-      window.removeEventListener('message', handler);
-    };
+    return () => window.removeEventListener('message', handler);
   }, [onComplete, t]);
 
-  /**
-   * 3) Iniciar Embedded Signup.
-   */
   const start = async () => {
-    if (disabled || loading) {
+    if (disabled || loading) return;
+
+    if (!sdkReady || !(window as any).FB) {
+      alert(t('waConnectTwilio.alert.sdkNotReady'));
       return;
     }
 
-    const FB = (window as any).FB;
-
-    if (!sdkReady || !FB) {
-      alert(t('waConnectTwilio.alert.sdkNotReady'));
+    if (!SOLUTION_ID) {
+      alert(t('waConnectTwilio.alert.missingSolutionId'));
       return;
     }
 
     try {
       setLoading(true);
 
-      finishOnceRef.current = false;
-      oauthCodeRef.current = null;
-      stateRef.current = null;
+      // 0) Prepare backend: subaccount + Twilio number (Twilio-only)
+      const r1 = await fetch(`${BACKEND_URL}/api/twilio/whatsapp/start-embedded-signup`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ whatsapp_number_type: 'twilio' }),
+      });
 
-      /**
-       * Backend devuelve app_id, config_id y state.
-       *
-       * Ya NO:
-       * - crea subaccount Twilio
-       * - compra número Twilio
-       * - usa Partner Solution ID
-       */
-      const prepareResponse = await fetch(
-        `${BACKEND_URL}/api/meta/whatsapp-onboard/start`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const j1 = await r1.json().catch(() => ({} as any));
+      if (!r1.ok) throw new Error(j1?.error || t('waConnectTwilio.error.prepare'));
 
-      const prepareJson =
-        (await prepareResponse
-          .json()
-          .catch(() => ({}))) as EmbeddedSignupPrepareResponse;
-
-      if (!prepareResponse.ok) {
-        throw new Error(
-          prepareJson?.error ||
-            t('waConnectTwilio.error.prepare')
-        );
-      }
-
-      if (!prepareJson?.config_id) {
-        throw new Error(
-          'Meta Embedded Signup no devolvió config_id.'
-        );
-      }
-
-      if (!prepareJson?.state) {
-        throw new Error(
-          'Meta Embedded Signup no devolvió state.'
-        );
-      }
-
-      stateRef.current = prepareJson.state;
-
-      const opts = {
-        config_id: prepareJson.config_id,
-
+      // 1) Open Embedded Signup (ESU)
+      const opts: any = {
+        config_id: CONFIG_ID,
         response_type: 'code',
-
         override_default_response_type: true,
-
         auth_type: 'rerequest',
-
+        scope: 'whatsapp_business_management,whatsapp_business_messaging',
         extras: {
-          /**
-           * Meta Coexistence:
-           * permite conectar una cuenta/número que ya utiliza
-           * WhatsApp Business App.
-           */
-          featureType: 'whatsapp_business_app_onboarding',
-
           sessionInfoVersion: 3,
-
-          setup: {},
+          featureType: 'only_waba_sharing',
+          setup: {
+            solutionID: SOLUTION_ID,
+          },
         },
       };
 
-      console.log('[WA META ESU] Launch:', {
-        appId: prepareJson.app_id,
-        configId: prepareJson.config_id,
-        embeddedSignupVersion:
-          prepareJson.embedded_signup_version || null,
+      console.log('=== WA ESU PARAMS CHECK ===', {
+        featureType: opts?.extras?.featureType,
+        solutionID: opts?.extras?.setup?.solutionID,
       });
 
-      FB.login(
-        async (response: any) => {
-          console.log(
-            '[WA META ESU] FB.login response:',
-            response
-          );
-
-          const code =
-            response?.authResponse?.code ||
-            response?.code ||
-            null;
-
-          if (!code) {
+      (window as any).FB.login(
+        (response: any) => {
+          console.log('[ESU] FB.login response:', response);
+          // if cancelled / not authorized, release button
+          if (!response || response.status !== 'connected') {
             setLoading(false);
-
-            if (
-              response?.status &&
-              response.status !== 'connected'
-            ) {
-              console.warn(
-                '[WA META ESU] Usuario canceló o no autorizó Embedded Signup.'
-              );
-            }
-
-            return;
           }
-
-          oauthCodeRef.current = code;
-
-          /**
-           * IMPORTANTE:
-           * normalmente session info llegará mediante postMessage.
-           * Por eso aquí solo guardamos el code.
-           */
         },
         opts
       );
-    } catch (error: any) {
-      console.error(
-        '[WA META ESU] Error iniciando conexión:',
-        error
-      );
-
-      alert(
-        error?.message ||
-          t('waConnectTwilio.error.start')
-      );
-
+    } catch (e: any) {
+      console.error('❌ WhatsApp connect start error:', e);
+      alert(e?.message || t('waConnectTwilio.error.start'));
       setLoading(false);
     }
   };
