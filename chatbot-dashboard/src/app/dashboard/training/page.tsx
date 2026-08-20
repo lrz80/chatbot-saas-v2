@@ -14,7 +14,7 @@ import type { FaqSugerida } from "@/components/FaqSection";
 import IntentSection, { Intent } from "@/components/IntentSection";
 import CTASection from "@/components/CTASection";
 import ChannelStatus from "@/components/ChannelStatus";
-import ConnectWhatsAppTwilioEmbeddedSignupButton from "@/components/ConnectWhatsAppTwilioEmbeddedSignupButton";
+import ConnectWhatsAppMetaEmbeddedSignupButton from "@/components/ConnectWhatsAppMetaEmbeddedSignupButton";
 import { useI18n } from "../../../i18n/LanguageProvider";
 
 const canal = 'whatsapp'; // o 'facebook', 'instagram', 'voz'
@@ -814,27 +814,10 @@ export default function TrainingPage() {
 
             {/* Botones: móvil apilados / desktop en fila */}
             <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end">
-              <ConnectWhatsAppTwilioEmbeddedSignupButton
+              <ConnectWhatsAppMetaEmbeddedSignupButton
                 disabled={!canConnectWhatsApp}
                 onComplete={async () => {
                   await reloadSettings();
-
-                  setTimeout(async () => {
-                    try {
-                      await fetch(`${BACKEND_URL}/api/twilio/whatsapp/sync-sender`, {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({}),
-                      });
-
-                      await reloadSettings();
-                    } catch (error) {
-                      console.error("Error sincronizando sender de Twilio:", error);
-                    }
-                  }, 20000);
                 }}
               />
 
