@@ -1026,6 +1026,7 @@ export default function TrainingPage() {
           idioma={settings.idioma}
           canal="whatsapp"                     // 👈 AÑADIR ESTO AQUÍ
           membresiaActiva={!disabledAll}
+          tenantId={settings.tenant_id}
           onPromptGenerated={(prompt) =>
             setSettings((prev) => ({ ...prev, prompt }))
           }

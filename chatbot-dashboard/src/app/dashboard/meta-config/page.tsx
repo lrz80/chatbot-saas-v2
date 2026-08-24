@@ -162,6 +162,7 @@ const refreshMetaConn = async () => {
     trial_disponible: false,
     trial_activo: false,
     can_edit: false,
+    tenant_id: undefined as string | undefined,
 });
 
   const isMembershipActive = Boolean(settings?.membresia_activa || settings?.trial_activo); // ✅ trial cuenta como activo
@@ -213,6 +214,7 @@ const refreshMetaConn = async () => {
             trial_disponible: Boolean(sdata?.trial_disponible),
             trial_activo: Boolean(sdata?.trial_vigente || sdata?.trial_activo),
             can_edit: Boolean(sdata?.can_edit ?? sdata?.membresia_activa ?? (sdata?.trial_vigente || sdata?.trial_activo)),
+            tenant_id: sdata?.tenant_id || sdata?.id || prev.tenant_id,
           }));
 
           // ✅ subcanales Meta (si no vienen, asumimos ON)
@@ -941,6 +943,7 @@ const refreshMetaConn = async () => {
           idioma={settings.idioma}
           canal="meta"                       // 👈 AQUÍ defines el canal para este prompt
           membresiaActiva={canMeta}
+          tenantId={settings.tenant_id}
           onPromptGenerated={(prompt) => setSettings((prev) => ({ ...prev, prompt }))}
         />
   

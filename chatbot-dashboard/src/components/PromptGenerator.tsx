@@ -5,7 +5,7 @@ import { BACKEND_URL } from "@/utils/api";
 import { SiOpenai, SiDatabricks } from "react-icons/si";
 import { useI18n } from "../i18n/LanguageProvider";
 
-type Canal = "whatsapp" | "meta" | "preview"; // 👈 sin voz
+type Canal = "whatsapp" | "meta" | "preview";
 
 interface PromptGeneratorProps {
   infoClave: string;
@@ -13,8 +13,9 @@ interface PromptGeneratorProps {
   setInfoClave: (value: string) => void;
   setFuncionesAsistente: (value: string) => void;
   idioma: string;
-  canal: "whatsapp" | "meta" | "preview";   // 👈 SOLO estos
+  canal: Canal;
   membresiaActiva: boolean;
+  tenantId?: string;
   onPromptGenerated: (prompt: string) => void;
 }
 
@@ -26,12 +27,17 @@ export default function PromptGenerator({
   idioma,
   canal,
   membresiaActiva,
+  tenantId,
   onPromptGenerated,
 }: PromptGeneratorProps) {
   const { t } = useI18n();
   const [loading, setLoading] = useState(false);
 
-  const infoTemplate = useMemo(() => t("promptGen.infoTemplate"), [t]);
+  const infoTemplate = useMemo(
+    () => t("promptGen.infoTemplate"),
+    [t]
+  );
+
   const funcionesPlaceholder = useMemo(
     () => t("promptGen.funciones.placeholder"),
     [t]
@@ -59,22 +65,40 @@ export default function PromptGenerator({
       const res = await fetch(`${BACKEND_URL}/api/generar-prompt`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           descripcion: funcionesAsistente,
           informacion: infoClave,
           idioma,
-          canal, // 👈 AHORA SÍ LO ENVIAMOS
+          canal,
+          tenant_id: tenantId || undefined,
         }),
       });
 
       const data = await res.json().catch(() => ({} as any));
 
-      if (data?.prompt) {
-        onPromptGenerated(data.prompt);
-      } else {
-        alert(t("promptGen.alert.couldNotGenerate"));
+      if (!res.ok) {
+        console.error("❌ Error generando prompt:", {
+          status: res.status,
+          data,
+        });
+
+        alert(
+          data?.error ||
+            t("promptGen.alert.couldNotGenerate")
+        );
+
+        return;
       }
+
+      if (typeof data?.prompt === "string" && data.prompt.trim()) {
+        onPromptGenerated(data.prompt);
+        return;
+      }
+
+      alert(t("promptGen.alert.couldNotGenerate"));
     } catch (err) {
       console.error("❌ Error generando prompt:", err);
       alert(t("promptGen.alert.genericError"));
@@ -121,8 +145,11 @@ export default function PromptGenerator({
             : "bg-gray-600 text-white/50 cursor-not-allowed"
         }`}
       >
-        {loading ? t("promptGen.button.loading") : t("promptGen.button.idle")}
+        {loading
+          ? t("promptGen.button.loading")
+          : t("promptGen.button.idle")}
       </button>
+
       {!membresiaActiva && (
         <p className="text-xs text-red-400 mt-2">
           {t("promptGen.membershipRequiredMessage")}
