@@ -943,7 +943,6 @@ const refreshMetaConn = async () => {
           idioma={settings.idioma}
           canal="meta"                       // 👈 AQUÍ defines el canal para este prompt
           membresiaActiva={canMeta}
-          tenantId={settings.tenant_id}
           onPromptGenerated={(prompt) => setSettings((prev) => ({ ...prev, prompt }))}
         />
   

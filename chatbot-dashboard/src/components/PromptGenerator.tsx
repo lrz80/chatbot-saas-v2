@@ -15,7 +15,6 @@ interface PromptGeneratorProps {
   idioma: string;
   canal: Canal;
   membresiaActiva: boolean;
-  tenantId?: string;
   onPromptGenerated: (prompt: string) => void;
 }
 
@@ -27,7 +26,6 @@ export default function PromptGenerator({
   idioma,
   canal,
   membresiaActiva,
-  tenantId,
   onPromptGenerated,
 }: PromptGeneratorProps) {
   const { t } = useI18n();
@@ -73,7 +71,6 @@ export default function PromptGenerator({
           informacion: infoClave,
           idioma,
           canal,
-          tenant_id: tenantId || undefined,
         }),
       });
 
