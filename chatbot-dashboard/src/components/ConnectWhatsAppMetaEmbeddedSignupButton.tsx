@@ -530,14 +530,9 @@ export default function ConnectWhatsAppMetaEmbeddedSignupButton({
         auth_type: 'rerequest',
 
         extras: {
-          sessionInfoVersion: 3,
-
-          /**
-           * Flujo para números que ya existen
-           * en WhatsApp Business App.
-           */
-          featureType:
-            'whatsapp_business_app_onboarding',
+          setup: {},
+          featureType: 'whatsapp_business_app_onboarding',
+          sessionInfoVersion: '3',
         },
       };
 
