@@ -88,14 +88,15 @@ function pad(time: string): string {
   return `${h.padStart(2, "0")}:${m}`;
 }
 
-function proposalToForm(p: Proposal): FormState {
+function proposalToForm(p: Proposal, existingName: string): FormState {
   const hours = emptyHours();
   for (const d of DAYS) {
     const h = p.hours?.[d.key];
     hours[d.key] = h ? { start: pad(h.start), end: pad(h.end) } : null;
   }
   return {
-    business_name: p.business_name || "",
+    // Si el negocio ya tiene nombre guardado, se respeta; la web solo llena si está vacío
+    business_name: existingName || p.business_name || "",
     category: p.category || "",
     description: p.description || "",
     phone: p.phone || "",
@@ -239,7 +240,7 @@ export default function OnboardingPage() {
         throw new Error(data?.error || "No se pudo analizar el sitio");
       }
 
-      setForm(proposalToForm(data.proposal as Proposal));
+      setForm(proposalToForm(data.proposal as Proposal, businessName));
       setStep("review");
     } catch (analyzeError) {
       setError(
