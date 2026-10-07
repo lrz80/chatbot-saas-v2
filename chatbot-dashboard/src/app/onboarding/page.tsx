@@ -202,9 +202,11 @@ export default function OnboardingPage() {
   const [testNumber, setTestNumber] = useState<string | null>(null);
   const [existingInfoClave, setExistingInfoClave] = useState("");
   const [overwriteInfo, setOverwriteInfo] = useState(false);
+  const [areaCode, setAreaCode] = useState("");
+  const [assigning, setAssigning] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
 
-  // Solo admin por ahora (igual que la página de crear negocio)
+  // El backend decide quién puede usar el onboarding (admin, o clientes si está habilitado)
   useEffect(() => {
     let cancelled = false;
 
@@ -219,14 +221,14 @@ export default function OnboardingPage() {
           return;
         }
         const data = await readJson(response);
-        if (!response.ok || !data?.is_admin) {
+        if (!response.ok) {
           router.replace("/dashboard");
           return;
         }
         if (!cancelled) {
           setBusinessName(data?.name || "");
           setExistingInfoClave(String(data?.info_clave || ""));
-          setTestNumber(data?.twilio_voice_number || data?.twilio_number || null);
+          setTestNumber(data?.twilio_voice_number || null);
         }
       } catch {
         router.replace("/dashboard");
@@ -354,6 +356,32 @@ export default function OnboardingPage() {
       setError(saveError instanceof Error ? saveError.message : "No se pudo guardar");
     } finally {
       setSaving(false);
+    }
+  };
+
+  /* ───────── Paso 3: activar número de prueba ───────── */
+  const handleAssignNumber = async () => {
+    if (assigning) return;
+    setError("");
+    setAssigning(true);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/onboarding/assign-number`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ area_code: areaCode.trim() }),
+      });
+      const data = await readJson(response);
+
+      if (!response.ok) {
+        throw new Error(data?.error || "No se pudo activar el número");
+      }
+      setTestNumber(data.twilio_voice_number || null);
+    } catch (assignError) {
+      setError(assignError instanceof Error ? assignError.message : "No se pudo activar el número");
+    } finally {
+      setAssigning(false);
     }
   };
 
@@ -716,9 +744,41 @@ export default function OnboardingPage() {
               {testNumber}
             </a>
           ) : (
-            <div className="mt-6 rounded-xl border border-yellow-400/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
-              Este negocio todavía no tiene un número de voz asignado. Puedes terminar el
-              onboarding y asignarlo desde el dashboard.
+            <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-5">
+              <p className="font-medium text-white/90">Activa tu número de prueba</p>
+              <p className="mt-1 text-sm text-white/60">
+                Te asignamos un número para que llames y hables con tu agente. Elige un código de
+                área de EE. UU. o déjalo vacío.
+              </p>
+
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={3}
+                  value={areaCode}
+                  onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Código de área (ej. 480)"
+                  aria-label="Código de área"
+                  disabled={assigning}
+                  className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition placeholder:text-white/30 focus:border-purple-400 sm:max-w-xs"
+                />
+                <button
+                  type="button"
+                  onClick={handleAssignNumber}
+                  disabled={assigning}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {assigning ? (
+                    <>
+                      <FiLoader className="animate-spin" />
+                      Activando…
+                    </>
+                  ) : (
+                    "Activar mi número"
+                  )}
+                </button>
+              </div>
             </div>
           )}
 
