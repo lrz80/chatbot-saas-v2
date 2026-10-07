@@ -107,20 +107,81 @@ function proposalToForm(p: Proposal, existingName: string): FormState {
   };
 }
 
+function to12h(time: string): string {
+  const [hs, ms] = time.split(":");
+  let h = parseInt(hs, 10);
+  const suffix = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${h}:${ms} ${suffix}`;
+}
+
+// Agrupa días seguidos con el mismo horario: "Lunes a Sábado – 8:00 AM a 6:00 PM"
+function formatHours(hours: Record<DayKey, DayHours>): string {
+  const lines: string[] = [];
+  let i = 0;
+
+  while (i < DAYS.length) {
+    const h = hours[DAYS[i].key];
+    if (!h) {
+      i += 1;
+      continue;
+    }
+
+    let j = i;
+    while (j + 1 < DAYS.length) {
+      const next = hours[DAYS[j + 1].key];
+      if (next && next.start === h.start && next.end === h.end) j += 1;
+      else break;
+    }
+
+    const range = i === j ? DAYS[i].label : `${DAYS[i].label} a ${DAYS[j].label}`;
+    lines.push(`${range} – ${to12h(h.start)} a ${to12h(h.end)}`);
+    i = j + 1;
+  }
+
+  return lines.join("\n");
+}
+
+// Arma info_clave con el MISMO formato que ya usa Aamy (ver el de Eastern R&C)
 function buildBusinessInfo(form: FormState): string {
-  const parts: string[] = [];
-  if (form.description.trim()) parts.push(form.description.trim());
+  const name = form.business_name.trim();
+  const lines: string[] = [];
+
+  if (name) lines.push(`Nombre del negocio: ${name}`);
+  if (form.category.trim()) lines.push(`Tipo de negocio: ${form.category.trim()}`);
+  if (form.address.trim()) lines.push(`Ubicación: ${form.address.trim()}`);
+  if (form.phone.trim()) lines.push(`Teléfono: ${form.phone.trim()}`);
 
   const services = form.services
     .split("\n")
-    .map((s) => s.trim())
+    .map((s) => s.replace(/^[•\-\s]+/, "").trim())
     .filter(Boolean);
   if (services.length) {
-    parts.push(`Servicios:\n${services.map((s) => `- ${s}`).join("\n")}`);
+    lines.push("", "SERVICIOS PRINCIPALES", `${name || "El negocio"} ofrece:`);
+    services.forEach((s) => lines.push(`• ${s}`));
   }
 
-  if (form.policies.trim()) parts.push(`Políticas:\n${form.policies.trim()}`);
-  return parts.join("\n\n");
+  const hoursText = formatHours(form.hours);
+  if (hoursText) lines.push("", "Horarios:", hoursText);
+
+  const digits = form.phone.replace(/\D/g, "");
+  if (digits.length >= 10) {
+    const full = digits.length === 10 ? `1${digits}` : digits;
+    lines.push("", "Reservas / contacto:", `Contacto: https://wa.me/${full}`);
+  }
+
+  if (form.description.trim()) lines.push("", form.description.trim());
+
+  const policies = form.policies
+    .split("\n")
+    .map((s) => s.replace(/^[•\-\s]+/, "").trim())
+    .filter(Boolean);
+  if (policies.length) {
+    lines.push("", "Políticas importantes (si aplica):");
+    policies.forEach((p) => lines.push(`• ${p}`));
+  }
+
+  return lines.join("\n");
 }
 
 const inputClass =
@@ -139,6 +200,8 @@ export default function OnboardingPage() {
   const [finishing, setFinishing] = useState(false);
   const [businessName, setBusinessName] = useState("");
   const [testNumber, setTestNumber] = useState<string | null>(null);
+  const [existingInfoClave, setExistingInfoClave] = useState("");
+  const [overwriteInfo, setOverwriteInfo] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
 
   // Solo admin por ahora (igual que la página de crear negocio)
@@ -162,6 +225,7 @@ export default function OnboardingPage() {
         }
         if (!cancelled) {
           setBusinessName(data?.name || "");
+          setExistingInfoClave(String(data?.info_clave || ""));
           setTestNumber(data?.twilio_voice_number || data?.twilio_number || null);
         }
       } catch {
@@ -264,8 +328,12 @@ export default function OnboardingPage() {
         categoria: form.category,
         telefono_negocio: form.phone,
         direccion: form.address,
-        informacion_negocio: buildBusinessInfo(form),
       };
+      // info_clave es el campo principal que lee Aamy: solo se escribe si está
+      // vacío o si el admin pidió reemplazarlo expresamente.
+      if (!existingInfoClave.trim() || overwriteInfo) {
+        body.info_clave = buildBusinessInfo(form);
+      }
       if (hasHours) body.horario_atencion = form.hours;
 
       const response = await fetch(`${BACKEND_URL}/api/settings`, {
@@ -571,6 +639,34 @@ export default function OnboardingPage() {
               </div>
             </div>
           </div>
+
+          <details className="mt-6 rounded-xl border border-white/10 bg-black/20 p-4">
+            <summary className="cursor-pointer text-sm font-medium text-white/80">
+              Ver cómo se guardará para Aamy
+            </summary>
+            <pre className="mt-3 whitespace-pre-wrap text-xs text-white/70">
+              {buildBusinessInfo(form)}
+            </pre>
+          </details>
+
+          {existingInfoClave.trim() ? (
+            <div className="mt-4 rounded-xl border border-yellow-400/30 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+              <p className="font-medium">Este negocio ya tiene información clave guardada.</p>
+              <p className="mt-1 text-yellow-100/80">
+                Por seguridad no se reemplaza. Marca la casilla solo si quieres sustituirla por la
+                versión de arriba.
+              </p>
+              <label className="mt-3 flex cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={overwriteInfo}
+                  onChange={(e) => setOverwriteInfo(e.target.checked)}
+                  className="h-4 w-4 accent-purple-600"
+                />
+                Reemplazar la información clave existente
+              </label>
+            </div>
+          ) : null}
 
           <div className="mt-8 flex flex-col-reverse gap-3 border-t border-white/10 pt-5 sm:flex-row sm:justify-between">
             <button
